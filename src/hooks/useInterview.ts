@@ -4,7 +4,7 @@ import {
   ResponseConsumer,
 } from '@dataclinic/interview';
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { GuessingGameQuestion } from '../GuessingGameQuestion';
+import { GuessingGameQuestion } from '../types';
 import GuessingGameModerator from './GuessingGameModerator';
 import GuessingGameScript from './GuessingGameScript';
 
