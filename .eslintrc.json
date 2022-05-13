@@ -9,9 +9,11 @@
   },
   "extends": [
     "eslint:recommended",
+    "airbnb",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
-    "airbnb",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
     "plugin:jsx-a11y/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:typescript-sort-keys/recommended",
@@ -19,8 +21,9 @@
   ],
   "plugins": [
     "@typescript-eslint",
-    "jsx-a11y",
     "react-hooks",
+    "import",
+    "jsx-a11y",
     "sort-destructure-keys",
     "sort-keys-fix"
   ],
@@ -39,6 +42,7 @@
         "ignoreRestSiblings": true
       }
     ],
+    "@typescript-eslint/no-shadow": "error",
     "camelcase": "warn",
     "react-hooks/exhaustive-deps": "error",
     "react-hooks/rules-of-hooks": "error",
@@ -95,10 +99,19 @@
       }
     ],
     "no-unused-vars": "off",
+    "no-shadow": "off",
     "sort-destructure-keys/sort-destructure-keys": [
       "error",
       { "caseSensitive": false }
     ],
     "sort-keys-fix/sort-keys-fix": ["error", "asc"]
+  },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "typescript": {}
+    }
   }
 }

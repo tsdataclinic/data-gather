@@ -1,49 +1,67 @@
-import { KeyboardEvent, ChangeEvent } from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { useState } from 'react';
+import invariant from 'invariant';
+import { KeyboardEvent, ChangeEvent, useState } from 'react';
+import styled from 'styled-components/macro';
 import { GuessingGameQuestion } from './GuessingGameQuestion';
 import useInterview from './hooks/useInterview';
+import logo from './logo.svg';
+import assertUnreachable from './util/assertUnreachable';
 
-export default function App() {
+// This is here just as an example of styled-components usage. This can be
+// removed at any time.
+const StyledImg = styled.img`
+  height: 100px;
+`;
+
+export default function App(): JSX.Element {
   const [responseText, setResponseText] = useState('');
-  const { question, responseData, submitAnswer, isInterviewComplete } =
+  const { isInterviewComplete, question, responseData, submitAnswer } =
     useInterview();
 
-  const onTextChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const onTextChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const val = e.currentTarget.value;
     setResponseText(val);
   };
 
-  const resetText = () => setResponseText('');
+  const resetText = (): void => setResponseText('');
 
-  const onSubmitAnswer = () => {
+  const onSubmitAnswer = (): void => {
+    invariant(
+      question !== undefined,
+      'Question cannot be undefined at this point.',
+    );
+
     // If we aren't at the last page then don't allow an empty response
     if (
-      question !== GuessingGameQuestion.CORRECT_ENDING &&
-      responseText === ''
+      question === undefined ||
+      (responseText === '' && question !== GuessingGameQuestion.CORRECT_ENDING)
     ) {
       return;
     }
 
     resetText();
+
     switch (question) {
       case GuessingGameQuestion.NAME:
-        return submitAnswer({ name: responseText.trim() });
+        submitAnswer({ name: responseText.trim() });
+        break;
       case GuessingGameQuestion.GUESS:
       case GuessingGameQuestion.INCORRECT_GUESS:
-        return submitAnswer({
+        submitAnswer({
           numbersGuessed: [
             Number(responseText),
             ...(responseData.numbersGuessed || []),
           ],
         });
+        break;
       case GuessingGameQuestion.CORRECT_ENDING:
-        return submitAnswer();
+        submitAnswer();
+        break;
+      default:
+        assertUnreachable(question);
     }
   };
 
-  const renderQuestion = (question: GuessingGameQuestion | undefined) => {
+  const renderQuestion = (): string | null => {
     if (question === undefined) {
       return null;
     }
@@ -57,10 +75,12 @@ export default function App() {
         return 'Not quite. Try again! Guess a number between 1 and 10';
       case GuessingGameQuestion.CORRECT_ENDING:
         return 'Great job!';
+      default:
+        return assertUnreachable(question);
     }
   };
 
-  const renderInputText = (question: GuessingGameQuestion | undefined) => {
+  const renderInputText = (): JSX.Element | null => {
     // don't render the input text if we made it to the last page
     if (
       question === undefined ||
@@ -72,7 +92,7 @@ export default function App() {
     return (
       <input
         type="text"
-        style={{ fontSize: '2rem', padding: '0.5rem' }}
+        className="p-4 text-3xl text-black rounded-sm"
         value={responseText}
         onChange={onTextChange}
         onKeyPress={(e: KeyboardEvent) => {
@@ -84,41 +104,40 @@ export default function App() {
     );
   };
 
-  const renderInterviewPage = () => {
+  const renderInterviewPage = (): JSX.Element => {
     if (isInterviewComplete) {
+      const guessesInOrder = [...responseData.numbersGuessed].reverse();
       return (
-        <>
+        <div className="space-y-8">
           <p>Congratulations {responseData.name}!</p>
-          <p>
-            Your guesses were {responseData.numbersGuessed.reverse().join(', ')}
-          </p>
-        </>
+          <p>Your guesses were {guessesInOrder.join(', ')}</p>
+        </div>
       );
     }
 
     return (
-      <>
-        <p>{renderQuestion(question)}</p>
-        {renderInputText(question)}
-        <button
-          type="button"
-          onClick={onSubmitAnswer}
-          style={{ marginTop: '1rem', padding: '1rem', fontSize: '1.5rem' }}
-        >
-          {question === GuessingGameQuestion.CORRECT_ENDING
-            ? 'Show me my guesses'
-            : 'Submit'}
-        </button>
-      </>
+      <div className="flex flex-col items-center space-y-8">
+        <p>{renderQuestion()}</p>
+        {renderInputText()}
+        <div>
+          <button
+            type="button"
+            onClick={onSubmitAnswer}
+            className="p-4 text-2xl text-black bg-blue-400 rounded-sm"
+          >
+            {question === GuessingGameQuestion.CORRECT_ENDING
+              ? 'Show me my guesses'
+              : 'Submit'}
+          </button>
+        </div>
+      </div>
     );
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        {renderInterviewPage()}
-      </header>
+    <div className="bg-slate-900 h-screen flex text-white flex-col items-center pt-16 space-y-4">
+      <StyledImg src={logo} alt="logo" />
+      {renderInterviewPage()}
     </div>
   );
 }

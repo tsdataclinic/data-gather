@@ -1,12 +1,13 @@
+/* eslint-disable class-methods-use-this */
 import { QuestionRouter, Script, ResponseData } from '@dataclinic/interview';
 import { GuessingGameQuestion } from '../GuessingGameQuestion';
 
 export default class GuessingGameScript
   implements Script<GuessingGameQuestion>
 {
-  private correctAnswer: number = 7;
+  private correctAnswer = 7;
 
-  setup(router: QuestionRouter<GuessingGameQuestion>) {
+  setup(router: QuestionRouter<GuessingGameQuestion>): void {
     router.push(GuessingGameQuestion.GUESS);
     router.push(GuessingGameQuestion.NAME);
   }
@@ -34,7 +35,9 @@ export default class GuessingGameScript
   }
 
   // TODO: this should not be required to override when implementing Script<>
+  // We include this function here only because we get a type error otherwise.
   prepare(): void {
+    // eslint-disable-next-line no-useless-return
     return;
   }
 }

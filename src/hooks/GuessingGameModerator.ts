@@ -9,7 +9,9 @@ export default class GuessingGameModerator
   implements Moderator<GuessingGameQuestion>
 {
   public setQuestion: (q: GuessingGameQuestion) => void;
+
   public setResponseConsumer: (consumer: ResponseConsumer) => void;
+
   public setResponseData: (responseData: ResponseData) => void;
 
   /**

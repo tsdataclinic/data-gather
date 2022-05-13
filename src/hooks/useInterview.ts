@@ -1,12 +1,12 @@
-import GuessingGameScript from './GuessingGameScript';
-import { useState, useCallback, useEffect, useMemo } from 'react';
-import { GuessingGameQuestion } from '../GuessingGameQuestion';
 import {
   Interview,
   ResponseData,
   ResponseConsumer,
 } from '@dataclinic/interview';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { GuessingGameQuestion } from '../GuessingGameQuestion';
 import GuessingGameModerator from './GuessingGameModerator';
+import GuessingGameScript from './GuessingGameScript';
 
 type SubmitAnswerFn = (data?: ResponseData) => void;
 
@@ -21,10 +21,10 @@ type SubmitAnswerFn = (data?: ResponseData) => void;
  *   - isInterviewComplete (boolean) Whether or not the interview is finished
  */
 export default function useInterview(): {
+  isInterviewComplete: boolean;
   question: GuessingGameQuestion | undefined;
   responseData: ResponseData;
   submitAnswer: SubmitAnswerFn;
-  isInterviewComplete: boolean;
 } {
   const [isInterviewComplete, setIsInterviewComplete] = useState(false);
   const [question, setQuestion] = useState<GuessingGameQuestion>();
@@ -62,5 +62,5 @@ export default function useInterview(): {
     [responseConsumer],
   );
 
-  return { question, responseData, submitAnswer, isInterviewComplete };
+  return { isInterviewComplete, question, responseData, submitAnswer };
 }
