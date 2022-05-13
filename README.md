@@ -6,13 +6,13 @@ An app to create interactive question-and-answer data collection experiences.
 
 This is a basic create-react-app (CRA) application.
 
-First, install all requirements:
+1. First, install all requirements:
 
 ```
 yarn install
 ```
 
-Run the app with:
+2. Run the app with:
 
 ```
 yarn start
