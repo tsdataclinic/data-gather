@@ -15,6 +15,7 @@
     "plugin:import/recommended",
     "plugin:import/typescript",
     "plugin:jsx-a11y/recommended",
+    "plugin:tailwindcss/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:typescript-sort-keys/recommended",
     "prettier"
@@ -25,7 +26,8 @@
     "import",
     "jsx-a11y",
     "sort-destructure-keys",
-    "sort-keys-fix"
+    "sort-keys-fix",
+    "tailwindcss"
   ],
   "rules": {
     "@typescript-eslint/array-type": ["error", { "default": "array-simple" }],
@@ -95,7 +97,7 @@
       "error",
       {
         "components": ["Link"],
-        "specialLink": ["href"]
+        "specialLink": ["to"]
       }
     ],
     "no-unused-vars": "off",
