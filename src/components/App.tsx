@@ -16,7 +16,7 @@ const ALL_INTERVIEWS: readonly Interview[] = [
     description: 'A sample interview to run a guessing game',
     id: 'guessing-game',
     name: 'Guessing Game',
-    states: [
+    screens: [
       {
         displayName: 'Name',
         id: 'NAME',

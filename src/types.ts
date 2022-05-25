@@ -5,7 +5,7 @@ export enum GuessingGameQuestion {
   CORRECT_ENDING,
 }
 
-export interface InterviewState {
+export interface InterviewScreen {
   displayName: string;
   id: string;
 }
@@ -15,5 +15,5 @@ export interface Interview {
   description: string;
   id: string;
   name: string;
-  states: readonly InterviewState[];
+  screens: readonly InterviewScreen[];
 }

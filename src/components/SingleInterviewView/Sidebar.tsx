@@ -12,7 +12,7 @@ export default function Sidebar({ interview }: Props): JSX.Element {
       <h1 className="text-3xl tracking-wider">{interview.name}</h1>
       <div>Configure</div>
       <ul className="space-y-4">
-        {interview.states.map(({ displayName, id }) => (
+        {interview.screens.map(({ displayName, id }) => (
           <li key={id}>
             <span className="pr-2">
               <FontAwesomeIcon size="1x" icon={faPenToSquare} />
