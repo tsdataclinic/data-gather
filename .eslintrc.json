@@ -100,7 +100,6 @@
         "specialLink": ["to"]
       }
     ],
-    "no-unused-vars": "off",
     "no-shadow": "off",
     "sort-destructure-keys/sort-destructure-keys": [
       "error",

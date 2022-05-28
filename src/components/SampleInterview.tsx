@@ -1,18 +1,14 @@
 import invariant from 'invariant';
-import { KeyboardEvent, ChangeEvent, useState } from 'react';
+import { useState } from 'react';
 import useInterview from '../hooks/useInterview';
 import { GuessingGameQuestion } from '../types';
 import assertUnreachable from '../util/assertUnreachable';
+import InputText from './ui/InputText';
 
 export default function SampleInterview(): JSX.Element {
   const [responseText, setResponseText] = useState('');
   const { isInterviewComplete, question, responseData, submitAnswer } =
     useInterview();
-
-  const onTextChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    const val = e.currentTarget.value;
-    setResponseText(val);
-  };
 
   const resetText = (): void => setResponseText('');
 
@@ -82,16 +78,11 @@ export default function SampleInterview(): JSX.Element {
     }
 
     return (
-      <input
-        type="text"
-        className="p-4 text-3xl text-black rounded-sm border border-gray-400"
+      <InputText
+        className="text-3xl"
         value={responseText}
-        onChange={onTextChange}
-        onKeyPress={(e: KeyboardEvent) => {
-          if (e.key === 'Enter') {
-            onSubmitAnswer();
-          }
-        }}
+        onChange={setResponseText}
+        onEnterPress={onSubmitAnswer}
       />
     );
   };
