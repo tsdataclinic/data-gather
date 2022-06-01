@@ -7,6 +7,9 @@ import {
 } from './ScriptConfigSchema';
 import StringIdQuestion from './StringIdQuestion';
 
+/**
+ * Script implementation which is driven by a JSON config.
+ */
 class ConfigurableScript implements Script<StringIdQuestion> {
   private config: ScriptConfigSchema;
 
@@ -14,23 +17,35 @@ class ConfigurableScript implements Script<StringIdQuestion> {
     this.config = JSON.parse(readFileSync(configFilename).toString('utf8'));
   }
 
+  /**
+   * Implements Script.setup()
+   */
   setup(router: QuestionRouter<StringIdQuestion>): void {
     this.pushInReverseOrder(this.config.startingState.slice(), router);
   }
 
+  /**
+   * (NO OP) Implements Script.prepare()
+   */
   prepare(
     router: QuestionRouter<StringIdQuestion>,
     question: StringIdQuestion,
     responseData: ResponseData,
   ): void {}
 
+  /**
+   * Implements Script.process()
+   */
   process(
     router: QuestionRouter<StringIdQuestion>,
     question: StringIdQuestion,
     responseData: ResponseData,
   ): void {
+    // Find the list of actions associated with the question which was jsut asked
     const potentialActions: ConditionalAction[] =
       this.config.actions[question.getId()] || [];
+
+    // Foreach, execute if its condition evaluates to true
     for (const potentialAction of potentialActions) {
       if (potentialAction.condition) {
         if (!this.evaluateCondition(potentialAction.condition, responseData)) {
@@ -39,6 +54,8 @@ class ConfigurableScript implements Script<StringIdQuestion> {
         this.executeAction(potentialAction, router);
       }
     }
+
+    // Once finished, proceed.
     router.next();
   }
 

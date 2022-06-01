@@ -1,3 +1,6 @@
+/**
+ * Dummy implementation of a question with a string-valued ID
+ */
 class StringIdQuestion {
   constructor(private id: string) {}
 
