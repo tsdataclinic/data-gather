@@ -1,0 +1,35 @@
+{
+    "startingState": [
+        "Question A",
+        "Question B",
+        "Question C"
+    ],
+    "actions": {
+        "Question A": [
+            {
+                "condition": {
+                    "key": "first_name",
+                    "value": "Izaak",
+                    "operator": "="
+                },
+                "action": "push",
+                "target": [
+                    "Question D",
+                    "Question E"
+                ]
+            },
+            {
+                "condition": {
+                    "key": "first_name",
+                    "value": "Joe",
+                    "operator": "="
+                },
+                "action": "push",
+                "target": [
+                    "Question F",
+                    "Question G"
+                ]
+            }
+        ]
+    }
+}
