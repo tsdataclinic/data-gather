@@ -5,6 +5,7 @@ import AllInterviewsView from './AllInterviewsView';
 import AppContext, { AppGlobalState } from './AppContext';
 import Header from './Header';
 import SingleInterviewView from './SingleInterviewView';
+import ApiDemo from './apiDemo';
 
 // TODO: eventually this should be removed and we should
 // load information from browser cache. In the future we
@@ -55,6 +56,7 @@ export default function App(): JSX.Element {
             path="/interview/:interviewId"
             element={<SingleInterviewView />}
           />
+          <Route path="/apidemo" element={<ApiDemo />} />
         </Routes>
       </div>
     </AppContext.Provider>
