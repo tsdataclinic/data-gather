@@ -20,18 +20,22 @@ const ALL_INTERVIEWS: readonly Interview[] = [
       {
         displayName: 'Name',
         id: 'NAME',
+        questions: [],
       },
       {
         displayName: 'Guess',
         id: 'GUESS',
+        questions: [],
       },
       {
         displayName: 'Incorrect Guess',
         id: 'INCORRECT_GUESS',
+        questions: [],
       },
       {
         displayName: 'Correct Ending',
         id: 'CORRECT_ENDING',
+        questions: [],
       },
     ],
   },
@@ -52,7 +56,7 @@ export default function App(): JSX.Element {
         <Routes>
           <Route path="/" element={<AllInterviewsView />} />
           <Route
-            path="/interview/:interviewId"
+            path="/interview/:interviewId/*"
             element={<SingleInterviewView />}
           />
         </Routes>
