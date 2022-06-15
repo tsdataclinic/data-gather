@@ -5,6 +5,11 @@ import { GuessingGameQuestion } from '../types';
 import assertUnreachable from '../util/assertUnreachable';
 import InputText from './ui/InputText';
 
+/**
+ * This is a sample implementation of the Interview library.
+ * We just have this as an example. This is safe to remove once we add a real
+ * implementation that we can use as a reference instead.
+ */
 export default function SampleInterview(): JSX.Element {
   const [responseText, setResponseText] = useState('');
   const { isInterviewComplete, question, responseData, submitAnswer } =
