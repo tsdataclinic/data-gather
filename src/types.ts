@@ -5,15 +5,15 @@ export enum GuessingGameQuestion {
   CORRECT_ENDING,
 }
 
-export interface InterviewScreen {
+export type InterviewScreen = {
   displayName: string;
   id: string;
-}
+};
 
-export interface Interview {
+export type Interview = {
   createdDate: Date;
   description: string;
   id: string;
   name: string;
   screens: readonly InterviewScreen[];
-}
+};
