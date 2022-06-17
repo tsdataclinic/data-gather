@@ -47,7 +47,7 @@ export default function App(): JSX.Element {
 
   return (
     <AppContext.Provider value={globalState}>
-      <div className="flex flex-col h-screen bg-gray-100">
+      <div className="flex flex-col h-screen text-slate-900 bg-gray-50">
         <Header />
         <Routes>
           <Route path="/" element={<AllInterviewsView />} />
