@@ -16,7 +16,7 @@ import {
 import AppContext from '../AppContext';
 import ConfigureCard from './ConfigureCard';
 import ScreenCard from './ScreenCard';
-import './index.css';
+import ScreenDropdown from './ScreenDropdown';
 
 export default function SingleInterviewView(): JSX.Element {
   const [selectedTab, setSelectedTab] = useState<string>();
@@ -31,69 +31,63 @@ export default function SingleInterviewView(): JSX.Element {
   }
 
   const menuItemClass = (id: string): string => {
-    if (id === selectedTab) return 'selected-menu-item';
-    return 'menu-item';
+    if (id === selectedTab)
+      return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full bg-blue-100';
+    return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full';
   };
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-row items-center p-0 h-full">
       {/* Sidebar */}
-      <nav className="space-y-4 w-1/4 bg-white">
-        <div className="p-4">
-          {/* Interview Name */}
-          <div className="py-3 pl-3 text-2xl">
-            <h1 className="tracking-wide overflow-ellipses">
-              <Link className="float-left static pr-10 btn-back" to="/">
-                <FontAwesomeIcon
-                  className="icon-back"
-                  icon={faCircleChevronLeft}
-                />
-              </Link>
-              {interview.name}
-            </h1>
+      <nav className="relative space-y-4 w-1/5 h-full bg-white">
+        <div className="flex flex-col items-start py-10 px-0">
+          <div className="flex flex-row gap-2.5 items-center py-2.5 px-5 text-2xl">
+            <Link className="w-7 h-7" to="/">
+              <FontAwesomeIcon className="w-6 h-6" icon={faCircleChevronLeft} />
+            </Link>
+            {interview.name}
           </div>
 
           {/* Menu */}
-          <ul className="space-y-4">
+          <div className="flex flex-col items-start w-full">
             {/* Configure */}
-            <li className={menuItemClass('configure')}>
-              <NavLink
-                to={`${path}/configure`}
-                onClick={() => setSelectedTab('configure')}
-              >
-                <FontAwesomeIcon className="pr-2" size="1x" icon={faGear} />
-                Configure
-              </NavLink>
-            </li>
+            <NavLink
+              className={menuItemClass('configure')}
+              to={`${path}/configure`}
+              onClick={() => setSelectedTab('configure')}
+            >
+              <FontAwesomeIcon size="1x" icon={faGear} />
+              Configure
+            </NavLink>
 
             {/* Screens */}
-            {interview.screens.map(({ displayName, id }) => (
-              <li className={menuItemClass(id)} key={id}>
+            {interview.screens.map(({ displayName, entries, id }) => (
+              <div className="w-full" key={id}>
                 <NavLink
+                  className={menuItemClass(id)}
                   to={`${path}/page/${id}`}
                   onClick={() => setSelectedTab(id)}
                 >
-                  <FontAwesomeIcon
-                    className="pr-2"
-                    size="1x"
-                    icon={faPenToSquare}
-                  />
+                  <FontAwesomeIcon size="1x" icon={faPenToSquare} />
                   {displayName}
                 </NavLink>
-              </li>
+                {selectedTab === id && <ScreenDropdown entries={entries} />}
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
 
         {/* Add Screen Button */}
-        <Link className="w-1/4 add-page-btn" to="/">
-          {' '}
-          +{' '}
+        <Link
+          className="flex absolute bottom-0 flex-row justify-center items-center w-full h-20 text-3xl bg-blue-100"
+          to="/"
+        >
+          +
         </Link>
       </nav>
 
       {/* Right Side */}
-      <div className="float-right w-3/4">
+      <div className="flex flex-col gap-14 items-center p-14 w-4/5 h-full">
         <Routes>
           <Route
             path="/configure"
