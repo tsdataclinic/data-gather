@@ -61,7 +61,7 @@ export type Entry = {
 /**
  * A group of entries, corresponding to a particular state in the interview
  */
-export type Page = {
+export type Screen = {
   // the actions executed after the page is complete
   actions: ConditionalAction[];
 
@@ -79,6 +79,6 @@ export type Page = {
  * Represents all the data associated with interview flow
  */
 export type Interview = {
-  pages: { [pageName: string]: Page };
+  screens: { [pageName: string]: Screen };
   startingState: string[];
 };

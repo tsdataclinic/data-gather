@@ -4,13 +4,13 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '../../store/InterviewStore';
-import { ConditionalAction, Page, Entry } from '../../store/models';
+import { ConditionalAction, Screen, Entry } from '../../store/models';
 import InputText from '../ui/InputText';
 
 type PageDetailsProps = {
   name: string;
-  page: Page;
-  updateHandler: (name: string, page: Page) => Promise<void>;
+  page: Screen;
+  updateHandler: (name: string, page: Screen) => Promise<void>;
 };
 
 function PageDetails(props: PageDetailsProps): JSX.Element {
@@ -34,7 +34,7 @@ function PageDetails(props: PageDetailsProps): JSX.Element {
       text: '',
     };
 
-    const updatedPage: Page = {
+    const updatedPage: Screen = {
       actions: [...page.actions, newAction],
       entries: [...page.entries, newQuestion],
       headerText: page.headerText,
@@ -78,8 +78,8 @@ export default function ApiDemo(): JSX.Element {
 
   const createInterview = async (id: string): Promise<void> => {
     await api.createInterview(id, 'sample name', 'sample description');
-    await api.addPageToInterview(id, 'sample-page');
-    await api.updatePage(id, 'sample-page', {
+    await api.addScreenToInterview(id, 'sample-page');
+    await api.updateScreen(id, 'sample-page', {
       actions: [],
       entries: [],
       headerText: 'Sample description',
@@ -89,8 +89,8 @@ export default function ApiDemo(): JSX.Element {
 
   const addPage = async (name: string): Promise<void> => {
     if (fetchedInterview) {
-      await api.addPageToInterview(fetchInterviewId, name);
-      await api.updatePage(fetchInterviewId, name, {
+      await api.addScreenToInterview(fetchInterviewId, name);
+      await api.updateScreen(fetchInterviewId, name, {
         actions: [],
         entries: [],
         headerText: 'Sample description',
@@ -131,13 +131,13 @@ export default function ApiDemo(): JSX.Element {
           {fetchedInterview.startingState.join(', ')}
 
           <h3>Pages:</h3>
-          {Object.entries(fetchedInterview.pages).map(entry => (
+          {Object.entries(fetchedInterview.screens).map(entry => (
             <PageDetails
               key={entry[0]}
               name={entry[0]}
               page={entry[1]}
               updateHandler={async (name, page) =>
-                api.updatePage(fetchInterviewId, name, page)
+                api.updateScreen(fetchInterviewId, name, page)
               }
             />
           ))}
