@@ -1,6 +1,10 @@
+/**
+ * Example use of an API store. Intended to be deprecated
+ */
+
 import { useEffect, useState } from 'react';
 import { api } from '../../store/InterviewStore';
-import { ConditionalAction, Page, Question } from '../../store/models';
+import { ConditionalAction, Page, Entry } from '../../store/models';
 import InputText from '../ui/InputText';
 
 type PageDetailsProps = {
@@ -23,7 +27,7 @@ function PageDetails(props: PageDetailsProps): JSX.Element {
       target: ['randomPage'],
     };
 
-    const newQuestion: Question = {
+    const newQuestion: Entry = {
       prompt: "Ceci n'est pas un question",
       responseId: 'responseId',
       responseType: 'string',
@@ -32,8 +36,8 @@ function PageDetails(props: PageDetailsProps): JSX.Element {
 
     const updatedPage: Page = {
       actions: [...page.actions, newAction],
+      entries: [...page.entries, newQuestion],
       headerText: page.headerText,
-      questions: [...page.questions, newQuestion],
       title: page.title,
     };
 
@@ -45,7 +49,7 @@ function PageDetails(props: PageDetailsProps): JSX.Element {
       <hr />
       <p>Title: {page.title}</p>
       <p>Header text: {page.headerText}</p>
-      <p>Questions: {JSON.stringify(page.questions)}</p>
+      <p>entries: {JSON.stringify(page.entries)}</p>
       <p>Actions: {JSON.stringify(page.actions)}</p>
       <button type="button" onClick={updatePage}>
         Update page
@@ -73,12 +77,12 @@ export default function ApiDemo(): JSX.Element {
   });
 
   const createInterview = async (id: string): Promise<void> => {
-    await api.createInterview(id);
+    await api.createInterview(id, 'sample name', 'sample description');
     await api.addPageToInterview(id, 'sample-page');
     await api.updatePage(id, 'sample-page', {
       actions: [],
+      entries: [],
       headerText: 'Sample description',
-      questions: [],
       title: 'Sample page',
     });
   };
@@ -88,8 +92,8 @@ export default function ApiDemo(): JSX.Element {
       await api.addPageToInterview(fetchInterviewId, name);
       await api.updatePage(fetchInterviewId, name, {
         actions: [],
+        entries: [],
         headerText: 'Sample description',
-        questions: [],
         title: 'Sample page',
       });
       setCreatePageId('');

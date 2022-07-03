@@ -22,7 +22,7 @@ export type Condition = {
  */
 export type ConditionalAction = {
   condition?: Condition;
-} & ( // Push some questions on to the stack
+} & ( // Push some entries on to the stack
   | {
       action: 'push';
       target: string[];
@@ -42,41 +42,41 @@ export type ConditionalAction = {
 );
 
 /**
- *
+ * Represents a single question asked to the interview subject
  */
-export type Question = {
-  //
+export type Entry = {
+  //  The text of the question
   prompt: string;
 
-  //
+  // The id associated with the resposnse to the question
   responseId: string;
 
-  //
+  // The data type expected as a response
   responseType: string;
 
-  //
+  // Additional flavor text associated with the question
   text: string;
 };
 
 /**
- *
+ * A group of entries, corresponding to a particular state in the interview
  */
 export type Page = {
-  //
+  // the actions executed after the page is complete
   actions: ConditionalAction[];
 
-  //
+  // The entries on this page
+  entries: Entry[];
+
+  // description text for the page
   headerText: string;
 
-  //
-  questions: Question[];
-
-  //
+  // title of the page
   title: string;
 };
 
 /**
- *
+ * Represents all the data associated with interview flow
  */
 export type Interview = {
   pages: { [pageName: string]: Page };

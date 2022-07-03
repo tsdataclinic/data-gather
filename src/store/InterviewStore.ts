@@ -3,8 +3,10 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Page, Interview } from './models';
 
 type InterviewRow = {
+  description: string;
   id: string;
   interview: Interview;
+  name: string;
 };
 
 class InterviewStore extends Dexie {
@@ -23,17 +25,21 @@ class InterviewStore extends Dexie {
     return interviews.map(row => row.id);
   };
 
-  createInterview = async (id: string): Promise<void> => {
+  createInterview = async (
+    id: string,
+    name: string,
+    description: string,
+  ): Promise<void> => {
     const interview: Interview = {
       pages: {},
       startingState: [],
     };
 
-    await this.interviews.add({ id, interview });
+    await this.interviews.add({ description, id, interview, name });
   };
 
   updateInterview = async (id: string, interview: Interview): Promise<void> => {
-    this.interviews.put({ id, interview });
+    this.interviews.update(id, { interview });
   };
 
   deleteInterview = async (id: string): Promise<void> => {
@@ -53,8 +59,8 @@ class InterviewStore extends Dexie {
 
     const newPage: Page = {
       actions: [],
+      entries: [],
       headerText: '',
-      questions: [],
       title: '',
     };
 
