@@ -1,4 +1,5 @@
 import React from 'react';
+import { Element } from 'react-scroll';
 import { InterviewScreen } from '../../types';
 
 interface Props {
@@ -8,18 +9,22 @@ interface Props {
 function ScreenCard({ screen }: Props): JSX.Element {
   return (
     <div className="flex flex-col gap-14 items-center w-full">
-      <div className="w-full h-60 bg-white shadow-md">
+      <Element name="HEADER" className="w-full h-60 bg-white shadow-md">
         Header card for {screen.displayName}
-      </div>
+      </Element>
       {screen.entries.map(entry => (
-        <div className="w-full h-60 bg-white shadow-md" key={entry.id}>
+        <Element
+          name={entry.id}
+          className="w-full h-60 bg-white shadow-md"
+          key={entry.id}
+        >
           Entry card for {entry.id} <br />
           {entry.prompt}
-        </div>
+        </Element>
       ))}
-      <div className="w-full h-60 bg-white shadow-md">
+      <Element name="ACTION" className="w-full h-60 bg-white shadow-md">
         Action card for {screen.displayName}
-      </div>
+      </Element>
     </div>
   );
 }

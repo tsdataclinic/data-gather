@@ -19,6 +19,7 @@
     "@types/node": "^16.7.13",
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.2",
+    "@types/react-scroll": "^1.8.3",
     "@types/styled-components": "^5.1.25",
     "classnames": "^2.3.1",
     "invariant": "^2.2.4",
@@ -26,6 +27,7 @@
     "react-dom": "^18.1.0",
     "react-router-dom": "6",
     "react-scripts": "5.0.1",
+    "react-scroll": "^1.8.7",
     "styled-components": "^5.3.5",
     "tailwindcss": "^3.0.24",
     "web-vitals": "^2.1.0"

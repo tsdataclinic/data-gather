@@ -7,14 +7,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useContext, useState } from 'react';
-import {
-  Link,
-  NavLink,
-  Route,
-  Routes,
-  useMatch,
-  useParams,
-} from 'react-router-dom';
+import { NavLink, Route, Routes, useMatch, useParams } from 'react-router-dom';
+import { Link } from 'react-scroll';
 import AppContext from '../AppContext';
 import ConfigureCard from './ConfigureCard';
 import ScreenCard from './ScreenCard';
@@ -23,9 +17,9 @@ export default function SingleInterviewView(): JSX.Element {
   const [selectedScreen, setSelectedScreen] = useState<string>();
   const [selectedEntry, setSelectedEntry] = useState<string | null>(null);
   const screenPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
-  const entryPath = useMatch(
-    '/interview/:interviewId/screen/:screenID',
-  )?.pathnameBase;
+  // const entryPath = useMatch(
+  //   '/interview/:interviewId/screen/:screenID',
+  // )?.pathnameBase;
 
   const { allInterviews } = useContext(AppContext);
   const { interviewId } = useParams();
@@ -37,14 +31,14 @@ export default function SingleInterviewView(): JSX.Element {
 
   const screenMenuItemClass = (id: string): string => {
     if (selectedScreen === id && selectedEntry === null)
-      return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full bg-blue-100';
-    return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full';
+      return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full bg-blue-100 hover:text-blue-700';
+    return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full hover:text-blue-700';
   };
 
   const entryMenuItemClass = (id: string): string => {
     if (selectedEntry === id)
-      return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full bg-blue-100';
-    return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full';
+      return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full bg-blue-100 hover:text-blue-700';
+    return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full hover:text-blue-700';
   };
 
   return (
@@ -87,40 +81,49 @@ export default function SingleInterviewView(): JSX.Element {
                   {displayName}
                 </NavLink>
 
-                {/* Header */}
                 {selectedScreen === id && (
                   <div className="flex flex-col items-center p-0 w-full">
-                    <NavLink
+                    {/* Header */}
+                    <Link
                       className={entryMenuItemClass('HEADER')}
-                      to={`${entryPath}`}
-                      onClick={() => setSelectedScreen('HEADER')}
+                      activeClass="active"
+                      to="HEADER"
+                      duration={250}
+                      containerId="scrollContainer"
+                      onClick={() => setSelectedEntry('HEADER')}
                     >
                       <FontAwesomeIcon size="1x" icon={faGear} />
                       Header
-                    </NavLink>
+                    </Link>
 
-                    {/* Prompts */}
+                    {/* Entries */}
                     {entries.map(entry => (
-                      <NavLink
+                      <Link
                         className={entryMenuItemClass(entry.id)}
-                        to={`${entryPath}`}
                         key={entry.id}
-                        onClick={() => setSelectedScreen('entry.id')}
+                        activeClass="active"
+                        to={entry.id}
+                        duration={250}
+                        containerId="scrollContainer"
+                        onClick={() => setSelectedEntry(entry.id)}
                       >
                         <FontAwesomeIcon size="1x" icon={faQuestion} />
                         {entry.id}
-                      </NavLink>
+                      </Link>
                     ))}
 
                     {/* Action */}
-                    <NavLink
+                    <Link
                       className={entryMenuItemClass('ACTION')}
-                      to={`${entryPath}`}
-                      onClick={() => setSelectedScreen('ACTION')}
+                      activeClass="active"
+                      to="ACTION"
+                      duration={250}
+                      containerId="scrollContainer"
+                      onClick={() => setSelectedEntry('ACTION')}
                     >
                       <FontAwesomeIcon size="1x" icon={faLocationArrow} />
                       Action
-                    </NavLink>
+                    </Link>
                   </div>
                 )}
               </div>
@@ -138,7 +141,10 @@ export default function SingleInterviewView(): JSX.Element {
       </nav>
 
       {/* Right Side */}
-      <div className="flex overflow-scroll flex-col items-center p-14 w-4/5 h-full">
+      <div
+        className="flex overflow-scroll flex-col items-center p-14 w-4/5 h-full"
+        id="scrollContainer"
+      >
         <Routes>
           <Route
             path="/configure"
