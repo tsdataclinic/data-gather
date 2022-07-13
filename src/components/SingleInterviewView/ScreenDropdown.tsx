@@ -12,14 +12,16 @@ interface Props {
 }
 
 export default function ScreenDropdown({ entries }: Props): JSX.Element {
-  const path = useMatch('/interview/:interviewId/*')?.pathnameBase;
+  const path = useMatch(
+    '/interview/:interviewId/screen/:screenID',
+  )?.pathnameBase;
 
   return (
     <div className="flex flex-col items-center p-0 w-full">
       {/* Configure */}
       <NavLink
         className="flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full"
-        to={`${path}/configure`}
+        to={`${path}`}
       >
         <FontAwesomeIcon size="1x" icon={faGear} />
         Header
@@ -28,7 +30,7 @@ export default function ScreenDropdown({ entries }: Props): JSX.Element {
       {entries.map(({ id }) => (
         <NavLink
           className="flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full"
-          to={`${path}/configure`}
+          to={`${path}`}
           key={id}
         >
           <FontAwesomeIcon size="1x" icon={faQuestion} />
@@ -38,7 +40,7 @@ export default function ScreenDropdown({ entries }: Props): JSX.Element {
 
       <NavLink
         className="flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full"
-        to={`${path}/configure`}
+        to={`${path}`}
       >
         <FontAwesomeIcon size="1x" icon={faLocationArrow} />
         Action

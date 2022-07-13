@@ -1,7 +1,9 @@
 import {
   faCircleChevronLeft,
   faGear,
+  faLocationArrow,
   faPenToSquare,
+  faQuestion,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useContext, useState } from 'react';
@@ -16,11 +18,14 @@ import {
 import AppContext from '../AppContext';
 import ConfigureCard from './ConfigureCard';
 import ScreenCard from './ScreenCard';
-import ScreenDropdown from './ScreenDropdown';
 
 export default function SingleInterviewView(): JSX.Element {
-  const [selectedTab, setSelectedTab] = useState<string>();
-  const path = useMatch('/interview/:interviewId/*')?.pathnameBase;
+  const [selectedScreen, setSelectedScreen] = useState<string>();
+  const [selectedEntry, setSelectedEntry] = useState<string | null>(null);
+  const screenPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
+  const entryPath = useMatch(
+    '/interview/:interviewId/screen/:screenID',
+  )?.pathnameBase;
 
   const { allInterviews } = useContext(AppContext);
   const { interviewId } = useParams();
@@ -30,16 +35,22 @@ export default function SingleInterviewView(): JSX.Element {
     return <p>Could not find interview</p>;
   }
 
-  const menuItemClass = (id: string): string => {
-    if (id === selectedTab)
+  const screenMenuItemClass = (id: string): string => {
+    if (selectedScreen === id && selectedEntry === null)
       return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full bg-blue-100';
     return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full';
   };
 
+  const entryMenuItemClass = (id: string): string => {
+    if (selectedEntry === id)
+      return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full bg-blue-100';
+    return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full';
+  };
+
   return (
-    <div className="flex flex-row items-center p-0 h-full">
+    <div className="flex overflow-y-hidden flex-1 items-center p-0 w-full h-full">
       {/* Sidebar */}
-      <nav className="relative space-y-4 w-1/5 h-full bg-white">
+      <nav className="relative top-0 items-stretch w-1/5 h-full bg-white">
         <div className="flex flex-col items-start py-10 px-0">
           <div className="flex flex-row gap-2.5 items-center py-2.5 px-5 text-2xl">
             <Link className="w-7 h-7" to="/">
@@ -52,9 +63,9 @@ export default function SingleInterviewView(): JSX.Element {
           <div className="flex flex-col items-start w-full">
             {/* Configure */}
             <NavLink
-              className={menuItemClass('configure')}
-              to={`${path}/configure`}
-              onClick={() => setSelectedTab('configure')}
+              className={screenMenuItemClass('configure')}
+              to={`${screenPath}/configure`}
+              onClick={() => setSelectedScreen('configure')}
             >
               <FontAwesomeIcon size="1x" icon={faGear} />
               Configure
@@ -63,15 +74,55 @@ export default function SingleInterviewView(): JSX.Element {
             {/* Screens */}
             {interview.screens.map(({ displayName, entries, id }) => (
               <div className="w-full" key={id}>
+                {/* Screen name */}
                 <NavLink
-                  className={menuItemClass(id)}
-                  to={`${path}/page/${id}`}
-                  onClick={() => setSelectedTab(id)}
+                  className={screenMenuItemClass(id)}
+                  to={`${screenPath}/screen/${id}`}
+                  onClick={() => {
+                    setSelectedScreen(id);
+                    setSelectedEntry(null);
+                  }}
                 >
                   <FontAwesomeIcon size="1x" icon={faPenToSquare} />
                   {displayName}
                 </NavLink>
-                {selectedTab === id && <ScreenDropdown entries={entries} />}
+
+                {/* Header */}
+                {selectedScreen === id && (
+                  <div className="flex flex-col items-center p-0 w-full">
+                    <NavLink
+                      className={entryMenuItemClass('HEADER')}
+                      to={`${entryPath}`}
+                      onClick={() => setSelectedScreen('HEADER')}
+                    >
+                      <FontAwesomeIcon size="1x" icon={faGear} />
+                      Header
+                    </NavLink>
+
+                    {/* Prompts */}
+                    {entries.map(entry => (
+                      <NavLink
+                        className={entryMenuItemClass(entry.id)}
+                        to={`${entryPath}`}
+                        key={entry.id}
+                        onClick={() => setSelectedScreen('entry.id')}
+                      >
+                        <FontAwesomeIcon size="1x" icon={faQuestion} />
+                        {entry.id}
+                      </NavLink>
+                    ))}
+
+                    {/* Action */}
+                    <NavLink
+                      className={entryMenuItemClass('ACTION')}
+                      to={`${entryPath}`}
+                      onClick={() => setSelectedScreen('ACTION')}
+                    >
+                      <FontAwesomeIcon size="1x" icon={faLocationArrow} />
+                      Action
+                    </NavLink>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -87,7 +138,7 @@ export default function SingleInterviewView(): JSX.Element {
       </nav>
 
       {/* Right Side */}
-      <div className="flex flex-col gap-14 items-center p-14 w-4/5 h-full">
+      <div className="flex overflow-scroll flex-col items-center p-14 w-4/5 h-full">
         <Routes>
           <Route
             path="/configure"
@@ -96,7 +147,7 @@ export default function SingleInterviewView(): JSX.Element {
           {interview.screens.map(screen => (
             <Route
               key={screen.id}
-              path={`/page/${screen.id}`}
+              path={`/screen/${screen.id}`}
               element={<ScreenCard screen={screen} />}
             />
           ))}
