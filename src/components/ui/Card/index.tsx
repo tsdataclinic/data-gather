@@ -23,32 +23,28 @@ export default function Card({
   linkTo,
   shadow = 'normal',
 }: Props): JSX.Element {
-  const additionalClassNames = classNames(className, {
-    'shadow hover:shadow-md': shadow === 'normal',
-    'shadow-2xl': shadow === '2xl',
-    'shadow-inner': shadow === 'inner',
-    'shadow-lg hover:shadow-xl': shadow === 'large',
-    'shadow-md hover:shadow-lg': shadow === 'medium',
-    'shadow-none': shadow === 'none',
-    'shadow-sm hover:shadow': shadow === 'small',
-    'shadow-xl hover:shadow-2xl': shadow === 'xl',
-  });
-
-  const cardElt = (
-    <div
-      className={`p-4 bg-white border-gray-300 border transition-shadow ${additionalClassNames}`}
-    >
-      {children}
-    </div>
+  const additionalClassNames = classNames(
+    className,
+    'p-4 bg-white border-gray-300 border transition-shadow inline-block',
+    {
+      'shadow hover:shadow-md': shadow === 'normal',
+      'shadow-2xl': shadow === '2xl',
+      'shadow-inner': shadow === 'inner',
+      'shadow-lg hover:shadow-xl': shadow === 'large',
+      'shadow-md hover:shadow-lg': shadow === 'medium',
+      'shadow-none': shadow === 'none',
+      'shadow-sm hover:shadow': shadow === 'small',
+      'shadow-xl hover:shadow-2xl': shadow === 'xl',
+    },
   );
 
   if (linkTo === undefined) {
-    return cardElt;
+    return <div className={additionalClassNames}>{children}</div>;
   }
 
   return (
-    <Link className="block" to={linkTo}>
-      {cardElt}
+    <Link className={additionalClassNames} to={linkTo}>
+      {children}
     </Link>
   );
 }
