@@ -16,4 +16,5 @@ export type Interview = {
   id: string;
   name: string;
   screens: readonly InterviewScreen[];
+  startingState: readonly string[];
 };
