@@ -1,13 +1,13 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import AppContext from '../AppContext';
+import useAppState from '../../hooks/useAppState';
 import Button from '../ui/Button';
 import TextArea from '../ui/TextArea';
 import Sidebar from './Sidebar';
 
 export default function SingleInterviewView(): JSX.Element {
   const [text, setText] = useState('');
-  const { allInterviews } = useContext(AppContext);
+  const { allInterviews } = useAppState();
   const { interviewId } = useParams();
   const interview = allInterviews.find(iview => iview.id === interviewId);
 

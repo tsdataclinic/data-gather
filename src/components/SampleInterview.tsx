@@ -1,6 +1,6 @@
 import invariant from 'invariant';
 import { useState } from 'react';
-import useInterview from '../hooks/useInterview';
+import useGuessingGameInterview from '../hooks/useGuessingGameInterview';
 import { GuessingGameQuestion } from '../types';
 import assertUnreachable from '../util/assertUnreachable';
 import InputText from './ui/InputText';
@@ -13,7 +13,7 @@ import InputText from './ui/InputText';
 export default function SampleInterview(): JSX.Element {
   const [responseText, setResponseText] = useState('');
   const { isInterviewComplete, question, responseData, submitAnswer } =
-    useInterview();
+    useGuessingGameInterview();
 
   const resetText = (): void => setResponseText('');
 

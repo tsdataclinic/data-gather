@@ -1,9 +1,9 @@
 /**
  * Example use of an API store. Intended to be deprecated
  */
-
 import { useEffect, useState } from 'react';
-import { api } from '../../store/InterviewStore';
+import useInterview from '../../hooks/useInterview';
+import useInterviewStore from '../../hooks/useInterviewStore';
 import { ConditionalAction, Screen, Entry } from '../../store/models';
 import InputText from '../ui/InputText';
 
@@ -64,12 +64,13 @@ export default function ApiDemo(): JSX.Element {
   const [fetchInterviewId, setFetchInterviewId] = useState('');
   const [createPageId, setCreatePageId] = useState('');
   const [allInterviews, setAllInterviews] = useState<string[]>([]);
+  const interviewStore = useInterviewStore();
 
-  const fetchedInterview = api.useCurrentInterview(fetchInterviewId)?.interview;
+  const fetchedInterview = useInterview(fetchInterviewId)?.interview;
 
   useEffect(() => {
     const fetchAllInterviews = async (): Promise<void> => {
-      const interviews = await api.getInterviewIds();
+      const interviews = await interviewStore.getInterviewIds();
       setAllInterviews(interviews);
     };
 
@@ -77,9 +78,13 @@ export default function ApiDemo(): JSX.Element {
   });
 
   const createInterview = async (id: string): Promise<void> => {
-    await api.createInterview(id, 'sample name', 'sample description');
-    await api.addScreenToInterview(id, 'sample-page');
-    await api.updateScreen(id, 'sample-page', {
+    await interviewStore.createInterview(
+      id,
+      'sample name',
+      'sample description',
+    );
+    await interviewStore.addScreenToInterview(id, 'sample-page');
+    await interviewStore.updateScreen(id, 'sample-page', {
       actions: [],
       entries: [],
       headerText: 'Sample description',
@@ -89,8 +94,8 @@ export default function ApiDemo(): JSX.Element {
 
   const addPage = async (name: string): Promise<void> => {
     if (fetchedInterview) {
-      await api.addScreenToInterview(fetchInterviewId, name);
-      await api.updateScreen(fetchInterviewId, name, {
+      await interviewStore.addScreenToInterview(fetchInterviewId, name);
+      await interviewStore.updateScreen(fetchInterviewId, name, {
         actions: [],
         entries: [],
         headerText: 'Sample description',
@@ -137,7 +142,7 @@ export default function ApiDemo(): JSX.Element {
               name={entry[0]}
               page={entry[1]}
               updateHandler={async (name, page) =>
-                api.updateScreen(fetchInterviewId, name, page)
+                interviewStore.updateScreen(fetchInterviewId, name, page)
               }
             />
           ))}

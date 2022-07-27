@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { QuestionRouter, Script, ResponseData } from '@dataclinic/interview';
-import { GuessingGameQuestion } from '../types';
+import { GuessingGameQuestion } from '../../types';
 
 export default class GuessingGameScript
   implements Script<GuessingGameQuestion>
