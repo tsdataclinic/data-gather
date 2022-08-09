@@ -8,7 +8,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useContext, useState } from 'react';
 import { NavLink, Route, Routes, useMatch, useParams } from 'react-router-dom';
-import { Link } from 'react-scroll';
+import { Link as ScrollLink } from 'react-scroll';
 import AppContext from '../AppContext';
 import ConfigureCard from './ConfigureCard';
 import ScreenCard from './ScreenCard';
@@ -17,9 +17,6 @@ export default function SingleInterviewView(): JSX.Element {
   const [selectedScreen, setSelectedScreen] = useState<string>();
   const [selectedEntry, setSelectedEntry] = useState<string | null>(null);
   const screenPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
-  // const entryPath = useMatch(
-  //   '/interview/:interviewId/screen/:screenID',
-  // )?.pathnameBase;
 
   const { allInterviews } = useContext(AppContext);
   const { interviewId } = useParams();
@@ -47,9 +44,9 @@ export default function SingleInterviewView(): JSX.Element {
       <nav className="relative top-0 items-stretch w-1/5 h-full bg-white">
         <div className="flex flex-col items-start py-10 px-0">
           <div className="flex flex-row gap-2.5 items-center py-2.5 px-5 text-2xl">
-            <Link className="w-7 h-7" to="/">
+            <NavLink className="w-7 h-7" to="/">
               <FontAwesomeIcon className="w-6 h-6" icon={faCircleChevronLeft} />
-            </Link>
+            </NavLink>
             {interview.name}
           </div>
 
@@ -84,7 +81,7 @@ export default function SingleInterviewView(): JSX.Element {
                 {selectedScreen === id && (
                   <div className="flex flex-col items-center p-0 w-full">
                     {/* Header */}
-                    <Link
+                    <ScrollLink
                       className={entryMenuItemClass('HEADER')}
                       activeClass="active"
                       to="HEADER"
@@ -94,11 +91,11 @@ export default function SingleInterviewView(): JSX.Element {
                     >
                       <FontAwesomeIcon size="1x" icon={faGear} />
                       Header
-                    </Link>
+                    </ScrollLink>
 
                     {/* Entries */}
                     {entries.map(entry => (
-                      <Link
+                      <ScrollLink
                         className={entryMenuItemClass(entry.id)}
                         key={entry.id}
                         activeClass="active"
@@ -109,11 +106,11 @@ export default function SingleInterviewView(): JSX.Element {
                       >
                         <FontAwesomeIcon size="1x" icon={faQuestion} />
                         {entry.id}
-                      </Link>
+                      </ScrollLink>
                     ))}
 
                     {/* Action */}
-                    <Link
+                    <ScrollLink
                       className={entryMenuItemClass('ACTION')}
                       activeClass="active"
                       to="ACTION"
@@ -123,7 +120,7 @@ export default function SingleInterviewView(): JSX.Element {
                     >
                       <FontAwesomeIcon size="1x" icon={faLocationArrow} />
                       Action
-                    </Link>
+                    </ScrollLink>
                   </div>
                 )}
               </div>
@@ -132,12 +129,12 @@ export default function SingleInterviewView(): JSX.Element {
         </div>
 
         {/* Add Screen Button */}
-        <Link
+        <NavLink
           className="flex absolute bottom-0 flex-row justify-center items-center w-full h-20 text-3xl bg-blue-100"
           to="/"
         >
           +
-        </Link>
+        </NavLink>
       </nav>
 
       {/* Right Side */}

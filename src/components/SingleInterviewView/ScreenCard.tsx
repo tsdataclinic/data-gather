@@ -1,5 +1,5 @@
 import React from 'react';
-import { Element } from 'react-scroll';
+import { Element as ScrollableElement } from 'react-scroll';
 import { InterviewScreen } from '../../types';
 
 interface Props {
@@ -9,22 +9,28 @@ interface Props {
 function ScreenCard({ screen }: Props): JSX.Element {
   return (
     <div className="flex flex-col gap-14 items-center w-full">
-      <Element name="HEADER" className="w-full h-60 bg-white shadow-md">
+      <ScrollableElement
+        name="HEADER"
+        className="w-full h-60 bg-white shadow-md"
+      >
         Header card for {screen.displayName}
-      </Element>
+      </ScrollableElement>
       {screen.entries.map(entry => (
-        <Element
+        <ScrollableElement
           name={entry.id}
           className="w-full h-60 bg-white shadow-md"
           key={entry.id}
         >
           Entry card for {entry.id} <br />
           {entry.prompt}
-        </Element>
+        </ScrollableElement>
       ))}
-      <Element name="ACTION" className="w-full h-60 bg-white shadow-md">
+      <ScrollableElement
+        name="ACTION"
+        className="w-full h-60 bg-white shadow-md"
+      >
         Action card for {screen.displayName}
-      </Element>
+      </ScrollableElement>
     </div>
   );
 }
