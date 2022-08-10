@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 export default function Header(): JSX.Element {
   return (
-    <header className="flex items-center py-2 px-8 w-full text-white bg-slate-900">
+    <header className="flex items-center py-2 px-8 w-full h-16 text-white bg-slate-900">
       <div className="flex-1">
         <Link to="/">
           <span className="text-2xl font-bold">Interview</span>

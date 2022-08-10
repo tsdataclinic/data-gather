@@ -26,18 +26,33 @@ const ALL_INTERVIEWS: readonly Interview[] = [
     screens: [
       {
         displayName: 'Name',
+        entries: [
+          {
+            id: 'first',
+            prompt: 'what is your first name?',
+            type: 'whatever type',
+          },
+          {
+            id: 'last',
+            prompt: 'what is your last name?',
+            type: 'whatever type',
+          },
+        ],
         id: 'NAME',
       },
       {
         displayName: 'Guess',
+        entries: [],
         id: 'GUESS',
       },
       {
         displayName: 'Incorrect Guess',
+        entries: [],
         id: 'INCORRECT_GUESS',
       },
       {
         displayName: 'Correct Ending',
+        entries: [],
         id: 'CORRECT_ENDING',
       },
     ],
