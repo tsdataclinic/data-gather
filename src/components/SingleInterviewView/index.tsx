@@ -6,10 +6,10 @@ import {
   faQuestion,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { NavLink, Route, Routes, useMatch, useParams } from 'react-router-dom';
 import { Link as ScrollLink } from 'react-scroll';
-import AppContext from '../AppContext';
+import useAppState from '../../hooks/useAppState';
 import ConfigureCard from './ConfigureCard';
 import ScreenCard from './ScreenCard';
 
@@ -18,7 +18,7 @@ export default function SingleInterviewView(): JSX.Element {
   const [selectedEntry, setSelectedEntry] = useState<string | null>(null);
   const screenPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
 
-  const { allInterviews } = useContext(AppContext);
+  const { allInterviews } = useAppState();
   const { interviewId } = useParams();
   const interview = allInterviews.find(iview => iview.id === interviewId);
 

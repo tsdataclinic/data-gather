@@ -23,4 +23,5 @@ export interface Interview {
   id: string;
   name: string;
   screens: readonly InterviewScreen[];
+  startingState: readonly string[];
 }

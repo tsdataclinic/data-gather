@@ -3,7 +3,7 @@ import {
   ResponseData,
   ResponseConsumer,
 } from '@dataclinic/interview';
-import { GuessingGameQuestion } from '../types';
+import { GuessingGameQuestion } from '../../types';
 
 export default class GuessingGameModerator
   implements Moderator<GuessingGameQuestion>
