@@ -2142,7 +2142,7 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-scroll@^1.8.3":
+"@types/react-scroll@^1.8.4":
   version "1.8.4"
   resolved "https://registry.yarnpkg.com/@types/react-scroll/-/react-scroll-1.8.4.tgz#2b6258fb34104d3fcc7a22e8eceaadc669ba3ad1"
   integrity sha512-DpHA9PYw42/rBrfKbGE/kAEvHRfyDL/ACfKB/ORWUYuCLi/yGrntxSzYXmg/7TLgQsJ5ma13GCDOzFSOz+8XOA==
