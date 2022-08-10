@@ -11,9 +11,15 @@ export interface Entry {
   type: string; // TODO: type can be enum e.g. Yes/No, Multi-select, etc.
 }
 
+export interface Header {
+  text: string;
+  title: string;
+}
+
 export interface InterviewScreen {
   displayName: string;
   entries: Entry[];
+  header: Header;
   id: string;
 }
 
