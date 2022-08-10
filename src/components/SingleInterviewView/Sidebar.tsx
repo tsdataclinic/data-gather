@@ -1,5 +1,6 @@
 import { faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Button from '../ui/Button';
 import type { Interview } from '../../types';
 
 type Props = {
@@ -7,6 +8,7 @@ type Props = {
 };
 
 export default function Sidebar({ interview }: Props): JSX.Element {
+  console.log(interview);
   return (
     <nav className="px-8 pt-8 space-y-4">
       <h1 className="text-3xl tracking-wider">{interview.name}</h1>
@@ -21,6 +23,7 @@ export default function Sidebar({ interview }: Props): JSX.Element {
           </li>
         ))}
       </ul>
+      <Button onClick={() => console.log('New screen')}>Add new screen</Button>
     </nav>
   );
 }

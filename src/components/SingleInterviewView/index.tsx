@@ -17,7 +17,7 @@ export default function SingleInterviewView(): JSX.Element {
 
   return (
     <div className="flex h-full">
-      <Sidebar interview={allInterviews[0]} />
+      <Sidebar interview={interview} />
       <div className="flex flex-col flex-1 items-center pt-16 space-y-4 h-full">
         <TextArea value={text} onChange={setText} />
         <Button onClick={() => console.log('Test click!')}>Test</Button>
