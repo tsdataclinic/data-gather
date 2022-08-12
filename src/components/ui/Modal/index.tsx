@@ -8,14 +8,18 @@ import type { ReactNode } from 'react';
 
 type Props = {
   children: ReactNode;
+  className?: string;
   isOpen: boolean;
   onDismiss: () => void;
+  title?: string;
 };
 
 export default function Modal({
   children,
+  className,
   isOpen,
   onDismiss,
+  title,
 }: Props): JSX.Element {
   // TODO: how much of this can be tailwind?
   return (
@@ -50,7 +54,12 @@ export default function Modal({
           <FontAwesomeIcon aria-hidden size="1x" icon={faClose} />
         </button>
       </div>
-      <div>{children}</div>
+      <div className={className}>
+        {title === undefined ? null : (
+          <h1 className="pb-8 text-xl tracking-widest uppercase">{title}</h1>
+        )}
+        {children}
+      </div>
     </Dialog>
   );
 }

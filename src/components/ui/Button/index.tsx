@@ -6,6 +6,12 @@ type Props = {
   className?: string;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   type?: 'button' | 'submit';
+
+  /**
+   * Render the button in different default styles.
+   * - `full`: Render the button with 100% width in its container and sharp edges.
+   */
+  variant?: 'normal' | 'full';
 };
 
 export default function Button({
@@ -13,10 +19,13 @@ export default function Button({
   className,
   onClick,
   type = 'button',
+  variant = 'normal',
 }: Props): JSX.Element {
   const buttonClassName = classNames(
     className,
-    'py-2 px-4 text-white bg-blue-400 hover:bg-blue-500 active:bg-blue-400 rounded transition-colors block',
+    'py-2 px-4 text-white bg-blue-400 hover:bg-blue-500 active:bg-blue-400 transition-colors block',
+    { rounded: variant === 'normal' },
+    { 'w-full rounded-none': variant === 'full' },
   );
 
   return (

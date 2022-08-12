@@ -1,16 +1,16 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import * as Interview from '../models/Interview';
 import useInterviewStore from './useInterviewStore';
-import type { InterviewRow } from '../store/InterviewStore';
 
 /**
- * Fetch an interview from the InterviewStore given an interview id.
+ * Fetch an interview given an interview id.
  *
  * @param {string} id The id to query for
  *
- * @returns {InterviewRow | undefined} The serialized InterviewRow or undefined
- * if no interview was found.
+ * @returns {Interview.T | undefined} The interview, or undefined if the
+ * interview couldn't be found.
  */
-export default function useInterview(id: string): InterviewRow | undefined {
+export default function useInterview(id: string): Interview.T | undefined {
   const interviewStore = useInterviewStore();
-  return useLiveQuery(() => interviewStore.interviews?.get(id), [id]);
+  return useLiveQuery(() => interviewStore.getInterview(id), [id]);
 }

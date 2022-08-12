@@ -1,8 +1,8 @@
 import React from 'react';
-import { Interview } from '../../types';
+import * as Interview from '../../models/Interview';
 
 interface Props {
-  interview: Interview;
+  interview: Interview.T;
 }
 
 function ConfigureCard({ interview }: Props): JSX.Element {
