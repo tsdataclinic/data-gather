@@ -137,9 +137,7 @@ export default function ApiDemo(): JSX.Element {
               key={screen.id}
               name={screen.title}
               page={screen}
-              updateHandler={async (_, page) =>
-                interviewStore.putScreen(fetchInterviewId, page)
-              }
+              updateHandler={async (_, page) => interviewStore.putScreen(page)}
             />
           ))}
           <p>Add another page:</p>

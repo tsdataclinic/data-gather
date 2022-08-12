@@ -76,12 +76,27 @@ export class InterviewStoreAPI extends Dexie {
    *
    * @param {string} id
    * @returns {Interview.T | undefined} The Interview object, or undefined if
-   * not found
+   * not found.
    */
   getInterview = async (id: string): Promise<Interview.T | undefined> => {
     const interview = await this.interviews.get(id);
     if (interview) {
       return Interview.deserialize(interview);
+    }
+    return undefined;
+  };
+
+  /**
+   * Get a screen by their id.
+   *
+   * @param {string} id
+   * @returns {InterviewScreen.T | undefined} The InterviewScreen object, or
+   * undefined if not found.
+   */
+  getScreen = async (id: string): Promise<InterviewScreen.T | undefined> => {
+    const screen = await this.interviewScreens.get(id);
+    if (screen) {
+      return InterviewScreen.deserialize(screen);
     }
     return undefined;
   };
@@ -175,21 +190,16 @@ export class InterviewStoreAPI extends Dexie {
   };
 
   /**
-   * If this interview screen already exists, update it. Otherwise, add it.
-   * @param {string} interviewId
+   * If this screen already exists, update it. Otherwise, add it.
+   *
+   * NOTE: if this is a new screen that doesn't exist in an interview yet, you
+   * should call `addScreenToInterview` instead.
+   *
    * @param {InterviewScreen.T} screen
    * @returns {InterviewScreen.T} the updated interview screen
    */
-  putScreen = async (
-    interviewId: string,
-    screen: InterviewScreen.T,
-  ): Promise<InterviewScreen.T> => {
-    const interview = await this.interviews.get(interviewId);
-    if (interview) {
-      await this.interviewScreens.put(InterviewScreen.serialize(screen));
-    } else {
-      await this.addScreenToInterview(interviewId, screen);
-    }
+  putScreen = async (screen: InterviewScreen.T): Promise<InterviewScreen.T> => {
+    await this.interviewScreens.put(InterviewScreen.serialize(screen));
     return screen;
   };
 
@@ -245,7 +255,7 @@ export class InterviewStoreAPI extends Dexie {
 
     return Promise.all([
       this.putInterview(newInterview),
-      this.putScreen(interviewId, interviewScreen),
+      this.putScreen(interviewScreen),
     ]);
   };
 }
