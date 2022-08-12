@@ -1,8 +1,8 @@
+import * as Interview from '../../models/Interview';
 import Card from '../ui/Card';
-import type { Interview } from '../../types';
 
 type Props = {
-  interview: Interview;
+  interview: Interview.T;
 };
 
 export default function InterviewCard({ interview }: Props): JSX.Element {

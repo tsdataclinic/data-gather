@@ -73,7 +73,7 @@ export default function App(): JSX.Element {
               <Routes>
                 <Route path="/" element={<AllInterviewsView />} />
                 <Route
-                  path="/interview/:interviewId"
+                  path="/interview/:interviewId/*"
                   element={<SingleInterviewView />}
                 />
                 <Route path="/apidemo" element={<ApiDemo />} />

@@ -2,46 +2,51 @@
  * Example use of an API store. Intended to be deprecated
  */
 import { useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import useInterview from '../../hooks/useInterview';
+import useInterviewScreens from '../../hooks/useInterviewScreens';
 import useInterviewStore from '../../hooks/useInterviewStore';
-import { ConditionalAction, Screen, Entry } from '../../store/models';
+import * as ConditionalAction from '../../models/ConditionalAction';
+import * as InterviewScreen from '../../models/InterviewScreen';
+import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import InputText from '../ui/InputText';
 
 type PageDetailsProps = {
   name: string;
-  page: Screen;
-  updateHandler: (name: string, page: Screen) => Promise<void>;
+  page: InterviewScreen.T;
+  updateHandler: (name: string, page: InterviewScreen.T) => void;
 };
 
 function PageDetails(props: PageDetailsProps): JSX.Element {
   const { name, page, updateHandler } = props;
 
   const updatePage = async (): Promise<void> => {
-    const newAction: ConditionalAction = {
+    const newAction: ConditionalAction.T = {
       action: 'push',
-      condition: {
-        key: 'sampleKey',
-        operator: '=',
-        value: 42,
-      },
+      conditionalOperator: '=',
+      id: uuidv4(),
+      responseKey: 'sampleKey',
       target: ['randomPage'],
+      value: 42,
     };
 
-    const newQuestion: Entry = {
+    const newEntry: InterviewScreenEntry.T = {
+      id: uuidv4(),
       prompt: "Ceci n'est pas un question",
       responseId: 'responseId',
       responseType: 'string',
       text: '',
     };
 
-    const updatedPage: Screen = {
-      actions: [...page.actions, newAction],
-      entries: [...page.entries, newQuestion],
+    const updatedPage: InterviewScreen.T = {
+      actions: [...page.actions, newAction.id],
+      entries: [...page.entries, newEntry.id],
       headerText: page.headerText,
+      id: uuidv4(),
       title: page.title,
     };
 
-    await updateHandler(name, updatedPage);
+    updateHandler(name, updatedPage);
   };
 
   return (
@@ -66,7 +71,8 @@ export default function ApiDemo(): JSX.Element {
   const [allInterviews, setAllInterviews] = useState<string[]>([]);
   const interviewStore = useInterviewStore();
 
-  const fetchedInterview = useInterview(fetchInterviewId)?.interview;
+  const fetchedInterview = useInterview(fetchInterviewId);
+  const fetchedScreens = useInterviewScreens(fetchInterviewId);
 
   useEffect(() => {
     const fetchAllInterviews = async (): Promise<void> => {
@@ -78,29 +84,19 @@ export default function ApiDemo(): JSX.Element {
   });
 
   const createInterview = async (id: string): Promise<void> => {
-    await interviewStore.createInterview(
+    await interviewStore.createInterview('sample name', 'sample description');
+    await interviewStore.addScreenToInterview(
       id,
-      'sample name',
-      'sample description',
+      InterviewScreen.create({ title: 'Sample screen ' }),
     );
-    await interviewStore.addScreenToInterview(id, 'sample-page');
-    await interviewStore.updateScreen(id, 'sample-page', {
-      actions: [],
-      entries: [],
-      headerText: 'Sample description',
-      title: 'Sample page',
-    });
   };
 
   const addPage = async (name: string): Promise<void> => {
     if (fetchedInterview) {
-      await interviewStore.addScreenToInterview(fetchInterviewId, name);
-      await interviewStore.updateScreen(fetchInterviewId, name, {
-        actions: [],
-        entries: [],
-        headerText: 'Sample description',
-        title: 'Sample page',
-      });
+      await interviewStore.addScreenToInterview(
+        fetchInterviewId,
+        InterviewScreen.create({ title: name }),
+      );
       setCreatePageId('');
     }
   };
@@ -136,13 +132,13 @@ export default function ApiDemo(): JSX.Element {
           {fetchedInterview.startingState.join(', ')}
 
           <h3>Pages:</h3>
-          {Object.entries(fetchedInterview.screens).map(entry => (
+          {fetchedScreens?.map(screen => (
             <PageDetails
-              key={entry[0]}
-              name={entry[0]}
-              page={entry[1]}
-              updateHandler={async (name, page) =>
-                interviewStore.updateScreen(fetchInterviewId, name, page)
+              key={screen.id}
+              name={screen.title}
+              page={screen}
+              updateHandler={async (_, page) =>
+                interviewStore.putScreen(fetchInterviewId, page)
               }
             />
           ))}
