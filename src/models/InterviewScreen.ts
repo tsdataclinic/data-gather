@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import * as InterviewScreenEntry from './InterviewScreenEntry';
 
 /**
  * A group of entries, corresponding to a particular state in the interview.
@@ -46,6 +47,16 @@ export function create(values: { title: string }): T {
     headerText: '',
     id: uuidv4(),
     title: values.title,
+  };
+}
+
+/**
+ * Immutably add an entry to a screen
+ */
+export function addEntry(screen: T, entry: InterviewScreenEntry.T): T {
+  return {
+    ...screen,
+    entries: screen.entries.concat(entry.id),
   };
 }
 
