@@ -204,6 +204,24 @@ export class InterviewStoreAPI extends Dexie {
   };
 
   /**
+   * If this InterviewScreenEntry already exists, update it. Otherwise, add it.
+   *
+   * NOTE: if this is a new InterviewScreenEntry that doesn't exist in a screen yet,
+   * you should call `addEntryToScreen` instead.
+   *
+   * @param {InterviewScreenEntry.T} screenEntry The screen entry to add
+   * @returns {InterviewScreenEntry.T} the updated interview screen entry
+   */
+  putScreenEntry = async (
+    screenEntry: InterviewScreenEntry.T,
+  ): Promise<InterviewScreenEntry.T> => {
+    await this.interviewScreenEntries.put(
+      InterviewScreenEntry.serialize(screenEntry),
+    );
+    return screenEntry;
+  };
+
+  /**
    * Delete an interview given their id
    * This will delete all associated objects to this interview.
    * That includes their associated screens, entries, and conditional actions
@@ -256,6 +274,31 @@ export class InterviewStoreAPI extends Dexie {
     return Promise.all([
       this.putInterview(newInterview),
       this.putScreen(interviewScreen),
+    ]);
+  };
+
+  /**
+   * Add a new entry to an interview screen.
+   * The screen must already exist otherwise this will throw an error.
+   *
+   * @param {string} screenId
+   * @param {InterviewScreenEntry.T} interviewScreenEntry
+   */
+  addEntryToScreen = async (
+    screenId: string,
+    interviewScreenEntry: InterviewScreenEntry.T,
+  ): Promise<[InterviewScreen.T, InterviewScreenEntry.T]> => {
+    const screen = await this.getScreen(screenId);
+    invariant(
+      screen,
+      `[InterviewStore] addEntryToScreen: Could not find screen with id '${screenId}'`,
+    );
+
+    const newScreen = InterviewScreen.addEntry(screen, interviewScreenEntry);
+
+    return Promise.all([
+      this.putScreen(newScreen),
+      this.putScreenEntry(interviewScreenEntry),
     ]);
   };
 }
