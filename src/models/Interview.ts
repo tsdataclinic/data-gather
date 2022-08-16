@@ -7,30 +7,30 @@ import * as InterviewScreen from './InterviewScreen';
  *
  * This is the serialized type as it is used on the frontend.
  */
-export type T = Readonly<{
-  createdDate: DateTime;
-  description: string;
-  id: string;
-  name: string;
+export interface T {
+  readonly createdDate: DateTime;
+  readonly description: string;
+  readonly id: string;
+  readonly name: string;
 
   /** Array of screen ids */
-  screens: readonly string[];
+  readonly screens: readonly string[];
 
   /** Array of starting screen ids */
-  startingState: readonly string[];
-}>;
+  readonly startingState: readonly string[];
+}
 
 /**
  * This is the serialized type as it is stored on the backend.
  */
-export type SerializedT = {
+export interface SerializedT {
   createdDate: number;
   description: string;
   id: string;
   name: string;
   screens: string[];
   startingState: string[];
-};
+}
 
 /**
  * Create a new empty interview

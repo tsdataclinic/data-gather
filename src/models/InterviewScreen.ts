@@ -6,36 +6,36 @@ import * as InterviewScreenEntry from './InterviewScreenEntry';
  *
  * This is the serialized type as it is used on the frontend.
  */
-export type T = Readonly<{
+export interface T {
   /**
    * The actions executed after the page is complete.
    * Represented by an array of action types.
    */
-  actions: readonly string[];
+  readonly actions: readonly string[];
 
   /** The entries on this page. Represented by an array of entry ids. */
-  entries: readonly string[];
+  readonly entries: readonly string[];
 
   /** Description text for the page */
-  headerText: string;
+  readonly headerText: string;
 
   /** The id of this screen */
-  id: string;
+  readonly id: string;
 
   /** Title of the page */
-  title: string;
-}>;
+  readonly title: string;
+}
 
 /**
  * This is the serialized type as it is stored on the backend.
  */
-export type SerializedT = {
+export interface SerializedT {
   actions: string[];
   entries: string[];
   headerText: string;
   id: string;
   title: string;
-};
+}
 
 /**
  * Create a new empty screen
