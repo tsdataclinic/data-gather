@@ -22,11 +22,13 @@ function PageDetails(props: PageDetailsProps): JSX.Element {
 
   const updatePage = async (): Promise<void> => {
     const newAction: ConditionalAction.T = {
-      action: 'push',
+      action: {
+        target: ['randomPage'],
+        type: 'push',
+      },
       conditionalOperator: '=',
       id: uuidv4(),
       responseKey: 'sampleKey',
-      target: ['randomPage'],
       value: 42,
     };
 

@@ -1,21 +1,21 @@
 /**
  * Represents a single question asked to the interview subject
  */
-export type T = {
-  id: string;
+export interface T {
+  readonly id: string;
 
   /**  The text of the question */
-  prompt: string;
+  readonly prompt: string;
 
   /** The id associated with the resposnse to the question */
-  responseId: string;
+  readonly responseId: string;
 
   /** The data type expected as a response */
-  responseType: string;
+  readonly responseType: string;
 
   /** Additional flavor text associated with the question */
-  text: string;
-};
+  readonly text: string;
+}
 
 export type SerializedT = T;
 

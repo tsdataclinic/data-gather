@@ -13,59 +13,66 @@ import assertUnreachable from '../util/assertUnreachable';
  *
  * This is the serialized type as it is used on the frontend.
  */
-export type T = Readonly<
-  {
-    /** Which operation to use for the comparison */
-    conditionalOperator: 'ALWAYS_EXECUTE' | '=' | '>' | '<' | '>=' | '<=';
-
-    id: string;
-
-    /**
-     * The key within the response data which maps to the datum being compared.
-     */
-    responseKey: string;
-
-    /** The value to compare the response datum to. */
-    value: unknown;
-  } & (
+export interface T {
+  /** The action to do if the condition evaluates to true */
+  readonly action: Readonly<
+    /** Push some entries on to the stack */
     | {
-        /** Push some entries on to the stack */
-        action: 'push';
         target: readonly string[];
+        type: 'push';
       }
+    /**
+     * Skip the following question and add response data in place of the user
+     */
     | {
-        /**
-         * Skip the following question and add response data in place of the user
-         */
-        action: 'skip';
         target: Readonly<ResponseData>;
+        type: 'skip';
       }
+    /**
+     * Add a checkpoint, restore a checkpoint, or declare a milestone to be
+     * passed
+     */
     | {
-        /**
-         * Add a checkpoint, restore a checkpoint, or declare a milestone to be
-         * passed
-         */
-        action: 'checkpoint' | 'restore' | 'milestone';
         target: string;
+        type: 'checkpoint' | 'restore' | 'milestone';
       }
-  )
->;
+  >;
 
-type ConditionalActionType = T['action'];
+  /** Which operation to use for the comparison */
+  readonly conditionalOperator:
+    | 'ALWAYS_EXECUTE'
+    | '='
+    | '>'
+    | '<'
+    | '>='
+    | '<=';
+
+  readonly id: string;
+
+  /**
+   * The key within the response data which maps to the datum being compared.
+   */
+  readonly responseKey: string;
+
+  /** The value to compare the response datum to. */
+  readonly value: unknown;
+}
+
+type ConditionalActionType = T['action']['type'];
 
 /**
  * This is the serialized type as it is stored on the backend.
  * A serialized ConditionalAction can be represented by just its type
  * ('push', 'skip', etc.)
  */
-export type SerializedT = {
-  action: ConditionalActionType;
+export interface SerializedT {
+  actionTarget: string | string[] | ResponseData;
+  actionType: ConditionalActionType;
   conditionalOperator: '=' | '>' | '<' | '>=' | '<=';
   id: string;
   responseKey: string;
-  target: string | string[] | ResponseData;
   value: unknown;
-};
+}
 
 function isObject(maybeObj: unknown): maybeObj is Record<string, unknown> {
   return (
@@ -88,41 +95,47 @@ function isStringArray(maybeArr: unknown): maybeArr is string[] {
  * the correct values. Otherwise, it means something went wrong during storage.
  */
 export function deserialize(rawObj: SerializedT): T {
-  const { action, target, ...condition } = rawObj;
-  switch (action) {
+  const { actionTarget, actionType, ...condition } = rawObj;
+  switch (actionType) {
     case 'push':
       invariant(
-        isStringArray(target),
-        '[ConditionalAction] Deserialization error. `target` must be an array of strings.',
+        isStringArray(actionTarget),
+        `[ConditionalAction] Deserialization error. 'actionTarget' must be an array of strings.`,
       );
       return {
         ...condition,
-        action,
-        target,
+        action: {
+          target: actionTarget,
+          type: actionType,
+        },
       };
     case 'skip':
       invariant(
-        isObject(target),
-        '[ConditionalAction] Deserialization error. `target` must be an object.',
+        isObject(actionTarget),
+        `[ConditionalAction] Deserialization error. 'actionTarget' must be an object.`,
       );
       return {
         ...condition,
-        action,
-        target,
+        action: {
+          target: actionTarget,
+          type: actionType,
+        },
       };
     case 'checkpoint':
     case 'restore':
     case 'milestone':
       invariant(
-        typeof target === 'string',
-        '[ConditionalAction] Deserialization error. `target` must be a string.',
+        typeof actionTarget === 'string',
+        `[ConditionalAction] Deserialization error. 'target' must be a string.`,
       );
       return {
         ...condition,
-        action,
-        target,
+        action: {
+          target: actionTarget,
+          type: actionType,
+        },
       };
     default:
-      return assertUnreachable(action);
+      return assertUnreachable(actionType);
   }
 }
