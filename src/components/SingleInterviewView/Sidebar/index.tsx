@@ -43,7 +43,7 @@ export default function Sidebar({
   );
 
   return (
-    <nav className="relative top-0 items-stretch w-1/5 h-full bg-white">
+    <nav className="relative top-0 items-stretch w-96 h-full bg-white">
       <div className="flex flex-col items-start py-10 px-0">
         <div className="flex flex-row gap-2.5 items-center py-2.5 px-5 text-2xl">
           <NavLink className="w-7 h-7" to="/">

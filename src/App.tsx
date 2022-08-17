@@ -63,6 +63,27 @@ const ALL_INTERVIEWS: readonly Interview[] = [
 export default function App(): JSX.Element {
   const [globalState, dispatch] = useAppReducer();
 
+  // const interviewStoreClient = useInterviewStore();
+  // const screen1: InterviewScreen.T = {
+  //   actions: [],
+  //   entries: [],
+  //   headerText: "tiffany's screen 1 header",
+  //   id: "screen-1-id",
+  //   title: "screen-1-title"
+  // }
+  // const screen2: InterviewScreen.T = {
+  //   actions: [],
+  //   entries: [],
+  //   headerText: "tiffany's screen 2 header",
+  //   id: "screen-2-id",
+  //   title: "screen-2-title"
+  // }
+  //
+  // useEffect(() => {
+  //   interviewStoreClient.putScreen(screen1);
+  //   interviewStoreClient.putScreen(screen2);
+  // })
+
   return (
     <QueryClientProvider client={QUERY_CLIENT}>
       <InterviewStore.Provider value={INTERVIEW_STORE_CLIENT}>
