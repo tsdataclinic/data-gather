@@ -16,13 +16,13 @@ import isNonNullable from '../util/isNonNullable';
  * should be converted to Date objects before returning.
  */
 export class InterviewStoreAPI extends Dexie {
-  conditionalActions!: Table<ConditionalAction.SerializedT>;
+  private conditionalActions!: Table<ConditionalAction.SerializedT>;
 
-  interviews!: Table<Interview.SerializedT>;
+  private interviews!: Table<Interview.SerializedT>;
 
-  interviewScreens!: Table<InterviewScreen.SerializedT>;
+  private interviewScreens!: Table<InterviewScreen.SerializedT>;
 
-  interviewScreenEntries!: Table<InterviewScreenEntry.SerializedT>;
+  private interviewScreenEntries!: Table<InterviewScreenEntry.SerializedT>;
 
   constructor() {
     super('DataClinicInterviewApp');
