@@ -7,7 +7,7 @@ import * as InterviewScreen from './InterviewScreen';
  *
  * This is the serialized type as it is used on the frontend.
  */
-export interface T {
+interface Interview {
   readonly createdDate: DateTime;
   readonly description: string;
   readonly id: string;
@@ -23,7 +23,7 @@ export interface T {
 /**
  * This is the serialized type as it is stored on the backend.
  */
-export interface SerializedT {
+interface SerializedInterview {
   createdDate: number;
   description: string;
   id: string;
@@ -35,7 +35,10 @@ export interface SerializedT {
 /**
  * Create a new empty interview
  */
-export function create(values: { description: string; name: string }): T {
+export function create(values: {
+  description: string;
+  name: string;
+}): Interview {
   return {
     createdDate: DateTime.now(),
     description: values.description,
@@ -49,7 +52,10 @@ export function create(values: { description: string; name: string }): T {
 /**
  * Immutably add a screen to an interview
  */
-export function addScreen(interview: T, screen: InterviewScreen.T): T {
+export function addScreen(
+  interview: Interview,
+  screen: InterviewScreen.T,
+): Interview {
   return {
     ...interview,
     screens: interview.screens.concat(screen.id),
@@ -59,7 +65,7 @@ export function addScreen(interview: T, screen: InterviewScreen.T): T {
 /**
  * Convert from serialized type to deserialized
  */
-export function deserialize(rawObj: SerializedT): T {
+export function deserialize(rawObj: SerializedInterview): Interview {
   return {
     ...rawObj,
     createdDate: DateTime.fromMillis(rawObj.createdDate),
@@ -69,7 +75,7 @@ export function deserialize(rawObj: SerializedT): T {
 /**
  * Convert from deserialized type to serialized
  */
-export function serialize(interview: T): SerializedT {
+export function serialize(interview: Interview): SerializedInterview {
   return {
     ...interview,
     createdDate: interview.createdDate.toMillis(),
@@ -77,3 +83,6 @@ export function serialize(interview: T): SerializedT {
     startingState: [...interview.startingState],
   };
 }
+
+export type { Interview as T };
+export type { SerializedInterview as SerializedT };

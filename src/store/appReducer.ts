@@ -4,22 +4,27 @@ import assertUnreachable from '../util/assertUnreachable';
 
 export type AppGlobalState = {
   /** An array of all interview screens we have loaded so far */
-  allInterviewScreens: ReadonlyMap<string, InterviewScreen.T>;
+  loadedInterviewScreens: ReadonlyMap<string, InterviewScreen.T>;
 
-  /** An array of all interviews that belong to this user */
-  allInterviews: readonly Interview.T[];
+  /** A map of all interviews that have been loaded so far */
+  loadedInterviews: ReadonlyMap<string, Interview.T>;
 };
 
 export const DEFAULT_APP_STATE: AppGlobalState = {
-  allInterviewScreens: new Map(),
-  allInterviews: [],
+  loadedInterviewScreens: new Map(),
+  loadedInterviews: new Map(),
 };
 
 export type AppAction =
-  /** Set all the interviews to show in the app */
+  /** Update a bunch of interviews */
   | {
-      allInterviews: readonly Interview.T[];
-      type: 'INTERVIEWS_SET_ALL';
+      interviews: Interview.T[];
+      type: 'INTERVIEWS_UPDATE';
+    }
+  /** Update a single interview */
+  | {
+      interview: Interview.T;
+      type: 'INTERVIEW_UPDATE';
     }
   /** Create a new interview */
   | {
@@ -33,29 +38,66 @@ export type AppAction =
       type: 'SCREEN_ADD';
     };
 
+function cloneMap<K, V>(map: ReadonlyMap<K, V>): Map<K, V> {
+  return new Map(Array.from(map.entries()));
+}
+
+/**
+ * Helper function to immutably set a value to a map
+ */
+function setMap<T>(
+  map: ReadonlyMap<string, T>,
+  key: string,
+  val: T,
+): Map<string, T> {
+  return cloneMap(map).set(key, val);
+}
+
 export default function appReducer(
   state: AppGlobalState,
   action: AppAction,
 ): AppGlobalState {
-  const { allInterviews, allInterviewScreens } = state;
+  const { loadedInterviews, loadedInterviewScreens } = state;
 
   switch (action.type) {
-    case 'INTERVIEWS_SET_ALL':
-      return { ...state, allInterviews: action.allInterviews };
+    case 'INTERVIEWS_UPDATE': {
+      const clonedInterviewMap = cloneMap(loadedInterviews);
+      action.interviews.forEach(interview =>
+        clonedInterviewMap.set(interview.id, interview),
+      );
+
+      return {
+        ...state,
+        loadedInterviews: clonedInterviewMap,
+      };
+    }
+
+    case 'INTERVIEW_UPDATE': {
+      return {
+        ...state,
+        loadedInterviews: setMap(
+          loadedInterviews,
+          action.interview.id,
+          action.interview,
+        ),
+      };
+    }
 
     case 'INTERVIEW_CREATE':
       return {
         ...state,
-        allInterviews: allInterviews.concat(action.interview),
+        loadedInterviews: setMap(
+          loadedInterviews,
+          action.interview.id,
+          action.interview,
+        ),
       };
 
     case 'SCREEN_ADD': {
       const { screen } = action;
 
       // find the interview to update
-      const interview = allInterviews.find(
-        intrv => intrv.id === action.interviewId,
-      );
+      const interview = loadedInterviews.get(action.interviewId);
 
       if (interview) {
         // add the new screen id to the interview
@@ -67,15 +109,17 @@ export default function appReducer(
         return {
           ...state,
 
-          // add the screen to the allInterviewScreens map (immutable operation)
-          // TODO: extract these common immutable operations to helper functions
-          allInterviewScreens: new Map<string, InterviewScreen.T>(
-            Array.from(allInterviewScreens.entries()),
-          ).set(screen.id, screen),
+          // add the screen to the loadedInterviewScreens map (immutable operation)
+          loadedInterviewScreens: setMap(
+            loadedInterviewScreens,
+            screen.id,
+            screen,
+          ),
 
-          // update the allInterviews array immutably (O(n) operation using .map)
-          allInterviews: allInterviews.map(intrv =>
-            intrv.id === action.interviewId ? newInterview : intrv,
+          loadedInterviews: setMap(
+            loadedInterviews,
+            action.interviewId,
+            newInterview,
           ),
         };
       }

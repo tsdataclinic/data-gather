@@ -1,9 +1,7 @@
 import { faCircleChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import useAppDispatch from '../../../hooks/useAppDispatch';
-import useInterviewStore from '../../../hooks/useInterviewStore';
 import * as Interview from '../../../models/Interview';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import Button from '../../ui/Button';
@@ -20,27 +18,7 @@ export default function Sidebar({
   screens = [],
 }: Props): JSX.Element {
   const [isNewScreenModalOpen, setIsNewScreenModalOpen] = useState(false);
-  const interviewStore = useInterviewStore();
-  const dispatch = useAppDispatch();
   const [selectedScreen, setSelectedScreen] = useState<string>();
-
-  const onNewScreenSubmit = useCallback(
-    async (vals: Map<string, string>): Promise<void> => {
-      const screen = InterviewScreen.create({
-        title: vals.get('name') ?? '',
-      });
-
-      await interviewStore.addScreenToInterview(interview.id, screen);
-
-      dispatch({
-        interviewId: interview.id,
-        screen,
-        type: 'SCREEN_ADD',
-      });
-      setIsNewScreenModalOpen(false);
-    },
-    [interviewStore, dispatch, interview],
-  );
 
   return (
     <nav className="relative top-0 items-stretch w-1/5 h-full bg-white">
@@ -82,9 +60,9 @@ export default function Sidebar({
       </Button>
 
       <NewScreenModal
+        interview={interview}
         isOpen={isNewScreenModalOpen}
         onDismiss={() => setIsNewScreenModalOpen(false)}
-        onSubmit={onNewScreenSubmit}
       />
     </nav>
   );
