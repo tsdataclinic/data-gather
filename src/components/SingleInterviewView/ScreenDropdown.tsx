@@ -5,10 +5,10 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { NavLink, useMatch } from 'react-router-dom';
-import { Entry } from '../../types';
+import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 
 interface Props {
-  entries: Entry[];
+  entries: InterviewScreenEntry.T[];
 }
 
 export default function ScreenDropdown({ entries }: Props): JSX.Element {

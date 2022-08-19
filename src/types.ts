@@ -4,24 +4,3 @@ export enum GuessingGameQuestion {
   INCORRECT_GUESS,
   CORRECT_ENDING,
 }
-
-export interface Entry {
-  id: string;
-  prompt: string;
-  type: string; // TODO: type can be enum e.g. Yes/No, Multi-select, etc.
-}
-
-export interface InterviewScreen {
-  displayName: string;
-  entries: Entry[];
-  id: string;
-}
-
-export interface Interview {
-  createdDate: Date;
-  description: string;
-  id: string;
-  name: string;
-  screens: readonly InterviewScreen[];
-  startingState: readonly string[];
-}
