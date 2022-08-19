@@ -16,7 +16,7 @@ export default function InterviewCard({ interview }: Props): JSX.Element {
         <div className="w-16 h-16 bg-gray-400 rounded-full" />
         <div className="flex-1 space-y-4">
           <h2 className="text-2xl tracking-wide">{interview.name}</h2>
-          <p>date</p>
+          <p>Created on {interview.createdDate.toFormat('MMMM dd, yyyy')}</p>
           <p>{interview.description}</p>
         </div>
       </div>
