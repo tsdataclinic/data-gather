@@ -1,7 +1,7 @@
 /**
  * Represents a single question asked to the interview subject
  */
-export interface T {
+interface InterviewScreenEntry {
   readonly id: string;
 
   /**  The text of the question */
@@ -17,15 +17,22 @@ export interface T {
   readonly text: string;
 }
 
-export type SerializedT = T;
+type SerializedInterviewScreenEntry = InterviewScreenEntry;
 
-export function deserialize(rawObj: SerializedT): T {
+export function deserialize(
+  rawObj: SerializedInterviewScreenEntry,
+): InterviewScreenEntry {
   return rawObj;
 }
 
 /**
  * Convert from deserialized type to serialized
  */
-export function serialize(interviewScreen: T): SerializedT {
+export function serialize(
+  interviewScreen: InterviewScreenEntry,
+): SerializedInterviewScreenEntry {
   return interviewScreen;
 }
+
+export type { InterviewScreenEntry as T };
+export type { SerializedInterviewScreenEntry as SerializedT };

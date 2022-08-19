@@ -13,7 +13,7 @@ import assertUnreachable from '../util/assertUnreachable';
  *
  * This is the serialized type as it is used on the frontend.
  */
-export interface T {
+interface ConditionalAction {
   /** The action to do if the condition evaluates to true */
   readonly action: Readonly<
     /** Push some entries on to the stack */
@@ -58,14 +58,14 @@ export interface T {
   readonly value: unknown;
 }
 
-type ConditionalActionType = T['action']['type'];
+type ConditionalActionType = ConditionalAction['action']['type'];
 
 /**
  * This is the serialized type as it is stored on the backend.
  * A serialized ConditionalAction can be represented by just its type
  * ('push', 'skip', etc.)
  */
-export interface SerializedT {
+interface SerializedConditionalAction {
   actionTarget: string | string[] | ResponseData;
   actionType: ConditionalActionType;
   conditionalOperator: '=' | '>' | '<' | '>=' | '<=';
@@ -94,7 +94,9 @@ function isStringArray(maybeArr: unknown): maybeArr is string[] {
  * This involves doing several type checks to make sure the backend is serving
  * the correct values. Otherwise, it means something went wrong during storage.
  */
-export function deserialize(rawObj: SerializedT): T {
+export function deserialize(
+  rawObj: SerializedConditionalAction,
+): ConditionalAction {
   const { actionTarget, actionType, ...condition } = rawObj;
   switch (actionType) {
     case 'push':
@@ -139,3 +141,6 @@ export function deserialize(rawObj: SerializedT): T {
       return assertUnreachable(actionType);
   }
 }
+
+export type { ConditionalAction as T };
+export type { SerializedConditionalAction as SerializedT };

@@ -27,8 +27,8 @@ export default function useLoadInitialInterviews(): {
   useEffect(() => {
     if (initialInterviews && isSuccess) {
       dispatch({
-        allInterviews: initialInterviews,
-        type: 'INTERVIEWS_SET_ALL',
+        interviews: initialInterviews,
+        type: 'INTERVIEWS_UPDATE',
       });
     }
   }, [initialInterviews, isSuccess, dispatch]);

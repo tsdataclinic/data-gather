@@ -17,6 +17,8 @@ export default function useInterviewScreenEntries(
   interviewId: string,
 ): Map<string, InterviewScreenEntry.T[]> | undefined {
   const interviewStore = useInterviewStore();
+
+  // TODO: we should be updating global state here similar to useInterview.ts
   return useLiveQuery(
     () => interviewStore.getScreenEntriesOfInterview(interviewId),
     [interviewId],

@@ -14,6 +14,8 @@ export default function useInterviewScreens(
   interviewId: string,
 ): InterviewScreen.T[] | undefined {
   const interviewStore = useInterviewStore();
+
+  // TODO: we should be updating global state here similar to useInterview.ts
   return useLiveQuery(
     () => interviewStore.getScreensOfInterview(interviewId),
     [interviewId],

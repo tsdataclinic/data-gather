@@ -6,7 +6,7 @@ import * as InterviewScreenEntry from './InterviewScreenEntry';
  *
  * This is the serialized type as it is used on the frontend.
  */
-export interface T {
+interface InterviewScreen {
   /**
    * The actions executed after the page is complete.
    * Represented by an array of action types.
@@ -29,7 +29,7 @@ export interface T {
 /**
  * This is the serialized type as it is stored on the backend.
  */
-export interface SerializedT {
+interface SerializedInterviewScreen {
   actions: string[];
   entries: string[];
   headerText: string;
@@ -40,7 +40,7 @@ export interface SerializedT {
 /**
  * Create a new empty screen
  */
-export function create(values: { title: string }): T {
+export function create(values: { title: string }): InterviewScreen {
   return {
     actions: [],
     entries: [],
@@ -53,7 +53,10 @@ export function create(values: { title: string }): T {
 /**
  * Immutably add an entry to a screen
  */
-export function addEntry(screen: T, entry: InterviewScreenEntry.T): T {
+export function addEntry(
+  screen: InterviewScreen,
+  entry: InterviewScreenEntry.T,
+): InterviewScreen {
   return {
     ...screen,
     entries: screen.entries.concat(entry.id),
@@ -63,17 +66,24 @@ export function addEntry(screen: T, entry: InterviewScreenEntry.T): T {
 /**
  * Convert from serialized type to deserialized
  */
-export function deserialize(rawObj: SerializedT): T {
+export function deserialize(
+  rawObj: SerializedInterviewScreen,
+): InterviewScreen {
   return rawObj;
 }
 
 /**
  * Convert from deserialized type to serialized
  */
-export function serialize(interviewScreen: T): SerializedT {
+export function serialize(
+  interviewScreen: InterviewScreen,
+): SerializedInterviewScreen {
   return {
     ...interviewScreen,
     actions: [...interviewScreen.actions],
     entries: [...interviewScreen.entries],
   };
 }
+
+export type { InterviewScreen as T };
+export type { SerializedInterviewScreen as SerializedT };

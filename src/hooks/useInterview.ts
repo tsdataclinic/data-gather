@@ -1,5 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import { useEffect } from 'react';
 import * as Interview from '../models/Interview';
+import useAppDispatch from './useAppDispatch';
+import useAppState from './useAppState';
 import useInterviewStore from './useInterviewStore';
 
 /**
@@ -11,6 +14,26 @@ import useInterviewStore from './useInterviewStore';
  * interview couldn't be found.
  */
 export default function useInterview(id: string): Interview.T | undefined {
+  const dispatch = useAppDispatch();
   const interviewStore = useInterviewStore();
-  return useLiveQuery(() => interviewStore.getInterview(id), [id]);
+  const { loadedInterviews } = useAppState();
+  const interviewFromStorage = useLiveQuery(
+    () => interviewStore.getInterview(id),
+    [id],
+  );
+
+  // if the interviewFromStorage has changed then we should update it in
+  // our global state
+  useEffect(() => {
+    if (interviewFromStorage) {
+      dispatch({
+        interview: interviewFromStorage,
+        type: 'INTERVIEW_UPDATE',
+      });
+    }
+  }, [interviewFromStorage, dispatch]);
+
+  // load the interview from global state (which should be up-to-date with
+  // whatever is in storage)
+  return loadedInterviews.get(id);
 }

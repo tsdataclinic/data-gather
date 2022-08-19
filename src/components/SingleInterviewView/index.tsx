@@ -1,5 +1,5 @@
 import { Route, Routes, useParams } from 'react-router-dom';
-import useAppState from '../../hooks/useAppState';
+import useInterview from '../../hooks/useInterview';
 import useInterviewScreenEntries from '../../hooks/useInterviewScreenEntries';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
 import ConfigureCard from './ConfigureCard';
@@ -7,9 +7,8 @@ import ScreenCard from './ScreenCard';
 import Sidebar from './Sidebar';
 
 export default function SingleInterviewView(): JSX.Element {
-  const { allInterviews } = useAppState();
   const { interviewId } = useParams();
-  const interview = allInterviews.find(iview => iview.id === interviewId);
+  const interview = useInterview(interviewId ?? '');
   const screens = useInterviewScreens(interview?.id ?? '');
   const entries = useInterviewScreenEntries(interview?.id ?? '');
 
