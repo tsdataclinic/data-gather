@@ -54,6 +54,9 @@ interface ConditionalAction {
    */
   readonly responseKey: string;
 
+  /** The screen that this action belogns to */
+  readonly screenId: string;
+
   /** The value to compare the response datum to. */
   readonly value: unknown;
 }
@@ -68,9 +71,10 @@ type ConditionalActionType = ConditionalAction['action']['type'];
 interface SerializedConditionalAction {
   actionTarget: string | string[] | ResponseData;
   actionType: ConditionalActionType;
-  conditionalOperator: '=' | '>' | '<' | '>=' | '<=';
+  conditionalOperator: 'ALWAYS_EXECUTE' | '=' | '>' | '<' | '>=' | '<=';
   id: string;
   responseKey: string;
+  screenId: string;
   value: unknown;
 }
 
@@ -140,6 +144,22 @@ export function deserialize(
     default:
       return assertUnreachable(actionType);
   }
+}
+
+export function serialize(
+  conditionalAction: ConditionalAction,
+): SerializedConditionalAction {
+  const { action, conditionalOperator, id, responseKey, screenId, value } =
+    conditionalAction;
+  return {
+    actionTarget: action.target,
+    actionType: action.type,
+    conditionalOperator,
+    id,
+    responseKey,
+    screenId,
+    value,
+  };
 }
 
 export type { ConditionalAction as T };

@@ -17,6 +17,8 @@ export default function useInterview(id: string): Interview.T | undefined {
   const dispatch = useAppDispatch();
   const interviewStore = useInterviewStore();
   const { loadedInterviews } = useAppState();
+
+  // load interview from backend
   const interviewFromStorage = useLiveQuery(
     () => interviewStore.getInterview(id),
     [id],

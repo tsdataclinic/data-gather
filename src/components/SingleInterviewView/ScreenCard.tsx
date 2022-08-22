@@ -1,14 +1,16 @@
 import React from 'react';
 import { Element as ScrollableElement } from 'react-scroll';
+import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 
 interface Props {
+  actions: ConditionalAction.T[];
   entries: InterviewScreenEntry.T[];
   screen: InterviewScreen.T;
 }
 
-function ScreenCard({ entries, screen }: Props): JSX.Element {
+function ScreenCard({ actions, entries, screen }: Props): JSX.Element {
   return (
     <div className="flex flex-col gap-14 items-center w-full">
       <ScrollableElement
@@ -27,12 +29,15 @@ function ScreenCard({ entries, screen }: Props): JSX.Element {
           {entry.prompt}
         </ScrollableElement>
       ))}
-      <ScrollableElement
-        name="ACTION"
-        className="w-full h-60 bg-white shadow-md"
-      >
-        Action card for {screen.title}
-      </ScrollableElement>
+      {actions.map(action => (
+        <ScrollableElement
+          key={action.id}
+          name="ACTION"
+          className="w-full h-60 bg-white shadow-md"
+        >
+          Action card with id {action.id}
+        </ScrollableElement>
+      ))}
     </div>
   );
 }

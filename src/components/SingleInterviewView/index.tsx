@@ -1,5 +1,6 @@
 import { Route, Routes, useParams } from 'react-router-dom';
 import useInterview from '../../hooks/useInterview';
+import useInterviewConditionalActions from '../../hooks/useInterviewConditionalActions';
 import useInterviewScreenEntries from '../../hooks/useInterviewScreenEntries';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
 import ConfigureCard from './ConfigureCard';
@@ -11,6 +12,7 @@ export default function SingleInterviewView(): JSX.Element {
   const interview = useInterview(interviewId ?? '');
   const screens = useInterviewScreens(interview?.id ?? '');
   const entries = useInterviewScreenEntries(interview?.id ?? '');
+  const actions = useInterviewConditionalActions(interview?.id ?? '');
 
   if (interview === undefined) {
     return <p>Could not find interview</p>;
@@ -36,6 +38,7 @@ export default function SingleInterviewView(): JSX.Element {
                 <ScreenCard
                   screen={screen}
                   entries={entries?.get(screen.id) ?? []}
+                  actions={actions?.get(screen.id) ?? []}
                 />
               }
             />
