@@ -29,6 +29,7 @@ function PageDetails(props: PageDetailsProps): JSX.Element {
       conditionalOperator: '=',
       id: uuidv4(),
       responseKey: 'sampleKey',
+      screenId: page.id,
       value: 42,
     };
 
@@ -37,6 +38,7 @@ function PageDetails(props: PageDetailsProps): JSX.Element {
       prompt: "Ceci n'est pas un question",
       responseId: 'responseId',
       responseType: 'string',
+      screenId: page.id,
       text: '',
     };
 

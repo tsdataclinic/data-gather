@@ -5,10 +5,7 @@ import * as ConditionalAction from '../models/ConditionalAction';
 import * as Interview from '../models/Interview';
 import * as InterviewScreen from '../models/InterviewScreen';
 import * as InterviewScreenEntry from '../models/InterviewScreenEntry';
-
-function isNonNullable<T>(x: T): x is NonNullable<T> {
-  return x !== null && x !== undefined;
-}
+import isNonNullable from '../util/isNonNullable';
 
 /**
  * This API interacts with the browser storage backend.
@@ -107,7 +104,7 @@ export class InterviewStoreAPI extends Dexie {
    * @param {string[]} screenIds
    * @returns {InterviewScreen.T[]} Array of interview screens
    */
-  getScreens = async (
+  private getScreens = async (
     screenIds: readonly string[],
   ): Promise<InterviewScreen.T[]> => {
     const screens = (
@@ -135,7 +132,7 @@ export class InterviewStoreAPI extends Dexie {
    * @param {string[]} entryIds
    * @returns {InterviewScreen.T[]} Array of interview screens
    */
-  getScreenEntries = async (
+  private getScreenEntries = async (
     entryIds: readonly string[],
   ): Promise<InterviewScreenEntry.T[]> => {
     const entries = (
@@ -148,35 +145,43 @@ export class InterviewStoreAPI extends Dexie {
    * Get all screen entries of an interview, given the interview id.
    *
    * @param {string} interviewId
-   * @returns {Map<string, InterviewScreenEntry.T[]>} A Map mapping a
-   * screen id to its corresponding array of screen entries.
+   * @returns {InterviewScreenEntry.T[]} Array of interview screen entries
    */
   getScreenEntriesOfInterview = async (
     interviewId: string,
-  ): Promise<Map<string, InterviewScreenEntry.T[]>> => {
-    const interview = await this.getInterview(interviewId);
-    if (interview) {
-      const screens = await this.getScreens(interview.screens);
+  ): Promise<InterviewScreenEntry.T[]> => {
+    const screens = await this.getScreensOfInterview(interviewId);
+    return this.getScreenEntries(screens.flatMap(screen => screen.entries));
+  };
 
-      // get all entries for all screens
-      const allEntries = await this.getScreenEntries(
-        screens.flatMap(screen => screen.entries),
-      );
-      const allEntriesMap = allEntries.reduce(
-        (map, entry) => map.set(entry.id, entry),
-        new Map<string, InterviewScreenEntry.T>(),
-      );
+  /**
+   * Get conditional actions by their ids.
+   *
+   * @param {string[]} actionIds
+   * @returns {ConditionalAction.T[]} Array of interview conditional actions
+   */
+  private getConditionalActions = async (
+    actionIds: readonly string[],
+  ): Promise<ConditionalAction.T[]> => {
+    const actions = (
+      await this.conditionalActions.bulkGet([...actionIds])
+    ).filter(isNonNullable);
+    return actions.map(ConditionalAction.deserialize);
+  };
 
-      // associate each entry back to its corresponding screen
-      return screens.reduce((map, screen) => {
-        const entries = screen.entries
-          .map(entryId => allEntriesMap.get(entryId))
-          .filter(isNonNullable);
-        return map.set(screen.id, entries);
-      }, new Map<string, InterviewScreenEntry.T[]>());
-    }
-
-    return new Map();
+  /**
+   * Get all conditional actions of an interview, given the interview id.
+   *
+   * @param {string} interviewId
+   * @returns {ConditionalAction.T[]>} Array of interview conditional actions
+   */
+  getConditionalActionsOfInterview = async (
+    interviewId: string,
+  ): Promise<ConditionalAction.T[]> => {
+    const screens = await this.getScreensOfInterview(interviewId);
+    return this.getConditionalActions(
+      screens.flatMap(screen => screen.actions),
+    );
   };
 
   /**
@@ -219,6 +224,15 @@ export class InterviewStoreAPI extends Dexie {
       InterviewScreenEntry.serialize(screenEntry),
     );
     return screenEntry;
+  };
+
+  putScreenAction = async (
+    conditionalAction: ConditionalAction.T,
+  ): Promise<ConditionalAction.T> => {
+    await this.conditionalActions.put(
+      ConditionalAction.serialize(conditionalAction),
+    );
+    return conditionalAction;
   };
 
   /**

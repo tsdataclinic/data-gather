@@ -13,6 +13,9 @@ interface InterviewScreenEntry {
   /** The data type expected as a response */
   readonly responseType: string;
 
+  /** The screen that this entry belongs to */
+  readonly screenId: string;
+
   /** Additional flavor text associated with the question */
   readonly text: string;
 }
