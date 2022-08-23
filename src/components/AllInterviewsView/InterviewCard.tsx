@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import * as Interview from '../../models/Interview';
 import Card from '../ui/Card';
 
@@ -18,6 +19,9 @@ export default function InterviewCard({ interview }: Props): JSX.Element {
           <h2 className="text-2xl tracking-wide">{interview.name}</h2>
           <p>Created on {interview.createdDate.toFormat('MMMM dd, yyyy')}</p>
           <p>{interview.description}</p>
+          <p>
+            <Link to={`/interview/${interview.id}/run`}>Run</Link>
+          </p>
         </div>
       </div>
     </Card>
