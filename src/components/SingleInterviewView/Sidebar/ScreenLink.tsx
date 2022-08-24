@@ -7,12 +7,13 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { NavLink, useMatch } from 'react-router-dom';
 import { Link as ScrollLink } from 'react-scroll';
 import useInterviewStore from '../../../hooks/useInterviewStore';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
+import { Utils } from '../../../util/utils';
 import NewEntryModal from './NewEntryModel';
 
 type Props = {
@@ -31,6 +32,15 @@ export default function ScreenLink({
   const [isNewEntryModelOpen, setIsNewEntryModalOpen] =
     useState<boolean>(false);
   const interviewStore = useInterviewStore();
+  const [screenEntries, setScreenEntries] = useState<
+    InterviewScreenEntry.T[] | null
+  >(null);
+
+  useEffect(() => {
+    if (screen !== 'configure')
+      interviewStore.getScreenEntries(screen.entries).then(setScreenEntries);
+    else setScreenEntries(null);
+  }, [interviewStore, screen]);
 
   const screenMenuItemClass = classNames(
     'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full hover:text-blue-700',
@@ -53,6 +63,7 @@ export default function ScreenLink({
       }
 
       const entry = InterviewScreenEntry.create({
+        name: vals.get('name') ?? '',
         prompt: vals.get('prompt') ?? '',
         responseType: vals.get('prompt') ?? '',
         text: vals.get('prompt') ?? '',
@@ -126,7 +137,7 @@ export default function ScreenLink({
               onClick={() => setSelectedEntry(entryId)}
             >
               <FontAwesomeIcon size="1x" icon={faQuestion} />
-              {entryId}
+              {Utils.getEntryById(entryId, screenEntries)?.name}
             </ScrollLink>
           ))}
 

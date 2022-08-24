@@ -6,6 +6,9 @@ import { v4 as uuidv4 } from 'uuid';
 interface InterviewScreenEntry {
   readonly id: string;
 
+  /**  The name to display on the sidebar */
+  readonly name: string;
+
   /**  The text of the question */
   readonly prompt: string;
 
@@ -31,12 +34,14 @@ export function deserialize(
 }
 
 export function create(values: {
+  name: string;
   prompt: string;
   screenId: string;
   text: string;
 }): InterviewScreenEntry {
   return {
     id: uuidv4(),
+    name: values.name,
     prompt: values.prompt,
     responseId: uuidv4(),
     responseType: 'string',
