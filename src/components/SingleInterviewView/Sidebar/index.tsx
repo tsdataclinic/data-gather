@@ -33,7 +33,7 @@ export default function Sidebar({
         {/* Menu */}
         <div className="flex flex-col items-start w-full">
           <NavLink
-            to={`/interview/${interview.id}/run`}
+            to={Interview.getRunUrl(interview)}
             className="flex flex-row gap-2.5 items-center py-2.5 pl-14 text-blue-700"
           >
             <FontAwesomeIcon size="1x" icon={faPlay} /> Run

@@ -1,4 +1,5 @@
 import { QuestionRouter, ResponseData, Script } from '@dataclinic/interview';
+import assertUnreachable from '../util/assertUnreachable';
 import {
   Condition,
   ConditionalAction,
@@ -58,22 +59,30 @@ class ConfigurableScript<T extends { getId(): string }> implements Script<T> {
   ): boolean {
     const responseValue = responseData[condition.key];
     const testValue = condition.value;
+    let result = false;
     switch (condition.operator) {
       case '=':
-        return responseValue === testValue;
+        result = responseValue === testValue;
+        break;
       case '!=':
-        return responseValue !== testValue;
+        result = responseValue !== testValue;
+        break;
       case '>':
-        return responseValue > testValue;
+        result = responseValue > testValue;
+        break;
       case '<':
-        return responseValue < testValue;
+        result = responseValue < testValue;
+        break;
       case '>=':
-        return responseValue >= testValue;
+        result = responseValue >= testValue;
+        break;
       case '<=':
-        return responseValue <= testValue;
+        result = responseValue <= testValue;
+        break;
       default:
-        return false;
+        assertUnreachable(condition.operator, { throwError: false });
     }
+    return result;
   }
 
   private executeAction(
@@ -97,7 +106,7 @@ class ConfigurableScript<T extends { getId(): string }> implements Script<T> {
         router.milestone(action.target);
         break;
       default:
-        break;
+        assertUnreachable(action, { throwError: false });
     }
   }
 

@@ -22,7 +22,7 @@ export default function InterviewCard({ interview }: Props): JSX.Element {
           <p>Created on {interview.createdDate.toFormat('MMMM dd, yyyy')}</p>
           <p>{interview.description}</p>
           <p>
-            <Link to={`/interview/${interview.id}/run`}>
+            <Link to={Interview.getRunUrl(interview)}>
               <FontAwesomeIcon size="1x" icon={faPlay} /> Run
             </Link>
           </p>

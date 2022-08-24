@@ -33,6 +33,14 @@ interface SerializedInterview {
 }
 
 /**
+ * Returns a URL which can be used to execute a given interview.
+ * see: routes in App.tsx
+ */
+export function getRunUrl(interview: Interview): string {
+  return `/interview/${interview.id}/run`;
+}
+
+/**
  * Create a new empty interview
  */
 export function create(values: {
