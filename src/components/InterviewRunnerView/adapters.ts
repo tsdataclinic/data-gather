@@ -2,6 +2,9 @@ import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import { ScriptConfigSchema } from '../../script/ScriptConfigSchema';
 
+// Compatibility layer between existing app types and ConfigurableScript
+// types. Should eventually be deprecated perhaps?
+
 /**
  * Attaches getter method necessary for ConfigurableScript to InterviewScreen.T type.
  */
