@@ -1,4 +1,4 @@
-import { faCircleChevronLeft } from '@fortawesome/free-solid-svg-icons';
+import { faCircleChevronLeft, faPlay } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
@@ -32,6 +32,13 @@ export default function Sidebar({
 
         {/* Menu */}
         <div className="flex flex-col items-start w-full">
+          <NavLink
+            to={Interview.getRunUrl(interview)}
+            className="flex flex-row gap-2.5 items-center py-2.5 pl-14 text-blue-700"
+          >
+            <FontAwesomeIcon size="1x" icon={faPlay} /> Run
+          </NavLink>
+
           {/* Configure */}
           <ScreenLink
             screen="configure"

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Element as ScrollableElement } from 'react-scroll';
+import useInterviewStore from '../../hooks/useInterviewStore';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
+import Button from '../ui/Button';
 
 interface Props {
   actions: ConditionalAction.T[];
@@ -11,6 +13,14 @@ interface Props {
 }
 
 function ScreenCard({ actions, entries, screen }: Props): JSX.Element {
+  const interviewStore = useInterviewStore();
+  const addNewEntry = useCallback(async (): Promise<void> => {
+    const entry = InterviewScreenEntry.create({
+      prompt: 'Dummy Prompt',
+      screenId: screen.id,
+    });
+    await interviewStore.addEntryToScreen(screen.id, entry);
+  }, [interviewStore, screen]);
   return (
     <div className="flex flex-col gap-14 items-center w-full">
       <ScrollableElement
@@ -29,6 +39,7 @@ function ScreenCard({ actions, entries, screen }: Props): JSX.Element {
           {entry.prompt}
         </ScrollableElement>
       ))}
+      <Button onClick={addNewEntry}>Add Entry</Button>
       {actions.map(action => (
         <ScrollableElement
           key={action.id}
