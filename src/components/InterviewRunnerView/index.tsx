@@ -2,18 +2,19 @@ import {
   Interview as Engine,
   Moderator,
   ResponseConsumer,
-  ResponseData,
 } from '@dataclinic/interview';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import useInterview from '../../hooks/useInterview';
+import useInterviewScreenEntries from '../../hooks/useInterviewScreenEntries';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
+import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import ConfigurableScript from '../../script/ConfigurableScript';
 import { ScriptConfigSchema } from '../../script/ScriptConfigSchema';
+import Button from '../ui/Button';
 import { buildScriptConfig, InterviewScreenAdapter } from './adapters';
 
 // import useInterviewConditionalActions from "../../hooks/useInterviewConditionalActions";
-// import useInterviewScreenEntries from "../../hooks/useInterviewScreenEntries";
 
 export default function InterviewRunnerView(): JSX.Element | null {
   const { interviewId } = useParams();
@@ -23,15 +24,15 @@ export default function InterviewRunnerView(): JSX.Element | null {
     useState<InterviewScreenAdapter | null>(null);
   const [responseConsumer, setResponseConsumer] =
     useState<ResponseConsumer | null>(null);
+  const [complete, setComplete] = useState<boolean>(false);
+  const entries = useInterviewScreenEntries(interviewId ?? '');
 
-  // const entries = useInterviewScreenEntries(interviewId ?? '');
   // const actions = useInterviewConditionalActions(interviewId ?? '');
-
-  if (!interview || !screens) {
-    throw new Error('Interview was not defined, or missing data');
-  }
-
   useEffect(() => {
+    if (!interview || !screens) {
+      return;
+    }
+
     const indexedScreens: { [screenId: string]: InterviewScreenAdapter } = {};
     screens.forEach(screen => {
       indexedScreens[screen.id] = new InterviewScreenAdapter(screen);
@@ -50,16 +51,32 @@ export default function InterviewRunnerView(): JSX.Element | null {
 
     const engine: Engine<InterviewScreenAdapter> =
       new Engine<InterviewScreenAdapter>(script, moderator);
-    engine.run((results: ResponseData) => {
-      console.log(results);
-    });
+    engine.run(() => setComplete(true));
   }, [interview, screens]);
 
   return (
-    <>
-      <div>Runner!</div>
-      {currentScreen && <p>Current Screen is defined</p>}
-      {responseConsumer && <p>Response Consumer is defined</p>}
-    </>
+    <div>
+      {complete ? (
+        <div>Done!</div>
+      ) : (
+        <>
+          {currentScreen && (
+            <div>{currentScreen.getInterviewScreen().title}</div>
+          )}
+          {currentScreen && entries && (
+            <div>
+              {entries
+                .get(currentScreen.getInterviewScreen().id)
+                ?.map((entry: InterviewScreenEntry.T) => (
+                  <div key={entry.id}>{entry.prompt}</div>
+                ))}
+            </div>
+          )}
+          {responseConsumer && (
+            <Button onClick={() => responseConsumer.submit()}>Next</Button>
+          )}
+        </>
+      )}
+    </div>
   );
 }
