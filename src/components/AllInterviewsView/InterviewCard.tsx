@@ -1,3 +1,5 @@
+import { faPlay } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import * as Interview from '../../models/Interview';
 import Card from '../ui/Card';
@@ -20,7 +22,9 @@ export default function InterviewCard({ interview }: Props): JSX.Element {
           <p>Created on {interview.createdDate.toFormat('MMMM dd, yyyy')}</p>
           <p>{interview.description}</p>
           <p>
-            <Link to={`/interview/${interview.id}/run`}>Run</Link>
+            <Link to={`/interview/${interview.id}/run`}>
+              <FontAwesomeIcon size="1x" icon={faPlay} /> Run
+            </Link>
           </p>
         </div>
       </div>

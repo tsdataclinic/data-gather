@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 /**
  * Represents a single question asked to the interview subject
  */
@@ -26,6 +28,20 @@ export function deserialize(
   rawObj: SerializedInterviewScreenEntry,
 ): InterviewScreenEntry {
   return rawObj;
+}
+
+export function create(values: {
+  prompt: string;
+  screenId: string;
+}): InterviewScreenEntry {
+  return {
+    id: uuidv4(),
+    prompt: values.prompt,
+    responseId: uuidv4(),
+    responseType: 'string',
+    screenId: values.screenId,
+    text: '',
+  };
 }
 
 /**
