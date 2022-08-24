@@ -34,6 +34,7 @@ function PageDetails(props: PageDetailsProps): JSX.Element {
 
     const newEntry: InterviewScreenEntry.T = {
       id: uuidv4(),
+      name: 'my question',
       prompt: "Ceci n'est pas un question",
       responseId: 'responseId',
       responseType: 'string',

@@ -6,6 +6,9 @@ import { v4 as uuidv4 } from 'uuid';
 export interface T {
   readonly id: string;
 
+  /**  The name to display on the sidebar */
+  readonly name: string;
+
   /**  The text of the question */
   readonly prompt: string;
 
@@ -25,12 +28,14 @@ export type SerializedT = T;
  * Create a new screen entry
  */
 export function create(values: {
+  name: string;
   prompt: string;
   responseType: string;
   text: string;
 }): T {
   return {
     id: uuidv4(),
+    name: values.name,
     prompt: values.prompt,
     responseId: uuidv4(),
     responseType: values.responseType,

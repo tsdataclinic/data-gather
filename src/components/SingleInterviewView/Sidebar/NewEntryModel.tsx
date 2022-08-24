@@ -18,6 +18,7 @@ export default function NewEntryModal({
   return (
     <Modal title="New screen" isOpen={isOpen} onDismiss={onDismiss}>
       <Form onSubmit={onSubmit}>
+        <Form.Input name="name" label="Name" />
         <Form.Input name="prompt" label="Prompt" />
         <Form.Input name="responseType" label="Response Type" />
         <Form.Input name="text" label="Additional Text" />
