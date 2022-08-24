@@ -39,7 +39,7 @@ function ScreenCard({ actions, entries, screen }: Props): JSX.Element {
           {entry.prompt}
         </ScrollableElement>
       ))}
-      <Button onClick={addNewEntry}>Hi</Button>
+      <Button onClick={addNewEntry}>Add Entry</Button>
       {actions.map(action => (
         <ScrollableElement
           key={action.id}
