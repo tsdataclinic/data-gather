@@ -1,5 +1,5 @@
-import Button from '../Button';
 import type { ReactNode } from 'react';
+import Button from '../Button';
 
 type Props = {
   children?: ReactNode;

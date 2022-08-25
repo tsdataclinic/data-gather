@@ -7,7 +7,7 @@ interface Props {
 
 function ConfigureCard({ interview }: Props): JSX.Element {
   return (
-    <div className="w-full h-60 bg-white shadow-md">
+    <div className="h-60 w-full bg-white shadow-md">
       Configure Card for {interview.name}
     </div>
   );
