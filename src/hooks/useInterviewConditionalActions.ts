@@ -19,7 +19,7 @@ import useInterviewStore from './useInterviewStore';
  * Or undefined if the interview could not be found.
  */
 export default function useInterviewConditionalActions(
-  interviewId: string,
+  interviewId: string | undefined,
 ): Map<string, ConditionalAction.T[]> | undefined {
   const dispatch = useAppDispatch();
   const interviewStore = useInterviewStore();
@@ -28,7 +28,10 @@ export default function useInterviewConditionalActions(
 
   // load conditional actions from backend
   const conditionalActionsFromStorage = useLiveQuery(
-    () => interviewStore.getConditionalActionsOfInterview(interviewId),
+    () =>
+      interviewId === undefined
+        ? undefined
+        : interviewStore.getConditionalActionsOfInterview(interviewId),
     [interviewId],
   );
 
@@ -59,5 +62,5 @@ export default function useInterviewConditionalActions(
     return undefined;
   }, [screens, loadedConditionalActions]);
 
-  return screensToActionsMap;
+  return interviewId === undefined ? undefined : screensToActionsMap;
 }

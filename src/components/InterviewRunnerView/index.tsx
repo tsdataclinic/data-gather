@@ -19,14 +19,14 @@ import { buildScriptConfig, InterviewScreenAdapter } from './adapters';
  */
 export default function InterviewRunnerView(): JSX.Element | null {
   const { interviewId } = useParams();
-  const interview = useInterview(interviewId ?? '');
-  const screens = useInterviewScreens(interviewId ?? '');
+  const interview = useInterview(interviewId);
+  const screens = useInterviewScreens(interviewId);
   const [currentScreen, setCurrentScreen] =
     useState<InterviewScreenAdapter | null>(null);
   const [responseConsumer, setResponseConsumer] =
     useState<ResponseConsumer | null>(null);
   const [complete, setComplete] = useState<boolean>(false);
-  const entries = useInterviewScreenEntries(interviewId ?? '');
+  const entries = useInterviewScreenEntries(interviewId);
 
   // Construct and run an interview on component load.
   useEffect(() => {

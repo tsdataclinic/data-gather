@@ -9,10 +9,10 @@ import Sidebar from './Sidebar';
 
 export default function SingleInterviewView(): JSX.Element {
   const { interviewId } = useParams();
-  const interview = useInterview(interviewId ?? '');
-  const screens = useInterviewScreens(interview?.id ?? '');
-  const entries = useInterviewScreenEntries(interview?.id ?? '');
-  const actions = useInterviewConditionalActions(interview?.id ?? '');
+  const interview = useInterview(interviewId);
+  const screens = useInterviewScreens(interview?.id);
+  const entries = useInterviewScreenEntries(interview?.id);
+  const actions = useInterviewConditionalActions(interview?.id);
 
   if (interview === undefined) {
     return <p>Could not find interview</p>;

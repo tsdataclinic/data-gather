@@ -13,14 +13,16 @@ import useInterviewStore from './useInterviewStore';
  * @returns {Interview.T | undefined} The interview, or undefined if the
  * interview couldn't be found.
  */
-export default function useInterview(id: string): Interview.T | undefined {
+export default function useInterview(
+  id: string | undefined,
+): Interview.T | undefined {
   const dispatch = useAppDispatch();
   const interviewStore = useInterviewStore();
   const { loadedInterviews } = useAppState();
 
   // load interview from backend
   const interviewFromStorage = useLiveQuery(
-    () => interviewStore.getInterview(id),
+    () => (id === undefined ? undefined : interviewStore.getInterview(id)),
     [id],
   );
 
@@ -37,5 +39,5 @@ export default function useInterview(id: string): Interview.T | undefined {
 
   // load the interview from global state (which should be up-to-date with
   // whatever is in storage)
-  return loadedInterviews.get(id);
+  return id === undefined ? undefined : loadedInterviews.get(id);
 }

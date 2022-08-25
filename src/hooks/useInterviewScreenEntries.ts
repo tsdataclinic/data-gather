@@ -19,7 +19,7 @@ import useInterviewStore from './useInterviewStore';
  * entries. Or undefined if the interview could not be found.
  */
 export default function useInterviewScreenEntries(
-  interviewId: string,
+  interviewId: string | undefined,
 ): Map<string, InterviewScreenEntry.T[]> | undefined {
   const dispatch = useAppDispatch();
   const interviewStore = useInterviewStore();
@@ -28,7 +28,10 @@ export default function useInterviewScreenEntries(
 
   // load screen entries from backend
   const screenEntriesFromStorage = useLiveQuery(
-    () => interviewStore.getScreenEntriesOfInterview(interviewId),
+    () =>
+      interviewId === undefined
+        ? undefined
+        : interviewStore.getScreenEntriesOfInterview(interviewId),
     [interviewId],
   );
 
@@ -59,5 +62,5 @@ export default function useInterviewScreenEntries(
     return undefined;
   }, [screens, loadedInterviewScreenEntries]);
 
-  return screensToEntriesMap;
+  return interviewId === undefined ? undefined : screensToEntriesMap;
 }
