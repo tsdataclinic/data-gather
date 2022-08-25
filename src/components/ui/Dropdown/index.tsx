@@ -12,7 +12,7 @@ import styled from 'styled-components/macro';
 import type { ReactNode } from 'react';
 import '@reach/listbox/styles.css';
 
-type Props = {
+type Props<T> = {
   ariaLabel?: string;
 
   /**
@@ -20,12 +20,12 @@ type Props = {
    * This will also be the default value for `ariaLabel` too.
    */
   defaultButtonLabel: string;
-  onChange: (value: string | undefined) => void;
+  onChange: (value: T) => void;
   options: ReadonlyArray<{
     displayValue: ReactNode;
-    value: string;
+    value: T;
   }>;
-  value: string | undefined;
+  value: T | undefined;
 };
 
 const StyledListboxOption = styled(ListboxOption)`
@@ -38,13 +38,13 @@ const StyledListboxButton = styled(ListboxButton)`
   padding: 0.25rem 1rem;
 `;
 
-export default function Dropdown({
+export default function Dropdown<T extends string>({
   ariaLabel,
   defaultButtonLabel,
   onChange,
   options,
   value,
-}: Props): JSX.Element {
+}: Props<T>): JSX.Element {
   const ariaLabelToUse = ariaLabel ?? defaultButtonLabel;
   const labelId = `dropdown-label--${useId()}`;
 
@@ -59,7 +59,7 @@ export default function Dropdown({
   );
 
   return (
-    <>
+    <div>
       <VisuallyHidden id={labelId}>{ariaLabelToUse}</VisuallyHidden>
       <ListboxInput aria-labelledby={labelId} value={value} onChange={onChange}>
         {value === undefined ? (
@@ -71,6 +71,6 @@ export default function Dropdown({
           <ListboxList>{listboxOptions}</ListboxList>
         </ListboxPopover>
       </ListboxInput>
-    </>
+    </div>
   );
 }
