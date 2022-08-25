@@ -5,6 +5,7 @@ import {
 } from '@dataclinic/interview';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { buildScriptConfig, InterviewScreenAdapter } from './adapters';
 import useInterview from '../../hooks/useInterview';
 import useInterviewScreenEntries from '../../hooks/useInterviewScreenEntries';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
@@ -12,7 +13,6 @@ import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import ConfigurableScript from '../../script/ConfigurableScript';
 import { ScriptConfigSchema } from '../../script/ScriptConfigSchema';
 import Button from '../ui/Button';
-import { buildScriptConfig, InterviewScreenAdapter } from './adapters';
 
 /**
  * Runs an interview based on the ID of the interview in the URL params.
