@@ -5,11 +5,13 @@
       "jsx": true
     },
     "ecmaVersion": 13,
+    "project": "tsconfig.json",
     "sourceType": "module"
   },
   "extends": [
     "eslint:recommended",
     "airbnb",
+    "airbnb-typescript",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
     "plugin:import/recommended",
@@ -77,18 +79,10 @@
       "error",
       {
         "alphabetize": {
-          "order": "asc",
-          "caseInsensitive": false
+          "order": "ignore",
+          "caseInsensitive": true
         },
-        "groups": [
-          "builtin",
-          "external",
-          "internal",
-          "parent",
-          "sibling",
-          "object",
-          "type"
-        ],
+        "groups": [["builtin", "external"], "internal", "type"],
         "newlines-between": "never"
       }
     ],
