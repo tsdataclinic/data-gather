@@ -29,6 +29,8 @@ type Props = {
   onActionChange: (action: ConditionalAction.T) => void;
 };
 
+// TODO: currently any edits to an action remain local to this component.
+// Next steps are to make this persistable to backend.
 export default function ActionCard({ action }: Props): JSX.Element {
   const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] = useState(true);
 
