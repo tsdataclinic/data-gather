@@ -22,15 +22,15 @@ function PageDetails(props: PageDetailsProps): JSX.Element {
 
   const updatePage = async (): Promise<void> => {
     const newAction: ConditionalAction.T = {
-      action: {
-        target: ['randomPage'],
-        type: 'push',
+      actionConfig: {
+        payload: ['randomPage'],
+        type: ConditionalAction.ActionType.Push,
       },
-      conditionalOperator: '=',
+      conditionalOperator: ConditionalAction.ConditionalOperator.Equals,
       id: uuidv4(),
       responseKey: 'sampleKey',
       screenId: page.id,
-      value: 42,
+      value: '42',
     };
 
     const newEntry: InterviewScreenEntry.T = {

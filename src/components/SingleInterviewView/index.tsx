@@ -19,10 +19,10 @@ export default function SingleInterviewView(): JSX.Element {
   }
 
   return (
-    <div className="flex overflow-y-hidden flex-1 items-center p-0 w-full h-full">
+    <div className="flex h-full w-full flex-1 items-center overflow-y-hidden p-0">
       <Sidebar interview={interview} screens={screens} />
       <div
-        className="flex overflow-scroll flex-col items-center p-14 w-4/5 h-full"
+        className="flex h-full w-4/5 flex-col items-center space-y-4 overflow-scroll p-14"
         id="scrollContainer"
       >
         <Routes>

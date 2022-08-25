@@ -11,7 +11,9 @@ type Props = {
    * Triggered when the 'Enter' key is pressed.
    */
   onEnterPress?: (val: string, event: KeyboardEvent<HTMLInputElement>) => void;
+  placeholder?: string;
   required?: boolean;
+  size?: 'normal' | 'large';
   value: string;
 };
 
@@ -21,7 +23,9 @@ export default function InputText({
   name,
   onChange,
   onEnterPress,
+  placeholder,
   required,
+  size = 'normal',
   value,
 }: Props): JSX.Element {
   const onInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -38,7 +42,11 @@ export default function InputText({
 
   const inputClassName = classNames(
     className,
-    'p-4 rounded-sm border border-gray-400',
+    'rounded-sm border border-gray-400',
+    {
+      'p-1 px-3': size === 'normal',
+      'p-4': size === 'large',
+    },
   );
 
   return (
@@ -51,6 +59,7 @@ export default function InputText({
       onChange={onInputChange}
       onKeyPress={onKeyPress}
       value={value}
+      placeholder={placeholder}
     />
   );
 }
