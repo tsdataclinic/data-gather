@@ -13,7 +13,7 @@ interface Props {
   screen: InterviewScreen.T;
 }
 
-function ScreenCard({ actions, entries, screen }: Props): JSX.Element {
+function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
   const interviewStore = useInterviewStore();
 
   // track the actions that have been modified but not yet persisted

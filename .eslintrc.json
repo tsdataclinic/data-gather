@@ -27,8 +27,6 @@
     "react-hooks",
     "import",
     "jsx-a11y",
-    "sort-destructure-keys",
-    "sort-keys-fix",
     "tailwindcss"
   ],
   "rules": {
@@ -82,7 +80,7 @@
           "order": "ignore",
           "caseInsensitive": true
         },
-        "groups": [["builtin", "external"], "internal", "type"],
+        "groups": [["builtin", "external"], "internal"],
         "newlines-between": "never"
       }
     ],
@@ -102,12 +100,7 @@
         "controlComponents": ["InputText", "Dropdown", "MixedCheckbox"]
       }
     ],
-    "no-shadow": "off",
-    "sort-destructure-keys/sort-destructure-keys": [
-      "error",
-      { "caseSensitive": false }
-    ],
-    "sort-keys-fix/sort-keys-fix": ["error", "asc"]
+    "no-shadow": "off"
   },
   "settings": {
     "import/parsers": {

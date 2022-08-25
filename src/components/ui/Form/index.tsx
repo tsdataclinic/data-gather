@@ -1,7 +1,7 @@
 import { Children } from 'react';
+import type { ReactNode, FormEvent } from 'react';
 import FormInput, { isFormInput } from './FormInput';
 import FormSubmitButton from './FormSubmitButton';
-import type { ReactNode, FormEvent } from 'react';
 
 type Props = {
   children: ReactNode;
