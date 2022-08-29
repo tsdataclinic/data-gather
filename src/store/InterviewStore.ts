@@ -292,6 +292,107 @@ export class InterviewStoreAPI extends Dexie {
   };
 
   /**
+   * Add a new screen to the default sequence for an interview.
+   * The interview and screen must already exist otherwise this will throw an error.
+   *
+   * @param interviewId
+   * @param screenId
+   * @returns
+   */
+  addStartingScreen = async (
+    interviewId: string,
+    screenId: string,
+  ): Promise<Interview.T> => {
+    const interview = await this.getInterview(interviewId);
+    invariant(
+      interview,
+      `[InterviewStore] addStartingScreen: Could not find interview with id '${interviewId}'`,
+    );
+
+    const screen = await this.getScreen(screenId);
+    invariant(
+      screen,
+      `[InterviewStore] addStartingScreen: Could not find screen with id '${screenId}'`,
+    );
+
+    const newInterview = Interview.addStartingScreen(interview, screenId);
+
+    return this.putInterview(newInterview);
+  };
+
+  /**
+   * Update the screen at a particular position in the starting sequence
+   * of an interview. The index must correspond to an existing index in the
+   * starting sequence, or this will throw an error. To add a new starting screen,
+   * you should call `addStartingScreen` instead.
+   *
+   * The interview and screen must already exist otherwise this will throw an error.
+   * @param {number} index
+   * @param {string} screenId
+   */
+  updateStartingScreen = async (
+    interviewId: string,
+    index: number,
+    screenId: string,
+  ): Promise<Interview.T> => {
+    const interview = await this.getInterview(interviewId);
+    invariant(
+      interview,
+      `[InterviewStore] updateStartingScreen: Could not find interview with id '${interviewId}'`,
+    );
+
+    invariant(
+      index >= 0 && index < interview.startingState.length,
+      `[InterviewStore] updateStartingScreen: Index ${index} out of range`,
+    );
+
+    const screen = await this.getScreen(screenId);
+    invariant(
+      screen,
+      `[InterviewStore] updateStartingScreen: Could not find screen with id '${screenId}'`,
+    );
+
+    const newInterview = Interview.updateStartingScreen(
+      interview,
+      index,
+      screenId,
+    );
+
+    return this.putInterview(newInterview);
+  };
+
+  /**
+   * Remove the screen at a particular position in the starting sequence
+   * of an interview. The index must correspond to an existing index in the
+   * starting sequence, or this will throw an error.
+   *
+   * The interview must already exist otherwise this will throw an error.
+   *
+   * @param {string} interviewId
+   * @param {number} index
+   * @returns
+   */
+  removeStartingScreen = async (
+    interviewId: string,
+    index: number,
+  ): Promise<Interview.T> => {
+    const interview = await this.getInterview(interviewId);
+    invariant(
+      interview,
+      `[InterviewStore] removeStartingScreen: Could not find interview with id '${interviewId}'`,
+    );
+
+    invariant(
+      index >= 0 && index < interview.startingState.length,
+      `[InterviewStore] removeStartingScreen: Index ${index} out of range`,
+    );
+
+    const newInterview = Interview.removeStartingScreen(interview, index);
+
+    return this.putInterview(newInterview);
+  };
+
+  /**
    * Add a new entry to an interview screen.
    * The screen must already exist otherwise this will throw an error.
    *
