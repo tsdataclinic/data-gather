@@ -4,7 +4,7 @@ import React, { useCallback } from 'react';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
 import useInterviewStore from '../../hooks/useInterviewStore';
 import * as Interview from '../../models/Interview';
-// import Button from '../ui/Button';
+import Button from '../ui/Button';
 import Dropdown from '../ui/Dropdown';
 import LabelWrapper from '../ui/LabelWrapper';
 
@@ -37,21 +37,25 @@ function ConfigureCard({ interview }: Props): JSX.Element {
   // TODO uncomment when I figure out why opening the dropdown
   // triggers the button onclick
 
-  // const removeStartScreen = useCallback(
-  //   async (index: number): Promise<void> => {
-  //     await interviewStore.removeStartingScreen(interview.id, index);
-  //   },
-  //   [interviewStore, interview],
-  // );
+  const removeStartScreen = useCallback(
+    async (index: number): Promise<void> => {
+      await interviewStore.removeStartingScreen(interview.id, index);
+    },
+    [interviewStore, interview],
+  );
 
   if (!screens) {
     return <p>No screens yet!</p>;
   }
 
-  const options = screens.map(screen => ({
-    displayValue: screen.title,
-    value: screen.id,
-  }));
+  const getOptions = (): Array<{
+    displayValue: string;
+    value: string;
+  }> =>
+    screens.map(screen => ({
+      displayValue: screen.title,
+      value: screen.id,
+    }));
 
   return (
     <div className="grid h-60 w-full grid-cols-4 bg-white p-8 shadow-md">
@@ -74,20 +78,20 @@ function ConfigureCard({ interview }: Props): JSX.Element {
               <Dropdown
                 onChange={screenId => changeStartScreen(idx, screenId)}
                 value={state}
-                options={options}
+                options={getOptions()}
                 defaultButtonLabel=""
               />
 
-              {/* <Button type="button" onClick={() => removeStartScreen(idx)}>
+              <Button type="button" onClick={() => removeStartScreen(idx)}>
                 -
-              </Button> */}
+              </Button>
             </div>
           ))}
           <Dropdown
             onChange={addStartScreen}
             defaultButtonLabel="Add another screen!"
-            value={undefined}
-            options={options}
+            value={undefined} // TODO this value gets updated when a screen is selected, so the same screen can't be selected twice
+            options={getOptions()}
           />
         </LabelWrapper>
       </div>
