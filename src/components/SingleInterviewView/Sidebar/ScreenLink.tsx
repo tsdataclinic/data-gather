@@ -65,7 +65,7 @@ export default function ScreenLink({
       const entry = InterviewScreenEntry.create({
         name: vals.get('name') ?? '',
         prompt: vals.get('prompt') ?? '',
-        responseType: vals.get('responseType') ?? '', 
+        responseType: vals.get('responseType') ?? '',
         screenId: screen.id,
         text: vals.get('text') ?? '',
       });
@@ -76,11 +76,6 @@ export default function ScreenLink({
     },
     [interviewStore, screen],
   );
-  
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log(`isNewEntryModalOpen = ${isNewEntryModelOpen}`);
-  }, [isNewEntryModelOpen])
 
   if (screen === 'configure') {
     return (
