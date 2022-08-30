@@ -132,7 +132,7 @@ export class InterviewStoreAPI extends Dexie {
    * @param {string[]} entryIds
    * @returns {InterviewScreen.T[]} Array of interview screens
    */
-  private getScreenEntries = async (
+  getScreenEntries = async (
     entryIds: readonly string[],
   ): Promise<InterviewScreenEntry.T[]> => {
     const entries = (

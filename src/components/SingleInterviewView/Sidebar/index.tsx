@@ -60,7 +60,7 @@ export default function Sidebar({
 
       <Button
         variant="full"
-        className="absolute bottom-0 py-4"
+        className="absolute bottom-0 cursor-pointer py-4"
         onClick={() => setIsNewScreenModalOpen(true)}
       >
         +

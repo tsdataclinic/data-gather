@@ -65,8 +65,9 @@ export default function ScreenLink({
       const entry = InterviewScreenEntry.create({
         name: vals.get('name') ?? '',
         prompt: vals.get('prompt') ?? '',
-        responseType: vals.get('prompt') ?? '',
-        text: vals.get('prompt') ?? '',
+        responseType: vals.get('responseType') ?? '', 
+        screenId: screen.id,
+        text: vals.get('text') ?? '',
       });
 
       await interviewStore.addEntryToScreen(screen.id, entry);
@@ -75,6 +76,11 @@ export default function ScreenLink({
     },
     [interviewStore, screen],
   );
+  
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log(`isNewEntryModalOpen = ${isNewEntryModelOpen}`);
+  }, [isNewEntryModelOpen])
 
   if (screen === 'configure') {
     return (
@@ -103,7 +109,7 @@ export default function ScreenLink({
         {screen.title}
         {isSelected && (
           <FontAwesomeIcon
-            className="order-2 ml-auto w-3 h-3"
+            className="order-2 ml-auto h-3 w-3"
             icon={faPlus}
             onClick={() => setIsNewEntryModalOpen(true)}
           />
@@ -111,7 +117,7 @@ export default function ScreenLink({
       </NavLink>
 
       {isSelected ? (
-        <div className="flex flex-col items-center p-0 w-full">
+        <div className="flex w-full flex-col items-center p-0">
           {/* Header */}
           <ScrollLink
             className={entryMenuItemClass('HEADER')}

@@ -36,6 +36,7 @@ export function deserialize(
 export function create(values: {
   name: string;
   prompt: string;
+  responseType: string;
   screenId: string;
   text: string;
 }): InterviewScreenEntry {
@@ -44,7 +45,7 @@ export function create(values: {
     name: values.name,
     prompt: values.prompt,
     responseId: uuidv4(),
-    responseType: 'string',
+    responseType: values.responseType,
     screenId: values.screenId,
     text: values.text,
   };
