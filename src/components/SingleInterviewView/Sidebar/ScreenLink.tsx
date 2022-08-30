@@ -65,8 +65,8 @@ export default function ScreenLink({
       const entry = InterviewScreenEntry.create({
         name: vals.get('name') ?? '',
         prompt: vals.get('prompt') ?? '',
-        responseType: vals.get('prompt') ?? '',
-        text: vals.get('prompt') ?? '',
+        responseType: vals.get('responseType') ?? '',
+        text: vals.get('text') ?? '',
       });
 
       await interviewStore.addEntryToScreen(screen.id, entry);

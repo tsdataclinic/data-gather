@@ -2,6 +2,7 @@ import React from 'react';
 import { Element as ScrollableElement } from 'react-scroll';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
+import EntryCard from './EntryCard';
 
 interface Props {
   entries: InterviewScreenEntry.T[];
@@ -18,14 +19,7 @@ function ScreenCard({ entries, screen }: Props): JSX.Element {
         Header card for {screen.title}
       </ScrollableElement>
       {entries.map(entry => (
-        <ScrollableElement
-          name={entry.id}
-          className="w-full h-60 bg-white shadow-md"
-          key={entry.id}
-        >
-          Entry card for {entry.id} <br />
-          {entry.prompt}
-        </ScrollableElement>
+        <EntryCard entry={entry} key={entry.id} />
       ))}
       <ScrollableElement
         name="ACTION"
