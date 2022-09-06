@@ -12,6 +12,7 @@ interface Interview {
   readonly description: string;
   readonly id: string;
   readonly name: string;
+  readonly notes: string;
 
   /** Array of screen ids */
   readonly screens: readonly string[];
@@ -28,6 +29,7 @@ interface SerializedInterview {
   description: string;
   id: string;
   name: string;
+  notes: string;
   screens: string[];
   startingState: string[];
 }
@@ -52,6 +54,7 @@ export function create(values: {
     description: values.description,
     id: uuidv4(),
     name: values.name,
+    notes: '',
     screens: [],
     startingState: [],
   };
@@ -117,6 +120,16 @@ export function removeStartingScreen(
       ...interview.startingState.slice(0, index),
       ...interview.startingState.slice(index + 1),
     ],
+  };
+}
+
+/**
+ * Immutably update the notes for an interview's configuration
+ */
+export function updateNotes(interview: Interview, notes: string): Interview {
+  return {
+    ...interview,
+    notes,
   };
 }
 
