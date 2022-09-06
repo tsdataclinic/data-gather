@@ -314,6 +314,28 @@ export class InterviewStoreAPI extends Dexie {
   };
 
   /**
+   * Update the notes in the configuration for an interview
+   *
+   * @param {string} interviewId
+   * @param {string} notes
+   * @returns
+   */
+  updateNotes = async (
+    interviewId: string,
+    notes: string,
+  ): Promise<Interview.T> => {
+    const interview = await this.getInterview(interviewId);
+    invariant(
+      interview,
+      `[InterviewStore] updateNotes: Could not find interview with id '${interviewId}'`,
+    );
+
+    const newInterview = Interview.updateNotes(interview, notes);
+
+    return this.putInterview(newInterview);
+  };
+
+  /**
    * Add a new entry to an interview screen.
    * The screen must already exist otherwise this will throw an error.
    *

@@ -123,9 +123,6 @@ export function removeStartingScreen(
   };
 }
 
-/**
- * Immutably update the notes for an interview's configuration
- */
 export function updateNotes(interview: Interview, notes: string): Interview {
   return {
     ...interview,
@@ -134,68 +131,6 @@ export function updateNotes(interview: Interview, notes: string): Interview {
 }
 
 /**
- * Immutably add a starting screen to a particular position
- * in the interview's default sequence
- */
-export function addStartingScreen(
-  interview: Interview,
-  screenId: string,
-): Interview {
-  return {
-    ...interview,
-    startingState: [...interview.startingState, screenId],
-  };
-}
-
-/**
- * Immutably update a starting screen at a particular position
- * in the interview's default sequence
- */
-export function updateStartingScreen(
-  interview: Interview,
-  index: number,
-  screenId: string,
-): Interview {
-  return {
-    ...interview,
-    startingState: [
-      ...interview.startingState.slice(0, index),
-      screenId,
-      ...interview.startingState.slice(index + 1),
-    ],
-  };
-}
-
-/**
- * Immutably remove a starting screen from a particular position
- * in the interview's default sequence
- */
-export function removeStartingScreen(
-  interview: Interview,
-  index: number,
-): Interview {
-  return {
-    ...interview,
-    startingState: [
-      ...interview.startingState.slice(0, index),
-      ...interview.startingState.slice(index + 1),
-    ],
-  };
-}
-
-/**
-<<<<<<< HEAD
- * Immutably update the notes for an interview's configuration
- */
-export function updateNotes(interview: Interview, notes: string): Interview {
-  return {
-    ...interview,
-    notes,
-  };
-}
-
-/**
-=======
 >>>>>>> Configuration card: setting up a default sequence
  * Convert from serialized type to deserialized
  */
