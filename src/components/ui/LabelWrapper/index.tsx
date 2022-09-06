@@ -4,6 +4,7 @@ import type { ReactNode, CSSProperties } from 'react';
 type Props = {
   children: ReactNode;
   inline?: boolean;
+  inlineContainerStyles?: CSSProperties;
   label: string;
   labelAfter?: boolean;
   labelTextClassName?: string;
@@ -17,13 +18,16 @@ type Props = {
 export default function LabelWrapper({
   children,
   inline = false,
+  inlineContainerStyles,
   label,
   labelAfter = false,
   labelTextClassName,
   labelTextStyle,
 }: Props): JSX.Element {
   const childrenBlock = inline ? (
-    <div className="inline-block">{children}</div>
+    <div className="inline-block" style={inlineContainerStyles}>
+      {children}
+    </div>
   ) : (
     children
   );
