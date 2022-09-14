@@ -13,7 +13,6 @@ import { Link as ScrollLink } from 'react-scroll';
 import useInterviewStore from '../../../hooks/useInterviewStore';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import { Utils } from '../../../util/utils';
 import NewEntryModal from './NewEntryModel';
 
 type Props = {
@@ -138,7 +137,7 @@ export default function ScreenLink({
               onClick={() => setSelectedEntry(entryId)}
             >
               <FontAwesomeIcon size="1x" icon={faQuestion} />
-              {Utils.getEntryById(entryId, screenEntries)?.name}
+              {InterviewScreenEntry.getEntryById(entryId, screenEntries)?.name}
             </ScrollLink>
           ))}
 

@@ -1,12 +1,12 @@
 import React from 'react';
-import { InterviewScreen } from '../../types';
+import * as InterviewScreen from '../../models/InterviewScreen';
 
 interface Props {
-  screen: InterviewScreen;
+  screen: InterviewScreen.T;
 }
 
 function HeaderCard({ screen }: Props): JSX.Element {
-  return <div>{screen.displayName}</div>;
+  return <div>{screen.title}</div>;
 }
 
 export default HeaderCard;

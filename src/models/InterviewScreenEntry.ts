@@ -60,5 +60,24 @@ export function serialize(
   return interviewScreen;
 }
 
+/**
+ * Returns an entry corresponding to the given id from a list of entries
+ *
+ * @param entryId
+ * @param entries
+ */
+export function getEntryById(
+  entryId: string,
+  entries: InterviewScreenEntry[] | null,
+): InterviewScreenEntry | null {
+  if (entries === null) return null;
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const entry of entries) {
+    if (entry.id === entryId) return entry;
+  }
+  return null;
+}
+
 export type { InterviewScreenEntry as T };
 export type { SerializedInterviewScreenEntry as SerializedT };
