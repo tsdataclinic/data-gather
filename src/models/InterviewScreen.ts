@@ -64,6 +64,25 @@ export function addEntry(
 }
 
 /**
+ * Immutably removes an entry to a screen
+ */
+export function removeEntry(
+  screen: InterviewScreen,
+  entry: InterviewScreenEntry.T,
+): InterviewScreen {
+  const index = screen.entries.indexOf(entry.id);
+  if (index > -1)
+    return {
+      ...screen,
+      entries: [
+        ...screen.entries.slice(0, index),
+        ...screen.entries.slice(index + 1),
+      ],
+    };
+  return screen;
+}
+
+/**
  * Convert from serialized type to deserialized
  */
 export function deserialize(
