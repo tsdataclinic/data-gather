@@ -1,11 +1,11 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { Element as ScrollableElement } from 'react-scroll';
-import useInterviewStore from '../../hooks/useInterviewStore';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import Button from '../ui/Button';
 import ActionCard from './ActionCard';
+import EntryCard from './EntryCard';
 
 interface Props {
   actions: readonly ConditionalAction.T[];
@@ -14,7 +14,6 @@ interface Props {
 }
 
 function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
-  const interviewStore = useInterviewStore();
 
   // track the actions that have been modified but not yet persisted
   const [modifiedActions, setModifiedActions] = useState<ConditionalAction.T[]>(
@@ -45,14 +44,6 @@ function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
     [actions, modifiedActions],
   );
 
-  const addNewEntry = useCallback(async (): Promise<void> => {
-    const entry = InterviewScreenEntry.create({
-      prompt: 'Dummy Prompt',
-      screenId: screen.id,
-    });
-    await interviewStore.addEntryToScreen(screen.id, entry);
-  }, [interviewStore, screen]);
-
   return (
     <div className="flex w-full flex-col items-center gap-14">
       <div className="flex space-x-4 self-end">
@@ -66,16 +57,8 @@ function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
         Header card for {screen.title}
       </ScrollableElement>
       {entries.map(entry => (
-        <ScrollableElement
-          name={entry.id}
-          className="h-60 w-full bg-white shadow-md"
-          key={entry.id}
-        >
-          Entry card for {entry.id} <br />
-          {entry.prompt}
-        </ScrollableElement>
+        <EntryCard entry={entry} key={entry.id} />
       ))}
-      <Button onClick={addNewEntry}>Add Entry</Button>
       {allActions.map(action => (
         <ActionCard
           key={action.id}

@@ -2,14 +2,18 @@ import {
   faGear,
   faLocationArrow,
   faPenToSquare,
+  faPlus,
   faQuestion,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { NavLink, useMatch } from 'react-router-dom';
 import { Link as ScrollLink } from 'react-scroll';
+import useInterviewStore from '../../../hooks/useInterviewStore';
 import * as InterviewScreen from '../../../models/InterviewScreen';
+import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
+import NewEntryModal from './NewEntryModel';
 
 type Props = {
   isSelected: boolean;
@@ -24,12 +28,52 @@ export default function ScreenLink({
 }: Props): JSX.Element {
   const screenPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
   const [selectedEntry, setSelectedEntry] = useState<string | null>(null);
+  const [isNewEntryModelOpen, setIsNewEntryModalOpen] =
+    useState<boolean>(false);
+  const interviewStore = useInterviewStore();
+  const [screenEntries, setScreenEntries] = useState<
+    InterviewScreenEntry.T[] | null
+  >(null);
+
+  useEffect(() => {
+    if (screen !== 'configure')
+      interviewStore.getScreenEntries(screen.entries).then(setScreenEntries);
+    else setScreenEntries(null);
+  }, [interviewStore, screen]);
 
   const screenMenuItemClass = classNames(
     'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full hover:text-blue-700',
     {
       'bg-blue-100': isSelected && selectedEntry === null,
     },
+  );
+  const entryMenuItemClass = (id: string): string => {
+    if (selectedEntry === id) {
+      return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full bg-blue-100 hover:text-blue-700';
+    }
+    return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full hover:text-blue-700';
+  };
+
+  const onNewEntrySubmit = useCallback(
+    async (vals: Map<string, string>): Promise<void> => {
+      if (screen === 'configure') {
+        setIsNewEntryModalOpen(false);
+        return;
+      }
+
+      const entry = InterviewScreenEntry.create({
+        name: vals.get('name') ?? '',
+        prompt: vals.get('prompt') ?? '',
+        responseType: vals.get('responseType') ?? '',
+        screenId: screen.id,
+        text: vals.get('text') ?? '',
+      });
+
+      await interviewStore.addEntryToScreen(screen.id, entry);
+
+      setIsNewEntryModalOpen(false);
+    },
+    [interviewStore, screen],
   );
 
   if (screen === 'configure') {
@@ -45,13 +89,6 @@ export default function ScreenLink({
     );
   }
 
-  const entryMenuItemClass = (id: string): string => {
-    if (selectedEntry === id) {
-      return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full bg-blue-100 hover:text-blue-700';
-    }
-    return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full hover:text-blue-700';
-  };
-
   return (
     <div className="w-full" key={screen.id}>
       <NavLink
@@ -64,10 +101,17 @@ export default function ScreenLink({
       >
         <FontAwesomeIcon size="1x" icon={faPenToSquare} />
         {screen.title}
+        {isSelected && (
+          <FontAwesomeIcon
+            className="order-2 ml-auto h-3 w-3"
+            icon={faPlus}
+            onClick={() => setIsNewEntryModalOpen(true)}
+          />
+        )}
       </NavLink>
 
       {isSelected ? (
-        <div className="flex flex-col items-center p-0 w-full">
+        <div className="flex w-full flex-col items-center p-0">
           {/* Header */}
           <ScrollLink
             className={entryMenuItemClass('HEADER')}
@@ -93,7 +137,7 @@ export default function ScreenLink({
               onClick={() => setSelectedEntry(entryId)}
             >
               <FontAwesomeIcon size="1x" icon={faQuestion} />
-              {entryId}
+              {InterviewScreenEntry.getEntryById(entryId, screenEntries)?.name}
             </ScrollLink>
           ))}
 
@@ -111,6 +155,12 @@ export default function ScreenLink({
           </ScrollLink>
         </div>
       ) : null}
+
+      <NewEntryModal
+        isOpen={isNewEntryModelOpen}
+        onDismiss={() => setIsNewEntryModalOpen(false)}
+        onSubmit={onNewEntrySubmit}
+      />
     </div>
   );
 }
