@@ -1,75 +1,96 @@
 import { faCircleQuestion } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React from 'react';
+import React, { FormEvent, useState } from 'react';
 import { Element as ScrollableElement } from 'react-scroll';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
+import './EntryCard.css';
+import useInterviewStore from '../../hooks/useInterviewStore';
 
 interface Props {
   entry: InterviewScreenEntry.T;
 }
+
 function EntryCard({ entry }: Props): JSX.Element {
-  const handleSubmit = (): void => {
-    // eslint-disable-next-line no-console
-    console.log('submitted');
+  const [displayedEntry, setDisplayedEntry] =
+    useState<InterviewScreenEntry.T>(entry);
+  const interviewStore = useInterviewStore();
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    const formElements = event.currentTarget.elements;
+
+    const newEntry: InterviewScreenEntry.T = {
+      screenId: entry.screenId,
+      id: entry.id,
+      name: entry.name,
+      prompt: (formElements.namedItem('prompt') as HTMLInputElement).value,
+      text: (formElements.namedItem('text') as HTMLInputElement).value,
+      responseId: (formElements.namedItem('responseId') as HTMLInputElement)
+        .value,
+      responseType: (formElements.namedItem('responseType') as HTMLInputElement)
+        .value,
+    };
+
+    interviewStore.putScreenEntry(newEntry).then(setDisplayedEntry);
   };
 
   return (
     <ScrollableElement
       name={entry.id}
-      className="flex flex-row p-5 w-full bg-white shadow-md"
+      className="flex w-full flex-row bg-white p-10 shadow-md"
       key={entry.id}
     >
-      <div className="flex flex-row w-1/6">
-        <FontAwesomeIcon className="pr-4 w-6 h-6" icon={faCircleQuestion} />
+      <div className="flex w-1/6 flex-row">
+        <FontAwesomeIcon className="h-6 w-6 pr-4" icon={faCircleQuestion} />
         {entry.name}
       </div>
-      <form className="flex flex-col gap-4" onSubmit={() => handleSubmit}>
-        <div className="flex flex-row divide-x-2">
-          <div className="pr-4 w-40 text-right">Prompt</div>
-          <div className="pl-4">
-            <div className="pb-2">
+      <form
+        id={entry.id}
+        className="flex w-full flex-col items-center gap-4"
+        onSubmit={handleSubmit}
+      >
+        <div className="flex w-full flex-row divide-x-2">
+          <div className="w-40 pr-4 text-right">Prompt</div>
+          <div className="w-full pl-4">
+            <div className="w-full pb-2">
               <label htmlFor="fname">Text</label>
               <input
-                className="p-1 ml-4 rounded-lg border-2 border-solid"
                 type="text"
-                value={entry.prompt}
+                defaultValue={displayedEntry.prompt}
                 width={50}
-                name="fname"
+                name="prompt"
               />
             </div>
             <div className="pt-2">
               <label htmlFor="fname">Helper Text</label>
               <input
-                className="p-1 ml-4 rounded-lg border-2 border-solid"
                 type="text"
-                value={entry.text}
+                defaultValue={displayedEntry.text}
                 width={50}
-                name="fname"
+                name="text"
               />
             </div>
           </div>
         </div>
-        <div className="flex flex-row divide-x-2">
-          <div className="pr-4 w-40 text-right">Response</div>
-          <div className="pl-4">
-            <div className="pb-2">
+        <div className="flex w-full flex-row divide-x-2">
+          <div className="w-40 pr-4 text-right">Response</div>
+          <div className="w-full pl-4">
+            <div className="w-full pb-2">
               <label htmlFor="fname">ID</label>
               <input
-                className="p-1 ml-4 rounded-lg border-2 border-solid"
                 type="text"
-                value={entry.responseId}
+                defaultValue={displayedEntry.responseId}
                 width={50}
-                name="fname"
+                name="responseId"
               />
             </div>
             <div className="pt-2">
               <label htmlFor="fname">Type</label>
               <input
-                className="p-1 ml-4 rounded-lg border-2 border-solid"
                 type="text"
-                value={entry.responseType}
+                defaultValue={displayedEntry.responseType}
                 width={50}
-                name="fname"
+                name="responseType"
               />
             </div>
           </div>

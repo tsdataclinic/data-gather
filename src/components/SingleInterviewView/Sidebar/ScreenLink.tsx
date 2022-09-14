@@ -13,7 +13,7 @@ import { Link as ScrollLink } from 'react-scroll';
 import useInterviewStore from '../../../hooks/useInterviewStore';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import NewEntryModal from './NewEntryModel';
+import NewEntryModal from './NewEntryModal';
 
 type Props = {
   isSelected: boolean;

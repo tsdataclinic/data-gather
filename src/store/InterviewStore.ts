@@ -393,6 +393,28 @@ export class InterviewStoreAPI extends Dexie {
       this.unsafePutScreenEntry(interviewScreenEntry),
     ]);
   };
+
+  /**
+   * Removes an entry from the given screen.
+   * The screen must already exist otherwise this will throw an error.
+   *
+   * @param {string} screenId
+   * @param {InterviewScreenEntry.T} interviewScreenEntry
+   */
+  removeEntryFromScreen = async (
+    screenId: string,
+    interviewScreenEntry: InterviewScreenEntry.T,
+  ): Promise<InterviewScreen.T> => {
+    const screen = await this.getScreen(screenId);
+    invariant(
+      screen,
+      `[InterviewStore] addEntryToScreen: Could not find screen with id '${screenId}'`,
+    );
+
+    const newScreen = InterviewScreen.removeEntry(screen, interviewScreenEntry);
+
+    return this.putScreen(newScreen);
+  };
 }
 
 const InterviewStoreContext = createContext<InterviewStoreAPI | undefined>(
