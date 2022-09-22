@@ -3,10 +3,16 @@ import Button from '../Button';
 
 type Props = {
   children?: ReactNode;
+  className?: string;
 };
 
 export default function FormSubmit({
+  className,
   children = 'Submit',
 }: Props): JSX.Element {
-  return <Button type="submit">{children}</Button>;
+  return (
+    <Button className={className ?? ''} type="submit">
+      {children}
+    </Button>
+  );
 }

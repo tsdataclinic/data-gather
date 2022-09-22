@@ -3,10 +3,11 @@ import type { ChangeEvent, KeyboardEvent } from 'react';
 
 type Props = {
   className?: string;
+  defaultValue?: string;
   id?: string;
   name?: string;
-  onChange: (val: string, event: ChangeEvent<HTMLInputElement>) => void;
 
+  onChange: (val: string, event: ChangeEvent<HTMLInputElement>) => void;
   /**
    * Triggered when the 'Enter' key is pressed.
    */
@@ -26,6 +27,7 @@ export default function InputText({
   placeholder,
   required,
   size = 'normal',
+  defaultValue,
   value,
 }: Props): JSX.Element {
   const onInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -58,6 +60,7 @@ export default function InputText({
       className={inputClassName}
       onChange={onInputChange}
       onKeyPress={onKeyPress}
+      defaultValue={defaultValue}
       value={value}
       placeholder={placeholder}
     />
