@@ -28,7 +28,7 @@ function HeaderCard({ screen }: Props): JSX.Element {
         title: vals.get('Title') ?? '',
       });
       const newScreen = await interviewStore.putScreen(updatedScreen);
-      setDisplayedScreen(newScreen);
+
       dispatch({
         screen: newScreen,
         type: 'SCREEN_UPDATE',
