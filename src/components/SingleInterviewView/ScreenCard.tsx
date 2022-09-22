@@ -1,11 +1,11 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { Element as ScrollableElement } from 'react-scroll';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import Button from '../ui/Button';
 import ActionCard from './ActionCard';
 import EntryCard from './EntryCard';
+import HeaderCard from './HeaderCard';
 
 interface Props {
   actions: readonly ConditionalAction.T[];
@@ -14,7 +14,6 @@ interface Props {
 }
 
 function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
-
   // track the actions that have been modified but not yet persisted
   const [modifiedActions, setModifiedActions] = useState<ConditionalAction.T[]>(
     [],
@@ -50,12 +49,7 @@ function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
         <Button>New Entry</Button>
         <Button onClick={onNewActionClick}>New Action</Button>
       </div>
-      <ScrollableElement
-        name="HEADER"
-        className="h-60 w-full bg-white shadow-md"
-      >
-        Header card for {screen.title}
-      </ScrollableElement>
+      <HeaderCard screen={screen} />
       {entries.map(entry => (
         <EntryCard entry={entry} key={entry.id} />
       ))}
