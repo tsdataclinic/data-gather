@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as InterviewScreenEntry from './InterviewScreenEntry';
+import * as ConditionalAction from './ConditionalAction';
 
 /**
  * A group of entries, corresponding to a particular state in the interview.
@@ -60,6 +61,19 @@ export function addEntry(
   return {
     ...screen,
     entries: screen.entries.concat(entry.id),
+  };
+}
+
+/**
+ * Immutably add an action to a screen
+ */
+export function addAction(
+  screen: InterviewScreen,
+  conditionalAction: ConditionalAction.T,
+): InterviewScreen {
+  return {
+    ...screen,
+    actions: screen.actions.concat(conditionalAction.id),
   };
 }
 

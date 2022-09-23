@@ -209,15 +209,12 @@ export class InterviewStoreAPI extends Dexie {
   };
 
   /**
-   * If this InterviewScreenEntry already exists, update it. Otherwise, add it.
-   *
-   * NOTE: if this is a new InterviewScreenEntry that doesn't exist in a screen yet,
-   * you should call `addEntryToScreen` instead.
-   *
-   * @param {InterviewScreenEntry.T} screenEntry The screen entry to add
-   * @returns {InterviewScreenEntry.T} the updated interview screen entry
+   * Update an InterviewScreenEntry, or add it if it doesn't exist.
+   * This function is unsafe because it does not check to see if it exists
+   * in an InterviewScreen first, so it's possible to store a screenEntry
+   * without adding it to the parent InterviewScreen.
    */
-  putScreenEntry = async (
+  private unsafePutScreenEntry = async (
     screenEntry: InterviewScreenEntry.T,
   ): Promise<InterviewScreenEntry.T> => {
     await this.interviewScreenEntries.put(
@@ -226,13 +223,74 @@ export class InterviewStoreAPI extends Dexie {
     return screenEntry;
   };
 
-  putScreenAction = async (
+  /**
+   * Update an InterviewScreenEntry, or add it if it doesn't exist.
+   *
+   * @param {InterviewScreenEntry.T} screenEntry The screen entry to add
+   * @returns {InterviewScreenEntry.T} the updated interview screen entry
+   */
+  putScreenEntry = async (
+    screenEntry: InterviewScreenEntry.T,
+  ): Promise<InterviewScreenEntry.T> => {
+    const screen = await this.getScreen(screenEntry.screenId);
+    if (screen && !screen.entries.includes(screenEntry.id)) {
+      await this.addEntryToScreen(screenEntry.screenId, screenEntry);
+      return screenEntry;
+    }
+    await this.unsafePutScreenEntry(screenEntry);
+    return screenEntry;
+  };
+
+  /**
+   * Update a ConditionalAction, or add it if it doesn't exist.
+   * This function is unsafe because it does not check to see if it exists
+   * in an InterviewScreen first, so it's possible to store a conditionalAction
+   * without adding it to the parent InterviewScreen.
+   */
+  private unsafePutScreenAction = async (
     conditionalAction: ConditionalAction.T,
   ): Promise<ConditionalAction.T> => {
     await this.conditionalActions.put(
       ConditionalAction.serialize(conditionalAction),
     );
     return conditionalAction;
+  };
+
+  /**
+   * Given a screen identified by `screenId`, set its array of ConditionalActions to
+   * the given `conditionalActions` array.
+   * - Any conditional actions that already exist will be updated
+   * - Any conditional actions that don't exist in the database will be created
+   *
+   * TODO: this function does not handle deleting any actions from the db yet
+   *
+   * @param {string} screenId The screen to receive the new array of actions
+   * @param {ConditionalAction.T[]} conditionalActions Array of actions to set
+   * @returns {ConditionalAction.T} the updated interview screen entry
+   */
+  updateScreenConditionalActions = async (
+    screenId: string,
+    conditionalActions: readonly ConditionalAction.T[],
+  ): Promise<[InterviewScreen.T, ConditionalAction.T[]]> => {
+    const screen = await this.getScreen(screenId);
+    invariant(
+      screen,
+      `[InterviewStore] putScreenActions: Could not find screen with id '${screenId}'`,
+    );
+
+    const newScreen = {
+      ...screen,
+      actions: conditionalActions.map(action => action.id),
+    };
+
+    console.log('storing', conditionalActions);
+
+    return Promise.all([
+      this.putScreen(newScreen),
+      Promise.all(
+        conditionalActions.map(action => this.unsafePutScreenAction(action)),
+      ),
+    ]);
   };
 
   /**
@@ -312,7 +370,32 @@ export class InterviewStoreAPI extends Dexie {
 
     return Promise.all([
       this.putScreen(newScreen),
-      this.putScreenEntry(interviewScreenEntry),
+      this.unsafePutScreenEntry(interviewScreenEntry),
+    ]);
+  };
+
+  /**
+   * Add a new conditional action to an interview screen.
+   * The screen must already exist otherwise this will throw an error.
+   *
+   * @param {string} screenId
+   * @param {ConditionalAction.T} conditionalAction
+   */
+  addActionToScreen = async (
+    screenId: string,
+    conditionalAction: ConditionalAction.T,
+  ): Promise<[InterviewScreen.T, ConditionalAction.T]> => {
+    const screen = await this.getScreen(screenId);
+    invariant(
+      screen,
+      `[InterviewStore] addActionToScreen: Could not find screen with id '${screenId}'`,
+    );
+
+    const newScreen = InterviewScreen.addAction(screen, conditionalAction);
+
+    return Promise.all([
+      this.putScreen(newScreen),
+      this.unsafePutScreenAction(conditionalAction),
     ]);
   };
 }

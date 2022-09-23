@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import * as React from 'react';
 import { Element as ScrollableElement } from 'react-scroll';
 import useInterviewStore from '../../hooks/useInterviewStore';
 import * as ConditionalAction from '../../models/ConditionalAction';
@@ -14,15 +14,18 @@ interface Props {
 }
 
 function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
+  const screenId = screen.id;
   const interviewStore = useInterviewStore();
+  console.log(screen);
 
-  // track the actions that have been modified but not yet persisted
-  const [modifiedActions, setModifiedActions] = useState<ConditionalAction.T[]>(
-    [],
-  );
+  // clone the actions array here so we can modify them without persisting until
+  // 'save' is hit
+  const [allActions, setAllActions] = React.useState<
+    readonly ConditionalAction.T[]
+  >(() => [...actions]);
 
   const onNewActionClick = (): void =>
-    setModifiedActions(prevActions =>
+    setAllActions(prevActions =>
       prevActions.concat(
         ConditionalAction.create({
           screenId: screen.id,
@@ -30,28 +33,25 @@ function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
       ),
     );
 
-  const onActionChange = useCallback(
-    (newAction: ConditionalAction.T): void =>
-      setModifiedActions(prevActions =>
-        prevActions.map(action =>
-          action.id === newAction.id ? newAction : action,
-        ),
+  const onActionChange = React.useCallback((newAction: ConditionalAction.T) => {
+    setAllActions(prevActions =>
+      prevActions.map(action =>
+        action.id === newAction.id ? newAction : action,
       ),
-    [],
-  );
+    );
+  }, []);
 
-  const allActions = useMemo(
-    () => actions.concat(modifiedActions),
-    [actions, modifiedActions],
-  );
-
-  const addNewEntry = useCallback(async (): Promise<void> => {
+  const addNewEntry = React.useCallback(async () => {
     const entry = InterviewScreenEntry.create({
+      screenId,
       prompt: 'Dummy Prompt',
-      screenId: screen.id,
     });
-    await interviewStore.addEntryToScreen(screen.id, entry);
-  }, [interviewStore, screen]);
+    await interviewStore.addEntryToScreen(screenId, entry);
+  }, [interviewStore, screenId]);
+
+  const onSaveClick = React.useCallback(async () => {
+    await interviewStore.updateScreenConditionalActions(screenId, allActions);
+  }, [allActions, screenId, interviewStore]);
 
   return (
     <div className="flex w-full flex-col items-center gap-14">
@@ -83,6 +83,7 @@ function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
           onActionChange={onActionChange}
         />
       ))}
+      <Button onClick={onSaveClick}>Save</Button>
     </div>
   );
 }

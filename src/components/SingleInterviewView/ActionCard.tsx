@@ -1,7 +1,7 @@
+import * as React from 'react';
 import { faLocationArrow } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { MixedCheckbox } from '@reach/checkbox';
-import { ChangeEvent, useCallback, useState } from 'react';
 import { Element as ScrollableElement } from 'react-scroll';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import Dropdown from '../ui/Dropdown';
@@ -31,21 +31,15 @@ type Props = {
 
 // TODO: currently any edits to an action remain local to this component.
 // Next steps are to make this persistable to backend.
-export default function ActionCard({ action }: Props): JSX.Element {
-  const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] = useState(true);
+export default function ActionCard({
+  action,
+  onActionChange,
+}: Props): JSX.Element {
+  const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] =
+    React.useState(true);
 
-  // the response key to use for the conditional check
-  const [responseKey, setResponseKey] = useState(action.responseKey);
-  const [conditionalOperator, setConditionalOperator] = useState(
-    action.conditionalOperator,
-  );
-
-  // the value to use for the conditional comparison
-  const [conditionalValue, setConditionalValue] = useState(action.value);
-  const [actionType, setActionType] = useState(action.actionConfig.type);
-
-  const onAlwaysExecuteChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>): void => {
+  const onAlwaysExecuteChange = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>): void => {
       const isChecked = event.target.checked;
       setIsAlwaysExecuteChecked(isChecked);
 
@@ -53,23 +47,66 @@ export default function ActionCard({ action }: Props): JSX.Element {
       // then we should change it to a reasonable default (such as EQUALS)
       if (
         !isChecked &&
-        conditionalOperator ===
+        action.conditionalOperator ===
           ConditionalAction.ConditionalOperator.AlwaysExecute
       ) {
-        setConditionalOperator(ConditionalAction.ConditionalOperator.Equals);
+        onActionChange({
+          ...action,
+          conditionalOperator: ConditionalAction.ConditionalOperator.Equals,
+        });
       }
     },
-    [conditionalOperator],
+    [action, onActionChange],
   );
 
-  // TODO: when the entries UI has been done, we should be loading the
+  const onConditionalOperatorChange = React.useCallback(
+    (newConditionalOperator: ConditionalAction.ConditionalOperator) => {
+      onActionChange({
+        ...action,
+        conditionalOperator: newConditionalOperator,
+      });
+    },
+    [action, onActionChange],
+  );
+
+  const onResponseKeyChange = React.useCallback(
+    (newResponseKey: string) => {
+      onActionChange({
+        ...action,
+        responseKey: newResponseKey,
+      });
+    },
+    [action, onActionChange],
+  );
+
+  const onConditionalValueChange = React.useCallback(
+    (newValue: string) => {
+      onActionChange({
+        ...action,
+        value: newValue,
+      });
+    },
+    [action, onActionChange],
+  );
+
+  const onActionTypeChange = React.useCallback(
+    (newActionType: ConditionalAction.ActionType) => {
+      onActionChange({
+        ...action,
+        actionConfig:
+          ConditionalAction.createDefaultActionConfig(newActionType),
+      });
+    },
+    [action, onActionChange],
+  );
+
   const conditionalOperatorRow = isAlwaysExecuteChecked ? null : (
     <div className="flex items-center space-x-4">
       <p style={labelStyle}>Condition</p>
       <Dropdown
-        onChange={setResponseKey}
+        onChange={onResponseKeyChange}
         defaultButtonLabel="Response variable"
-        value={responseKey}
+        value={action.responseKey}
         options={[
           { displayValue: 'Response Key 1', value: 'responseKey1' },
           { displayValue: 'Response Key 2', value: 'responseKey2' },
@@ -77,16 +114,16 @@ export default function ActionCard({ action }: Props): JSX.Element {
       />
 
       <Dropdown
-        onChange={setConditionalOperator}
+        onChange={onConditionalOperatorChange}
         defaultButtonLabel="Operator"
-        value={conditionalOperator}
+        value={action.conditionalOperator}
         options={OPERATOR_OPTIONS}
       />
 
       <InputText
         placeholder="value"
-        onChange={setConditionalValue}
-        value={conditionalValue ?? ''}
+        onChange={onConditionalValueChange}
+        value={action.value ?? ''}
       />
     </div>
   );
@@ -119,9 +156,9 @@ export default function ActionCard({ action }: Props): JSX.Element {
 
         <LabelWrapper inline label="Action" labelTextStyle={labelStyle}>
           <Dropdown
-            onChange={setActionType}
+            onChange={onActionTypeChange}
             defaultButtonLabel="Action type"
-            value={actionType}
+            value={action.actionConfig.type}
             options={ACTION_TYPE_OPTIONS}
           />
         </LabelWrapper>
