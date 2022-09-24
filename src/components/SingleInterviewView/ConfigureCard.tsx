@@ -116,12 +116,15 @@ function ConfigureCard({ interview }: Props): JSX.Element {
                     alignItems: 'center',
                   }}
                 >
-                  <Dropdown
-                    onChange={screenId => changeStartScreen(idx, screenId)}
-                    value={state}
-                    options={getOptions()}
-                    defaultButtonLabel=""
-                  />
+                  <span style={{ width: '8rem' }}>
+                    <Dropdown
+                      onChange={screenId => changeStartScreen(idx, screenId)}
+                      value={state}
+                      options={getOptions()}
+                      defaultButtonLabel=""
+                    />
+                  </span>
+
                   <span style={{ marginLeft: '10px' }}>
                     <Button
                       type="button"
