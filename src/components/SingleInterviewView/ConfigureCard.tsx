@@ -4,7 +4,6 @@ import React, { useCallback, useState } from 'react';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
 import useInterviewStore from '../../hooks/useInterviewStore';
 import * as Interview from '../../models/Interview';
-// eslint-disable-next-line
 import Button from '../ui/Button';
 import Dropdown from '../ui/Dropdown';
 import LabelWrapper from '../ui/LabelWrapper';
@@ -16,7 +15,6 @@ interface Props {
 
 const labelStyle = { width: '10rem' };
 
-// eslint-disable-next-line
 function ConfigureCard({ interview }: Props): JSX.Element {
   const { startingState } = interview;
   const interviewStore = useInterviewStore();
@@ -24,29 +22,34 @@ function ConfigureCard({ interview }: Props): JSX.Element {
 
   const [displayedNotes, setDisplayedNotes] = useState(interview.notes);
 
-  const saveNotes = useCallback(async (): Promise<void> => {
-    await interviewStore.updateNotes(interview.id, displayedNotes);
+  const saveNotes = useCallback((): void => {
+    interviewStore.updateNotes(interview.id, displayedNotes);
   }, [displayedNotes, interviewStore, interview]);
 
   const changeStartScreen = useCallback(
-    async (index: number, screenId: string): Promise<void> => {
-      await interviewStore.updateStartingScreen(interview.id, index, screenId);
+    (index: number, screenId: string): void => {
+      const newInterview = Interview.updateStartingScreen(
+        interview,
+        index,
+        screenId,
+      );
+      interviewStore.putInterview(newInterview);
     },
     [interviewStore, interview],
   );
 
   const addStartScreen = useCallback(
-    async (screenId: string): Promise<void> => {
-      await interviewStore.addStartingScreen(interview.id, screenId);
+    (screenId: string): void => {
+      const newInterview = Interview.addStartingScreen(interview, screenId);
+      interviewStore.putInterview(newInterview);
     },
     [interviewStore, interview],
   );
 
-  // TODO re-enable this when I figure out the dropdown triggering this
-  // eslint-disable-next-line
   const removeStartScreen = useCallback(
     async (index: number): Promise<void> => {
-      await interviewStore.removeStartingScreen(interview.id, index);
+      const newInterview = Interview.removeStartingScreen(interview, index);
+      await interviewStore.putInterview(newInterview);
     },
     [interviewStore, interview],
   );
@@ -88,37 +91,56 @@ function ConfigureCard({ interview }: Props): JSX.Element {
           />
         </LabelWrapper>
 
-        <LabelWrapper
-          inline
-          label="Default Sequence"
-          labelTextStyle={labelStyle}
-          inlineContainerStyles={{ verticalAlign: 'text-top' }}
-        >
-          {startingState.map((state, idx) => (
+        <span>
+          <div
+            style={{
+              display: 'flex',
+              marginTop: '20px',
+            }}
+          >
+            <div style={{ width: '10rem' }}>Starting State</div>
             <div
-              // eslint-disable-next-line react/no-array-index-key
-              key={`startingstate_${state}_${idx}`}
-              style={{ display: 'flex', marginBottom: '20px' }}
+              style={{
+                display: 'flex',
+                marginLeft: '16px',
+                flexDirection: 'column',
+              }}
             >
-              {/* TODO this button's click handler is triggered when the dropdown below is opened */}
-              {/* <Button type="button" onClick={() => removeStartScreen(idx)}>
-                -
-              </Button> */}
+              {startingState.map((state, idx) => (
+                <div
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={`startingstate_${state}_${idx}`}
+                  style={{
+                    display: 'flex',
+                    marginBottom: '20px',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Dropdown
+                    onChange={screenId => changeStartScreen(idx, screenId)}
+                    value={state}
+                    options={getOptions()}
+                    defaultButtonLabel=""
+                  />
+                  <span style={{ marginLeft: '10px' }}>
+                    <Button
+                      type="button"
+                      onClick={() => removeStartScreen(idx)}
+                    >
+                      -
+                    </Button>
+                  </span>
+                </div>
+              ))}
               <Dropdown
-                onChange={screenId => changeStartScreen(idx, screenId)}
-                value={state}
+                onChange={addStartScreen}
+                defaultButtonLabel="Add another screen!"
+                value={undefined} // TODO this value gets updated when a screen is selected, so the same screen can't be selected twice
                 options={getOptions()}
-                defaultButtonLabel=""
               />
             </div>
-          ))}
-          <Dropdown
-            onChange={addStartScreen}
-            defaultButtonLabel="Add another screen!"
-            value={undefined} // TODO this value gets updated when a screen is selected, so the same screen can't be selected twice
-            options={getOptions()}
-          />
-        </LabelWrapper>
+          </div>
+        </span>
       </div>
     </div>
   );
