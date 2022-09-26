@@ -25,9 +25,9 @@ export default function FormInput({
   value,
   size = 'normal',
 }: Props): JSX.Element {
-  const [val, setVal] = useState(value ?? '');
+  const [val, setVal] = useState(value);
   return (
-    <LabelWrapper className={className ?? ''} label={label}>
+    <LabelWrapper className={className} label={label}>
       <InputText
         name={name}
         defaultValue={defaultValue}

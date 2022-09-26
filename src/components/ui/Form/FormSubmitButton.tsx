@@ -11,7 +11,7 @@ export default function FormSubmit({
   children = 'Submit',
 }: Props): JSX.Element {
   return (
-    <Button className={className ?? ''} type="submit">
+    <Button className={className} type="submit">
       {children}
     </Button>
   );
