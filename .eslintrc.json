@@ -97,7 +97,12 @@
       {
         "labelComponents": ["LabelWrapper"],
         "labelAttributes": ["label"],
-        "controlComponents": ["InputText", "Dropdown", "MixedCheckbox"]
+        "controlComponents": [
+          "InputText",
+          "Dropdown",
+          "MixedCheckbox",
+          "TextArea"
+        ]
       }
     ],
     "no-shadow": "off"
