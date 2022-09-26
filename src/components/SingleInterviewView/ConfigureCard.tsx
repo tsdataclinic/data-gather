@@ -78,7 +78,6 @@ function ConfigureCard({ interview }: Props): JSX.Element {
         <span>Configure</span>
       </div>
       <div className="col-span-3 space-y-4">
-        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
         <LabelWrapper
           inline
           label="Notes"
@@ -94,16 +93,16 @@ function ConfigureCard({ interview }: Props): JSX.Element {
 
         <span>
           <div
+            className="mt-5"
             style={{
               display: 'flex',
-              marginTop: '20px',
             }}
           >
-            <div style={{ width: '10rem' }}>Starting State</div>
+            <div className="w-40">Starting State</div>
             <div
+              className="ml-4"
               style={{
                 display: 'flex',
-                marginLeft: '16px',
                 flexDirection: 'column',
               }}
             >
@@ -117,7 +116,7 @@ function ConfigureCard({ interview }: Props): JSX.Element {
                     alignItems: 'center',
                   }}
                 >
-                  <span style={{ width: '8rem' }}>
+                  <span className="w-32">
                     <Dropdown
                       onChange={screenId => changeStartScreen(idx, screenId)}
                       value={state}
@@ -126,7 +125,7 @@ function ConfigureCard({ interview }: Props): JSX.Element {
                     />
                   </span>
 
-                  <span style={{ marginLeft: '10px' }}>
+                  <span className="ml-2">
                     <Button
                       type="button"
                       onClick={() => removeStartScreen(idx)}
