@@ -30,7 +30,7 @@ export default function FormInput({
     <LabelWrapper className={className} label={label}>
       <InputText
         name={name}
-        defaultValue={defaultValue}
+        defaultValue={defaultValue || ''}
         value={val}
         onChange={setVal}
         size={size}
