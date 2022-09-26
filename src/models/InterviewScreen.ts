@@ -55,12 +55,7 @@ export function create(values: {
 
 export function update(
   original: InterviewScreen,
-  newValues: {
-    actions?: [];
-    entries?: [];
-    headerText?: string;
-    title?: string;
-  },
+  newValues: Pick<InterviewScreen, 'headerText' | 'title'>,
 ): InterviewScreen {
   return {
     ...original,
