@@ -27,18 +27,22 @@ export default function ScreenLink({
   screen,
 }: Props): JSX.Element {
   const screenPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
-  const [selectedEntry, setSelectedEntry] = useState<string | null>(null);
+  const [selectedEntry, setSelectedEntry] = useState<string | undefined>(
+    undefined,
+  );
   const [isNewEntryModelOpen, setIsNewEntryModalOpen] =
     useState<boolean>(false);
   const interviewStore = useInterviewStore();
   const [screenEntries, setScreenEntries] = useState<
-    InterviewScreenEntry.T[] | null
-  >(null);
+    InterviewScreenEntry.T[] | undefined
+  >(undefined);
 
   useEffect(() => {
-    if (screen !== 'configure')
+    if (screen !== 'configure') {
       interviewStore.getScreenEntries(screen.entries).then(setScreenEntries);
-    else setScreenEntries(null);
+    } else {
+      setScreenEntries(undefined);
+    }
   }, [interviewStore, screen]);
 
   const screenMenuItemClass = classNames(
@@ -96,7 +100,7 @@ export default function ScreenLink({
         to={`${screenPath}/screen/${screen.id}`}
         onClick={() => {
           onScreenSelect(screen.id);
-          setSelectedEntry(null);
+          setSelectedEntry(undefined);
         }}
       >
         <FontAwesomeIcon size="1x" icon={faPenToSquare} />
