@@ -24,8 +24,8 @@ function HeaderCard({ screen }: Props): JSX.Element {
   const onSubmit = useCallback(
     async (vals: Map<string, string>): Promise<void> => {
       const updatedScreen = InterviewScreen.update(screen, {
-        headerText: vals.get('Header text') ?? '',
-        title: vals.get('Title') ?? '',
+        headerText: vals.get('headerText') ?? '',
+        title: vals.get('title') ?? '',
       });
       const newScreen = await interviewStore.putScreen(updatedScreen);
 
@@ -46,12 +46,11 @@ function HeaderCard({ screen }: Props): JSX.Element {
         <FontAwesomeIcon className="h-6 w-6 pr-4" icon={faGear} />
       </div>
       <Form className="flex flex-col gap-4" onSubmit={onSubmit}>
-        <Form.Input label="Title" name="Title" value={displayedScreen.title} />
+        <Form.Input label="Title" name="title" value={displayedScreen.title} />
         <Form.Input
-          label="Header
-          text"
-          name="Header text"
-          value={displayedScreen.headerText}
+          label="Header text"
+          name="headerText"
+          defaultValue={displayedScreen.headerText}
         />
         <Form.SubmitButton>Save</Form.SubmitButton>
       </Form>
