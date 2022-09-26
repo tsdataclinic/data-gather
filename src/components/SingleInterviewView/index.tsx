@@ -36,6 +36,7 @@ export default function SingleInterviewView(): JSX.Element {
               path={`/screen/${screen.id}`}
               element={
                 <ScreenCard
+                  key={screen.id}
                   screen={screen}
                   entries={entries?.get(screen.id) ?? []}
                   actions={actions?.get(screen.id) ?? []}
