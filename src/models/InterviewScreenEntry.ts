@@ -68,15 +68,13 @@ export function serialize(
  */
 export function getEntryById(
   entryId: string,
-  entries: InterviewScreenEntry[] | null,
-): InterviewScreenEntry | null {
-  if (entries === null) return null;
-
-  // eslint-disable-next-line no-restricted-syntax
-  for (const entry of entries) {
-    if (entry.id === entryId) return entry;
+  entries: InterviewScreenEntry[] | undefined,
+): InterviewScreenEntry | undefined {
+  if (entries === undefined) {
+    return undefined;
   }
-  return null;
+
+  return entries.find(entry => entry.id === entryId);
 }
 
 export type { InterviewScreenEntry as T };
