@@ -32,6 +32,9 @@ export default function SingleInterviewView(): JSX.Element {
           />
           {screens?.map(screen => {
             const actionsList = actions?.get(screen.id) ?? [];
+
+            // concatenate all action ids into a string to use as a key so that
+            // the ScreenCard can re-mount when the actions array changes
             const actionKey = actionsList.map(action => action.id).join('__');
 
             return (

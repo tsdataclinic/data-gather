@@ -274,7 +274,7 @@ export function createDefaultActionConfig(
   switch (actionType) {
     case ActionType.Push:
       return {
-        payload: ['hey'],
+        payload: [],
         type: actionType,
       };
     case ActionType.Skip:
