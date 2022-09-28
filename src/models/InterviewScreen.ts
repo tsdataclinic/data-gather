@@ -40,13 +40,27 @@ interface SerializedInterviewScreen {
 /**
  * Create a new empty screen
  */
-export function create(values: { title: string }): InterviewScreen {
+export function create(values: {
+  headerText?: string;
+  title: string;
+}): InterviewScreen {
   return {
     actions: [],
     entries: [],
-    headerText: '',
+    headerText: values.headerText ?? '',
     id: uuidv4(),
     title: values.title,
+  };
+}
+
+export function update(
+  original: InterviewScreen,
+  newValues: Pick<InterviewScreen, 'headerText' | 'title'>,
+): InterviewScreen {
+  return {
+    ...original,
+    ...newValues,
+    id: original.id,
   };
 }
 
