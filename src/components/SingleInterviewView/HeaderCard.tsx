@@ -46,7 +46,11 @@ function HeaderCard({ screen }: Props): JSX.Element {
         <FontAwesomeIcon className="h-6 w-6 pr-4" icon={faGear} />
       </div>
       <Form className="flex flex-col gap-4" onSubmit={onSubmit}>
-        <Form.Input label="Title" name="title" value={displayedScreen.title} />
+        <Form.Input
+          label="Title"
+          name="title"
+          defaultValue={displayedScreen.title}
+        />
         <Form.Input
           label="Header text"
           name="headerText"
