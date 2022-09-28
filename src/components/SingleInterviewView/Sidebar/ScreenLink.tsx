@@ -49,9 +49,9 @@ export default function ScreenLink({
   );
   const entryMenuItemClass = (id: string): string => {
     if (selectedEntry === id) {
-      return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full bg-blue-100 hover:text-blue-700';
+      return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full bg-blue-100 hover:text-blue-700 cursor-pointer';
     }
-    return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full hover:text-blue-700';
+    return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full hover:text-blue-700 cursor-pointer';
   };
 
   const onNewEntrySubmit = useCallback(
