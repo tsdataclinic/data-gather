@@ -30,7 +30,7 @@ export default function InputText({
   defaultValue,
   value,
 }: Props): JSX.Element {
-  const valueRef = useRef(null);
+  const valueRef = useRef<HTMLInputElement | null>(null);
   const onInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
     if (onChange) {
       onChange(event.currentTarget.value, event);
@@ -40,7 +40,7 @@ export default function InputText({
   const onKeyPress = (event: KeyboardEvent<HTMLInputElement>): void => {
     if (event.key === 'Enter' && onEnterPress) {
       if (valueRef.current) {
-        onEnterPress(valueRef.current, event);
+        onEnterPress(valueRef.current.value, event);
       }
     }
   };
