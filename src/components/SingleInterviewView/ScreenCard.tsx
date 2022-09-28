@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { Element as ScrollableElement } from 'react-scroll';
-import useInterviewStore from '../../hooks/useInterviewStore';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import Button from '../ui/Button';
 import ActionCard from './ActionCard';
+import EntryCard from './EntryCard';
+import useInterviewStore from '../../hooks/useInterviewStore';
 
 interface Props {
   actions: readonly ConditionalAction.T[];
@@ -16,7 +17,6 @@ interface Props {
 function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
   const screenId = screen.id;
   const interviewStore = useInterviewStore();
-  console.log(screen);
 
   // clone the actions array here so we can modify them without persisting until
   // 'save' is hit
@@ -41,14 +41,6 @@ function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
     );
   }, []);
 
-  const addNewEntry = React.useCallback(async () => {
-    const entry = InterviewScreenEntry.create({
-      screenId,
-      prompt: 'Dummy Prompt',
-    });
-    await interviewStore.addEntryToScreen(screenId, entry);
-  }, [interviewStore, screenId]);
-
   const onSaveClick = React.useCallback(async () => {
     await interviewStore.updateScreenConditionalActions(screenId, allActions);
   }, [allActions, screenId, interviewStore]);
@@ -66,16 +58,8 @@ function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
         Header card for {screen.title}
       </ScrollableElement>
       {entries.map(entry => (
-        <ScrollableElement
-          name={entry.id}
-          className="h-60 w-full bg-white shadow-md"
-          key={entry.id}
-        >
-          Entry card for {entry.id} <br />
-          {entry.prompt}
-        </ScrollableElement>
+        <EntryCard entry={entry} key={entry.id} />
       ))}
-      <Button onClick={addNewEntry}>Add Entry</Button>
       {allActions.map(action => (
         <ActionCard
           key={action.id}

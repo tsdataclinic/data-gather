@@ -3,7 +3,7 @@ import {
   Moderator,
   ResponseConsumer,
 } from '@dataclinic/interview';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { buildScriptConfig, InterviewScreenAdapter } from './adapters';
 import useInterview from '../../hooks/useInterview';
@@ -12,7 +12,7 @@ import useInterviewScreens from '../../hooks/useInterviewScreens';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import ConfigurableScript from '../../script/ConfigurableScript';
 import { ScriptConfigSchema } from '../../script/ScriptConfigSchema';
-import Button from '../ui/Button';
+import Form from '../ui/Form';
 
 /**
  * Runs an interview based on the ID of the interview in the URL params.
@@ -61,26 +61,37 @@ export default function InterviewRunnerView(): JSX.Element | null {
     engine.run(() => setComplete(true));
   }, [interview, screens]);
 
+  const handleSubmit = useCallback(
+    (formData: Map<string, string>) => {
+      if (!responseConsumer) {
+        return;
+      }
+      responseConsumer.answer(Object.fromEntries(formData));
+      responseConsumer.submit();
+    },
+    [responseConsumer],
+  );
+
   return (
     <div>
       {complete ? (
         <div>Done!</div>
       ) : (
         <>
-          {currentScreen && (
-            <div>{currentScreen.getInterviewScreen().title}</div>
-          )}
+          {currentScreen && <h1>{currentScreen.getInterviewScreen().title}</h1>}
           {currentScreen && entries && (
-            <div>
+            <Form onSubmit={handleSubmit}>
               {entries
                 .get(currentScreen.getInterviewScreen().id)
                 ?.map((entry: InterviewScreenEntry.T) => (
-                  <div key={entry.id}>{entry.prompt}</div>
+                  <Form.Input
+                    key={entry.id}
+                    name={entry.responseId}
+                    label={entry.prompt}
+                  />
                 ))}
-            </div>
-          )}
-          {responseConsumer && (
-            <Button onClick={() => responseConsumer.submit()}>Next</Button>
+              <Form.SubmitButton />
+            </Form>
           )}
         </>
       )}

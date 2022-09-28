@@ -12,6 +12,7 @@ interface Interview {
   readonly description: string;
   readonly id: string;
   readonly name: string;
+  readonly notes: string;
 
   /** Array of screen ids */
   readonly screens: readonly string[];
@@ -28,6 +29,7 @@ interface SerializedInterview {
   description: string;
   id: string;
   name: string;
+  notes: string;
   screens: string[];
   startingState: string[];
 }
@@ -52,6 +54,7 @@ export function create(values: {
     description: values.description,
     id: uuidv4(),
     name: values.name,
+    notes: '',
     screens: [],
     startingState: [],
   };
@@ -71,6 +74,64 @@ export function addScreen(
 }
 
 /**
+ * Immutably add a starting screen to a particular position
+ * in the interview's default sequence
+ */
+export function addStartingScreen(
+  interview: Interview,
+  screenId: string,
+): Interview {
+  return {
+    ...interview,
+    startingState: [...interview.startingState, screenId],
+  };
+}
+
+/**
+ * Immutably update a starting screen at a particular position
+ * in the interview's default sequence
+ */
+export function updateStartingScreen(
+  interview: Interview,
+  index: number,
+  screenId: string,
+): Interview {
+  return {
+    ...interview,
+    startingState: [
+      ...interview.startingState.slice(0, index),
+      screenId,
+      ...interview.startingState.slice(index + 1),
+    ],
+  };
+}
+
+/**
+ * Immutably remove a starting screen from a particular position
+ * in the interview's default sequence
+ */
+export function removeStartingScreen(
+  interview: Interview,
+  index: number,
+): Interview {
+  return {
+    ...interview,
+    startingState: [
+      ...interview.startingState.slice(0, index),
+      ...interview.startingState.slice(index + 1),
+    ],
+  };
+}
+
+export function updateNotes(interview: Interview, notes: string): Interview {
+  return {
+    ...interview,
+    notes,
+  };
+}
+
+/**
+>>>>>>> Configuration card: setting up a default sequence
  * Convert from serialized type to deserialized
  */
 export function deserialize(rawObj: SerializedInterview): Interview {

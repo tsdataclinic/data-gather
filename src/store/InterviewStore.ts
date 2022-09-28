@@ -16,13 +16,13 @@ import isNonNullable from '../util/isNonNullable';
  * should be converted to Date objects before returning.
  */
 export class InterviewStoreAPI extends Dexie {
-  conditionalActions!: Table<ConditionalAction.SerializedT>;
+  private conditionalActions!: Table<ConditionalAction.SerializedT>;
 
-  interviews!: Table<Interview.SerializedT>;
+  private interviews!: Table<Interview.SerializedT>;
 
-  interviewScreens!: Table<InterviewScreen.SerializedT>;
+  private interviewScreens!: Table<InterviewScreen.SerializedT>;
 
-  interviewScreenEntries!: Table<InterviewScreenEntry.SerializedT>;
+  private interviewScreenEntries!: Table<InterviewScreenEntry.SerializedT>;
 
   constructor() {
     super('DataClinicInterviewApp');
@@ -132,7 +132,7 @@ export class InterviewStoreAPI extends Dexie {
    * @param {string[]} entryIds
    * @returns {InterviewScreen.T[]} Array of interview screens
    */
-  private getScreenEntries = async (
+  getScreenEntries = async (
     entryIds: readonly string[],
   ): Promise<InterviewScreenEntry.T[]> => {
     const entries = (
@@ -347,6 +347,28 @@ export class InterviewStoreAPI extends Dexie {
       this.putInterview(newInterview),
       this.putScreen(interviewScreen),
     ]);
+  };
+
+  /**
+   * Update the notes in the configuration for an interview
+   *
+   * @param {string} interviewId
+   * @param {string} notes
+   * @returns
+   */
+  updateNotes = async (
+    interviewId: string,
+    notes: string,
+  ): Promise<Interview.T> => {
+    const interview = await this.getInterview(interviewId);
+    invariant(
+      interview,
+      `[InterviewStore] updateNotes: Could not find interview with id '${interviewId}'`,
+    );
+
+    const newInterview = Interview.updateNotes(interview, notes);
+
+    return this.putInterview(newInterview);
   };
 
   /**
