@@ -33,9 +33,11 @@ export default function SingleInterviewView(): JSX.Element {
           {screens?.map(screen => {
             const actionsList = actions?.get(screen.id) ?? [];
 
-            // concatenate all action ids into a string to use as a key so that
-            // the ScreenCard can re-mount when the actions array changes
-            const actionKey = actionsList.map(action => action.id).join('__');
+            // we track the load state of `actions` as a key so the ScreenCard can remount
+            // when the actions array finishes loading
+            const actionKey =
+              actions === undefined ? 'loading_actions' : 'loaded_actions';
+            const screenKey = `${screen.id}__${actionKey}`;
 
             return (
               <Route
@@ -43,7 +45,7 @@ export default function SingleInterviewView(): JSX.Element {
                 path={`/screen/${screen.id}`}
                 element={
                   <ScreenCard
-                    key={actionKey}
+                    key={screenKey}
                     screen={screen}
                     entries={entries?.get(screen.id) ?? []}
                     defaultActions={actionsList}

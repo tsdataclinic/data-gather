@@ -1,12 +1,13 @@
 import classNames from 'classnames';
-import type { ChangeEvent, KeyboardEvent } from 'react';
+import { ChangeEvent, KeyboardEvent, useRef } from 'react';
 
 type Props = {
   className?: string;
+  defaultValue?: string;
   id?: string;
   name?: string;
-  onChange: (val: string, event: ChangeEvent<HTMLInputElement>) => void;
 
+  onChange: (val: string, event: ChangeEvent<HTMLInputElement>) => void;
   /**
    * Triggered when the 'Enter' key is pressed.
    */
@@ -14,7 +15,7 @@ type Props = {
   placeholder?: string;
   required?: boolean;
   size?: 'normal' | 'large';
-  value: string;
+  value?: string;
 };
 
 export default function InputText({
@@ -26,8 +27,10 @@ export default function InputText({
   placeholder,
   required,
   size = 'normal',
+  defaultValue,
   value,
 }: Props): JSX.Element {
+  const valueRef = useRef<HTMLInputElement | null>(null);
   const onInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
     if (onChange) {
       onChange(event.currentTarget.value, event);
@@ -36,7 +39,9 @@ export default function InputText({
 
   const onKeyPress = (event: KeyboardEvent<HTMLInputElement>): void => {
     if (event.key === 'Enter' && onEnterPress) {
-      onEnterPress(value, event);
+      if (valueRef.current) {
+        onEnterPress(valueRef.current.value, event);
+      }
     }
   };
 
@@ -51,6 +56,7 @@ export default function InputText({
 
   return (
     <input
+      ref={valueRef}
       name={name}
       id={id}
       required={required}
@@ -58,6 +64,7 @@ export default function InputText({
       className={inputClassName}
       onChange={onInputChange}
       onKeyPress={onKeyPress}
+      defaultValue={defaultValue}
       value={value}
       placeholder={placeholder}
     />

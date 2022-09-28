@@ -5,13 +5,18 @@ import FormSubmitButton from './FormSubmitButton';
 
 type Props = {
   children: ReactNode;
+  className?: string;
   onSubmit: (
     values: Map<string, string>,
     event: FormEvent<HTMLFormElement>,
   ) => void;
 };
 
-export default function Form({ children, onSubmit }: Props): JSX.Element {
+export default function Form({
+  children,
+  className,
+  onSubmit,
+}: Props): JSX.Element {
   const onFormSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     const formElements = event.currentTarget.elements;
@@ -32,7 +37,7 @@ export default function Form({ children, onSubmit }: Props): JSX.Element {
   };
 
   return (
-    <form className="space-y-4" onSubmit={onFormSubmit}>
+    <form className={className ?? 'space-y-4'} onSubmit={onFormSubmit}>
       {children}
     </form>
   );

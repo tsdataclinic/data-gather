@@ -69,6 +69,11 @@ export type AppAction =
       screenEntries: InterviewScreenEntry.T[];
       type: 'SCREEN_ENTRIES_UPDATE';
     }
+  /** Update a single interview screen */
+  | {
+      screen: InterviewScreen.T;
+      type: 'SCREEN_UPDATE';
+    }
   /** Update a bunch of interview screens */
   | {
       screens: InterviewScreen.T[];
@@ -197,6 +202,16 @@ export default function appReducer(
           loadedInterviewScreenEntries,
           action.screenEntries,
           screenEntry => screenEntry.id,
+        ),
+      };
+
+    case 'SCREEN_UPDATE':
+      return {
+        ...state,
+        loadedInterviewScreens: setMap(
+          loadedInterviewScreens,
+          action.screen.id,
+          action.screen,
         ),
       };
 

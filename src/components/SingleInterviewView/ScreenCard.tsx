@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { Element as ScrollableElement } from 'react-scroll';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as Interview from '../../models/Interview';
@@ -8,13 +7,14 @@ import Button from '../ui/Button';
 import ActionCard from './ActionCard';
 import EntryCard from './EntryCard';
 import useInterviewStore from '../../hooks/useInterviewStore';
+import HeaderCard from './HeaderCard';
 
-interface Props {
+type Props = {
   defaultActions: readonly ConditionalAction.T[];
   entries: readonly InterviewScreenEntry.T[];
   interview: Interview.T;
   screen: InterviewScreen.T;
-}
+};
 
 /**
  * The ScreenCard is an uncontrolled component because any changes to actions
@@ -66,12 +66,7 @@ function ScreenCard({
         <Button>New Entry</Button>
         <Button onClick={onNewActionClick}>New Action</Button>
       </div>
-      <ScrollableElement
-        name="HEADER"
-        className="h-60 w-full bg-white shadow-md"
-      >
-        Header card for {screen.title}
-      </ScrollableElement>
+      <HeaderCard screen={screen} />
       {entries.map(entry => (
         <EntryCard entry={entry} key={entry.id} />
       ))}

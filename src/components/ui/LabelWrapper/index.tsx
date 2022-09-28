@@ -3,6 +3,7 @@ import type { ReactNode, CSSProperties } from 'react';
 
 type Props = {
   children: ReactNode;
+  className?: string;
   inline?: boolean;
   inlineContainerStyles?: CSSProperties;
   label: string;
@@ -16,6 +17,7 @@ type Props = {
  * label and add a little spacing.
  */
 export default function LabelWrapper({
+  className,
   children,
   inline = false,
   inlineContainerStyles,
@@ -37,7 +39,7 @@ export default function LabelWrapper({
   });
 
   return (
-    <div>
+    <div className={className}>
       <label className="space-x-4">
         {labelAfter ? childrenBlock : null}
         <span className={spanClassName} style={labelTextStyle}>
