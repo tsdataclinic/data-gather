@@ -30,19 +30,26 @@ export default function SingleInterviewView(): JSX.Element {
             path="configure"
             element={<ConfigureCard interview={interview} />}
           />
-          {screens?.map(screen => (
-            <Route
-              key={screen.id}
-              path={`/screen/${screen.id}`}
-              element={
-                <ScreenCard
-                  screen={screen}
-                  entries={entries?.get(screen.id) ?? []}
-                  actions={actions?.get(screen.id) ?? []}
-                />
-              }
-            />
-          ))}
+          {screens?.map(screen => {
+            const actionsList = actions?.get(screen.id) ?? [];
+            const actionKey = actionsList.map(action => action.id).join('__');
+
+            return (
+              <Route
+                key={screen.id}
+                path={`/screen/${screen.id}`}
+                element={
+                  <ScreenCard
+                    key={actionKey}
+                    screen={screen}
+                    entries={entries?.get(screen.id) ?? []}
+                    defaultActions={actionsList}
+                    interview={interview}
+                  />
+                }
+              />
+            );
+          })}
         </Routes>
       </div>
     </div>

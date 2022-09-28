@@ -3,10 +3,12 @@ import { faLocationArrow } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { MixedCheckbox } from '@reach/checkbox';
 import { Element as ScrollableElement } from 'react-scroll';
-import * as ConditionalAction from '../../models/ConditionalAction';
-import Dropdown from '../ui/Dropdown';
-import InputText from '../ui/InputText';
-import LabelWrapper from '../ui/LabelWrapper';
+import * as ConditionalAction from '../../../models/ConditionalAction';
+import * as Interview from '../../../models/Interview';
+import Dropdown from '../../ui/Dropdown';
+import InputText from '../../ui/InputText';
+import LabelWrapper from '../../ui/LabelWrapper';
+import ActionConfigEditor from './ActionConfigEditor';
 
 // remove 'ALWAYS_EXECUTE' from being one of the options in the dropdown
 // because this operator is handled separately
@@ -17,15 +19,9 @@ const OPERATOR_OPTIONS = ConditionalAction.CONDITIONAL_OPERATORS.filter(
   value: operator,
 }));
 
-const ACTION_TYPE_OPTIONS = ConditionalAction.ACTION_TYPES.map(actionType => ({
-  displayValue: ConditionalAction.actionTypeToDisplayString(actionType),
-  value: actionType,
-}));
-
-const labelStyle = { width: '5rem' };
-
 type Props = {
   action: ConditionalAction.T;
+  interview: Interview.T;
   onActionChange: (action: ConditionalAction.T) => void;
 };
 
@@ -34,6 +30,7 @@ type Props = {
 export default function ActionCard({
   action,
   onActionChange,
+  interview,
 }: Props): JSX.Element {
   const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] =
     React.useState(true);
@@ -89,12 +86,11 @@ export default function ActionCard({
     [action, onActionChange],
   );
 
-  const onActionTypeChange = React.useCallback(
-    (newActionType: ConditionalAction.ActionType) => {
+  const onActionConfigChange = React.useCallback(
+    (newActionConfig: ConditionalAction.T['actionConfig']) => {
       onActionChange({
         ...action,
-        actionConfig:
-          ConditionalAction.createDefaultActionConfig(newActionType),
+        actionConfig: newActionConfig,
       });
     },
     [action, onActionChange],
@@ -102,7 +98,7 @@ export default function ActionCard({
 
   const conditionalOperatorRow = isAlwaysExecuteChecked ? null : (
     <div className="flex items-center space-x-4">
-      <p style={labelStyle}>Condition</p>
+      <p className="w-20">Condition</p>
       <Dropdown
         onChange={onResponseKeyChange}
         defaultButtonLabel="Response variable"
@@ -139,12 +135,6 @@ export default function ActionCard({
         <span>Action</span>
       </div>
       <div className="col-span-3 space-y-4">
-        <p>
-          <em>
-            This implementation is incomplete. It does not persist to storage
-            yet.
-          </em>
-        </p>
         <LabelWrapper labelAfter label="Always execute this action">
           <MixedCheckbox
             checked={isAlwaysExecuteChecked}
@@ -154,23 +144,11 @@ export default function ActionCard({
 
         {conditionalOperatorRow}
 
-        <LabelWrapper inline label="Action" labelTextStyle={labelStyle}>
-          <Dropdown
-            onChange={onActionTypeChange}
-            defaultButtonLabel="Action type"
-            value={action.actionConfig.type}
-            options={ACTION_TYPE_OPTIONS}
-          />
-        </LabelWrapper>
-
-        <LabelWrapper inline label="Payload" labelTextStyle={labelStyle}>
-          <Dropdown
-            onChange={() => alert('Not implemented yet')}
-            defaultButtonLabel="No payload selected"
-            value={undefined}
-            options={[]}
-          />
-        </LabelWrapper>
+        <ActionConfigEditor
+          actionConfig={action.actionConfig}
+          onActionConfigChange={onActionConfigChange}
+          interview={interview}
+        />
       </div>
     </ScrollableElement>
   );

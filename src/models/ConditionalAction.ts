@@ -94,7 +94,7 @@ interface ConditionalAction {
  * ('push', 'skip', etc.)
  */
 interface SerializedConditionalAction extends Indexable {
-  actionTarget: string | string[] | ResponseData;
+  actionPayload: string | string[] | ResponseData;
   actionType: ActionType;
   conditionalOperator: ConditionalOperator;
   id: string;
@@ -171,30 +171,30 @@ export function validate(action: ConditionalAction): [boolean, string] {
 export function deserialize(
   rawObj: SerializedConditionalAction,
 ): ConditionalAction {
-  const { actionTarget, actionType, ...condition } = nullsToUndefined(rawObj);
+  const { actionPayload, actionType, ...condition } = nullsToUndefined(rawObj);
 
   switch (actionType) {
     case ActionType.Push:
       invariant(
-        isStringArray(actionTarget),
-        `[ConditionalAction] Deserialization error. 'actionTarget' must be an array of strings.`,
+        isStringArray(actionPayload),
+        `[ConditionalAction] Deserialization error. 'actionPayload' must be an array of strings.`,
       );
       return {
         ...condition,
         actionConfig: {
-          payload: actionTarget,
+          payload: actionPayload,
           type: actionType,
         },
       };
     case ActionType.Skip:
       invariant(
-        isObject(actionTarget),
-        `[ConditionalAction] Deserialization error. 'actionTarget' must be an object.`,
+        isObject(actionPayload),
+        `[ConditionalAction] Deserialization error. 'actionPayload' must be an object.`,
       );
       return {
         ...condition,
         actionConfig: {
-          payload: actionTarget,
+          payload: actionPayload,
           type: actionType,
         },
       };
@@ -202,13 +202,13 @@ export function deserialize(
     case ActionType.Restore:
     case ActionType.Milestone:
       invariant(
-        typeof actionTarget === 'string',
+        typeof actionPayload === 'string',
         `[ConditionalAction] Deserialization error. 'payload' must be a string.`,
       );
       return {
         ...condition,
         actionConfig: {
-          payload: actionTarget,
+          payload: actionPayload,
           type: actionType,
         },
       };
@@ -233,7 +233,7 @@ export function serialize(
     value,
   } = conditionalAction;
   return {
-    actionTarget: actionConfig.payload,
+    actionPayload: actionConfig.payload,
     actionType: actionConfig.type,
     conditionalOperator,
     id,

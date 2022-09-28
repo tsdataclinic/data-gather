@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Element as ScrollableElement } from 'react-scroll';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
+import * as Interview from '../../models/Interview';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import Button from '../ui/Button';
 import ActionCard from './ActionCard';
@@ -9,20 +10,34 @@ import EntryCard from './EntryCard';
 import useInterviewStore from '../../hooks/useInterviewStore';
 
 interface Props {
-  actions: readonly ConditionalAction.T[];
+  defaultActions: readonly ConditionalAction.T[];
   entries: readonly InterviewScreenEntry.T[];
+  interview: Interview.T;
   screen: InterviewScreen.T;
 }
 
-function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
+/**
+ * The ScreenCard is an uncontrolled component because any changes to actions
+ * are only tracked internally. These changes are not bubbled up to the rest
+ * of the app until "Save" is clicked.
+ *
+ * TODO: currently this component is only tracking `actions` in an uncontrolled
+ * manner. We need to apply the same treatment to the rest of the Screen object
+ * (for the entries and the header configuration). Any prop with a `default`
+ * prefix implies it is uncontrolled.
+ */
+function ScreenCard({
+  entries,
+  defaultActions,
+  screen,
+  interview,
+}: Props): JSX.Element {
   const screenId = screen.id;
   const interviewStore = useInterviewStore();
 
-  // clone the actions array here so we can modify them without persisting until
+  // track actions array here so we can modify them without persisting until
   // 'save' is hit
-  const [allActions, setAllActions] = React.useState<
-    readonly ConditionalAction.T[]
-  >(() => [...actions]);
+  const [allActions, setAllActions] = React.useState(defaultActions);
 
   const onNewActionClick = (): void =>
     setAllActions(prevActions =>
@@ -65,6 +80,7 @@ function ScreenCard({ entries, actions, screen }: Props): JSX.Element {
           key={action.id}
           action={action}
           onActionChange={onActionChange}
+          interview={interview}
         />
       ))}
       <Button onClick={onSaveClick}>Save</Button>
