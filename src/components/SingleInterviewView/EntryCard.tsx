@@ -6,11 +6,11 @@ import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import './EntryCard.css';
 import useInterviewStore from '../../hooks/useInterviewStore';
 
-interface Props {
+type Props = {
   entry: InterviewScreenEntry.T;
-}
+};
 
-function EntryCard({ entry }: Props): JSX.Element {
+export default function EntryCard({ entry }: Props): JSX.Element {
   const [displayedEntry, setDisplayedEntry] =
     useState<InterviewScreenEntry.T>(entry);
   const interviewStore = useInterviewStore();
@@ -32,6 +32,13 @@ function EntryCard({ entry }: Props): JSX.Element {
     };
 
     interviewStore.putScreenEntry(newEntry).then(setDisplayedEntry);
+  };
+
+  const handleOnDelete = (): void => {
+    interviewStore.removeEntryFromScreen(entry).then(value => {
+      // eslint-disable-next-line no-console
+      console.log(`handled on delete value = ${value}`);
+    });
   };
 
   return (
@@ -96,9 +103,11 @@ function EntryCard({ entry }: Props): JSX.Element {
           </div>
         </div>
         <input type="submit" value="Save" />
+        <button type="submit" className="bg-red-300" onClick={handleOnDelete}>
+          {' '}
+          Delete{' '}
+        </button>
       </form>
     </ScrollableElement>
   );
 }
-
-export default EntryCard;

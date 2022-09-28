@@ -226,6 +226,14 @@ export class InterviewStoreAPI extends Dexie {
     return screenEntry;
   };
 
+  deleteScreenEntry = async (
+    screenEntry: InterviewScreenEntry.T,
+  ): Promise<string> => {
+    const entryId = screenEntry.id;
+    await this.interviewScreenEntries.delete(entryId);
+    return entryId;
+  };
+
   putScreenAction = async (
     conditionalAction: ConditionalAction.T,
   ): Promise<ConditionalAction.T> => {
@@ -317,23 +325,31 @@ export class InterviewStoreAPI extends Dexie {
   };
 
   /**
-   * Removes an entry from the given screen.
+   * Removes an entry from the given screen and deletes it from the interviewScreenEntries table.
    * The screen must already exist otherwise this will throw an error.
    *
-   * @param {string} screenId
-   * @param {InterviewScreenEntry.T} interviewScreenEntry
+   * @param {InterviewScreenEntry.T} interviewScreenEntry to remove and delete
    */
   removeEntryFromScreen = async (
-    screenId: string,
     interviewScreenEntry: InterviewScreenEntry.T,
   ): Promise<InterviewScreen.T> => {
-    const screen = await this.getScreen(screenId);
+    console.log(
+      `beginning removeEntryFromScreen screenId = ${interviewScreenEntry.screenId}`,
+    );
+    const screen = await this.getScreen(interviewScreenEntry.screenId);
     invariant(
       screen,
-      `[InterviewStore] addEntryToScreen: Could not find screen with id '${screenId}'`,
+      `[InterviewStore] addEntryToScreen: Could not find screen with id '${interviewScreenEntry.screenId}'`,
     );
 
     const newScreen = InterviewScreen.removeEntry(screen, interviewScreenEntry);
+    this.deleteScreenEntry(interviewScreenEntry).then(entryId => {
+      // eslint-disable-next-line no-console
+      console.log(`deleted screen entry: ${entryId}`);
+    });
+
+    // eslint-disable-next-line no-console
+    console.log('removed entry from screen');
 
     return this.putScreen(newScreen);
   };

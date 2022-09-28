@@ -64,7 +64,7 @@ export function addEntry(
 }
 
 /**
- * Immutably removes an entry to a screen
+ * Immutably removes an entry from a screen
  */
 export function removeEntry(
   screen: InterviewScreen,
