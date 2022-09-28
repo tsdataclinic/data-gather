@@ -283,8 +283,6 @@ export class InterviewStoreAPI extends Dexie {
       actions: conditionalActions.map(action => action.id),
     };
 
-    console.log('storing', conditionalActions);
-
     return Promise.all([
       this.putScreen(newScreen),
       Promise.all(
@@ -393,31 +391,6 @@ export class InterviewStoreAPI extends Dexie {
     return Promise.all([
       this.putScreen(newScreen),
       this.unsafePutScreenEntry(interviewScreenEntry),
-    ]);
-  };
-
-  /**
-   * Add a new conditional action to an interview screen.
-   * The screen must already exist otherwise this will throw an error.
-   *
-   * @param {string} screenId
-   * @param {ConditionalAction.T} conditionalAction
-   */
-  addActionToScreen = async (
-    screenId: string,
-    conditionalAction: ConditionalAction.T,
-  ): Promise<[InterviewScreen.T, ConditionalAction.T]> => {
-    const screen = await this.getScreen(screenId);
-    invariant(
-      screen,
-      `[InterviewStore] addActionToScreen: Could not find screen with id '${screenId}'`,
-    );
-
-    const newScreen = InterviewScreen.addAction(screen, conditionalAction);
-
-    return Promise.all([
-      this.putScreen(newScreen),
-      this.unsafePutScreenAction(conditionalAction),
     ]);
   };
 }
