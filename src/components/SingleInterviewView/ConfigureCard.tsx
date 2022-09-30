@@ -133,9 +133,14 @@ function ConfigureCard({ interview }: Props): JSX.Element {
                 </div>
               ))}
               <Dropdown
+                // We reset the key so that the component remounts, thus
+                // clearing the selection. This is due to a radix bug where
+                // `undefined` values make the component be treated as
+                // uncontrolled
+                key={startingState.length}
                 onChange={addStartScreen}
                 placeholder="Add another screen!"
-                value={undefined} // TODO this value gets updated when a screen is selected, so the same screen can't be selected twice
+                value={undefined}
                 options={getOptions()}
               />
             </div>

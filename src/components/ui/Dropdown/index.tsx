@@ -92,9 +92,7 @@ export default function Dropdown<T extends string>({
     () =>
       options.map(obj => (
         <StyledSelectItem key={obj.value} value={obj.value}>
-          <Select.ItemText style={{ lineHeight: 25 }}>
-            {obj.displayValue}
-          </Select.ItemText>
+          <Select.ItemText>{obj.displayValue}</Select.ItemText>
           <StyledItemIndicator>
             <FontAwesomeIcon icon={IconType.faCheck} size="sm" />
           </StyledItemIndicator>
