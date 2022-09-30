@@ -9,11 +9,9 @@ import Dropdown from '../ui/Dropdown';
 import LabelWrapper from '../ui/LabelWrapper';
 import TextArea from '../ui/TextArea';
 
-interface Props {
+type Props = {
   interview: Interview.T;
-}
-
-const labelStyle = { width: '10rem' };
+};
 
 function ConfigureCard({ interview }: Props): JSX.Element {
   const { startingState } = interview;
@@ -80,7 +78,7 @@ function ConfigureCard({ interview }: Props): JSX.Element {
         <LabelWrapper
           inline
           label="Notes"
-          labelTextStyle={labelStyle}
+          labelTextClassName="w-40"
           inlineContainerStyles={{ verticalAlign: 'text-top' }}
         >
           <TextArea
