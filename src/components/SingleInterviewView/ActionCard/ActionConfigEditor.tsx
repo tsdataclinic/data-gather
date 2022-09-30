@@ -6,6 +6,7 @@ import Dropdown from '../../ui/Dropdown';
 import LabelWrapper from '../../ui/LabelWrapper';
 import assertUnreachable from '../../../util/assertUnreachable';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
+import InputText from '../../ui/InputText';
 
 const ACTION_TYPE_OPTIONS = ConditionalAction.ACTION_TYPES.map(actionType => ({
   displayValue: ConditionalAction.actionTypeToDisplayString(actionType),
@@ -94,15 +95,18 @@ export default function ActionConfigEditor({
           />
         );
       case ConditionalAction.ActionType.Skip:
-      case ConditionalAction.ActionType.Checkpoint:
-      case ConditionalAction.ActionType.Milestone:
-      case ConditionalAction.ActionType.Restore:
-        // TODO: remove this once this UI is finished
-        // eslint-disable-next-line no-alert
-        alert(
-          `Payload editor for ${actionConfig.type} has not been implemented`,
+        return (
+          <>
+            <InputText onChange={() => {}} />
+            <InputText onChange={() => {}} />
+          </>
         );
-        return null;
+      case ConditionalAction.ActionType.Checkpoint:
+        return <InputText onChange={() => {}} />;
+      case ConditionalAction.ActionType.Milestone:
+        return <InputText onChange={() => {}} />;
+      case ConditionalAction.ActionType.Restore:
+        return <InputText onChange={() => {}} />;
       default:
         return assertUnreachable(actionConfig);
     }
