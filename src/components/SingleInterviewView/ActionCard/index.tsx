@@ -1,12 +1,14 @@
+import * as React from 'react';
 import { faLocationArrow } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { MixedCheckbox } from '@reach/checkbox';
-import { ChangeEvent, useCallback, useState } from 'react';
 import { Element as ScrollableElement } from 'react-scroll';
-import * as ConditionalAction from '../../models/ConditionalAction';
-import Dropdown from '../ui/Dropdown';
-import InputText from '../ui/InputText';
-import LabelWrapper from '../ui/LabelWrapper';
+import * as ConditionalAction from '../../../models/ConditionalAction';
+import * as Interview from '../../../models/Interview';
+import Dropdown from '../../ui/Dropdown';
+import InputText from '../../ui/InputText';
+import LabelWrapper from '../../ui/LabelWrapper';
+import ActionConfigEditor from './ActionConfigEditor';
 
 // remove 'ALWAYS_EXECUTE' from being one of the options in the dropdown
 // because this operator is handled separately
@@ -17,35 +19,24 @@ const OPERATOR_OPTIONS = ConditionalAction.CONDITIONAL_OPERATORS.filter(
   value: operator,
 }));
 
-const ACTION_TYPE_OPTIONS = ConditionalAction.ACTION_TYPES.map(actionType => ({
-  displayValue: ConditionalAction.actionTypeToDisplayString(actionType),
-  value: actionType,
-}));
-
-const labelStyle = { width: '5rem' };
-
 type Props = {
   action: ConditionalAction.T;
+  interview: Interview.T;
   onActionChange: (action: ConditionalAction.T) => void;
 };
 
 // TODO: currently any edits to an action remain local to this component.
 // Next steps are to make this persistable to backend.
-export default function ActionCard({ action }: Props): JSX.Element {
-  const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] = useState(true);
+export default function ActionCard({
+  action,
+  onActionChange,
+  interview,
+}: Props): JSX.Element {
+  const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] =
+    React.useState(true);
 
-  // the response key to use for the conditional check
-  const [responseKey, setResponseKey] = useState(action.responseKey);
-  const [conditionalOperator, setConditionalOperator] = useState(
-    action.conditionalOperator,
-  );
-
-  // the value to use for the conditional comparison
-  const [conditionalValue, setConditionalValue] = useState(action.value);
-  const [actionType, setActionType] = useState(action.actionConfig.type);
-
-  const onAlwaysExecuteChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>): void => {
+  const onAlwaysExecuteChange = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>): void => {
       const isChecked = event.target.checked;
       setIsAlwaysExecuteChecked(isChecked);
 
@@ -53,23 +44,65 @@ export default function ActionCard({ action }: Props): JSX.Element {
       // then we should change it to a reasonable default (such as EQUALS)
       if (
         !isChecked &&
-        conditionalOperator ===
+        action.conditionalOperator ===
           ConditionalAction.ConditionalOperator.AlwaysExecute
       ) {
-        setConditionalOperator(ConditionalAction.ConditionalOperator.Equals);
+        onActionChange({
+          ...action,
+          conditionalOperator: ConditionalAction.ConditionalOperator.Equals,
+        });
       }
     },
-    [conditionalOperator],
+    [action, onActionChange],
   );
 
-  // TODO: when the entries UI has been done, we should be loading the
+  const onConditionalOperatorChange = React.useCallback(
+    (newConditionalOperator: ConditionalAction.ConditionalOperator) => {
+      onActionChange({
+        ...action,
+        conditionalOperator: newConditionalOperator,
+      });
+    },
+    [action, onActionChange],
+  );
+
+  const onResponseKeyChange = React.useCallback(
+    (newResponseKey: string) => {
+      onActionChange({
+        ...action,
+        responseKey: newResponseKey,
+      });
+    },
+    [action, onActionChange],
+  );
+
+  const onConditionalValueChange = React.useCallback(
+    (newValue: string) => {
+      onActionChange({
+        ...action,
+        value: newValue,
+      });
+    },
+    [action, onActionChange],
+  );
+
+  const onActionConfigChange = React.useCallback(
+    (newActionConfig: ConditionalAction.T['actionConfig']) => {
+      onActionChange({
+        ...action,
+        actionConfig: newActionConfig,
+      });
+    },
+    [action, onActionChange],
+  );
+
   const conditionalOperatorRow = isAlwaysExecuteChecked ? null : (
     <div className="flex items-center space-x-4">
-      <p style={labelStyle}>Condition</p>
+      <p className="w-20">Condition</p>
       <Dropdown
-        onChange={setResponseKey}
+        onChange={onResponseKeyChange}
         defaultButtonLabel="Response variable"
-        value={responseKey}
+        value={action.responseKey}
         options={[
           { displayValue: 'Response Key 1', value: 'responseKey1' },
           { displayValue: 'Response Key 2', value: 'responseKey2' },
@@ -77,16 +110,16 @@ export default function ActionCard({ action }: Props): JSX.Element {
       />
 
       <Dropdown
-        onChange={setConditionalOperator}
+        onChange={onConditionalOperatorChange}
         defaultButtonLabel="Operator"
-        value={conditionalOperator}
+        value={action.conditionalOperator}
         options={OPERATOR_OPTIONS}
       />
 
       <InputText
         placeholder="value"
-        onChange={setConditionalValue}
-        value={conditionalValue ?? ''}
+        onChange={onConditionalValueChange}
+        value={action.value ?? ''}
       />
     </div>
   );
@@ -102,12 +135,6 @@ export default function ActionCard({ action }: Props): JSX.Element {
         <span>Action</span>
       </div>
       <div className="col-span-3 space-y-4">
-        <p>
-          <em>
-            This implementation is incomplete. It does not persist to storage
-            yet.
-          </em>
-        </p>
         <LabelWrapper labelAfter label="Always execute this action">
           <MixedCheckbox
             checked={isAlwaysExecuteChecked}
@@ -117,23 +144,11 @@ export default function ActionCard({ action }: Props): JSX.Element {
 
         {conditionalOperatorRow}
 
-        <LabelWrapper inline label="Action" labelTextStyle={labelStyle}>
-          <Dropdown
-            onChange={setActionType}
-            defaultButtonLabel="Action type"
-            value={actionType}
-            options={ACTION_TYPE_OPTIONS}
-          />
-        </LabelWrapper>
-
-        <LabelWrapper inline label="Payload" labelTextStyle={labelStyle}>
-          <Dropdown
-            onChange={() => alert('Not implemented yet')}
-            defaultButtonLabel="No payload selected"
-            value={undefined}
-            options={[]}
-          />
-        </LabelWrapper>
+        <ActionConfigEditor
+          actionConfig={action.actionConfig}
+          onActionConfigChange={onActionConfigChange}
+          interview={interview}
+        />
       </div>
     </ScrollableElement>
   );

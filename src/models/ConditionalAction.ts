@@ -94,7 +94,7 @@ interface ConditionalAction {
  * ('push', 'skip', etc.)
  */
 interface SerializedConditionalAction extends Indexable {
-  actionTarget: string | string[] | ResponseData;
+  actionPayload: string | string[] | ResponseData;
   actionType: ActionType;
   conditionalOperator: ConditionalOperator;
   id: string;
@@ -114,33 +114,7 @@ export function create(vals: { screenId: string }): ConditionalAction {
   };
 }
 
-/**
- * Validate if a conditional action is valid to be saved.
- */
-export function validate(action: ConditionalAction): boolean {
-  // if we're **not** using the ALWAYS_EXECUTE operator then don't allow an
-  // empty `responseKey` or an empty `value`
-  if (action.conditionalOperator !== ConditionalOperator.AlwaysExecute) {
-    if (
-      action.responseKey === undefined ||
-      action.responseKey === '' ||
-      action.value === undefined
-    ) {
-      return false;
-    }
-  }
-
-  // do not allow Push actions to have an empty payload
-  if (
-    action.actionConfig.type === ActionType.Push &&
-    action.actionConfig.payload.length === 0
-  ) {
-    return false;
-  }
-
-  return true;
-}
-
+// Helper predicate function to check if something is an object
 function isObject(maybeObj: unknown): maybeObj is Record<string, unknown> {
   return (
     typeof maybeObj === 'object' &&
@@ -149,11 +123,44 @@ function isObject(maybeObj: unknown): maybeObj is Record<string, unknown> {
   );
 }
 
+// Helper predicate function to check if something is a string array
 function isStringArray(maybeArr: unknown): maybeArr is string[] {
   return (
     Array.isArray(maybeArr) &&
     (maybeArr.length === 0 || typeof maybeArr[0] === 'string')
   );
+}
+
+/**
+ * Validate if a conditional action is valid to be saved.
+ * @returns {[boolean, string]} A tuple of whether or not validation passed,
+ * and an error string if validation did not pass.
+ */
+export function validate(action: ConditionalAction): [boolean, string] {
+  // if we're **not** using the ALWAYS_EXECUTE operator then don't allow an
+  // empty `responseKey` or an empty `value`
+  if (action.conditionalOperator !== ConditionalOperator.AlwaysExecute) {
+    if (
+      action.responseKey === undefined ||
+      action.responseKey === '' ||
+      action.value === undefined
+    ) {
+      return [
+        false,
+        `A '${action.conditionalOperator}' operator must have a responseKey and a value`,
+      ];
+    }
+  }
+
+  // do not allow Push actions to have an empty payload
+  if (
+    action.actionConfig.type === ActionType.Push &&
+    action.actionConfig.payload.length === 0
+  ) {
+    return [false, 'A Push action cannot have an empty payload'];
+  }
+
+  return [true, ''];
 }
 
 /**
@@ -164,30 +171,30 @@ function isStringArray(maybeArr: unknown): maybeArr is string[] {
 export function deserialize(
   rawObj: SerializedConditionalAction,
 ): ConditionalAction {
-  const { actionTarget, actionType, ...condition } = nullsToUndefined(rawObj);
+  const { actionPayload, actionType, ...condition } = nullsToUndefined(rawObj);
 
   switch (actionType) {
     case ActionType.Push:
       invariant(
-        isStringArray(actionTarget),
-        `[ConditionalAction] Deserialization error. 'actionTarget' must be an array of strings.`,
+        isStringArray(actionPayload),
+        `[ConditionalAction] Deserialization error. 'actionPayload' must be an array of strings.`,
       );
       return {
         ...condition,
         actionConfig: {
-          payload: actionTarget,
+          payload: actionPayload,
           type: actionType,
         },
       };
     case ActionType.Skip:
       invariant(
-        isObject(actionTarget),
-        `[ConditionalAction] Deserialization error. 'actionTarget' must be an object.`,
+        isObject(actionPayload),
+        `[ConditionalAction] Deserialization error. 'actionPayload' must be an object.`,
       );
       return {
         ...condition,
         actionConfig: {
-          payload: actionTarget,
+          payload: actionPayload,
           type: actionType,
         },
       };
@@ -195,13 +202,13 @@ export function deserialize(
     case ActionType.Restore:
     case ActionType.Milestone:
       invariant(
-        typeof actionTarget === 'string',
+        typeof actionPayload === 'string',
         `[ConditionalAction] Deserialization error. 'payload' must be a string.`,
       );
       return {
         ...condition,
         actionConfig: {
-          payload: actionTarget,
+          payload: actionPayload,
           type: actionType,
         },
       };
@@ -213,6 +220,10 @@ export function deserialize(
 export function serialize(
   conditionalAction: ConditionalAction,
 ): SerializedConditionalAction {
+  // validate the conditional action before serializing to make sure it's safe to store
+  const [isValid, errorMsg] = validate(conditionalAction);
+  invariant(isValid, errorMsg);
+
   const {
     actionConfig,
     conditionalOperator,
@@ -222,7 +233,7 @@ export function serialize(
     value,
   } = conditionalAction;
   return {
-    actionTarget: actionConfig.payload,
+    actionPayload: actionConfig.payload,
     actionType: actionConfig.type,
     conditionalOperator,
     id,
@@ -232,6 +243,10 @@ export function serialize(
   };
 }
 
+/**
+ * Convert a ConditionalOperator to a string. Useful if listing operators
+ * in a dropdown.
+ */
 export function operatorToDisplayString(operator: ConditionalOperator): string {
   switch (operator) {
     case ConditionalOperator.AlwaysExecute:
@@ -241,9 +256,42 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
   }
 }
 
+/**
+ * Convert an ActionType to a string. Useful if listing action types in
+ * a dropdown.
+ */
 export function actionTypeToDisplayString(actionType: ActionType): string {
   // capitalize first letter
   return actionType[0].toUpperCase() + actionType.substring(1);
+}
+
+/**
+ * Create a default action config (with a default payload) given an `actionType`
+ */
+export function createDefaultActionConfig(
+  actionType: ActionType,
+): ConditionalAction['actionConfig'] {
+  switch (actionType) {
+    case ActionType.Push:
+      return {
+        payload: [],
+        type: actionType,
+      };
+    case ActionType.Skip:
+      return {
+        payload: {},
+        type: actionType,
+      };
+    case ActionType.Checkpoint:
+    case ActionType.Restore:
+    case ActionType.Milestone:
+      return {
+        payload: '',
+        type: actionType,
+      };
+    default:
+      return assertUnreachable(actionType);
+  }
 }
 
 export type { ConditionalAction as T };
