@@ -118,7 +118,7 @@ function ConfigureCard({ interview }: Props): JSX.Element {
                       onChange={screenId => changeStartScreen(idx, screenId)}
                       value={state}
                       options={getOptions()}
-                      defaultButtonLabel=""
+                      placeholder=""
                     />
                   </span>
 
@@ -134,7 +134,7 @@ function ConfigureCard({ interview }: Props): JSX.Element {
               ))}
               <Dropdown
                 onChange={addStartScreen}
-                defaultButtonLabel="Add another screen!"
+                placeholder="Add another screen!"
                 value={undefined} // TODO this value gets updated when a screen is selected, so the same screen can't be selected twice
                 options={getOptions()}
               />

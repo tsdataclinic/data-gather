@@ -101,7 +101,7 @@ export default function ActionCard({
       <p className="w-20">Condition</p>
       <Dropdown
         onChange={onResponseKeyChange}
-        defaultButtonLabel="Response variable"
+        placeholder="Response variable"
         value={action.responseKey}
         options={[
           { displayValue: 'Response Key 1', value: 'responseKey1' },
@@ -111,7 +111,7 @@ export default function ActionCard({
 
       <Dropdown
         onChange={onConditionalOperatorChange}
-        defaultButtonLabel="Operator"
+        placeholder="Operator"
         value={action.conditionalOperator}
         options={OPERATOR_OPTIONS}
       />

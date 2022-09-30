@@ -88,7 +88,7 @@ export default function ActionConfigEditor({
                 newScreenId,
               )
             }
-            defaultButtonLabel="No payload selected"
+            placeholder="No payload selected"
             value={actionConfig.payload[0]}
             options={screenOptions}
           />
@@ -113,7 +113,7 @@ export default function ActionConfigEditor({
       <LabelWrapper inline label="Action" labelTextClassName="w-20">
         <Dropdown
           onChange={onActionTypeChange}
-          defaultButtonLabel="Action type"
+          placeholder="Action type"
           value={actionConfig.type}
           options={ACTION_TYPE_OPTIONS}
         />
