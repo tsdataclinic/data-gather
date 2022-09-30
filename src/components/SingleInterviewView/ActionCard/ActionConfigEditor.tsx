@@ -1,3 +1,4 @@
+import invariant from 'invariant';
 import * as React from 'react';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
@@ -37,11 +38,31 @@ export default function ActionConfigEditor({
     );
   };
 
-  const onActionPushChange = (newScreenId: string): void =>
-    onActionConfigChange({
-      type: ConditionalAction.ActionType.Push,
-      payload: [newScreenId],
-    });
+  const onActionPayloadChange = (
+    actionType: ConditionalAction.ActionType,
+    payload: ConditionalAction.T['actionConfig']['payload'],
+  ): void => {
+    switch (actionType) {
+      case ConditionalAction.ActionType.Push:
+        invariant(
+          typeof payload === 'string',
+          'Action payload must be of type string',
+        );
+        onActionConfigChange({
+          type: actionType,
+          payload: [payload],
+        });
+        break;
+      case ConditionalAction.ActionType.Skip:
+      case ConditionalAction.ActionType.Checkpoint:
+      case ConditionalAction.ActionType.Milestone:
+      case ConditionalAction.ActionType.Restore:
+        // TODO: needs implementation
+        break;
+      default:
+        assertUnreachable(actionType);
+    }
+  };
 
   const screenOptions = React.useMemo(
     () =>
@@ -61,7 +82,12 @@ export default function ActionConfigEditor({
         // to be updated once we have a multi-select dropdown component.
         return (
           <Dropdown
-            onChange={onActionPushChange}
+            onChange={(newScreenId: string) =>
+              onActionPayloadChange(
+                ConditionalAction.ActionType.Push,
+                newScreenId,
+              )
+            }
             defaultButtonLabel="No payload selected"
             value={actionConfig.payload[0]}
             options={screenOptions}
