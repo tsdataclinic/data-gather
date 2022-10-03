@@ -79,6 +79,7 @@ export function addEntry(
 }
 
 /**
+<<<<<<< HEAD
  * Immutably add an action to a screen
  */
 export function addAction(
@@ -89,6 +90,25 @@ export function addAction(
     ...screen,
     actions: screen.actions.concat(conditionalAction.id),
   };
+}
+
+/**
+ * Immutably removes an entry from a screen
+ */
+export function removeEntry(
+  screen: InterviewScreen,
+  entry: InterviewScreenEntry.T,
+): InterviewScreen {
+  const index = screen.entries.indexOf(entry.id);
+  if (index > -1)
+    return {
+      ...screen,
+      entries: [
+        ...screen.entries.slice(0, index),
+        ...screen.entries.slice(index + 1),
+      ],
+    };
+  return screen;
 }
 
 /**

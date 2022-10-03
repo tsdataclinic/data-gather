@@ -242,6 +242,19 @@ export class InterviewStoreAPI extends Dexie {
   };
 
   /**
+   * Delete an InterviewScreenEntry and returns the id of the entry deleted.
+   *
+   * @param {InterviewScreenEntry.T} screenEntry The screen entry to delete
+   */
+  deleteScreenEntry = async (
+    screenEntry: InterviewScreenEntry.T,
+  ): Promise<string> => {
+    const entryId = screenEntry.id;
+    await this.interviewScreenEntries.delete(entryId);
+    return entryId;
+  };
+
+  /**
    * Update a ConditionalAction, or add it if it doesn't exist.
    * This function is unsafe because it does not check to see if it exists
    * in an InterviewScreen first, so it's possible to store a conditionalAction
@@ -392,6 +405,25 @@ export class InterviewStoreAPI extends Dexie {
       this.putScreen(newScreen),
       this.unsafePutScreenEntry(interviewScreenEntry),
     ]);
+  };
+
+  /**
+   * Removes an entry from the given screen and deletes it from the interviewScreenEntries table.
+   * The screen must already exist otherwise this will throw an error.
+   *
+   * @param {InterviewScreenEntry.T} interviewScreenEntry to remove and delete
+   */
+  removeEntryFromScreen = async (
+    interviewScreenEntry: InterviewScreenEntry.T,
+  ): Promise<InterviewScreen.T> => {
+    const screen = await this.getScreen(interviewScreenEntry.screenId);
+    invariant(
+      screen,
+      `[InterviewStore] addEntryToScreen: Could not find screen with id '${interviewScreenEntry.screenId}'`,
+    );
+    const newScreen = InterviewScreen.removeEntry(screen, interviewScreenEntry);
+    this.deleteScreenEntry(interviewScreenEntry);
+    return this.putScreen(newScreen);
   };
 }
 
