@@ -14,7 +14,7 @@ import useInterviewStore from '../../../hooks/useInterviewStore';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import NewEntryModal from './NewEntryModel';
+import NewEntryModal from './NewEntryModal';
 import {
   actionTypeToDisplayString,
   getActionById,
