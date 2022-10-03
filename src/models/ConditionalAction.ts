@@ -262,9 +262,9 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
  */
 export function actionTypeToDisplayString(
   actionType: ActionType | undefined,
-): string | undefined {
+): string {
   if (actionType === undefined) {
-    return undefined;
+    return '';
   }
   // capitalize first letter
   return actionType[0].toUpperCase() + actionType.substring(1);
