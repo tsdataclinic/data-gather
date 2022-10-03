@@ -260,9 +260,31 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
  * Convert an ActionType to a string. Useful if listing action types in
  * a dropdown.
  */
-export function actionTypeToDisplayString(actionType: ActionType): string {
+export function actionTypeToDisplayString(
+  actionType: ActionType | undefined,
+): string {
+  if (actionType === undefined) {
+    return '';
+  }
   // capitalize first letter
   return actionType[0].toUpperCase() + actionType.substring(1);
+}
+
+/**
+ * Returns an action corresponding to the given id from a list of action
+ *
+ * @param actionId
+ * @param actions
+ */
+export function getActionById(
+  actionId: string,
+  actions: ConditionalAction[] | undefined,
+): ConditionalAction | undefined {
+  if (actions === undefined) {
+    return undefined;
+  }
+
+  return actions.find(entry => entry.id === actionId);
 }
 
 /**
