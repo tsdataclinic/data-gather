@@ -333,9 +333,6 @@ export class InterviewStoreAPI extends Dexie {
   removeEntryFromScreen = async (
     interviewScreenEntry: InterviewScreenEntry.T,
   ): Promise<InterviewScreen.T> => {
-    console.log(
-      `beginning removeEntryFromScreen screenId = ${interviewScreenEntry.screenId}`,
-    );
     const screen = await this.getScreen(interviewScreenEntry.screenId);
     invariant(
       screen,
@@ -343,14 +340,7 @@ export class InterviewStoreAPI extends Dexie {
     );
 
     const newScreen = InterviewScreen.removeEntry(screen, interviewScreenEntry);
-    this.deleteScreenEntry(interviewScreenEntry).then(entryId => {
-      // eslint-disable-next-line no-console
-      console.log(`deleted screen entry: ${entryId}`);
-    });
-
-    // eslint-disable-next-line no-console
-    console.log('removed entry from screen');
-
+    this.deleteScreenEntry(interviewScreenEntry);
     return this.putScreen(newScreen);
   };
 }

@@ -47,12 +47,12 @@ export default function ScreenLink({
       'bg-blue-100': isSelected && selectedEntry === null,
     },
   );
-  const entryMenuItemClass = (id: string): string => {
-    if (selectedEntry === id) {
-      return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full bg-blue-100 hover:text-blue-700 cursor-pointer';
-    }
-    return 'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full hover:text-blue-700 cursor-pointer';
-  };
+
+  const entryMenuItemClass = (id: string): string =>
+    classNames(
+      'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full hover:text-blue-700 cursor-pointer',
+      { 'bg-blue-100': selectedEntry === id },
+    );
 
   const onNewEntrySubmit = useCallback(
     async (vals: Map<string, string>): Promise<void> => {
