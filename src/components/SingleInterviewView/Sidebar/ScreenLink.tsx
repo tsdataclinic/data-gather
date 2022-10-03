@@ -11,9 +11,14 @@ import { useState, useCallback, useEffect } from 'react';
 import { NavLink, useMatch } from 'react-router-dom';
 import { Link as ScrollLink } from 'react-scroll';
 import useInterviewStore from '../../../hooks/useInterviewStore';
+import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import NewEntryModal from './NewEntryModal';
+import NewEntryModal from './NewEntryModel';
+import {
+  actionTypeToDisplayString,
+  getActionById,
+} from '../../../models/ConditionalAction';
 
 type Props = {
   isSelected: boolean;
@@ -36,12 +41,19 @@ export default function ScreenLink({
   const [screenEntries, setScreenEntries] = useState<
     InterviewScreenEntry.T[] | undefined
   >(undefined);
+  const [screenActions, setScreenActions] = useState<
+    ConditionalAction.T[] | undefined
+  >(undefined);
 
   useEffect(() => {
     if (screen !== 'configure') {
       interviewStore.getScreenEntries(screen.entries).then(setScreenEntries);
+      interviewStore
+        .getConditionalActions(screen.actions)
+        .then(setScreenActions);
     } else {
       setScreenEntries(undefined);
+      setScreenActions(undefined);
     }
   }, [interviewStore, screen]);
 
@@ -146,17 +158,23 @@ export default function ScreenLink({
           ))}
 
           {/* Action */}
-          <ScrollLink
-            className={entryMenuItemClass('ACTION')}
-            activeClass="active"
-            to="ACTION"
-            duration={250}
-            containerId="scrollContainer"
-            onClick={() => setSelectedEntry('ACTION')}
-          >
-            <FontAwesomeIcon size="1x" icon={faLocationArrow} />
-            Action
-          </ScrollLink>
+          {screen.actions.map(actionId => (
+            <ScrollLink
+              key={actionId}
+              className={entryMenuItemClass('ACTION')}
+              activeClass="active"
+              to="ACTION"
+              duration={250}
+              containerId="scrollContainer"
+              onClick={() => setSelectedEntry('ACTION')}
+            >
+              <FontAwesomeIcon size="1x" icon={faLocationArrow} />
+              Action:{' '}
+              {actionTypeToDisplayString(
+                getActionById(actionId, screenActions)?.actionConfig.type,
+              )}
+            </ScrollLink>
+          ))}
         </div>
       ) : null}
 

@@ -160,7 +160,7 @@ export class InterviewStoreAPI extends Dexie {
    * @param {string[]} actionIds
    * @returns {ConditionalAction.T[]} Array of interview conditional actions
    */
-  private getConditionalActions = async (
+  getConditionalActions = async (
     actionIds: readonly string[],
   ): Promise<ConditionalAction.T[]> => {
     const actions = (
