@@ -1,64 +1,52 @@
-import React, { Children } from 'react';
-import type { ReactNode, FormEvent } from 'react';
-import FormInput, { isFormInput } from './FormInput';
+import * as React from 'react';
+import FormInput from './FormInput';
 import FormSubmitButton from './FormSubmitButton';
-import FormGroup, { isFormGroup } from './FormGroup';
-import FormDropdown, { isFormDropdown } from './FormDropdown';
+import FormGroup from './FormGroup';
+import FormDropdown from './FormDropdown';
 
-type Props = {
-  children: ReactNode;
-  className?: string;
+type HTMLFormProps = React.ComponentPropsWithoutRef<'form'>;
+type Props = Omit<HTMLFormProps, 'onSubmit'> & {
   onSubmit: (
     values: Map<string, string>,
-    event: FormEvent<HTMLFormElement>,
+    files: Map<string, File>,
+    event: React.FormEvent<HTMLFormElement>,
   ) => void;
 };
-
-function flattenChildren(children: ReactNode): ReactNode[] {
-  const flattenedChildren: ReactNode[] = [];
-
-  Children.forEach(children, childNode => {
-    if (isFormGroup(childNode)) {
-      const groupChildren = flattenChildren(childNode.props.children);
-      flattenedChildren.push(...groupChildren);
-    } else {
-      flattenedChildren.push(childNode);
-    }
-  });
-
-  return flattenedChildren;
-}
 
 export default function Form({
   children,
   className,
   onSubmit,
+  ...htmlFormProps
 }: Props): JSX.Element {
-  const onFormSubmit = (event: FormEvent<HTMLFormElement>): void => {
+  const ref = React.useRef<HTMLFormElement | null>(null);
+
+  const onFormSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    const formElements = event.currentTarget.elements;
-    const valuesMap = new Map<string, string>();
-
-    const flattenedChildren = flattenChildren(children);
-    Children.forEach(flattenedChildren, childNode => {
-      if (isFormInput(childNode) || isFormDropdown<string>(childNode)) {
-        const { name } = childNode.props;
-        const elt = formElements.namedItem(name);
-        if (
-          elt instanceof HTMLInputElement ||
-          elt instanceof HTMLSelectElement
-        ) {
-          valuesMap.set(name, elt.value);
+    const formElt = ref.current;
+    if (formElt) {
+      const formData = new FormData(formElt);
+      const valuesMap = new Map<string, string>();
+      const filesMap = new Map<string, File>();
+      formData.forEach((value: FormDataEntryValue, key: string) => {
+        if (typeof value === 'string') {
+          valuesMap.set(key, value);
+        } else if (value instanceof File) {
+          filesMap.set(key, value);
         }
-      }
-      return undefined;
-    });
-
-    onSubmit(valuesMap, event);
+      });
+      onSubmit(valuesMap, filesMap, event);
+    }
   };
 
   return (
-    <form className={className ?? 'space-y-4'} onSubmit={onFormSubmit}>
+    <form
+      ref={ref}
+      className={className ?? 'space-y-4'}
+      onSubmit={onFormSubmit}
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...htmlFormProps}
+    >
       {children}
     </form>
   );

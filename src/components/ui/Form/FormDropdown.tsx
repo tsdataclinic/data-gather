@@ -26,12 +26,3 @@ export default function FormDropdown<T extends string>({
     </LabelWrapper>
   );
 }
-
-export function isFormDropdown<T extends string>(
-  elt: React.ReactNode,
-): elt is React.ReactElement<Props<T>, React.JSXElementConstructor<Props<T>>> {
-  if (React.isValidElement(elt)) {
-    return elt.type === FormDropdown;
-  }
-  return false;
-}
