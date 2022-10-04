@@ -3,8 +3,8 @@ import useInterview from '../../hooks/useInterview';
 import useInterviewConditionalActions from '../../hooks/useInterviewConditionalActions';
 import useInterviewScreenEntries from '../../hooks/useInterviewScreenEntries';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
-import ConfigureCard from './ConfigureCard';
-import ScreenCard from './ScreenCard';
+import ConfigurePage from './ConfigurePage';
+import ScreenPage from './ScreenPage';
 import Sidebar from './Sidebar';
 
 export default function SingleInterviewView(): JSX.Element {
@@ -25,7 +25,7 @@ export default function SingleInterviewView(): JSX.Element {
         <Routes>
           <Route
             path="configure"
-            element={<ConfigureCard interview={interview} />}
+            element={<ConfigurePage interview={interview} />}
           />
           {screens?.map(screen => {
             // we track the length of the `actions` array as a key as a cheap
@@ -40,7 +40,7 @@ export default function SingleInterviewView(): JSX.Element {
                 key={screen.id}
                 path={`/screen/${screen.id}`}
                 element={
-                  <ScreenCard
+                  <ScreenPage
                     key={screenKey}
                     screen={screen}
                     entries={entries?.get(screen.id) ?? []}
