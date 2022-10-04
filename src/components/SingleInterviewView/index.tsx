@@ -21,24 +21,20 @@ export default function SingleInterviewView(): JSX.Element {
   return (
     <div className="flex h-full w-full flex-1 items-center overflow-y-hidden p-0">
       <Sidebar interview={interview} screens={screens} />
-      <div
-        className="flex h-full w-4/5 flex-col items-center space-y-4 overflow-scroll p-14"
-        id="scrollContainer"
-      >
+      <div className="flex h-full w-4/5 flex-col items-center">
         <Routes>
           <Route
             path="configure"
             element={<ConfigureCard interview={interview} />}
           />
           {screens?.map(screen => {
+            // we track the length of the `actions` array as a key as a cheap
+            // way to remount the page when actions finish loading. If this
+            // causes performance issues (due to actions array changing length
+            // whenever we hit save, causing a remount) then we should address
+            // this.
             const actionsList = actions?.get(screen.id) ?? [];
-
-            // we track the load state of `actions` as a key so the ScreenCard can remount
-            // when the actions array finishes loading
-            const actionKey =
-              actions === undefined ? 'loading_actions' : 'loaded_actions';
-            const screenKey = `${screen.id}__${actionKey}`;
-
+            const screenKey = `${screen.id}__${actionsList.length}`;
             return (
               <Route
                 key={screen.id}

@@ -66,86 +66,88 @@ function ConfigureCard({ interview }: Props): JSX.Element {
     }));
 
   return (
-    <div
-      className="grid h-60 w-full grid-cols-4 bg-white p-8 shadow-md"
-      style={{ height: 'auto' }}
-    >
-      <div className="space-x-3">
-        <FontAwesomeIcon size="1x" icon={faWrench} />
-        <span>Configure</span>
-      </div>
-      <div className="col-span-3 space-y-4">
-        <LabelWrapper
-          inline
-          label="Notes"
-          labelTextClassName="w-40"
-          inlineContainerStyles={{ verticalAlign: 'text-top' }}
-        >
-          <TextArea
-            onChange={setDisplayedNotes}
-            onEnterPress={saveNotes}
-            value={displayedNotes}
-          />
-        </LabelWrapper>
-
-        <span>
-          <div
-            className="mt-5"
-            style={{
-              display: 'flex',
-            }}
+    <div className="w-full p-14">
+      <div
+        className="grid h-60 grid-cols-4 bg-white p-8 shadow-md"
+        style={{ height: 'auto' }}
+      >
+        <div className="space-x-3">
+          <FontAwesomeIcon size="1x" icon={faWrench} />
+          <span>Configure</span>
+        </div>
+        <div className="col-span-3 space-y-4">
+          <LabelWrapper
+            inline
+            label="Notes"
+            labelTextClassName="w-40"
+            inlineContainerStyles={{ verticalAlign: 'text-top' }}
           >
-            <div className="w-40">Starting State</div>
+            <TextArea
+              onChange={setDisplayedNotes}
+              onEnterPress={saveNotes}
+              value={displayedNotes}
+            />
+          </LabelWrapper>
+
+          <span>
             <div
-              className="ml-4"
+              className="mt-5"
               style={{
                 display: 'flex',
-                flexDirection: 'column',
               }}
             >
-              {startingState.map((state, idx) => (
-                <div
-                  // eslint-disable-next-line react/no-array-index-key
-                  key={`startingstate_${state}_${idx}`}
-                  style={{
-                    display: 'flex',
-                    marginBottom: '20px',
-                    alignItems: 'center',
-                  }}
-                >
-                  <span className="w-32">
-                    <Dropdown
-                      onChange={screenId => changeStartScreen(idx, screenId)}
-                      value={state}
-                      options={getOptions()}
-                      placeholder=""
-                    />
-                  </span>
+              <div className="w-40">Starting State</div>
+              <div
+                className="ml-4"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                {startingState.map((state, idx) => (
+                  <div
+                    // eslint-disable-next-line react/no-array-index-key
+                    key={`startingstate_${state}_${idx}`}
+                    style={{
+                      display: 'flex',
+                      marginBottom: '20px',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span className="w-32">
+                      <Dropdown
+                        onChange={screenId => changeStartScreen(idx, screenId)}
+                        value={state}
+                        options={getOptions()}
+                        placeholder=""
+                      />
+                    </span>
 
-                  <span className="ml-2">
-                    <Button
-                      type="button"
-                      onClick={() => removeStartScreen(idx)}
-                    >
-                      -
-                    </Button>
-                  </span>
-                </div>
-              ))}
-              <Dropdown
-                // We reset the key so that the component remounts, thus
-                // clearing the selection. This is due to a radix bug where
-                // `undefined` values make the component be treated as
-                // uncontrolled
-                key={startingState.length}
-                onChange={addStartScreen}
-                placeholder="Add another screen!"
-                value={undefined}
-                options={getOptions()}
-              />
+                    <span className="ml-2">
+                      <Button
+                        type="button"
+                        onClick={() => removeStartScreen(idx)}
+                      >
+                        -
+                      </Button>
+                    </span>
+                  </div>
+                ))}
+                <Dropdown
+                  // We reset the key so that the component remounts, thus
+                  // clearing the selection. This is due to a radix bug where
+                  // `undefined` values make the component be treated as
+                  // uncontrolled
+                  key={startingState.length}
+                  onChange={addStartScreen}
+                  placeholder="Add another screen!"
+                  value={undefined}
+                  options={getOptions()}
+                />
+              </div>
             </div>
-          </div>
-        </span>
+          </span>
+        </div>
       </div>
     </div>
   );

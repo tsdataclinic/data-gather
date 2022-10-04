@@ -3,11 +3,12 @@ import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
-import Button from '../ui/Button';
 import ActionCard from './ActionCard';
 import EntryCard from './EntryCard';
 import useInterviewStore from '../../hooks/useInterviewStore';
 import HeaderCard from './HeaderCard';
+import ScreenToolbar from './ScreenToolbar';
+import ScrollArea from '../ui/ScrollArea';
 
 type Props = {
   defaultActions: readonly ConditionalAction.T[];
@@ -56,30 +57,35 @@ function ScreenCard({
     );
   }, []);
 
-  const onSaveClick = React.useCallback(async () => {
-    await interviewStore.updateScreenConditionalActions(screenId, allActions);
+  const onSaveClick = React.useCallback(() => {
+    interviewStore.updateScreenConditionalActions(screenId, allActions);
   }, [allActions, screenId, interviewStore]);
 
   return (
-    <div className="flex w-full flex-col items-center gap-14">
-      <div className="flex space-x-4 self-end">
-        <Button>New Entry</Button>
-        <Button onClick={onNewActionClick}>New Action</Button>
-      </div>
-      <HeaderCard screen={screen} />
-      {entries.map(entry => (
-        <EntryCard entry={entry} key={entry.id} />
-      ))}
-      {allActions.map(action => (
-        <ActionCard
-          key={action.id}
-          action={action}
-          onActionChange={onActionChange}
-          interview={interview}
-        />
-      ))}
-      <Button onClick={onSaveClick}>Save</Button>
-    </div>
+    <>
+      <ScreenToolbar
+        screen={screen}
+        onSaveClick={onSaveClick}
+        onNewEntryClick={() => console.log('unimplemented')}
+        onNewActionClick={onNewActionClick}
+      />
+      <ScrollArea id="scrollContainer" className="w-full overflow-auto">
+        <div className="flex flex-col items-center gap-14 p-14">
+          <HeaderCard screen={screen} />
+          {entries.map(entry => (
+            <EntryCard entry={entry} key={entry.id} />
+          ))}
+          {allActions.map(action => (
+            <ActionCard
+              key={action.id}
+              action={action}
+              onActionChange={onActionChange}
+              interview={interview}
+            />
+          ))}
+        </div>
+      </ScrollArea>
+    </>
   );
 }
 
