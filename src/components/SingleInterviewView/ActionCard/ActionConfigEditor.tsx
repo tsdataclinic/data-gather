@@ -68,10 +68,17 @@ export default function ActionConfigEditor({
   const screenOptions = React.useMemo(
     () =>
       screens
-        ? screens.map(screen => ({
-            value: screen.id,
-            displayValue: screen.title,
-          }))
+        ? screens
+            .map(screen => ({
+              value: screen.id,
+              displayValue: screen.title,
+            }))
+            .concat({
+              // Hardcoding an 'End option' for now just for demoing, but this
+              // should be officially supported
+              value: '__END_INTERVIEW__',
+              displayValue: 'END INTERVIEW',
+            })
         : [],
     [screens],
   );

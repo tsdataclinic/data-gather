@@ -51,6 +51,7 @@ function EntryCard(
           <Form.Input
             label="Helper Text"
             name="text"
+            required={false}
             value={entry.text}
             onChange={(newVal: string) => {
               onEntryChange({
@@ -74,6 +75,7 @@ function EntryCard(
             options={[
               { displayValue: 'Text', value: 'text' },
               { displayValue: 'Number', value: 'number' },
+              { displayValue: 'Yes/No', value: 'boolean' },
             ]}
             value={entry.responseType}
             onChange={(newVal: string) => {

@@ -11,6 +11,7 @@ type Props = {
   label: string;
   name: string;
   onChange?: (val: string, event: React.ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
   value?: string;
 };
 
@@ -18,6 +19,7 @@ export default function FormInput({
   className,
   inputClassName,
   disabled = false,
+  required = true,
   label,
   name,
   defaultValue,
@@ -27,9 +29,9 @@ export default function FormInput({
   const finalInputClassName = classNames('w-full', inputClassName);
 
   return (
-    <LabelWrapper className={className} label={label}>
+    <LabelWrapper className={className} label={label + (required ? ' *' : '')}>
       <InputText
-        required
+        required={required}
         disabled={disabled}
         className={finalInputClassName}
         name={name}

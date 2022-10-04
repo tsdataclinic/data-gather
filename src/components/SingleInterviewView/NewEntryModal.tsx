@@ -20,8 +20,17 @@ export default function NewEntryModal({
       <Form onSubmit={onSubmit}>
         <Form.Input name="name" label="Name" />
         <Form.Input name="prompt" label="Prompt" />
-        <Form.Input name="responseType" label="Response Type" />
-        <Form.Input name="text" label="Additional Text" />
+        <Form.Dropdown
+          label="Response type"
+          name="responseType"
+          placeholder="What type of data is this?"
+          options={[
+            { displayValue: 'Text', value: 'text' },
+            { displayValue: 'Number', value: 'number' },
+            { displayValue: 'Yes/No', value: 'boolean' },
+          ]}
+        />
+        <Form.Input name="text" label="Helper text" required={false} />
         <Form.SubmitButton />
       </Form>
     </Modal>

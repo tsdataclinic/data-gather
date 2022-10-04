@@ -34,6 +34,7 @@ function HeaderCard(
         <Form.Input
           label="Header text"
           name="headerText"
+          required={false}
           value={screen.headerText}
           onChange={(newVal: string) => {
             onScreenChange({ ...screen, headerText: newVal });

@@ -7,7 +7,7 @@ import { VisuallyHidden } from '@reach/visually-hidden';
 import type { ReactNode } from 'react';
 
 const StyledDialogOverlay = styled(DialogOverlay)`
-  z-index: 9999;
+  z-index: 999;
 `;
 
 type Props = {
