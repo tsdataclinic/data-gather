@@ -10,6 +10,8 @@ import InputText from '../../ui/InputText';
 import LabelWrapper from '../../ui/LabelWrapper';
 import ActionConfigEditor from './ActionConfigEditor';
 import Form from '../../ui/Form';
+import useInterviewScreenEntries from '../../../hooks/useInterviewScreenEntries';
+import useInterviewScreens from '../../../hooks/useInterviewScreens';
 
 // remove 'ALWAYS_EXECUTE' from being one of the options in the dropdown
 // because this operator is handled separately
@@ -30,8 +32,14 @@ function ActionCard(
   { action, onActionChange, interview }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
-  const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] =
-    React.useState(true);
+  // TODO: when interview is a nested model we won't need these sub-queries
+  const interviewScreens = useInterviewScreens(interview.id);
+  const screenEntriesMap = useInterviewScreenEntries(interview.id);
+
+  const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] = React.useState(
+    action.conditionalOperator ===
+      ConditionalAction.ConditionalOperator.AlwaysExecute,
+  );
 
   const onAlwaysExecuteChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -94,6 +102,18 @@ function ActionCard(
     [action, onActionChange],
   );
 
+  // TODO: this is only looking at entries. We also need to look at Skip actions.
+  const allResponseKeyOptions =
+    interviewScreens && screenEntriesMap
+      ? interviewScreens.flatMap(screen => {
+          const entries = screenEntriesMap.get(screen.id) || [];
+          return entries.map(entry => ({
+            displayValue: `${screen.title} - ${entry.name}`,
+            value: entry.id,
+          }));
+        })
+      : [];
+
   // The conditionalOperatorRow doesn't use Form.Input or other Form
   // subcomponents because we need more control over how it renders
   const conditionalOperatorRow = isAlwaysExecuteChecked ? null : (
@@ -103,10 +123,7 @@ function ActionCard(
         onChange={onResponseKeyChange}
         placeholder="Response variable"
         value={action.responseKey}
-        options={[
-          { displayValue: 'Response Key 1', value: 'responseKey1' },
-          { displayValue: 'Response Key 2', value: 'responseKey2' },
-        ]}
+        options={allResponseKeyOptions}
       />
 
       <Dropdown

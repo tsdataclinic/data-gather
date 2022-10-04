@@ -82,31 +82,45 @@ export default function ActionConfigEditor({
         // TODO: we only allow a single screen to be pushed for now. This needs
         // to be updated once we have a multi-select dropdown component.
         return (
-          <Dropdown
-            onChange={(newScreenId: string) =>
-              onActionPayloadChange(
-                ConditionalAction.ActionType.Push,
-                newScreenId,
-              )
-            }
-            placeholder="No payload selected"
-            value={actionConfig.payload[0]}
-            options={screenOptions}
-          />
+          <LabelWrapper inline label="Next stage" labelTextClassName="w-20">
+            <Dropdown
+              onChange={(newScreenId: string) =>
+                onActionPayloadChange(
+                  ConditionalAction.ActionType.Push,
+                  newScreenId,
+                )
+              }
+              placeholder="No stage selected"
+              value={actionConfig.payload[0]}
+              options={screenOptions}
+            />
+          </LabelWrapper>
         );
       case ConditionalAction.ActionType.Skip:
         return (
-          <>
+          <LabelWrapper inline label="Payload" labelTextClassName="w-20">
             <InputText required onChange={() => {}} />
             <InputText required onChange={() => {}} />
-          </>
+          </LabelWrapper>
         );
       case ConditionalAction.ActionType.Checkpoint:
-        return <InputText required onChange={() => {}} />;
+        return (
+          <LabelWrapper inline label="Payload" labelTextClassName="w-20">
+            <InputText required onChange={() => {}} />
+          </LabelWrapper>
+        );
       case ConditionalAction.ActionType.Milestone:
-        return <InputText required onChange={() => {}} />;
+        return (
+          <LabelWrapper inline label="Payload" labelTextClassName="w-20">
+            <InputText required onChange={() => {}} />
+          </LabelWrapper>
+        );
       case ConditionalAction.ActionType.Restore:
-        return <InputText required onChange={() => {}} />;
+        return (
+          <LabelWrapper inline label="Payload" labelTextClassName="w-20">
+            <InputText required onChange={() => {}} />
+          </LabelWrapper>
+        );
       default:
         return assertUnreachable(actionConfig);
     }
@@ -123,9 +137,8 @@ export default function ActionConfigEditor({
           options={ACTION_TYPE_OPTIONS}
         />
       </LabelWrapper>
-      <LabelWrapper inline label="Payload" labelTextClassName="w-20">
-        {renderEditor()}
-      </LabelWrapper>
+
+      {renderEditor()}
     </>
   );
 }
