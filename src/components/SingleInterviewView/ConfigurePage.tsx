@@ -68,7 +68,7 @@ function ConfigureCard({ interview }: Props): JSX.Element {
   return (
     <div className="w-full p-14">
       <div
-        className="grid h-60 grid-cols-4 bg-white p-8 shadow-lg"
+        className="grid h-60 grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg"
         style={{ height: 'auto' }}
       >
         <div className="space-x-3">
