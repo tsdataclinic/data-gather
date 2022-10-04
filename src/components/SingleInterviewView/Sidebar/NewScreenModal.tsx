@@ -44,7 +44,7 @@ export default function NewScreenModal({
   return (
     <Modal title="New stage" isOpen={isOpen} onDismiss={onDismiss}>
       <Form onSubmit={onSubmit}>
-        <Form.Input fullWidth name="name" label="Name" />
+        <Form.Input name="name" label="Name" />
         <Form.SubmitButton />
       </Form>
     </Modal>

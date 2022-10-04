@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import {
   useState,
   isValidElement,
@@ -11,7 +12,7 @@ import LabelWrapper from '../LabelWrapper';
 type Props = {
   className?: string;
   defaultValue?: string;
-  fullWidth?: boolean;
+  inputClassName?: string;
   label: string;
   name: string;
   value?: string;
@@ -19,22 +20,24 @@ type Props = {
 
 export default function FormInput({
   className,
+  inputClassName,
   label,
   name,
   defaultValue,
   value,
-  fullWidth = false,
 }: Props): JSX.Element {
   const [val, setVal] = useState(value);
+  const finalInputClassName = classNames('w-full', inputClassName);
+
   return (
     <LabelWrapper className={className} label={label}>
       <InputText
         required
+        className={finalInputClassName}
         name={name}
         defaultValue={defaultValue || ''}
         value={val}
         onChange={setVal}
-        className={fullWidth ? 'w-full' : undefined}
       />
     </LabelWrapper>
   );
