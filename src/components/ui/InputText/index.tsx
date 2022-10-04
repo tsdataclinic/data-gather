@@ -14,7 +14,6 @@ type Props = {
   onEnterPress?: (val: string, event: KeyboardEvent<HTMLInputElement>) => void;
   placeholder?: string;
   required?: boolean;
-  size?: 'normal' | 'large';
   value?: string;
 };
 
@@ -26,7 +25,6 @@ export default function InputText({
   onEnterPress,
   placeholder,
   required,
-  size = 'normal',
   defaultValue,
   value,
 }: Props): JSX.Element {
@@ -47,11 +45,7 @@ export default function InputText({
 
   const inputClassName = classNames(
     className,
-    'rounded-sm border border-gray-400',
-    {
-      'p-1 px-3': size === 'normal',
-      'p-4': size === 'large',
-    },
+    'rounded-sm border border-gray-400 p-2 px-3',
   );
 
   return (

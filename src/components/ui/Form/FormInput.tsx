@@ -11,9 +11,9 @@ import LabelWrapper from '../LabelWrapper';
 type Props = {
   className?: string;
   defaultValue?: string;
+  fullWidth?: boolean;
   label: string;
   name: string;
-  size?: 'normal' | 'large';
   value?: string;
 };
 
@@ -23,7 +23,7 @@ export default function FormInput({
   name,
   defaultValue,
   value,
-  size = 'normal',
+  fullWidth = false,
 }: Props): JSX.Element {
   const [val, setVal] = useState(value);
   return (
@@ -34,7 +34,7 @@ export default function FormInput({
         defaultValue={defaultValue || ''}
         value={val}
         onChange={setVal}
-        size={size}
+        className={fullWidth ? 'w-full' : undefined}
       />
     </LabelWrapper>
   );

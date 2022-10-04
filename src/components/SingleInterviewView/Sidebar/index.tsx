@@ -63,7 +63,7 @@ export default function Sidebar({
         className="absolute bottom-0 cursor-pointer py-4"
         onClick={() => setIsNewScreenModalOpen(true)}
       >
-        +
+        New Stage
       </Button>
 
       <NewScreenModal

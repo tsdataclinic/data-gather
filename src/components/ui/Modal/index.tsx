@@ -1,10 +1,14 @@
-import 'styled-components/macro';
+import styled from 'styled-components/macro';
 import '@reach/dialog/styles.css';
 import { faClose } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Dialog } from '@reach/dialog';
+import { DialogOverlay, DialogContent } from '@reach/dialog';
 import { VisuallyHidden } from '@reach/visually-hidden';
 import type { ReactNode } from 'react';
+
+const StyledDialogOverlay = styled(DialogOverlay)`
+  z-index: 9999;
+`;
 
 type Props = {
   children: ReactNode;
@@ -23,43 +27,45 @@ export default function Modal({
 }: Props): JSX.Element {
   // TODO: how much of this can be tailwind?
   return (
-    <Dialog isOpen={isOpen} onDismiss={onDismiss}>
-      <div style={{ position: 'relative' }}>
-        <button
-          css={`
-            background: none;
-            color: black;
-            font-size: 1rem;
-            height: 40px;
-            position: absolute;
-            right: -32px;
-            top: -32px;
-            width: 40px;
-            transition: all 250ms;
+    <StyledDialogOverlay isOpen={isOpen} onDismiss={onDismiss}>
+      <DialogContent>
+        <div style={{ position: 'relative' }}>
+          <button
+            css={`
+              background: none;
+              color: black;
+              font-size: 1rem;
+              height: 40px;
+              position: absolute;
+              right: -32px;
+              top: -32px;
+              width: 40px;
+              transition: all 250ms;
 
-            &:hover,
-            &:focus {
-              color: #054382;
-              background: #e7e9ea;
-              outline: none;
-            }
-            &:focus-visible {
-              outline: 5px auto -webkit-focus-ring-color;
-            }
-          `}
-          type="button"
-          onClick={onDismiss}
-        >
-          <VisuallyHidden>Close</VisuallyHidden>
-          <FontAwesomeIcon aria-hidden size="1x" icon={faClose} />
-        </button>
-      </div>
-      <div className={className}>
-        {title === undefined ? null : (
-          <h1 className="pb-8 text-xl tracking-widest uppercase">{title}</h1>
-        )}
-        {children}
-      </div>
-    </Dialog>
+              &:hover,
+              &:focus {
+                color: #054382;
+                background: #e7e9ea;
+                outline: none;
+              }
+              &:focus-visible {
+                outline: 5px auto -webkit-focus-ring-color;
+              }
+            `}
+            type="button"
+            onClick={onDismiss}
+          >
+            <VisuallyHidden>Close</VisuallyHidden>
+            <FontAwesomeIcon aria-hidden size="1x" icon={faClose} />
+          </button>
+        </div>
+        <div className={className}>
+          {title === undefined ? null : (
+            <h1 className="pb-8 text-xl uppercase tracking-widest">{title}</h1>
+          )}
+          {children}
+        </div>
+      </DialogContent>
+    </StyledDialogOverlay>
   );
 }
