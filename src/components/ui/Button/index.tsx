@@ -33,7 +33,7 @@ export default function Button({
         intent === 'primary',
       'bg-red-500 hover:bg-red-400 active:bg-red-500 text-white':
         intent === 'danger',
-      'bg-white hover:bg-gray-100 active:bg-white text-black border border-gray-400':
+      'bg-gray-200 hover:bg-gray-300 active:bg-gray-200 text-gray-800 hover:text-gray-900':
         intent === 'default',
     },
   );
