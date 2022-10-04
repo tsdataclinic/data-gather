@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { faCircleQuestion } from '@fortawesome/free-solid-svg-icons';
+import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Element as ScrollableElement } from 'react-scroll';
 import Form from '../ui/Form';
-import Button from '../ui/Button';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import useInterviewStore from '../../hooks/useInterviewStore';
 
@@ -18,7 +17,7 @@ function EntryCard(
 ): JSX.Element {
   const interviewStore = useInterviewStore();
 
-  const handleOnDelete = (): void => {
+  const onDeleteClick = (): void => {
     interviewStore.removeEntryFromScreen(entry).then(value => {
       // eslint-disable-next-line no-console
       console.log(`handled on delete value = ${value}`);
@@ -28,11 +27,22 @@ function EntryCard(
   return (
     <ScrollableElement
       name={entry.id}
-      className="flex w-full flex-row border border-gray-200 bg-white p-10 shadow-lg"
+      className="relative flex w-full flex-row border border-gray-200 bg-white p-10 shadow-lg"
       key={entry.id}
     >
+      <div className="absolute top-0 right-0 pr-4 pt-4">
+        <FontAwesomeIcon
+          aria-label="Delete"
+          className="h-5 w-5 cursor-pointer text-slate-400 transition-colors duration-200 hover:text-red-500"
+          icon={IconType.faX}
+          onClick={onDeleteClick}
+        />
+      </div>
       <div className="flex w-1/6 flex-row">
-        <FontAwesomeIcon className="h-6 w-6 pr-4" icon={faCircleQuestion} />
+        <FontAwesomeIcon
+          className="h-6 w-6 pr-4"
+          icon={IconType.faCircleQuestion}
+        />
         {entry.name}
       </div>
       <Form ref={forwardedRef} className="w-full pr-12">
@@ -86,11 +96,6 @@ function EntryCard(
             }}
           />
         </Form.Group>
-        <div className="flex space-x-4">
-          <Button intent="danger" onClick={handleOnDelete}>
-            Delete
-          </Button>
-        </div>
       </Form>
     </ScrollableElement>
   );
