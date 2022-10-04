@@ -1,5 +1,5 @@
-import Form from '../../ui/Form';
-import Modal from '../../ui/Modal';
+import Form from '../ui/Form';
+import Modal from '../ui/Modal';
 
 type Props = {
   isOpen: boolean;

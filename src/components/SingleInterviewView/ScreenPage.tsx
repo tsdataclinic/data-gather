@@ -9,6 +9,7 @@ import useInterviewStore from '../../hooks/useInterviewStore';
 import HeaderCard from './HeaderCard';
 import ScreenToolbar from './ScreenToolbar';
 import ScrollArea from '../ui/ScrollArea';
+import NewEntryModal from './NewEntryModal';
 
 type Props = {
   defaultActions: readonly ConditionalAction.T[];
@@ -35,6 +36,8 @@ function ScreenCard({
 }: Props): JSX.Element {
   const screenId = screen.id;
   const interviewStore = useInterviewStore();
+  const [isNewEntryModelOpen, setIsNewEntryModalOpen] =
+    React.useState<boolean>(false);
 
   // track actions array here so we can modify them without persisting until
   // 'save' is hit
@@ -61,12 +64,29 @@ function ScreenCard({
     interviewStore.updateScreenConditionalActions(screenId, allActions);
   }, [allActions, screenId, interviewStore]);
 
+  const onNewEntryClick = React.useCallback(() => {
+    setIsNewEntryModalOpen(true);
+  }, []);
+
+  const onNewEntrySubmit = async (vals: Map<string, string>): Promise<void> => {
+    const entry = InterviewScreenEntry.create({
+      name: vals.get('name') ?? '',
+      prompt: vals.get('prompt') ?? '',
+      responseType: vals.get('responseType') ?? '',
+      screenId: screen.id,
+      text: vals.get('text') ?? '',
+    });
+
+    await interviewStore.addEntryToScreen(screen.id, entry);
+    setIsNewEntryModalOpen(false);
+  };
+
   return (
     <>
       <ScreenToolbar
         screen={screen}
         onSaveClick={onSaveClick}
-        onNewEntryClick={() => console.log('unimplemented')}
+        onNewEntryClick={onNewEntryClick}
         onNewActionClick={onNewActionClick}
       />
       <ScrollArea id="scrollContainer" className="w-full overflow-auto">
@@ -85,6 +105,12 @@ function ScreenCard({
           ))}
         </div>
       </ScrollArea>
+
+      <NewEntryModal
+        isOpen={isNewEntryModelOpen}
+        onDismiss={() => setIsNewEntryModalOpen(false)}
+        onSubmit={onNewEntrySubmit}
+      />
     </>
   );
 }

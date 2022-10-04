@@ -2,19 +2,17 @@ import {
   faGear,
   faLocationArrow,
   faPenToSquare,
-  faPlus,
   faQuestion,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useMatch } from 'react-router-dom';
 import { Link as ScrollLink } from 'react-scroll';
 import useInterviewStore from '../../../hooks/useInterviewStore';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import NewEntryModal from './NewEntryModal';
 import {
   actionTypeToDisplayString,
   getActionById,
@@ -35,8 +33,6 @@ export default function ScreenLink({
   const [selectedEntry, setSelectedEntry] = useState<string | undefined>(
     undefined,
   );
-  const [isNewEntryModelOpen, setIsNewEntryModalOpen] =
-    useState<boolean>(false);
   const interviewStore = useInterviewStore();
   const [screenEntries, setScreenEntries] = useState<
     InterviewScreenEntry.T[] | undefined
@@ -58,7 +54,7 @@ export default function ScreenLink({
   }, [interviewStore, screen]);
 
   const screenMenuItemClass = classNames(
-    'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full hover:text-blue-700',
+    'flex text-slate-600 flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full hover:text-blue-700 transition-colors duration-200',
     {
       'bg-blue-100': isSelected && selectedEntry === null,
     },
@@ -66,31 +62,9 @@ export default function ScreenLink({
 
   const entryMenuItemClass = (id: string): string =>
     classNames(
-      'flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full hover:text-blue-700 cursor-pointer',
+      'flex flex-row text-slate-600 gap-2.5 items-center py-2.5 pr-5 pl-20 w-full hover:text-blue-700 cursor-pointer transition-colors duration-200',
       { 'bg-blue-100': selectedEntry === id },
     );
-
-  const onNewEntrySubmit = useCallback(
-    async (vals: Map<string, string>): Promise<void> => {
-      if (screen === 'configure') {
-        setIsNewEntryModalOpen(false);
-        return;
-      }
-
-      const entry = InterviewScreenEntry.create({
-        name: vals.get('name') ?? '',
-        prompt: vals.get('prompt') ?? '',
-        responseType: vals.get('responseType') ?? '',
-        screenId: screen.id,
-        text: vals.get('text') ?? '',
-      });
-
-      await interviewStore.addEntryToScreen(screen.id, entry);
-
-      setIsNewEntryModalOpen(false);
-    },
-    [interviewStore, screen],
-  );
 
   if (screen === 'configure') {
     return (
@@ -117,13 +91,6 @@ export default function ScreenLink({
       >
         <FontAwesomeIcon size="1x" icon={faPenToSquare} />
         {screen.title}
-        {isSelected && (
-          <FontAwesomeIcon
-            className="order-2 ml-auto h-3 w-3"
-            icon={faPlus}
-            onClick={() => setIsNewEntryModalOpen(true)}
-          />
-        )}
       </NavLink>
 
       {isSelected ? (
@@ -177,12 +144,6 @@ export default function ScreenLink({
           ))}
         </div>
       ) : null}
-
-      <NewEntryModal
-        isOpen={isNewEntryModelOpen}
-        onDismiss={() => setIsNewEntryModalOpen(false)}
-        onSubmit={onNewEntrySubmit}
-      />
     </div>
   );
 }

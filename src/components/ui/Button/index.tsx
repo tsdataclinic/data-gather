@@ -23,7 +23,7 @@ export default function Button({
 }: Props): JSX.Element {
   const buttonClassName = classNames(
     className,
-    'py-2 px-4 text-white bg-blue-400 hover:bg-blue-500 active:bg-blue-400 transition-colors block',
+    'py-2 px-4 text-white bg-blue-500 hover:bg-blue-400 active:bg-blue-500 transition-colors block focus-visible:outline-fuchsia-700',
     { rounded: variant === 'normal' },
     { 'w-full rounded-none': variant === 'full' },
   );
