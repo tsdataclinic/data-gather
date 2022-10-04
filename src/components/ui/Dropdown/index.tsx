@@ -6,22 +6,6 @@ import type { ReactNode } from 'react';
 import '@reach/listbox/styles.css';
 import * as Select from '@radix-ui/react-select';
 
-type Props<T> = {
-  ariaLabel?: string;
-  onChange: (value: T) => void;
-  options: ReadonlyArray<{
-    displayValue: ReactNode;
-    value: T;
-  }>;
-
-  /**
-   * The button label to display when no option is selected.
-   * This will also be the default value for `ariaLabel` too.
-   */
-  placeholder: string;
-  value: T | undefined;
-};
-
 const StyledTriggerButton = styled(Select.Trigger)`
   all: unset;
   border-radius: 4px;
@@ -80,9 +64,28 @@ const StyledItemIndicator = styled(Select.ItemIndicator)`
   top: 0;
 `;
 
+type Props<T> = {
+  ariaLabel?: string;
+  defaultValue?: T | undefined;
+  name?: string;
+  onChange?: (value: T) => void;
+  options: ReadonlyArray<{
+    displayValue: ReactNode;
+    value: T;
+  }>;
+  /**
+   * The button label to display when no option is selected.
+   * This will also be the default value for `ariaLabel` too.
+   */
+  placeholder?: string;
+  value?: T | undefined;
+};
+
 export default function Dropdown<T extends string>({
   ariaLabel,
+  defaultValue,
   placeholder,
+  name,
   onChange,
   options,
   value,
@@ -102,7 +105,12 @@ export default function Dropdown<T extends string>({
   );
 
   return (
-    <Select.Root value={value} onValueChange={onChange}>
+    <Select.Root
+      value={value}
+      defaultValue={defaultValue}
+      onValueChange={onChange}
+      name={name}
+    >
       <StyledTriggerButton aria-label={ariaLabelToUse}>
         <Select.Value placeholder={placeholder} />
         <Select.Icon>

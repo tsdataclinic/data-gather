@@ -13,3 +13,12 @@ export default function FormGroup({ children, label }: Props): JSX.Element {
     </div>
   );
 }
+
+export function isFormGroup(
+  elt: React.ReactNode,
+): elt is React.ReactElement<Props, React.JSXElementConstructor<Props>> {
+  if (React.isValidElement(elt)) {
+    return elt.type === FormGroup;
+  }
+  return false;
+}

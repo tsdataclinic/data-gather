@@ -1,8 +1,9 @@
-import { Children } from 'react';
+import React, { Children } from 'react';
 import type { ReactNode, FormEvent } from 'react';
 import FormInput, { isFormInput } from './FormInput';
 import FormSubmitButton from './FormSubmitButton';
-import FormGroup from './FormGroup';
+import FormGroup, { isFormGroup } from './FormGroup';
+import FormDropdown, { isFormDropdown } from './FormDropdown';
 
 type Props = {
   children: ReactNode;
@@ -13,6 +14,21 @@ type Props = {
   ) => void;
 };
 
+function flattenChildren(children: ReactNode): ReactNode[] {
+  const flattenedChildren: ReactNode[] = [];
+
+  Children.forEach(children, childNode => {
+    if (isFormGroup(childNode)) {
+      const groupChildren = flattenChildren(childNode.props.children);
+      flattenedChildren.push(...groupChildren);
+    } else {
+      flattenedChildren.push(childNode);
+    }
+  });
+
+  return flattenedChildren;
+}
+
 export default function Form({
   children,
   className,
@@ -21,13 +37,17 @@ export default function Form({
   const onFormSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     const formElements = event.currentTarget.elements;
-
     const valuesMap = new Map<string, string>();
-    Children.forEach(children, childNode => {
-      if (isFormInput(childNode)) {
+
+    const flattenedChildren = flattenChildren(children);
+    Children.forEach(flattenedChildren, childNode => {
+      if (isFormInput(childNode) || isFormDropdown<string>(childNode)) {
         const { name } = childNode.props;
         const elt = formElements.namedItem(name);
-        if (elt instanceof HTMLInputElement) {
+        if (
+          elt instanceof HTMLInputElement ||
+          elt instanceof HTMLSelectElement
+        ) {
           valuesMap.set(name, elt.value);
         }
       }
@@ -44,6 +64,7 @@ export default function Form({
   );
 }
 
+Form.Dropdown = FormDropdown;
 Form.Input = FormInput;
 Form.SubmitButton = FormSubmitButton;
 Form.Group = FormGroup;

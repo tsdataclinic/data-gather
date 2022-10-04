@@ -5,15 +5,13 @@ import { Element as ScrollableElement } from 'react-scroll';
 import Form from '../ui/Form';
 import Button from '../ui/Button';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
-import * as InterviewScreen from '../../models/InterviewScreen';
 import useInterviewStore from '../../hooks/useInterviewStore';
 
 type Props = {
   entry: InterviewScreenEntry.T;
-  screen: InterviewScreen.T;
 };
 
-export default function EntryCard({ entry, screen }: Props): JSX.Element {
+export default function EntryCard({ entry }: Props): JSX.Element {
   const [displayedEntry, setDisplayedEntry] =
     React.useState<InterviewScreenEntry.T>(entry);
   const interviewStore = useInterviewStore();
@@ -23,7 +21,6 @@ export default function EntryCard({ entry, screen }: Props): JSX.Element {
       ...entry,
       prompt: values.get('prompt') ?? '',
       responseType: values.get('responseType') ?? '',
-      screenId: screen.id,
       text: values.get('text') ?? '',
     };
 
@@ -68,14 +65,18 @@ export default function EntryCard({ entry, screen }: Props): JSX.Element {
             name="responseId"
             defaultValue={displayedEntry.responseId}
           />
-          <Form.Input
+          <Form.Dropdown
             label="Type"
             name="responseType"
+            options={[
+              { displayValue: 'Text', value: 'text' },
+              { displayValue: 'Number', value: 'number' },
+            ]}
             defaultValue={displayedEntry.responseType}
           />
+          <Form.SubmitButton>Save</Form.SubmitButton>
         </Form.Group>
         <div className="flex space-x-4">
-          <Form.SubmitButton>Save</Form.SubmitButton>
           <Button intent="danger" onClick={handleOnDelete}>
             Delete
           </Button>
