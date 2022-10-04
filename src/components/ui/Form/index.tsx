@@ -2,6 +2,7 @@ import { Children } from 'react';
 import type { ReactNode, FormEvent } from 'react';
 import FormInput, { isFormInput } from './FormInput';
 import FormSubmitButton from './FormSubmitButton';
+import FormGroup from './FormGroup';
 
 type Props = {
   children: ReactNode;
@@ -45,3 +46,4 @@ export default function Form({
 
 Form.Input = FormInput;
 Form.SubmitButton = FormSubmitButton;
+Form.Group = FormGroup;

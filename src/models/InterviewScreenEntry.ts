@@ -33,13 +33,9 @@ export function deserialize(
   return rawObj;
 }
 
-export function create(values: {
-  name: string;
-  prompt: string;
-  responseType: string;
-  screenId: string;
-  text: string;
-}): InterviewScreenEntry {
+export function create(
+  values: Omit<InterviewScreenEntry, 'id' | 'responseId'>,
+): InterviewScreenEntry {
   return {
     id: uuidv4(),
     name: values.name,

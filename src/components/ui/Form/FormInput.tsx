@@ -29,12 +29,12 @@ export default function FormInput({
   return (
     <LabelWrapper className={className} label={label}>
       <InputText
+        required
         name={name}
         defaultValue={defaultValue || ''}
         value={val}
         onChange={setVal}
         size={size}
-        required
       />
     </LabelWrapper>
   );

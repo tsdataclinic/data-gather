@@ -135,7 +135,7 @@ export default function ActionCard({
         <span>Action</span>
       </div>
       <div className="col-span-3 space-y-4">
-        <LabelWrapper labelAfter label="Always execute this action">
+        <LabelWrapper inline labelAfter label="Always execute this action">
           <MixedCheckbox
             checked={isAlwaysExecuteChecked}
             onChange={onAlwaysExecuteChange}

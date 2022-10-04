@@ -73,7 +73,7 @@ function ScreenCard({
         <div className="flex flex-col items-center gap-14 p-14">
           <HeaderCard screen={screen} />
           {entries.map(entry => (
-            <EntryCard entry={entry} key={entry.id} />
+            <EntryCard key={entry.id} entry={entry} screen={screen} />
           ))}
           {allActions.map(action => (
             <ActionCard

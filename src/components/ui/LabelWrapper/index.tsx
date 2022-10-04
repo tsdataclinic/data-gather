@@ -40,11 +40,11 @@ export default function LabelWrapper({
 
   return (
     <div className={className}>
-      <label className="space-x-4">
+      <label className={inline ? 'space-x-4' : 'space-y-1'}>
         {labelAfter ? childrenBlock : null}
-        <span className={spanClassName} style={labelTextStyle}>
+        <div className={spanClassName} style={labelTextStyle}>
           {label}
-        </span>
+        </div>
         {labelAfter ? null : childrenBlock}
       </label>
     </div>
