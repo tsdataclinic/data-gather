@@ -61,7 +61,7 @@ export default function Modal({
         </div>
         <div className={className}>
           {title === undefined ? null : (
-            <h1 className="pb-8 text-xl uppercase tracking-widest">{title}</h1>
+            <h1 className="pb-8 text-2xl tracking-wider">{title}</h1>
           )}
           {children}
         </div>

@@ -1,5 +1,3 @@
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useMemo, useState } from 'react';
 import useAppState from '../../hooks/useAppState';
 import Button from '../ui/Button';
@@ -18,11 +16,14 @@ export default function AllInterviewsView(): JSX.Element {
   );
 
   return (
-    <div className="container pt-8 mx-auto space-y-8">
+    <div className="container mx-auto space-y-8 pt-8">
       <div className="flex">
         <h1 className="flex-1 text-3xl tracking-wider">My Interviews</h1>
-        <Button onClick={() => setIsCreateModalOpen(p => !p)} className="py-3">
-          <FontAwesomeIcon size="1x" icon={faPlus} />
+        <Button
+          onClick={() => setIsCreateModalOpen(p => !p)}
+          className="py-3 tracking-wider"
+        >
+          New Interview
         </Button>
       </div>
 
