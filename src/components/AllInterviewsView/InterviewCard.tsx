@@ -12,11 +12,14 @@ export default function InterviewCard({ interview }: Props): JSX.Element {
   return (
     <Card
       key={interview.id}
-      className="w-1/4"
+      className="w-1/4 transition-all duration-300 hover:border-gray-400"
       linkTo={`/interview/${interview.id}`}
+      shadow="xl"
     >
       <div className="flex space-x-4">
-        <div className="h-16 w-16 rounded-full bg-gray-400" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-400 font-mono text-2xl text-gray-50">
+          i
+        </div>
         <div className="flex-1 space-y-4">
           <h2 className="text-2xl tracking-wide">{interview.name}</h2>
           <p>Created on {interview.createdDate.toFormat('MMMM dd, yyyy')}</p>
