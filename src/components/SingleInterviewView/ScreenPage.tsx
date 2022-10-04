@@ -43,6 +43,9 @@ function ScreenCard({
 
   // track the screen internally so we can modify it without persisting until
   // 'save' is clicked
+  // TODO: eventually when the screen model is updated to a nested model on
+  // the frontend, we only need to track `screen` instead of separate
+  // arrays for actions and entries
   const [screen, setScreen] = React.useState(defaultScreen);
 
   // track actions internallly so we can modify them without persisting until
@@ -65,7 +68,6 @@ function ScreenCard({
     );
 
   const onActionChange = React.useCallback((newAction: ConditionalAction.T) => {
-    // TODO: we can just update the screen object
     setAllActions(prevActions =>
       prevActions.map(action =>
         action.id === newAction.id ? newAction : action,
@@ -75,7 +77,6 @@ function ScreenCard({
 
   const onEntryChange = React.useCallback(
     (newEntry: InterviewScreenEntry.T) => {
-      // TODO: we can just update the screen object
       setAllEntries(prevEntries =>
         prevEntries.map(entry => (entry.id === newEntry.id ? newEntry : entry)),
       );
@@ -112,15 +113,15 @@ function ScreenCard({
       return form.checkValidity();
     });
 
-    dispatch({
-      screen,
-      type: 'SCREEN_UPDATE',
-    });
-
     if (allFormsValid) {
       // TODO: we should just have a single updateScreen function that just
       // replaces the screen object and updates the screenEntries and conditionalActions
       // dbs by adding/removing whatever is necessary
+      dispatch({
+        screen,
+        type: 'SCREEN_UPDATE',
+      });
+
       await interviewStore.putScreen(screen);
       await interviewStore.updateScreenEntries(screen.id, allEntries);
       await interviewStore.updateScreenConditionalActions(
