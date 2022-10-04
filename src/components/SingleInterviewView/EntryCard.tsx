@@ -41,7 +41,7 @@ export default function EntryCard({ entry, screen }: Props): JSX.Element {
   return (
     <ScrollableElement
       name={entry.id}
-      className="flex w-full flex-row bg-white p-10 shadow-md"
+      className="flex w-full flex-row bg-white p-10 shadow-lg"
       key={entry.id}
     >
       <div className="flex w-1/6 flex-row">

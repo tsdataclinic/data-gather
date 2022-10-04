@@ -128,7 +128,7 @@ export default function ActionCard({
     <ScrollableElement
       key={action.id}
       name="ACTION"
-      className="grid h-60 w-full grid-cols-4 bg-white p-8 shadow-md"
+      className="grid h-60 w-full grid-cols-4 bg-white p-8 shadow-lg"
     >
       <div className="space-x-3">
         <FontAwesomeIcon size="1x" icon={faLocationArrow} />

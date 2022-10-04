@@ -21,7 +21,7 @@ export default function SingleInterviewView(): JSX.Element {
   return (
     <div className="flex h-full w-full flex-1 items-center overflow-y-hidden p-0">
       <Sidebar interview={interview} screens={screens} />
-      <div className="flex h-full w-4/5 flex-col items-center">
+      <div className="flex h-full w-4/5 flex-col items-center bg-gray-100">
         <Routes>
           <Route
             path="configure"

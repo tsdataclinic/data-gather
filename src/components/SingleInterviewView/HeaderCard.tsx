@@ -40,7 +40,7 @@ function HeaderCard({ screen }: Props): JSX.Element {
   return (
     <ScrollableElement
       name="HEADER"
-      className="flex w-full flex-row bg-white p-5 shadow-md"
+      className="flex w-full flex-row bg-white p-5 shadow-lg"
     >
       <div className="flex w-1/6 flex-row">
         <FontAwesomeIcon className="h-6 w-6 pr-4" icon={faGear} />
