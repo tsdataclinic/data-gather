@@ -97,21 +97,22 @@ export default function ActionConfigEditor({
       case ConditionalAction.ActionType.Skip:
         return (
           <>
-            <InputText onChange={() => {}} />
-            <InputText onChange={() => {}} />
+            <InputText required onChange={() => {}} />
+            <InputText required onChange={() => {}} />
           </>
         );
       case ConditionalAction.ActionType.Checkpoint:
-        return <InputText onChange={() => {}} />;
+        return <InputText required onChange={() => {}} />;
       case ConditionalAction.ActionType.Milestone:
-        return <InputText onChange={() => {}} />;
+        return <InputText required onChange={() => {}} />;
       case ConditionalAction.ActionType.Restore:
-        return <InputText onChange={() => {}} />;
+        return <InputText required onChange={() => {}} />;
       default:
         return assertUnreachable(actionConfig);
     }
   };
 
+  // TODO: replace these with Form.Dropdown and other controls
   return (
     <>
       <LabelWrapper inline label="Action" labelTextClassName="w-20">

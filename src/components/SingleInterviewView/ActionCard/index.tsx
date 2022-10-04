@@ -9,6 +9,7 @@ import Dropdown from '../../ui/Dropdown';
 import InputText from '../../ui/InputText';
 import LabelWrapper from '../../ui/LabelWrapper';
 import ActionConfigEditor from './ActionConfigEditor';
+import Form from '../../ui/Form';
 
 // remove 'ALWAYS_EXECUTE' from being one of the options in the dropdown
 // because this operator is handled separately
@@ -25,13 +26,10 @@ type Props = {
   onActionChange: (action: ConditionalAction.T) => void;
 };
 
-// TODO: currently any edits to an action remain local to this component.
-// Next steps are to make this persistable to backend.
-export default function ActionCard({
-  action,
-  onActionChange,
-  interview,
-}: Props): JSX.Element {
+function ActionCard(
+  { action, onActionChange, interview }: Props,
+  forwardedRef: React.ForwardedRef<HTMLFormElement>,
+): JSX.Element {
   const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] =
     React.useState(true);
 
@@ -96,6 +94,8 @@ export default function ActionCard({
     [action, onActionChange],
   );
 
+  // The conditionalOperatorRow doesn't use Form.Input or other Form
+  // subcomponents because we need more control over how it renders
   const conditionalOperatorRow = isAlwaysExecuteChecked ? null : (
     <div className="flex items-center space-x-4">
       <p className="w-20">Condition</p>
@@ -134,22 +134,26 @@ export default function ActionCard({
         <FontAwesomeIcon size="1x" icon={faLocationArrow} />
         <span>Action</span>
       </div>
-      <div className="col-span-3 space-y-4">
+
+      {
+        // TODO: create a Form.Checkbox control
+      }
+      <Form ref={forwardedRef} className="col-span-3 space-y-4">
         <LabelWrapper inline labelAfter label="Always execute this action">
           <MixedCheckbox
             checked={isAlwaysExecuteChecked}
             onChange={onAlwaysExecuteChange}
           />
         </LabelWrapper>
-
         {conditionalOperatorRow}
-
         <ActionConfigEditor
           actionConfig={action.actionConfig}
           onActionConfigChange={onActionConfigChange}
           interview={interview}
         />
-      </div>
+      </Form>
     </ScrollableElement>
   );
 }
+
+export default React.forwardRef<HTMLFormElement, Props>(ActionCard);

@@ -11,7 +11,10 @@ type Props = {
   entry: InterviewScreenEntry.T;
 };
 
-export default function EntryCard({ entry }: Props): JSX.Element {
+function EntryCard(
+  { entry }: Props,
+  forwardedRef: React.ForwardedRef<HTMLFormElement>,
+): JSX.Element {
   const [displayedEntry, setDisplayedEntry] =
     React.useState<InterviewScreenEntry.T>(entry);
   const interviewStore = useInterviewStore();
@@ -45,7 +48,7 @@ export default function EntryCard({ entry }: Props): JSX.Element {
         <FontAwesomeIcon className="h-6 w-6 pr-4" icon={faCircleQuestion} />
         {entry.name}
       </div>
-      <Form onSubmit={onSaveSubmit}>
+      <Form ref={forwardedRef} onSubmit={onSaveSubmit}>
         <Form.Group label="Prompt">
           <Form.Input
             label="Text"
@@ -85,3 +88,5 @@ export default function EntryCard({ entry }: Props): JSX.Element {
     </ScrollableElement>
   );
 }
+
+export default React.forwardRef<HTMLFormElement, Props>(EntryCard);

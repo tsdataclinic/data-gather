@@ -13,6 +13,7 @@ type Props<T extends string> = {
   }>;
 };
 
+// TODO: add support for controlled values
 export default function FormDropdown<T extends string>({
   className,
   defaultValue,

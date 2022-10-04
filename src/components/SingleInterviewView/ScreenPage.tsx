@@ -42,6 +42,7 @@ function ScreenCard({
   // track actions array here so we can modify them without persisting until
   // 'save' is hit
   const [allActions, setAllActions] = React.useState(defaultActions);
+  const allFormRefs = React.useRef(new Map<string, HTMLFormElement>());
 
   const onNewActionClick = (): void =>
     setAllActions(prevActions =>
@@ -60,10 +61,6 @@ function ScreenCard({
     );
   }, []);
 
-  const onSaveClick = React.useCallback(() => {
-    interviewStore.updateScreenConditionalActions(screenId, allActions);
-  }, [allActions, screenId, interviewStore]);
-
   const onNewEntryClick = React.useCallback(() => {
     setIsNewEntryModalOpen(true);
   }, []);
@@ -81,6 +78,19 @@ function ScreenCard({
     setIsNewEntryModalOpen(false);
   };
 
+  const onSaveClick = React.useCallback(() => {
+    const actionsForms = Array.from(allFormRefs.current.entries());
+    const allActionFormsValid = actionsForms.every(([_, form]) => {
+      // side-effect: also trigger the builtin browser validation UI
+      form.reportValidity();
+      return form.checkValidity();
+    });
+
+    if (allActionFormsValid) {
+      interviewStore.updateScreenConditionalActions(screenId, allActions);
+    }
+  }, [allActions, screenId, interviewStore]);
+
   return (
     <>
       <ScreenToolbar
@@ -93,11 +103,24 @@ function ScreenCard({
         <div className="flex flex-col items-center gap-14 p-14">
           <HeaderCard screen={screen} />
           {entries.map(entry => (
-            <EntryCard key={entry.id} entry={entry} />
+            <EntryCard
+              key={entry.id}
+              ref={formElt => {
+                if (formElt) {
+                  allFormRefs.current.set(entry.id, formElt);
+                }
+              }}
+              entry={entry}
+            />
           ))}
           {allActions.map(action => (
             <ActionCard
               key={action.id}
+              ref={formElt => {
+                if (formElt) {
+                  allFormRefs.current.set(action.id, formElt);
+                }
+              }}
               action={action}
               onActionChange={onActionChange}
               interview={interview}
