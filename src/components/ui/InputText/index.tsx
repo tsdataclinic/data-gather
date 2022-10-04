@@ -9,7 +9,7 @@ type Props = {
   id?: string;
   name?: string;
 
-  onChange: (val: string, event: ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (val: string, event: ChangeEvent<HTMLInputElement>) => void;
   /**
    * Triggered when the 'Enter' key is pressed.
    */

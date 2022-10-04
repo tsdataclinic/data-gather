@@ -28,13 +28,13 @@ export default function SingleInterviewView(): JSX.Element {
             element={<ConfigurePage interview={interview} />}
           />
           {screens?.map(screen => {
-            // we track the length of the `actions` array as a key as a cheap
+            // we track the length of `actions` and `entries` as a cheap
             // way to remount the page when actions finish loading. If this
-            // causes performance issues (due to actions array changing length
-            // whenever we hit save, causing a remount) then we should address
-            // this.
+            // causes performance issues (due to array lengths changing whenever
+            // we hit save, causing a remount) then we should address this.
             const actionsList = actions?.get(screen.id) ?? [];
-            const screenKey = `${screen.id}__${actionsList.length}`;
+            const entriesList = entries?.get(screen.id) ?? [];
+            const screenKey = `${screen.id}__${actionsList.length}__${entriesList.length}`;
             return (
               <Route
                 key={screen.id}
@@ -42,8 +42,8 @@ export default function SingleInterviewView(): JSX.Element {
                 element={
                   <ScreenPage
                     key={screenKey}
-                    screen={screen}
-                    entries={entries?.get(screen.id) ?? []}
+                    defaultScreen={screen}
+                    defaultEntries={entriesList}
                     defaultActions={actionsList}
                     interview={interview}
                   />

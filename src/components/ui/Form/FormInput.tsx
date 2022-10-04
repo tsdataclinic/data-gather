@@ -10,6 +10,7 @@ type Props = {
   inputClassName?: string;
   label: string;
   name: string;
+  onChange?: (val: string, event: React.ChangeEvent<HTMLInputElement>) => void;
   value?: string;
 };
 
@@ -21,8 +22,8 @@ export default function FormInput({
   name,
   defaultValue,
   value,
+  onChange,
 }: Props): JSX.Element {
-  const [val, setVal] = React.useState(value);
   const finalInputClassName = classNames('w-full', inputClassName);
 
   return (
@@ -32,9 +33,9 @@ export default function FormInput({
         disabled={disabled}
         className={finalInputClassName}
         name={name}
-        defaultValue={defaultValue || ''}
-        value={val}
-        onChange={setVal}
+        defaultValue={defaultValue}
+        value={value}
+        onChange={onChange}
       />
     </LabelWrapper>
   );

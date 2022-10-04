@@ -9,27 +9,14 @@ import useInterviewStore from '../../hooks/useInterviewStore';
 
 type Props = {
   entry: InterviewScreenEntry.T;
+  onEntryChange: (entry: InterviewScreenEntry.T) => void;
 };
 
 function EntryCard(
-  { entry }: Props,
+  { entry, onEntryChange }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
-  const [displayedEntry, setDisplayedEntry] =
-    React.useState<InterviewScreenEntry.T>(entry);
   const interviewStore = useInterviewStore();
-
-  const onSaveSubmit = (values: Map<string, string>): void => {
-    const newEntry = {
-      ...entry,
-      prompt: values.get('prompt') ?? '',
-      responseType: values.get('responseType') ?? '',
-      text: values.get('text') ?? '',
-    };
-
-    interviewStore.putScreenEntry(newEntry);
-    setDisplayedEntry(newEntry);
-  };
 
   const handleOnDelete = (): void => {
     interviewStore.removeEntryFromScreen(entry).then(value => {
@@ -48,17 +35,30 @@ function EntryCard(
         <FontAwesomeIcon className="h-6 w-6 pr-4" icon={faCircleQuestion} />
         {entry.name}
       </div>
-      <Form ref={forwardedRef} onSubmit={onSaveSubmit}>
+      <Form ref={forwardedRef}>
         <Form.Group label="Prompt">
           <Form.Input
             label="Text"
             name="prompt"
-            defaultValue={displayedEntry.prompt}
+            value={entry.prompt}
+            onChange={(newVal: string) => {
+              onEntryChange({
+                ...entry,
+                prompt: newVal,
+              });
+            }}
           />
           <Form.Input
             label="Helper Text"
             name="text"
-            defaultValue={displayedEntry.text}
+            value={entry.text}
+            onChange={(newVal: string) => {
+              onEntryChange({
+                ...entry,
+                // TODO: change this to be named `helperText` instead of just `text`
+                text: newVal,
+              });
+            }}
           />
         </Form.Group>
         <Form.Group label="Response">
@@ -66,7 +66,7 @@ function EntryCard(
             disabled
             label="ID"
             name="responseId"
-            defaultValue={displayedEntry.responseId}
+            defaultValue={entry.responseId}
           />
           <Form.Dropdown
             label="Type"
@@ -75,9 +75,14 @@ function EntryCard(
               { displayValue: 'Text', value: 'text' },
               { displayValue: 'Number', value: 'number' },
             ]}
-            defaultValue={displayedEntry.responseType}
+            value={entry.responseType}
+            onChange={(newVal: string) => {
+              onEntryChange({
+                ...entry,
+                responseType: newVal,
+              });
+            }}
           />
-          <Form.SubmitButton>Save</Form.SubmitButton>
         </Form.Group>
         <div className="flex space-x-4">
           <Button intent="danger" onClick={handleOnDelete}>

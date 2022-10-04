@@ -10,12 +10,13 @@ import HeaderCard from './HeaderCard';
 import ScreenToolbar from './ScreenToolbar';
 import ScrollArea from '../ui/ScrollArea';
 import NewEntryModal from './NewEntryModal';
+import useAppDispatch from '../../hooks/useAppDispatch';
 
 type Props = {
   defaultActions: readonly ConditionalAction.T[];
-  entries: readonly InterviewScreenEntry.T[];
+  defaultEntries: readonly InterviewScreenEntry.T[];
+  defaultScreen: InterviewScreen.T;
   interview: Interview.T;
-  screen: InterviewScreen.T;
 };
 
 /**
@@ -29,19 +30,29 @@ type Props = {
  * prefix implies it is uncontrolled.
  */
 function ScreenCard({
-  entries,
+  defaultEntries,
   defaultActions,
-  screen,
+  defaultScreen,
   interview,
 }: Props): JSX.Element {
-  const screenId = screen.id;
   const interviewStore = useInterviewStore();
+  const dispatch = useAppDispatch();
+
   const [isNewEntryModelOpen, setIsNewEntryModalOpen] =
     React.useState<boolean>(false);
 
-  // track actions array here so we can modify them without persisting until
-  // 'save' is hit
+  // track the screen internally so we can modify it without persisting until
+  // 'save' is clicked
+  const [screen, setScreen] = React.useState(defaultScreen);
+
+  // track actions internallly so we can modify them without persisting until
+  // 'save' is clicked
   const [allActions, setAllActions] = React.useState(defaultActions);
+
+  // track entries internally so we can modify them without persisting until
+  // 'save' is clicked
+  const [allEntries, setAllEntries] = React.useState(defaultEntries);
+
   const allFormRefs = React.useRef(new Map<string, HTMLFormElement>());
 
   const onNewActionClick = (): void =>
@@ -54,11 +65,26 @@ function ScreenCard({
     );
 
   const onActionChange = React.useCallback((newAction: ConditionalAction.T) => {
+    // TODO: we can just update the screen object
     setAllActions(prevActions =>
       prevActions.map(action =>
         action.id === newAction.id ? newAction : action,
       ),
     );
+  }, []);
+
+  const onEntryChange = React.useCallback(
+    (newEntry: InterviewScreenEntry.T) => {
+      // TODO: we can just update the screen object
+      setAllEntries(prevEntries =>
+        prevEntries.map(entry => (entry.id === newEntry.id ? newEntry : entry)),
+      );
+    },
+    [],
+  );
+
+  const onScreenChange = React.useCallback((newScreen: InterviewScreen.T) => {
+    setScreen(newScreen);
   }, []);
 
   const onNewEntryClick = React.useCallback(() => {
@@ -78,18 +104,41 @@ function ScreenCard({
     setIsNewEntryModalOpen(false);
   };
 
-  const onSaveClick = React.useCallback(() => {
+  const onSaveClick = React.useCallback(async () => {
     const actionsForms = Array.from(allFormRefs.current.entries());
-    const allActionFormsValid = actionsForms.every(([_, form]) => {
+    const allFormsValid = actionsForms.every(([_, form]) => {
       // side-effect: also trigger the builtin browser validation UI
       form.reportValidity();
       return form.checkValidity();
     });
 
-    if (allActionFormsValid) {
-      interviewStore.updateScreenConditionalActions(screenId, allActions);
+    dispatch({
+      screen,
+      type: 'SCREEN_UPDATE',
+    });
+
+    if (allFormsValid) {
+      // TODO: we should just have a single updateScreen function that just
+      // replaces the screen object and updates the screenEntries and conditionalActions
+      // dbs by adding/removing whatever is necessary
+      await interviewStore.putScreen(screen);
+      await interviewStore.updateScreenEntries(screen.id, allEntries);
+      await interviewStore.updateScreenConditionalActions(
+        screen.id,
+        allActions,
+      );
     }
-  }, [allActions, screenId, interviewStore]);
+  }, [allActions, screen, interviewStore, allEntries, dispatch]);
+
+  function formRefSetter(formKey: string): React.RefCallback<HTMLFormElement> {
+    return (formElt: HTMLFormElement) => {
+      if (formElt) {
+        allFormRefs.current.set(formKey, formElt);
+      } else {
+        allFormRefs.current.delete(formKey);
+      }
+    };
+  }
 
   return (
     <>
@@ -101,26 +150,23 @@ function ScreenCard({
       />
       <ScrollArea id="scrollContainer" className="w-full overflow-auto">
         <div className="flex flex-col items-center gap-14 p-14">
-          <HeaderCard screen={screen} />
-          {entries.map(entry => (
+          <HeaderCard
+            ref={formRefSetter('header-card')}
+            screen={screen}
+            onScreenChange={onScreenChange}
+          />
+          {allEntries.map(entry => (
             <EntryCard
               key={entry.id}
-              ref={formElt => {
-                if (formElt) {
-                  allFormRefs.current.set(entry.id, formElt);
-                }
-              }}
+              ref={formRefSetter(entry.id)}
               entry={entry}
+              onEntryChange={onEntryChange}
             />
           ))}
           {allActions.map(action => (
             <ActionCard
               key={action.id}
-              ref={formElt => {
-                if (formElt) {
-                  allFormRefs.current.set(action.id, formElt);
-                }
-              }}
+              ref={formRefSetter(action.id)}
               action={action}
               onActionChange={onActionChange}
               interview={interview}

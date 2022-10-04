@@ -279,7 +279,8 @@ export class InterviewStoreAPI extends Dexie {
    *
    * @param {string} screenId The screen to receive the new array of actions
    * @param {ConditionalAction.T[]} conditionalActions Array of actions to set
-   * @returns {ConditionalAction.T} the updated interview screen entry
+   * @returns {[InterviewScreen.T, ConditionalAction.T[]]} a tuple of the
+   * updated screen and an array of all the updated actions
    */
   updateScreenConditionalActions = async (
     screenId: string,
@@ -288,7 +289,7 @@ export class InterviewStoreAPI extends Dexie {
     const screen = await this.getScreen(screenId);
     invariant(
       screen,
-      `[InterviewStore] putScreenActions: Could not find screen with id '${screenId}'`,
+      `[InterviewStore] updateScreenConditionalActions: Could not find screen with id '${screenId}'`,
     );
 
     const newScreen = {
@@ -301,6 +302,40 @@ export class InterviewStoreAPI extends Dexie {
       Promise.all(
         conditionalActions.map(action => this.unsafePutScreenAction(action)),
       ),
+    ]);
+  };
+
+  /**
+   * Given a screen identified by `screenId`, set its array of
+   * InterviewScreenEntry models to the given `screenEntries` array.
+   * - Any screenEntries that already exist will be updated
+   * - Any screenEntries that don't exist in the database will be created
+   *
+   * TODO: this function does not handle deleting any screenEntries from the db yet
+   *
+   * @param {string} screenId The screen to receive the new array of entries
+   * @param {InterviewScreenEntry.T[]} screenEntries Array of entries to set
+   * @returns {[InterviewScreen.T, InterviewScreenEntry.T[]]} a tuple of the
+   * updated screen and an array of all the updated entries
+   */
+  updateScreenEntries = async (
+    screenId: string,
+    screenEntries: readonly InterviewScreenEntry.T[],
+  ): Promise<[InterviewScreen.T, InterviewScreenEntry.T[]]> => {
+    const screen = await this.getScreen(screenId);
+    invariant(
+      screen,
+      `[InterviewStore] updateScreenEntries: Could not find screen with id '${screenId}'`,
+    );
+
+    const newScreen = {
+      ...screen,
+      entries: screenEntries.map(entry => entry.id),
+    };
+
+    return Promise.all([
+      this.putScreen(newScreen),
+      Promise.all(screenEntries.map(entry => this.unsafePutScreenEntry(entry))),
     ]);
   };
 
