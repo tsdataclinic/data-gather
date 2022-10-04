@@ -16,7 +16,7 @@ export default function NewEntryModal({
   onSubmit,
 }: Props): JSX.Element {
   return (
-    <Modal title="New Entry" isOpen={isOpen} onDismiss={onDismiss}>
+    <Modal title="New Question" isOpen={isOpen} onDismiss={onDismiss}>
       <Form onSubmit={onSubmit}>
         <Form.Input name="name" label="Name" />
         <Form.Input name="prompt" label="Prompt" />
