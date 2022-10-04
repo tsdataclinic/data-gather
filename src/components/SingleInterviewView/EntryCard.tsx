@@ -35,7 +35,7 @@ function EntryCard(
         <FontAwesomeIcon className="h-6 w-6 pr-4" icon={faCircleQuestion} />
         {entry.name}
       </div>
-      <Form ref={forwardedRef}>
+      <Form ref={forwardedRef} className="w-full pr-12">
         <Form.Group label="Prompt">
           <Form.Input
             label="Text"

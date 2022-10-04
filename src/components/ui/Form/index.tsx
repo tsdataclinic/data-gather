@@ -1,4 +1,5 @@
 import * as React from 'react';
+import classNames from 'classnames';
 import FormInput from './FormInput';
 import FormSubmitButton from './FormSubmitButton';
 import FormGroup from './FormGroup';
@@ -39,10 +40,12 @@ function BaseForm(
     }
   };
 
+  const formClassName = classNames('space-y-4', className);
+
   return (
     <form
       ref={combinedRefs}
-      className={className ?? 'space-y-4'}
+      className={formClassName}
       onSubmit={onFormSubmit}
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...htmlFormProps}
