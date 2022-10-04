@@ -63,6 +63,7 @@ export default function EntryCard({ entry, screen }: Props): JSX.Element {
         </Form.Group>
         <Form.Group label="Response">
           <Form.Input
+            disabled
             label="ID"
             name="responseId"
             defaultValue={displayedEntry.responseId}
@@ -75,7 +76,7 @@ export default function EntryCard({ entry, screen }: Props): JSX.Element {
         </Form.Group>
         <div className="flex space-x-4">
           <Form.SubmitButton>Save</Form.SubmitButton>
-          <Button className="bg-red-300" onClick={handleOnDelete}>
+          <Button intent="danger" onClick={handleOnDelete}>
             Delete
           </Button>
         </div>

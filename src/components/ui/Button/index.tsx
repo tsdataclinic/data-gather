@@ -4,6 +4,7 @@ import type { ReactNode, MouseEventHandler } from 'react';
 type Props = {
   children: ReactNode;
   className?: string;
+  intent?: 'primary' | 'danger';
   onClick?: MouseEventHandler<HTMLButtonElement>;
   type?: 'button' | 'submit';
 
@@ -20,12 +21,17 @@ export default function Button({
   onClick,
   type = 'button',
   variant = 'normal',
+  intent = 'primary',
 }: Props): JSX.Element {
   const buttonClassName = classNames(
     className,
-    'py-2 px-4 text-white bg-blue-500 hover:bg-blue-400 active:bg-blue-500 transition-colors block focus-visible:outline-fuchsia-700',
-    { rounded: variant === 'normal' },
-    { 'w-full rounded-none': variant === 'full' },
+    'py-2 px-4 text-white transition-colors block focus-visible:outline-fuchsia-700',
+    {
+      rounded: variant === 'normal',
+      'w-full rounded-none': variant === 'full',
+      'bg-blue-500 hover:bg-blue-400 active:bg-blue-500': intent === 'primary',
+      'bg-red-500 hover:bg-red-400 active:bg-red-500': intent === 'danger',
+    },
   );
 
   return (

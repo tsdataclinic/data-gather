@@ -12,6 +12,7 @@ import LabelWrapper from '../LabelWrapper';
 type Props = {
   className?: string;
   defaultValue?: string;
+  disabled?: boolean;
   inputClassName?: string;
   label: string;
   name: string;
@@ -21,6 +22,7 @@ type Props = {
 export default function FormInput({
   className,
   inputClassName,
+  disabled = false,
   label,
   name,
   defaultValue,
@@ -33,6 +35,7 @@ export default function FormInput({
     <LabelWrapper className={className} label={label}>
       <InputText
         required
+        disabled={disabled}
         className={finalInputClassName}
         name={name}
         defaultValue={defaultValue || ''}

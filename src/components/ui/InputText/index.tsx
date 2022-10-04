@@ -1,9 +1,11 @@
+import 'styled-components/macro';
 import classNames from 'classnames';
 import { ChangeEvent, KeyboardEvent, useRef } from 'react';
 
 type Props = {
   className?: string;
   defaultValue?: string;
+  disabled?: boolean;
   id?: string;
   name?: string;
 
@@ -19,6 +21,7 @@ type Props = {
 
 export default function InputText({
   className,
+  disabled,
   id,
   name,
   onChange,
@@ -52,6 +55,7 @@ export default function InputText({
     <input
       ref={valueRef}
       name={name}
+      disabled={disabled}
       id={id}
       required={required}
       type="text"
@@ -61,6 +65,12 @@ export default function InputText({
       defaultValue={defaultValue}
       value={value}
       placeholder={placeholder}
+      css={`
+        &:disabled {
+          color: #94a3b8; // slate-400
+          cursor: not-allowed;
+        }
+      `}
     />
   );
 }
