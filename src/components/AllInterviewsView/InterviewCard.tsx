@@ -22,7 +22,7 @@ export default function InterviewCard({ interview }: Props): JSX.Element {
         </div>
         <div className="flex-1 space-y-4">
           <h2 className="text-2xl tracking-wide">{interview.name}</h2>
-          <p>Created on {interview.createdDate.toFormat('MMMM dd, yyyy')}</p>
+          <p>Created on {interview.createdDate.toFormat('MMMM d, yyyy')}</p>
           <p>{interview.description}</p>
           <p>
             <Link to={Interview.getRunUrl(interview)}>
