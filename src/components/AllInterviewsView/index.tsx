@@ -20,6 +20,7 @@ export default function AllInterviewsView(): JSX.Element {
       <div className="flex">
         <h1 className="flex-1 text-3xl tracking-wider">My Interviews</h1>
         <Button
+          intent="primary"
           onClick={() => setIsCreateModalOpen(p => !p)}
           className="py-3 tracking-wider"
         >

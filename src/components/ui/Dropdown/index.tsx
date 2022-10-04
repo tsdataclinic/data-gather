@@ -13,7 +13,7 @@ const StyledTriggerButton = styled(Select.Trigger)`
   // create a border using box-shadow. We aren't using border because a border
   // affects the dimensions
   box-shadow: 0 0 0 1px #a3a3a3;
-  padding: 4px 15px;
+  padding: 6px 15px;
 
   &:hover {
     background-color: #f5f5f5;

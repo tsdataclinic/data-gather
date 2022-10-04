@@ -27,13 +27,15 @@ export default function ScreenToolbar({
       <StyledHeading>{screen.title}</StyledHeading>
       <Toolbar.Root className="flex space-x-2">
         <Toolbar.Button asChild>
-          <Button onClick={onSaveClick}>Save</Button>
-        </Toolbar.Button>
-        <Toolbar.Button asChild>
           <Button onClick={onNewEntryClick}>New Entry</Button>
         </Toolbar.Button>
         <Toolbar.Button asChild>
           <Button onClick={onNewActionClick}>New Action</Button>
+        </Toolbar.Button>
+        <Toolbar.Button asChild>
+          <Button intent="primary" onClick={onSaveClick}>
+            Save
+          </Button>
         </Toolbar.Button>
       </Toolbar.Root>
     </div>
