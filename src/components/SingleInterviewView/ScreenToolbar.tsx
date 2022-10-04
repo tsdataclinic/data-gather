@@ -27,7 +27,7 @@ export default function ScreenToolbar({
       <StyledHeading>{screen.title}</StyledHeading>
       <Toolbar.Root className="flex space-x-2">
         <Toolbar.Button asChild>
-          <Button onClick={onNewEntryClick}>New Entry</Button>
+          <Button onClick={onNewEntryClick}>New Question</Button>
         </Toolbar.Button>
         <Toolbar.Button asChild>
           <Button onClick={onNewActionClick}>New Action</Button>
