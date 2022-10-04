@@ -23,7 +23,7 @@ export default function ScreenToolbar({
   onSaveClick,
 }: Props): JSX.Element {
   return (
-    <div className="z-10 flex w-full bg-white p-4 shadow">
+    <div className="z-10 flex w-full bg-white px-8 py-4 shadow">
       <StyledHeading>{screen.title}</StyledHeading>
       <Toolbar.Root className="flex space-x-2">
         <Toolbar.Button asChild>
