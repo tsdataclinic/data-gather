@@ -43,7 +43,26 @@ export default function InterviewRunnerScreen({
                   label={entry.prompt}
                 />
               );
-            // TODO: add 'number' and 'boolean' inputs.
+            case 'boolean':
+              return (
+                <Form.Input
+                  type="radio"
+                  name={entry.responseId}
+                  options={[
+                    { value: true, displayValue: 'Yes' },
+                    { value: false, displayValue: 'No' },
+                  ]}
+                />
+              );
+            case 'number':
+              return (
+                <Form.Input
+                  type="number"
+                  key={entry.id}
+                  name={entry.responseId}
+                  label={entry.prompt}
+                />
+              );
             default:
               return (
                 <div>
