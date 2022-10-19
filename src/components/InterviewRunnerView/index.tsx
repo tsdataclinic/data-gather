@@ -64,13 +64,29 @@ export default function InterviewRunnerView(): JSX.Element | null {
     // Build interview from script and moderator, and kick it off.
     const engine: Engine<InterviewScreenAdapter> =
       new Engine<InterviewScreenAdapter>(script, moderator);
-    engine.run(() => setComplete(true));
+    engine.run((result: ResponseData) => {
+      setResponseData(result);
+      setComplete(true);
+    });
   }, [interview, screens]);
 
   return (
     <div>
       {complete ? (
-        <div>Done!</div>
+        <div className="mx-auto mt-8 w-4/6">
+          <div className="mb-8 flex flex-col items-center">
+            <h1 className="text-2xl">Done!</h1>
+          </div>
+          <h2 className="mb-2 text-xl">Responses:</h2>
+          <dl>
+            {Object.entries(responseData).map(([key, value]) => (
+              <>
+                <dt className="font-bold">{key}:</dt>
+                <dd className="mb-2 pl-8">{value}</dd>
+              </>
+            ))}
+          </dl>
+        </div>
       ) : (
         <div>
           {currentScreen &&

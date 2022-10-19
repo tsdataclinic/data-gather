@@ -13,7 +13,7 @@ type Props = {
   label?: string;
   name: string;
   onChange?: (val: string, event: React.ChangeEvent<HTMLInputElement>) => void;
-  options?: Array<{ displayValue: string; value: any }>;
+  options?: Array<{ displayValue: string; value: string | boolean }>;
   required?: boolean;
   type?: 'text' | 'radio' | 'number';
   value?: string;
@@ -36,7 +36,7 @@ export default function FormInput({
 
   switch (type) {
     case 'radio':
-      return <InputRadio name={name} options={options} />;
+      return <InputRadio label={label} name={name} options={options} />;
     case 'number':
       return (
         <LabelWrapper

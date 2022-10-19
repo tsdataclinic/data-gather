@@ -29,9 +29,11 @@ export default function InterviewRunnerScreen({
   );
 
   return (
-    <>
-      <h1>{screen.title}</h1>
-      {screen.headerText && <h3>{screen.headerText}</h3>}
+    <div className="mx-auto mt-8 w-4/6">
+      <div className="mb-8 flex flex-col items-center">
+        <h1 className="text-2xl">{screen.title}</h1>
+        {screen.headerText && <h3 className="text-xl">{screen.headerText}</h3>}
+      </div>
       <Form onSubmit={handleSubmit}>
         {entries.get(screen.id)?.map((entry: InterviewScreenEntry.T) => {
           switch (entry.responseType) {
@@ -48,6 +50,7 @@ export default function InterviewRunnerScreen({
                 <Form.Input
                   type="radio"
                   name={entry.responseId}
+                  label={entry.prompt}
                   options={[
                     { value: true, displayValue: 'Yes' },
                     { value: false, displayValue: 'No' },
@@ -76,6 +79,6 @@ export default function InterviewRunnerScreen({
         })}
         <Form.SubmitButton />
       </Form>
-    </>
+    </div>
   );
 }
