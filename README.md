@@ -73,6 +73,27 @@ yarn install
 yarn start
 ```
 
+### Setting up Backend
+
+1. Initialize your venv
+
+```
+ python3 -m venv ./.venv
+ source ./.venv/bin/activate
+```
+
+2. Install all requirements
+
+```
+pip install -r requirements.txt
+```
+
+3. Create development database
+
+```
+python3 ./db_setup.py /some/file/path
+```
+
 This runs the app in the development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser. The page will reload if you make edits.
 
 ## Other Scripts
