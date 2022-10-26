@@ -179,6 +179,14 @@ const noopAPI: ToastAPI = {
   notifySuccess: noop,
 };
 
+/**
+ * This is the function that should be used to trigger a toast. We do not
+ * recommend using the <Toast> component directly.
+ *
+ * Triggering a toast message is as simple as:
+ *     const toaster = useToast();
+ *     toaster.notifySuccess('Success!', 'Descriptive text');
+ */
 export function useToast(): ToastAPI {
   const toasterRef = React.useRef<null | {
     notifySuccess: (title: string, children: React.ReactNode) => void;
