@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import * as React from 'react';
 import InputNumber from '../InputNumber';
-import InputRadio from '../InputRadio';
+import InputRadioGroup from '../InputRadioGroup';
 import InputText from '../InputText';
 import LabelWrapper from '../LabelWrapper';
 
@@ -13,7 +13,7 @@ type Props = {
   label?: string;
   name: string;
   onChange?: (val: string, event: React.ChangeEvent<HTMLInputElement>) => void;
-  options?: Array<{ displayValue: string; value: string | boolean }>;
+  options?: ReadonlyArray<{ displayValue: string; value: string | boolean }>;
   required?: boolean;
   type?: 'text' | 'radio' | 'number';
   value?: string;
@@ -34,9 +34,10 @@ export default function FormInput({
 }: Props): JSX.Element {
   const finalInputClassName = classNames('w-full', inputClassName);
 
+  // TODO: Refactor these into separate components so that props are more sensible.
   switch (type) {
     case 'radio':
-      return <InputRadio label={label} name={name} options={options} />;
+      return <InputRadioGroup label={label} name={name} options={options} />;
     case 'number':
       return (
         <LabelWrapper

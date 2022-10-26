@@ -3,10 +3,10 @@ import 'styled-components/macro';
 type Props = {
   label?: string;
   name?: string;
-  options: Array<{ displayValue: string; value: any }>;
+  options: ReadonlyArray<{ displayValue: string; value: any }>;
 };
 
-export default function InputRadio({
+export default function InputRadioGroup({
   name,
   label,
   options,

@@ -4,6 +4,7 @@ import { ResponseConsumer, ResponseData } from '@dataclinic/interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import Form from '../ui/Form';
+import InterviewRunnerEntry from './InterviewRunnerEntry';
 
 type Props = {
   entries: Map<string, InterviewScreenEntry.T[]>;
@@ -35,48 +36,9 @@ export default function InterviewRunnerScreen({
         {screen.headerText && <h3 className="text-xl">{screen.headerText}</h3>}
       </div>
       <Form onSubmit={handleSubmit}>
-        {entries.get(screen.id)?.map((entry: InterviewScreenEntry.T) => {
-          switch (entry.responseType) {
-            case 'text':
-              return (
-                <Form.Input
-                  key={entry.id}
-                  name={entry.responseId}
-                  label={entry.prompt}
-                />
-              );
-            case 'boolean':
-              return (
-                <Form.Input
-                  type="radio"
-                  name={entry.responseId}
-                  label={entry.prompt}
-                  options={[
-                    { value: true, displayValue: 'Yes' },
-                    { value: false, displayValue: 'No' },
-                  ]}
-                />
-              );
-            case 'number':
-              return (
-                <Form.Input
-                  type="number"
-                  key={entry.id}
-                  name={entry.responseId}
-                  label={entry.prompt}
-                />
-              );
-            default:
-              return (
-                <div>
-                  <em>
-                    Response type &quot;{entry.responseType}&quot; not
-                    implemented.
-                  </em>
-                </div>
-              );
-          }
-        })}
+        {entries.get(screen.id)?.map((entry: InterviewScreenEntry.T) => (
+          <InterviewRunnerEntry key={entry.id} entry={entry} />
+        ))}
         <Form.SubmitButton />
       </Form>
     </div>
