@@ -21,9 +21,9 @@ export class InterviewScreenAdapter {
 }
 
 // TODO: correctly build script, instead of just enqueueing every screen
-export function buildScriptConfig(_interview: Interview.T): ScriptConfigSchema {
+export function buildScriptConfig(interview: Interview.T): ScriptConfigSchema {
   return {
     actions: {},
-    startingState: [..._interview.screens],
+    startingState: [...interview.startingState],
   };
 }

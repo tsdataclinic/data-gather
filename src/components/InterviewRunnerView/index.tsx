@@ -2,17 +2,17 @@ import {
   Interview as Engine,
   Moderator,
   ResponseConsumer,
+  ResponseData,
 } from '@dataclinic/interview';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { buildScriptConfig, InterviewScreenAdapter } from './adapters';
 import useInterview from '../../hooks/useInterview';
 import useInterviewScreenEntries from '../../hooks/useInterviewScreenEntries';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
-import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import ConfigurableScript from '../../script/ConfigurableScript';
 import { ScriptConfigSchema } from '../../script/ScriptConfigSchema';
-import Form from '../ui/Form';
+import InterviewRunnerScreen from './InterviewRunnerScreen';
 
 /**
  * Runs an interview based on the ID of the interview in the URL params.
@@ -25,6 +25,7 @@ export default function InterviewRunnerView(): JSX.Element | null {
     useState<InterviewScreenAdapter | null>(null);
   const [responseConsumer, setResponseConsumer] =
     useState<ResponseConsumer | null>(null);
+  const [responseData, setResponseData] = useState<ResponseData>({});
   const [complete, setComplete] = useState<boolean>(false);
   const entries = useInterviewScreenEntries(interviewId);
 
@@ -49,51 +50,57 @@ export default function InterviewRunnerView(): JSX.Element | null {
     // Moderator, when prompted to ask, will set state on this component so that it will
     // display the correct screen.
     const moderator: Moderator<InterviewScreenAdapter> = {
-      ask(consumer: ResponseConsumer, screen: InterviewScreenAdapter) {
+      ask(
+        consumer: ResponseConsumer,
+        screen: InterviewScreenAdapter,
+        data: ResponseData,
+      ) {
         setResponseConsumer(consumer);
         setCurrentScreen(screen);
+        setResponseData(data);
       },
     };
 
     // Build interview from script and moderator, and kick it off.
     const engine: Engine<InterviewScreenAdapter> =
       new Engine<InterviewScreenAdapter>(script, moderator);
-    engine.run(() => setComplete(true));
+    engine.run((result: ResponseData) => {
+      setResponseData(result);
+      setComplete(true);
+    });
   }, [interview, screens]);
-
-  const handleSubmit = useCallback(
-    (formData: Map<string, string>) => {
-      if (!responseConsumer) {
-        return;
-      }
-      responseConsumer.answer(Object.fromEntries(formData));
-      responseConsumer.submit();
-    },
-    [responseConsumer],
-  );
 
   return (
     <div>
       {complete ? (
-        <div>Done!</div>
+        <div className="mx-auto mt-8 w-4/6">
+          <div className="mb-8 flex flex-col items-center">
+            <h1 className="text-2xl">Done!</h1>
+          </div>
+          <h2 className="mb-2 text-xl">Responses:</h2>
+          <dl>
+            {Object.entries(responseData).map(([key, value]) => (
+              <>
+                <dt className="font-bold">{key}:</dt>
+                <dd className="mb-2 pl-8">{value}</dd>
+              </>
+            ))}
+          </dl>
+        </div>
       ) : (
-        <>
-          {currentScreen && <h1>{currentScreen.getInterviewScreen().title}</h1>}
-          {currentScreen && entries && (
-            <Form onSubmit={handleSubmit}>
-              {entries
-                .get(currentScreen.getInterviewScreen().id)
-                ?.map((entry: InterviewScreenEntry.T) => (
-                  <Form.Input
-                    key={entry.id}
-                    name={entry.responseId}
-                    label={entry.prompt}
-                  />
-                ))}
-              <Form.SubmitButton />
-            </Form>
-          )}
-        </>
+        <div>
+          {currentScreen &&
+            currentScreen?.getInterviewScreen() &&
+            entries &&
+            responseConsumer && (
+              <InterviewRunnerScreen
+                screen={currentScreen.getInterviewScreen()}
+                entries={entries}
+                responseData={responseData}
+                responseConsumer={responseConsumer}
+              />
+            )}
+        </div>
       )}
     </div>
   );

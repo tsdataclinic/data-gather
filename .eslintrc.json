@@ -99,6 +99,7 @@
         "labelAttributes": ["label"],
         "controlComponents": [
           "InputText",
+          "InputNumber",
           "Dropdown",
           "MixedCheckbox",
           "TextArea"
