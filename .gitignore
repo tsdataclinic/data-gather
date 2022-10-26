@@ -27,6 +27,10 @@ yarn-error.log*
 # TypeScript cache
 *.tsbuildinfo
 
+#backend
+/server/.venv
+/server/__pycache__
+
 # venv
 /venv
 
