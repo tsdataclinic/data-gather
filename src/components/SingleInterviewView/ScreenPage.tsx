@@ -11,6 +11,7 @@ import ScreenToolbar from './ScreenToolbar';
 import ScrollArea from '../ui/ScrollArea';
 import NewEntryModal from './NewEntryModal';
 import useAppDispatch from '../../hooks/useAppDispatch';
+import { useToast } from '../ui/Toast';
 
 type Props = {
   defaultActions: readonly ConditionalAction.T[];
@@ -35,6 +36,7 @@ function ScreenCard({
   defaultScreen,
   interview,
 }: Props): JSX.Element {
+  const toaster = useToast();
   const interviewStore = useInterviewStore();
   const dispatch = useAppDispatch();
 
@@ -128,8 +130,10 @@ function ScreenCard({
         screen.id,
         allActions,
       );
+
+      toaster.notifySuccess('Saved!', `Successfully saved ${screen.title}`);
     }
-  }, [allActions, screen, interviewStore, allEntries, dispatch]);
+  }, [allActions, screen, interviewStore, allEntries, dispatch, toaster]);
 
   function formRefSetter(formKey: string): React.RefCallback<HTMLFormElement> {
     return (formElt: HTMLFormElement) => {
