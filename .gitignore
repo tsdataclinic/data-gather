@@ -30,3 +30,9 @@ yarn-error.log*
 #backend
 /server/.venv
 /server/__pycache__
+
+# venv
+/venv
+
+# Python cache
+*__pycache__*
