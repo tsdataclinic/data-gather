@@ -38,7 +38,7 @@ function PageDetails(props: PageDetailsProps): JSX.Element {
       name: 'my question',
       prompt: "Ceci n'est pas un question",
       responseId: 'responseId',
-      responseType: 'string',
+      responseType: InterviewScreenEntry.ResponseType.Text,
       screenId: page.id,
       text: '',
     };

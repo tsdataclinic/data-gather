@@ -16,6 +16,7 @@ type Props = {
   onEnterPress?: (val: string, event: KeyboardEvent<HTMLInputElement>) => void;
   placeholder?: string;
   required?: boolean;
+  type?: 'text' | 'email';
   value?: string;
 };
 
@@ -30,6 +31,7 @@ export default function InputText({
   required,
   defaultValue,
   value,
+  type = 'text',
 }: Props): JSX.Element {
   const valueRef = useRef<HTMLInputElement | null>(null);
   const onInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -58,7 +60,7 @@ export default function InputText({
       disabled={disabled}
       id={id}
       required={required}
-      type="text"
+      type={type}
       className={inputClassName}
       onChange={onInputChange}
       onKeyPress={onKeyPress}

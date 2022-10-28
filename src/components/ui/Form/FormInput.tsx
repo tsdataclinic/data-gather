@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import * as React from 'react';
+import assertUnreachable from '../../../util/assertUnreachable';
 import InputNumber from '../InputNumber';
 import InputRadioGroup from '../InputRadioGroup';
 import InputText from '../InputText';
@@ -15,7 +16,7 @@ type Props = {
   onChange?: (val: string, event: React.ChangeEvent<HTMLInputElement>) => void;
   options?: ReadonlyArray<{ displayValue: string; value: string | boolean }>;
   required?: boolean;
-  type?: 'text' | 'radio' | 'number';
+  type?: 'text' | 'radio' | 'number' | 'email';
   value?: string;
 };
 
@@ -53,13 +54,14 @@ export default function FormInput({
         </LabelWrapper>
       );
     case 'text':
-    default:
+    case 'email':
       return (
         <LabelWrapper
           className={className}
           label={label + (required ? ' *' : '')}
         >
           <InputText
+            type={type}
             required={required}
             disabled={disabled}
             className={finalInputClassName}
@@ -70,5 +72,7 @@ export default function FormInput({
           />
         </LabelWrapper>
       );
+    default:
+      assertUnreachable(type);
   }
 }

@@ -1,5 +1,6 @@
 import Form from '../ui/Form';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
+import assertUnreachable from '../../util/assertUnreachable';
 
 type Props = {
   entry: InterviewScreenEntry.T;
@@ -13,7 +14,7 @@ type Props = {
  */
 export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
   switch (entry.responseType) {
-    case 'text':
+    case InterviewScreenEntry.ResponseType.Text:
       return (
         <Form.Input
           key={entry.id}
@@ -21,7 +22,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           label={entry.prompt}
         />
       );
-    case 'boolean':
+    case InterviewScreenEntry.ResponseType.Boolean:
       return (
         <Form.Input
           type="radio"
@@ -33,7 +34,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           ]}
         />
       );
-    case 'number':
+    case InterviewScreenEntry.ResponseType.Number:
       return (
         <Form.Input
           type="number"
@@ -42,7 +43,17 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           label={entry.prompt}
         />
       );
+    case InterviewScreenEntry.ResponseType.Email:
+      return (
+        <Form.Input
+          type="email"
+          key={entry.id}
+          name={entry.responseId}
+          label={entry.prompt}
+        />
+      );
     default:
+      assertUnreachable(entry.responseType, { throwError: false });
       return (
         <div>
           <em>
