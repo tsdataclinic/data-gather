@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from schemas import PydanticInterview
+
+from server.api.schemas import PydanticInterview
 
 app = FastAPI(title="Interview App API")
 
