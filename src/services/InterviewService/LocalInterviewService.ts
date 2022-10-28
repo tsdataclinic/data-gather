@@ -1,21 +1,24 @@
 import Dexie, { Table } from 'dexie';
 import invariant from 'invariant';
-import { createContext } from 'react';
-import * as ConditionalAction from '../models/ConditionalAction';
-import * as Interview from '../models/Interview';
-import * as InterviewScreen from '../models/InterviewScreen';
-import * as InterviewScreenEntry from '../models/InterviewScreenEntry';
-import isNonNullable from '../util/isNonNullable';
+import * as ConditionalAction from '../../models/ConditionalAction';
+import * as Interview from '../../models/Interview';
+import * as InterviewScreen from '../../models/InterviewScreen';
+import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
+import isNonNullable from '../../util/isNonNullable';
+import { InterviewServiceAPI } from './InterviewServiceAPI';
 
 /**
- * This API interacts with the browser storage backend.
+ * This service is used for local browser storage.
  *
  * All functions here should return deserialized models. Meaning, they
  * should be translated from their backend representation to a usable
  * frontend representation. For example, any dates as numerical timestamps
  * should be converted to Date objects before returning.
  */
-export class InterviewStoreAPI extends Dexie {
+export default class LocalInterviewService
+  extends Dexie
+  implements InterviewServiceAPI
+{
   private conditionalActions!: Table<ConditionalAction.SerializedT>;
 
   private interviews!: Table<Interview.SerializedT>;
@@ -64,7 +67,9 @@ export class InterviewStoreAPI extends Dexie {
    * @returns {Interview.T[]} Array of interview objects
    */
   getAllInterviews = async (): Promise<Interview.T[]> => {
+    console.log('here we go');
     const serializedInterviews = await this.interviews.toArray();
+    console.log(serializedInterviews);
     return serializedInterviews.map(Interview.deserialize);
   };
 
@@ -461,15 +466,3 @@ export class InterviewStoreAPI extends Dexie {
     return this.putScreen(newScreen);
   };
 }
-
-const InterviewStoreContext = createContext<InterviewStoreAPI | undefined>(
-  undefined,
-);
-
-const InterviewStore = {
-  API: InterviewStoreAPI,
-  Context: InterviewStoreContext,
-  Provider: InterviewStoreContext.Provider,
-};
-
-export default InterviewStore;
