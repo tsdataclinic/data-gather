@@ -177,7 +177,6 @@ def update_interview_starting_state(
             db_screen.is_in_starting_state = False
             db_screen.starting_state_order = None
 
-<<<<<<< HEAD
     session.add_all(db_screens)
     try:
         session.commit()
@@ -204,14 +203,6 @@ def get_interviews() -> list[Interview]:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     session = Session(autocommit=False, autoflush=False, bind=engine)
     interviews = session.exec(select(Interview).limit(100)).all()
-=======
-@app.get("/api/interviews/")
-def get_interviews():
-    engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-    interviews = SessionLocal().query(Interview).limit(100).all()
->>>>>>> Added env var for DB_PATH
     return interviews
 
 

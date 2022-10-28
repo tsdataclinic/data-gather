@@ -11,13 +11,7 @@ from server.models import (
 )
 
 
-class APIModelConfig(BaseConfig):
-    orm_mode = True
-    allow_population_by_field_name = True
-    alias_generator = partial(snake2camel, start_lower=True)
-
-
-PydanticInterview = sqlalchemy_to_pydantic(Interview, config=APIModelConfig)
+PydanticInterview = sqlalchemy_to_pydantic(Interview, config=APIModel.Config)
 
 
 # class CamelCaseSchema(Schema):
