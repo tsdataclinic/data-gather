@@ -32,7 +32,7 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
       return this.serverStore.getAllInterviews();
     }
 
-    const response = await fetch('/api/health', { method: 'GET' });
+    const response = await fetch('/api/interviews', { method: 'GET' });
     const data = await response.json();
     console.log('data', data);
 
