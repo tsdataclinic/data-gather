@@ -76,6 +76,9 @@ interface ConditionalAction {
 
   readonly id: string;
 
+  /** The index of this action in the screen */
+  readonly order: number;
+
   /**
    * The key within the response data which maps to the datum being compared.
    */
@@ -98,12 +101,16 @@ interface SerializedConditionalAction extends Indexable {
   actionType: ActionType;
   conditionalOperator: ConditionalOperator;
   id: string;
+  order: number;
   responseKey: string | null;
   screenId: string;
   value: string | null;
 }
 
-export function create(vals: { screenId: string }): ConditionalAction {
+export function create(vals: {
+  order: number;
+  screenId: string;
+}): ConditionalAction {
   return {
     actionConfig: { payload: [], type: ActionType.Push },
     conditionalOperator: ConditionalOperator.AlwaysExecute,
@@ -111,6 +118,7 @@ export function create(vals: { screenId: string }): ConditionalAction {
     responseKey: undefined,
     screenId: vals.screenId,
     value: undefined,
+    order: vals.order,
   };
 }
 
@@ -231,14 +239,16 @@ export function serialize(
     responseKey,
     screenId,
     value,
+    order,
   } = conditionalAction;
   return {
+    order,
+    id,
+    screenId,
     actionPayload: actionConfig.payload,
     actionType: actionConfig.type,
     conditionalOperator,
-    id,
     responseKey: responseKey ?? null,
-    screenId,
     value: value ?? null,
   };
 }

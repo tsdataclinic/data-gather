@@ -23,6 +23,12 @@ interface InterviewScreen {
   /** The id of this screen */
   readonly id: string;
 
+  /** The id of the interview that this screen belongs to */
+  readonly interviewId: string;
+
+  /** Index of the screen in the interview */
+  readonly order: number;
+
   /** Title of the page */
   readonly title: string;
 }
@@ -35,6 +41,8 @@ interface SerializedInterviewScreen {
   entries: string[];
   headerText: string;
   id: string;
+  interviewId: string;
+  order: number;
   title: string;
 }
 
@@ -43,6 +51,7 @@ interface SerializedInterviewScreen {
  */
 export function create(values: {
   headerText?: string;
+  order: number;
   title: string;
 }): InterviewScreen {
   return {
@@ -51,6 +60,7 @@ export function create(values: {
     headerText: values.headerText ?? '',
     id: uuidv4(),
     title: values.title,
+    order: values.order,
   };
 }
 

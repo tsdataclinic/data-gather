@@ -20,10 +20,13 @@ interface InterviewScreenEntry {
   /**  The name to display on the sidebar */
   readonly name: string;
 
+  /** The index of this entry in the screen */
+  readonly order: number;
+
   /**  The text of the question */
   readonly prompt: string;
 
-  /** The id associated with the resposnse to the question */
+  /** The id associated with the response to the question */
   readonly responseId: string;
 
   /** The data type expected as a response */
@@ -55,6 +58,7 @@ export function create(
     responseType: values.responseType,
     screenId: values.screenId,
     text: values.text,
+    order: values.order,
   };
 }
 
