@@ -44,11 +44,12 @@
     "web-vitals": "^2.1.0"
   },
   "scripts": {
-    "start": "react-scripts start",
     "api": "PYTHONPATH=. uvicorn views:app --reload --reload-dir server --app-dir server/api",
+    "eject": "react-scripts eject",
+    "setup-database": "python3 server/db_setup.py db.sqlite",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "react-scripts start",
+    "test": "react-scripts test"
   },
   "eslintConfig": {
     "extends": [

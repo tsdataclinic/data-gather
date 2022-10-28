@@ -1,12 +1,11 @@
+import os
 from fastapi import FastAPI
-
 from schemas import PydanticInterview
 from server.models import Interview
-
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-from sqlalchemy.orm import Session, sessionmaker
-
+SQLITE_DB_PATH = os.environ.get("DB_PATH", "./db.sqlite")
 
 app = FastAPI(title="Interview App API")
 
@@ -27,8 +26,8 @@ def create_interview(interview: PydanticInterview):
 
 @app.get("/api/interviews/")
 def get_interviews():
-    engine = create_engine("sqlite:////tmp/db.db")
+    engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-    interviews = [i.__dict__ for i in SessionLocal().query(Interview).limit(100).all()]
+    interviews = SessionLocal().query(Interview).limit(100).all()
     return interviews

@@ -46,4 +46,7 @@ def camelcase(s):
 #         include_fk = True
 #         load_instance = True
 
-PydanticInterview = sqlalchemy_to_pydantic(Interview)
+
+class PydanticInterview(sqlalchemy_to_pydantic(Interview)):
+    class Config:
+        orm_mode = True
