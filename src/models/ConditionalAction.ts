@@ -79,6 +79,7 @@ interface ConditionalAction {
   readonly value?: string;
 }
 
+<<<<<<< HEAD
 type ConditionalActionCreate = Omit<ConditionalAction, 'id'> & {
   /**
    * A temp id used only for identification purposes in the frontend (e.g.
@@ -86,11 +87,32 @@ type ConditionalActionCreate = Omit<ConditionalAction, 'id'> & {
    */
   tempId: string;
 };
+=======
+/**
+ * This is the serialized type as it is stored on the backend.
+ * A serialized ConditionalAction can be represented by just its type
+ * ('push', 'skip', etc.)
+ */
+interface SerializedConditionalAction extends Indexable {
+  actionPayload: string | string[] | ResponseData;
+  actionType: ActionType;
+  conditionalOperator: ConditionalOperator;
+  id: string;
+  order: number;
+  responseKey: string | null;
+  screenId: string;
+  value: string | null;
+}
+>>>>>>> Fixed sqlalchemy models
 
 export function create(vals: {
   order: number;
   screenId: string;
+<<<<<<< HEAD
 }): ConditionalActionCreate {
+=======
+}): ConditionalAction {
+>>>>>>> Fixed sqlalchemy models
   return {
     actionConfig: { payload: [], type: ActionType.PUSH },
     conditionalOperator: ConditionalOperator.ALWAYS_EXECUTE,
@@ -98,7 +120,10 @@ export function create(vals: {
     screenId: vals.screenId,
     value: undefined,
     order: vals.order,
+<<<<<<< HEAD
     tempId: uuidv4(),
+=======
+>>>>>>> Fixed sqlalchemy models
   };
 }
 
@@ -223,11 +248,32 @@ export function serialize(
   const [isValid, errorMsg] = validate(action);
   invariant(isValid, errorMsg);
 
+<<<<<<< HEAD
   const { actionConfig, ...conditionalAction } = action;
   return {
     ...conditionalAction,
     actionPayload: serializeActionPayload(actionConfig.payload),
     actionType: actionConfig.type,
+=======
+  const {
+    actionConfig,
+    conditionalOperator,
+    id,
+    responseKey,
+    screenId,
+    value,
+    order,
+  } = conditionalAction;
+  return {
+    order,
+    id,
+    screenId,
+    actionPayload: actionConfig.payload,
+    actionType: actionConfig.type,
+    conditionalOperator,
+    responseKey: responseKey ?? null,
+    value: value ?? null,
+>>>>>>> Fixed sqlalchemy models
   };
 }
 

@@ -28,8 +28,13 @@ interface InterviewScreenEntry {
   /**  The text of the question */
   readonly prompt: string;
 
+<<<<<<< HEAD
   /** The key associated with the response to the question */
   readonly responseKey: string;
+=======
+  /** The id associated with the response to the question */
+  readonly responseId: string;
+>>>>>>> Fixed sqlalchemy models
 
   /** The data type expected as a response */
   readonly responseType: ResponseType;

@@ -45,6 +45,12 @@ interface InterviewScreen {
    */
   readonly startingStateOrder?: number;
 
+  /** The id of the interview that this screen belongs to */
+  readonly interviewId: string;
+
+  /** Index of the screen in the interview */
+  readonly order: number;
+
   /** Title of the page */
   readonly title: string;
 }

@@ -17,19 +17,17 @@ class ConditionalAction(Base):
 
     action_payload = Column(String)
     action_type = Column(String)
+    conditional_operator = Column(String)
     id = Column(String, primary_key=True)
-    interview_id = Column(String, ForeignKey("interview.id"))
-    order = Column(Integer)
     response_key = Column(String)
-    screen_id = Column(String)
+    screen_id = Column(String, ForeignKey("interview_screen.id"))
     value = Column(String)
+    order = Column(Integer)
 
 
-class Interview(Base):
-    __tablename__ = "interview"
+class InterviewScreenEntry(Base):
+    __tablename__ = "interview_screen_entry"
 
-    created_date = Column(String)
-    description = Column(String)
     id = Column(String, primary_key=True)
     name = Column(String)
     notes: Column(String)
@@ -42,24 +40,23 @@ class InterviewScreen(Base):
 
     actions = relationship("ConditionalAction")
     entries = relationship("InterviewScreenEntry")
-    order = Column(Integer)
     header_text = Column(String)
     id = Column(String, primary_key=True)
     interview_id = Column(String, ForeignKey("interview.id"))
     title = Column(String)
-
-
-class InterviewScreenEntry(Base):
-    __tablename__ = "interview_screen_entry"
-
-    name = Column(String)
-    prompt = Column(String)
-    response_id = Column(String, primary_key=True)
-    interview_id = Column(String, ForeignKey("interview.id"))
     order = Column(Integer)
-    response_type = Column(String)
-    screen_id = Column(String)
-    text = Column(String)
+
+
+class Interview(Base):
+    __tablename__ = "interview"
+
+    created_date = Column(String)
+    description = Column(String)
+    id = Column(String, primary_key=True)
+    name = Column(String)
+    notes = Column(String)
+    screens = relationship("InterviewScreen")
+    startingState = relationship("InterviewScreen")
 
 
 def initialize_dev_db(file_path: str):
