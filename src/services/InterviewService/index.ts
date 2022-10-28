@@ -1,20 +1,20 @@
 import * as React from 'react';
 import * as Interview from '../../models/Interview';
-import ServerInterviewService from './ServerInterviewService';
+import BackendInterviewService from './BackendInterviewService';
 import LocalInterviewService from './LocalInterviewService';
 import { InterviewServiceAPI } from './InterviewServiceAPI';
 
 export class InterviewServiceImpl implements InterviewServiceAPI {
   localStore: LocalInterviewService;
 
-  serverStore: ServerInterviewService;
+  backendStore: BackendInterviewService;
 
   // TODO: don't hardcode this
   isAuthenticated = true;
 
   constructor() {
     this.localStore = new LocalInterviewService();
-    this.serverStore = new ServerInterviewService();
+    this.backendStore = new BackendInterviewService();
   }
 
   createInterview = (
@@ -22,14 +22,14 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     description: string,
   ): Promise<Interview.T> => {
     if (this.isAuthenticated) {
-      return this.serverStore.createInterview(name, description);
+      return this.backendStore.createInterview(name, description);
     }
     return this.localStore.createInterview(name, description);
   };
 
   getAllInterviews = async (): Promise<Interview.T[]> => {
     if (this.isAuthenticated) {
-      return this.serverStore.getAllInterviews();
+      return this.backendStore.getAllInterviews();
     }
     return this.localStore.getAllInterviews();
   };

@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import { v4 as uuidv4 } from 'uuid';
 import * as InterviewScreen from './InterviewScreen';
+import { Interview as SerializedInterview } from '../api/models/Interview';
 
 /**
  * Represents all the data associated with interview flow.
@@ -19,19 +20,6 @@ interface Interview {
 
   /** Array of starting screen ids */
   readonly startingState: readonly string[];
-}
-
-/**
- * This is the serialized type as it is stored on the backend.
- */
-interface SerializedInterview {
-  createdDate: number;
-  description: string;
-  id: string;
-  name: string;
-  notes: string;
-  screens: string[];
-  startingState: string[];
 }
 
 /**
@@ -131,7 +119,6 @@ export function updateNotes(interview: Interview, notes: string): Interview {
 }
 
 /**
->>>>>>> Configuration card: setting up a default sequence
  * Convert from serialized type to deserialized
  */
 export function deserialize(rawObj: SerializedInterview): Interview {

@@ -23,7 +23,7 @@ def hello_api():
     return {"message": "Hello World"}
 
 
-@app.post("/api/interviews/", response_model=PydanticInterview)
+@app.post("/api/interviews/", response_model=PydanticInterview, tags=["interviews"])
 def create_interview(interview: PydanticInterview):
     return "whatever"
 
@@ -32,7 +32,9 @@ def create_interview(interview: PydanticInterview):
     # engine.commit()
 
 
-@app.get("/api/interviews/", response_model=list[PydanticInterview])
+@app.get(
+    "/api/interviews/", response_model=list[PydanticInterview], tags=["interviews"]
+)
 def get_interviews():
     engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
