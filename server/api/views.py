@@ -74,6 +74,7 @@ airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
 
 
+
 @app.get("/")
 def hello():
     return {"message": "Hello World"}
