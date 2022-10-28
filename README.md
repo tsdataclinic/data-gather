@@ -4,6 +4,30 @@ An app to create interactive question-and-answer data collection experiences.
 
 ## Developing
 
+<<<<<<< HEAD
+=======
+### Setting up Backend
+
+1. Initialize your venv
+
+```
+ python3 -m venv venv
+ source venv/bin/activate
+```
+
+2. Install all requirements
+
+```
+pip install -r requirements.txt
+```
+
+3. Create development database
+
+```
+./setupDatabase.sh
+```
+
+>>>>>>> d08b05f1e8b32a61bcaf6caa2eb09eb4a6ac48f5
 ### Starting Front-End
 
 This is a basic create-react-app (CRA) application.

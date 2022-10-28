@@ -1,4 +1,15 @@
 import { v4 as uuidv4 } from 'uuid';
+import assertUnreachable from '../util/assertUnreachable';
+
+export enum ResponseType {
+  Boolean = 'boolean',
+  Email = 'email',
+  Number = 'number',
+  Text = 'text',
+}
+
+export const RESPONSE_TYPES: readonly ResponseType[] =
+  Object.values(ResponseType);
 
 /**
  * Represents a single question asked to the interview subject
@@ -16,7 +27,7 @@ interface InterviewScreenEntry {
   readonly responseId: string;
 
   /** The data type expected as a response */
-  readonly responseType: string;
+  readonly responseType: ResponseType;
 
   /** The screen that this entry belongs to */
   readonly screenId: string;
@@ -71,6 +82,37 @@ export function getEntryById(
   }
 
   return entries.find(entry => entry.id === entryId);
+}
+
+export function getResponseTypeDisplayName(responseType: ResponseType): string {
+  switch (responseType) {
+    case ResponseType.Text:
+      return 'Text';
+    case ResponseType.Number:
+      return 'Number';
+    case ResponseType.Boolean:
+      return 'Yes/No';
+    case ResponseType.Email:
+      return 'Email';
+    default:
+      return assertUnreachable(responseType);
+  }
+}
+
+/**
+ * Convert a responseType as a string to a ResponseType enum. If no matching
+ * enum is found, or if the value is `undefined`, then we return
+ * `ResponsType.Text` as the default.
+ */
+export function responseTypeStringToEnum(
+  responseTypeString: string | undefined,
+): ResponseType {
+  const responseTypeEnum = RESPONSE_TYPES.find(
+    responseType => responseType === responseTypeString,
+  );
+
+  // if we couldn't find a matching enum, set a default
+  return responseTypeEnum ?? ResponseType.Text;
 }
 
 export type { InterviewScreenEntry as T };

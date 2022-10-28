@@ -79,7 +79,6 @@ export function addEntry(
 }
 
 /**
-<<<<<<< HEAD
  * Immutably add an action to a screen
  */
 export function addAction(
