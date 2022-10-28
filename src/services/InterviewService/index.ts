@@ -27,10 +27,14 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     return this.localStore.createInterview(name, description);
   };
 
-  getAllInterviews = (): Promise<Interview.T[]> => {
+  getAllInterviews = async (): Promise<Interview.T[]> => {
     if (this.isAuthenticated) {
       return this.serverStore.getAllInterviews();
     }
+
+    const response = await fetch('/api/hello', { method: 'GET' });
+    const data = await response.json();
+    console.log('data', data);
 
     return this.localStore.getAllInterviews();
   };
