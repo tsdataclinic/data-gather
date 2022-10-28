@@ -75,14 +75,9 @@ airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
 
 
-@app.get("/")
-def hello():
-    return {"message": "Hello World"}
-
-
-@app.get("/api/hello")
-def hello_api():
-    return {"message": "Hello World"}
+@app.get("/api/health")
+def health_check():
+    return {"message": "API is up!"}
 
 
 @app.post("/api/interviews/", response_model=InterviewRead, tags=["interviews"])
