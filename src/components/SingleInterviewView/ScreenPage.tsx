@@ -98,7 +98,9 @@ function ScreenCard({
     const entry = InterviewScreenEntry.create({
       name: vals.get('name') ?? '',
       prompt: vals.get('prompt') ?? '',
-      responseType: vals.get('responseType') ?? '',
+      responseType: InterviewScreenEntry.responseTypeStringToEnum(
+        vals.get('responseType'),
+      ),
       screenId: screen.id,
       text: vals.get('text') ?? '',
     });

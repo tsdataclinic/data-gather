@@ -11,6 +11,13 @@ type Props = {
   onEntryChange: (entry: InterviewScreenEntry.T) => void;
 };
 
+const ENTRY_RESPONSE_TYPE_OPTIONS = InterviewScreenEntry.RESPONSE_TYPES.map(
+  responsType => ({
+    displayValue: InterviewScreenEntry.getResponseTypeDisplayName(responsType),
+    value: responsType,
+  }),
+);
+
 function EntryCard(
   { entry, onEntryChange }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
@@ -82,13 +89,9 @@ function EntryCard(
           <Form.Dropdown
             label="Type"
             name="responseType"
-            options={[
-              { displayValue: 'Text', value: 'text' },
-              { displayValue: 'Number', value: 'number' },
-              { displayValue: 'Yes/No', value: 'boolean' },
-            ]}
+            options={ENTRY_RESPONSE_TYPE_OPTIONS}
             value={entry.responseType}
-            onChange={(newVal: string) => {
+            onChange={(newVal: InterviewScreenEntry.ResponseType) => {
               onEntryChange({
                 ...entry,
                 responseType: newVal,
