@@ -10,7 +10,7 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
   serverStore: ServerInterviewService;
 
   // TODO: don't hardcode this
-  isAuthenticated = false;
+  isAuthenticated = true;
 
   constructor() {
     this.localStore = new LocalInterviewService();
@@ -31,11 +31,6 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     if (this.isAuthenticated) {
       return this.serverStore.getAllInterviews();
     }
-
-    const response = await fetch('/api/interviews', { method: 'GET' });
-    const data = await response.json();
-    console.log('data', data);
-
     return this.localStore.getAllInterviews();
   };
 }

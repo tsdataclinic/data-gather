@@ -4,10 +4,18 @@ from schemas import PydanticInterview
 from server.models import Interview
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from fastapi.middleware.cors import CORSMiddleware
 
 SQLITE_DB_PATH = os.environ.get("DB_PATH", "./db.sqlite")
 
 app = FastAPI(title="Interview App API")
+
+# allow access from create-react-app
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(CORSMiddleware, allow_origins=origins)
 
 
 @app.get("/")

@@ -7,7 +7,12 @@ export default class ServerInterviewService implements InterviewServiceAPI {
     return Promise.resolve(Interview.create({ name, description }));
   }
 
-  getAllInterviews(): Promise<Interview.T[]> {
+  async getAllInterviews(): Promise<Interview.T[]> {
+    console.log('sending');
+    const response = await fetch('/api/interviews', { method: 'GET' });
+    console.log('response', response);
+    const data = await response.json();
+    console.log('data', data);
     return Promise.resolve([]);
   }
 }
