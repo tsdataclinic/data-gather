@@ -17,21 +17,23 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     this.serverStore = new ServerInterviewService();
   }
 
-  createInterview(name: string, description: string): Promise<Interview.T> {
+  createInterview = (
+    name: string,
+    description: string,
+  ): Promise<Interview.T> => {
     if (this.isAuthenticated) {
       return this.serverStore.createInterview(name, description);
     }
     return this.localStore.createInterview(name, description);
-  }
+  };
 
-  getAllInterviews(): Promise<Interview.T[]> {
+  getAllInterviews = (): Promise<Interview.T[]> => {
     if (this.isAuthenticated) {
       return this.serverStore.getAllInterviews();
     }
 
-    console.log('not authed');
     return this.localStore.getAllInterviews();
-  }
+  };
 }
 
 const InterviewServiceContext = React.createContext<
