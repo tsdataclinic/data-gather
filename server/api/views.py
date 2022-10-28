@@ -32,7 +32,7 @@ def create_interview(interview: PydanticInterview):
     # engine.commit()
 
 
-@app.get("/api/interviews/")
+@app.get("/api/interviews/", response_model=list[PydanticInterview])
 def get_interviews():
     engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

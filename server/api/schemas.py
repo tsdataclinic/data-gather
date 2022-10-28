@@ -1,7 +1,5 @@
-from functools import partial
-from pydantic import BaseConfig
 from pydantic_sqlalchemy import sqlalchemy_to_pydantic
-from fastapi_utils.camelcase import snake2camel
+from fastapi_utils.api_model import APIModel
 from server.models import (
     ConditionalAction,
     Interview,
@@ -10,13 +8,7 @@ from server.models import (
 )
 
 
-class APIModelConfig(BaseConfig):
-    orm_mode = True
-    allow_population_by_field_name = True
-    alias_generator = partial(snake2camel, start_lower=True)
-
-
-PydanticInterview = sqlalchemy_to_pydantic(Interview, config=APIModelConfig)
+PydanticInterview = sqlalchemy_to_pydantic(Interview, config=APIModel.Config)
 
 
 # class CamelCaseSchema(Schema):
