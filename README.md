@@ -25,7 +25,7 @@ pip install -r requirements.txt
 ./setupDatabase.sh
 ```
 
-## Starting the API server
+### Starting the API server
 
 1. Activate your Python venv
 
@@ -38,6 +38,10 @@ source venv/bin/activate
 ```
 yarn api
 ```
+
+This starts the API server in http://localhost:8000
+
+To view the API docs, open http://localhost:8000/docs
 
 ### Starting Front-End
 

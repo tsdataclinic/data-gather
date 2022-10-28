@@ -1,10 +1,7 @@
 import logging
 
-from sqlalchemy import create_engine
-from sqlalchemy import Column, ForeignKey
-from sqlalchemy import String, Integer
+from sqlalchemy import Column, ForeignKey, Integer, String, create_engine
 from sqlalchemy.orm import declarative_base, relationship
-
 from sqlalchemy_utils import create_database, database_exists
 
 Base = declarative_base()
@@ -32,9 +29,9 @@ class Interview(Base):
     description = Column(String)
     id = Column(String, primary_key=True)
     name = Column(String)
-    notes: Column(String)
-    screens: relationship("InterviewScreen")
-    startingState: relationship("InterviewScreen")
+    notes = Column(String)
+    screens = relationship("InterviewScreen")
+    startingState = relationship("InterviewScreen")
 
 
 class InterviewScreen(Base):
