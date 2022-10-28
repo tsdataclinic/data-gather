@@ -5,7 +5,6 @@ import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
 export class DefaultFastAPIService {
-
   constructor(public readonly httpRequest: BaseHttpRequest) {}
 
   /**
@@ -13,11 +12,10 @@ export class DefaultFastAPIService {
    * @returns any Successful Response
    * @throws ApiError
    */
-  public helloApi(): CancelablePromise<any> {
+  public helloApiGet(): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'GET',
       url: '/',
     });
   }
-
 }

@@ -8,7 +8,9 @@ import { CancelablePromise } from './CancelablePromise';
 import type { OnCancel } from './CancelablePromise';
 import type { OpenAPIConfig } from './OpenAPI';
 
-const isDefined = <T>(value: T | null | undefined): value is Exclude<T, null | undefined> => {
+const isDefined = <T>(
+  value: T | null | undefined,
+): value is Exclude<T, null | undefined> => {
   return value !== undefined && value !== null;
 };
 
@@ -128,14 +130,20 @@ const getFormData = (options: ApiRequestOptions): FormData | undefined => {
 
 type Resolver<T> = (options: ApiRequestOptions) => Promise<T>;
 
-const resolve = async <T>(options: ApiRequestOptions, resolver?: T | Resolver<T>): Promise<T | undefined> => {
+const resolve = async <T>(
+  options: ApiRequestOptions,
+  resolver?: T | Resolver<T>,
+): Promise<T | undefined> => {
   if (typeof resolver === 'function') {
     return (resolver as Resolver<T>)(options);
   }
   return resolver;
 };
 
-const getHeaders = async (config: OpenAPIConfig, options: ApiRequestOptions): Promise<Headers> => {
+const getHeaders = async (
+  config: OpenAPIConfig,
+  options: ApiRequestOptions,
+): Promise<Headers> => {
   const token = await resolve(options, config.TOKEN);
   const username = await resolve(options, config.USERNAME);
   const password = await resolve(options, config.PASSWORD);
@@ -147,10 +155,13 @@ const getHeaders = async (config: OpenAPIConfig, options: ApiRequestOptions): Pr
     ...options.headers,
   })
     .filter(([_, value]) => isDefined(value))
-    .reduce((headers, [key, value]) => ({
-      ...headers,
-      [key]: String(value),
-    }), {} as Record<string, string>);
+    .reduce(
+      (headers, [key, value]) => ({
+        ...headers,
+        [key]: String(value),
+      }),
+      {} as Record<string, string>,
+    );
 
   if (isStringWithValue(token)) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -179,8 +190,12 @@ const getHeaders = async (config: OpenAPIConfig, options: ApiRequestOptions): Pr
 const getRequestBody = (options: ApiRequestOptions): any => {
   if (options.body) {
     if (options.mediaType?.includes('/json')) {
-      return JSON.stringify(options.body)
-    } else if (isString(options.body) || isBlob(options.body) || isFormData(options.body)) {
+      return JSON.stringify(options.body);
+    } else if (
+      isString(options.body) ||
+      isBlob(options.body) ||
+      isFormData(options.body)
+    ) {
       return options.body;
     } else {
       return JSON.stringify(options.body);
@@ -196,7 +211,7 @@ export const sendRequest = async (
   body: any,
   formData: FormData | undefined,
   headers: Headers,
-  onCancel: OnCancel
+  onCancel: OnCancel,
 ): Promise<Response> => {
   const controller = new AbortController();
 
@@ -216,7 +231,10 @@ export const sendRequest = async (
   return await fetch(url, request);
 };
 
-const getResponseHeader = (response: Response, responseHeader?: string): string | undefined => {
+const getResponseHeader = (
+  response: Response,
+  responseHeader?: string,
+): string | undefined => {
   if (responseHeader) {
     const content = response.headers.get(responseHeader);
     if (isString(content)) {
@@ -245,7 +263,10 @@ const getResponseBody = async (response: Response): Promise<any> => {
   return undefined;
 };
 
-const catchErrorCodes = (options: ApiRequestOptions, result: ApiResult): void => {
+const catchErrorCodes = (
+  options: ApiRequestOptions,
+  result: ApiResult,
+): void => {
   const errors: Record<number, string> = {
     400: 'Bad Request',
     401: 'Unauthorized',
@@ -255,7 +276,7 @@ const catchErrorCodes = (options: ApiRequestOptions, result: ApiResult): void =>
     502: 'Bad Gateway',
     503: 'Service Unavailable',
     ...options.errors,
-  }
+  };
 
   const error = errors[result.status];
   if (error) {
@@ -274,7 +295,10 @@ const catchErrorCodes = (options: ApiRequestOptions, result: ApiResult): void =>
  * @returns CancelablePromise<T>
  * @throws ApiError
  */
-export const request = <T>(config: OpenAPIConfig, options: ApiRequestOptions): CancelablePromise<T> => {
+export const request = <T>(
+  config: OpenAPIConfig,
+  options: ApiRequestOptions,
+): CancelablePromise<T> => {
   return new CancelablePromise(async (resolve, reject, onCancel) => {
     try {
       const url = getUrl(config, options);
@@ -283,9 +307,20 @@ export const request = <T>(config: OpenAPIConfig, options: ApiRequestOptions): C
       const headers = await getHeaders(config, options);
 
       if (!onCancel.isCancelled) {
-        const response = await sendRequest(config, options, url, body, formData, headers, onCancel);
+        const response = await sendRequest(
+          config,
+          options,
+          url,
+          body,
+          formData,
+          headers,
+          onCancel,
+        );
         const responseBody = await getResponseBody(response);
-        const responseHeader = getResponseHeader(response, options.responseHeader);
+        const responseHeader = getResponseHeader(
+          response,
+          options.responseHeader,
+        );
 
         const result: ApiResult = {
           url,
