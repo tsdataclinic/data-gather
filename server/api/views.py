@@ -1,9 +1,9 @@
 import os
+from typing import List
+
 from fastapi import FastAPI
-from schemas import PydanticInterview
 from server.models import Interview
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlmodel import create_engine, Session
 from fastapi.middleware.cors import CORSMiddleware
 
 SQLITE_DB_PATH = os.environ.get("DB_PATH", "./db.sqlite")
@@ -23,19 +23,20 @@ def hello_api():
     return {"message": "Hello World"}
 
 
-@app.post("/api/interviews/", response_model=PydanticInterview)
-def create_interview(interview: PydanticInterview):
-    return "whatever"
+@app.post("/api/interviews/")
+def create_interview(interview: Interview):
+    print(interview)
+    engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
+    session = Session(autocommit=False, autoflush=False, bind=engine)
+    session.add(interview)
+    session.commit()
+    return "success"
 
-    # https://fastapi.tiangolo.com/tutorial/sql-databases/
-    # create_the_engine()
-    # engine.commit()
 
-
-@app.get("/api/interviews/", response_model=list[PydanticInterview])
+@app.get("/api/interviews/", response_model=List[Interview], tags=["interviews"])
 def get_interviews():
     engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    session = Session(autocommit=False, autoflush=False, bind=engine)
 
-    interviews = SessionLocal().query(Interview).limit(100).all()
+    interviews = session.query(Interview).limit(100).all()
     return interviews
