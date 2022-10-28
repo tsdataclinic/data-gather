@@ -1,4 +1,7 @@
 import logging
+from typing import List
+
+from sqlmodel import SQLModel, Field, Relationship, create_engine
 
 from sqlalchemy import create_engine
 from sqlalchemy import Column, ForeignKey
@@ -7,56 +10,69 @@ from sqlalchemy.orm import declarative_base, relationship
 
 from sqlalchemy_utils import create_database, database_exists
 
-Base = declarative_base()
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-class ConditionalAction(Base):
-    __tablename__ = "conditional_action"
-
-    action_payload = Column(String)
-    action_type = Column(String)
-    conditional_operator = Column(String)
-    id = Column(String, primary_key=True)
-    response_key = Column(String)
-    screen_id = Column(String, ForeignKey("interview_screen.id"))
-    value = Column(String)
-    order = Column(Integer)
+def to_camel(string):
+    parts = string.split("_")
+    head = parts[0].lower()
+    tail = [i.capitalize() for i in parts[1:]]
+    return f"{head}{''.join(tail)}"
 
 
-class InterviewScreenEntry(Base):
-    __tablename__ = "interview_screen_entry"
+class ConditionalAction(SQLModel, table=True):
+    action_payload: str
+    action_type: str
+    id: str = Field(primary_key=True)
+    order: int
+    response_key: str
+    screen_id: str = Field(foreign_key="interviewscreen.id")
+    screen: "InterviewScreen" = Relationship(back_populates="actions")
+    value: str
 
+<<<<<<< HEAD
     id = Column(String, primary_key=True)
     name = Column(String)
     notes: Column(String)
     screens: relationship("InterviewScreen")
     startingState: relationship("InterviewScreen")
+=======
+>>>>>>> Converted use of sqlalchemy_pydantic to SQLModel added Post endpoint
+
+class Interview(SQLModel, table=True):
+    created_date: str
+    description: str
+    id: str = Field(primary_key=True)
+    name: str
+    notes: str
+    screens: List["InterviewScreen"] = Relationship(back_populates="interview")
+    startingState: List["InterviewScreen"] = Relationship(back_populates="interview")
+
+    # class Config:
+    #     alias_generator = to_camel
 
 
-class InterviewScreen(Base):
-    __tablename__ = "interview_screen"
+class InterviewScreen(SQLModel, table=True):
+    actions: List["ConditionalAction"] = Relationship(back_populates="screen")
+    entries: List["InterviewScreenEntry"] = Relationship(back_populates="screen")
+    order: int
+    header_text: str
+    id: str = Field(primary_key=True)
+    interview_id: str = Field(foreign_key="interview.id")
+    interview: "Interview" = Relationship(back_populates="screens")
+    title: str
 
-    actions = relationship("ConditionalAction")
-    entries = relationship("InterviewScreenEntry")
-    header_text = Column(String)
-    id = Column(String, primary_key=True)
-    interview_id = Column(String, ForeignKey("interview.id"))
-    title = Column(String)
-    order = Column(Integer)
 
-
-class Interview(Base):
-    __tablename__ = "interview"
-
-    created_date = Column(String)
-    description = Column(String)
-    id = Column(String, primary_key=True)
-    name = Column(String)
-    notes = Column(String)
-    screens = relationship("InterviewScreen")
-    startingState = relationship("InterviewScreen")
+class InterviewScreenEntry(SQLModel, table=True):
+    name: str
+    prompt: str
+    response_id: str = Field(primary_key=True)
+    screen_id: str = Field(foreign_key="interviewscreen.id")
+    order: int
+    response_type: str
+    screen: "InterviewScreen" = Relationship(back_populates="entries")
+    text: str
 
 
 def initialize_dev_db(file_path: str):
@@ -67,4 +83,4 @@ def initialize_dev_db(file_path: str):
     else:
         LOG.info(f"Existing database found at {file_path}")
     engine = create_engine(url)
-    Base.metadata.create_all(engine)
+    SQLModel.metadata.create_all(engine)

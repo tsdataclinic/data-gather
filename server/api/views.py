@@ -87,6 +87,7 @@ def hello_api():
     return {"message": "Hello World"}
 
 
+<<<<<<< HEAD
 @app.post("/api/interviews/", response_model=InterviewRead, tags=["interviews"])
 def create_interview(interview: InterviewCreate) -> Interview:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
@@ -146,9 +147,20 @@ def update_interview(interview_id: str, interview: InterviewUpdate) -> Interview
             session.commit()
         except IntegrityError as e:
             raise HTTPException(status_code=400, detail=str(e.orig))
+=======
+@app.post("/api/interviews/")
+def create_interview(interview: Interview):
+    print(interview)
+    engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
+    session = Session(autocommit=False, autoflush=False, bind=engine)
+    session.add(interview)
+    session.commit()
+    return "success"
+>>>>>>> Converted use of sqlalchemy_pydantic to SQLModel added Post endpoint
 
         return db_interview
 
+<<<<<<< HEAD
 
 @app.post(
     "/api/interviews/{interview_id}/starting_state",
@@ -203,6 +215,14 @@ def get_interviews() -> list[Interview]:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     session = Session(autocommit=False, autoflush=False, bind=engine)
     interviews = session.exec(select(Interview).limit(100)).all()
+=======
+@app.get("/api/interviews/", response_model=List[Interview], tags=["interviews"])
+def get_interviews():
+    engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
+    session = Session(autocommit=False, autoflush=False, bind=engine)
+
+    interviews = session.query(Interview).limit(100).all()
+>>>>>>> Converted use of sqlalchemy_pydantic to SQLModel added Post endpoint
     return interviews
 
 
