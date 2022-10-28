@@ -23,7 +23,7 @@ def hello_api():
     return {"message": "Hello World"}
 
 
-@app.post("/api/interviews/")
+@app.post("/api/interviews/", tags=["interviews"])
 def create_interview(interview: Interview):
     print(interview)
     engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
