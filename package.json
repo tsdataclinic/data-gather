@@ -45,6 +45,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "api": "uvicorn views:app --reload --reload-dir server --app-dir server/api",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

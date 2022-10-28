@@ -25,6 +25,20 @@ pip install -r requirements.txt
 ./setupDatabase.sh
 ```
 
+## Starting the API server
+
+1. Activate your Python venv
+
+```
+source venv/bin/activate
+```
+
+2. Start the API server
+
+```
+yarn api
+```
+
 ### Starting Front-End
 
 This is a basic create-react-app (CRA) application.
