@@ -25,6 +25,8 @@ pip install -r requirements.txt
 ./setupDatabase.sh
 ```
 
+If at any point you update the backend SQLAlchemy types or the routes in the `server/api/` directory, remember to run `yarn sync-types` to sync the frontend and backend services.
+
 ### Starting the API server
 
 1. Activate your Python venv
