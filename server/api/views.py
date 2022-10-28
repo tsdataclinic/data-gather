@@ -74,6 +74,13 @@ airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
 
 
+# allow access from create-react-app
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(CORSMiddleware, allow_origins=origins)
+
 
 @app.get("/")
 def hello_api():

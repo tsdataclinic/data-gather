@@ -11,9 +11,13 @@ from server.models import (
 )
 
 
-def camelcase(s):
-    parts = iter(s.split("_"))
-    return next(parts) + "".join(i.title() for i in parts)
+class APIModelConfig(BaseConfig):
+    orm_mode = True
+    allow_population_by_field_name = True
+    alias_generator = partial(snake2camel, start_lower=True)
+
+
+PydanticInterview = sqlalchemy_to_pydantic(Interview, config=APIModelConfig)
 
 
 # class CamelCaseSchema(Schema):
@@ -48,8 +52,3 @@ def camelcase(s):
 #         model = InterviewScreenEntry
 #         include_fk = True
 #         load_instance = True
-
-
-class PydanticInterview(sqlalchemy_to_pydantic(Interview)):
-    class Config:
-        orm_mode = True
