@@ -1,7 +1,7 @@
 import argparse
 import logging
 
-from server.models import initialize_dev_db
+from models import initialize_dev_db
 
 logging.basicConfig(level=logging.INFO)
 
