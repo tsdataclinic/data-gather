@@ -5,6 +5,7 @@ import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
 export class DefaultFastAPIService {
+
   constructor(public readonly httpRequest: BaseHttpRequest) {}
 
   /**
@@ -18,4 +19,5 @@ export class DefaultFastAPIService {
       url: '/',
     });
   }
+
 }

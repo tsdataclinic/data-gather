@@ -7,6 +7,7 @@ import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
 export class InterviewsFastAPIService {
+
   constructor(public readonly httpRequest: BaseHttpRequest) {}
 
   /**
@@ -24,12 +25,12 @@ export class InterviewsFastAPIService {
   /**
    * Create Interview
    * @param requestBody
-   * @returns Interview Successful Response
+   * @returns any Successful Response
    * @throws ApiError
    */
   public createInterviewApiInterviewsPost(
     requestBody: Interview,
-  ): CancelablePromise<Interview> {
+  ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'POST',
       url: '/api/interviews/',
@@ -40,4 +41,5 @@ export class InterviewsFastAPIService {
       },
     });
   }
+
 }
