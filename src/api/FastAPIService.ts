@@ -11,15 +11,13 @@ import { InterviewsFastAPIService } from './services/InterviewsFastAPIService';
 type HttpRequestConstructor = new (config: OpenAPIConfig) => BaseHttpRequest;
 
 export class FastAPIService {
+
   public readonly default: DefaultFastAPIService;
   public readonly interviews: InterviewsFastAPIService;
 
   public readonly request: BaseHttpRequest;
 
-  constructor(
-    config?: Partial<OpenAPIConfig>,
-    HttpRequest: HttpRequestConstructor = FetchHttpRequest,
-  ) {
+  constructor(config?: Partial<OpenAPIConfig>, HttpRequest: HttpRequestConstructor = FetchHttpRequest) {
     this.request = new HttpRequest({
       BASE: config?.BASE ?? '',
       VERSION: config?.VERSION ?? '0.1.0',
@@ -36,3 +34,4 @@ export class FastAPIService {
     this.interviews = new InterviewsFastAPIService(this.request);
   }
 }
+

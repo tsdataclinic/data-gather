@@ -26,15 +26,14 @@ def snake_to_camel(snake_str: str) -> str:
     camel = re.sub("(^_*[A-Z])", lambda m: m.group(1).lower(), camel)
     return camel
 
-class APIConfig(SQLModel.Config):
-    '''This config is used for any models that are returned by our API to
-    automatically convert snake_case fields to camelCase'''
-    allow_population_by_field_name = True
-    alias_generator = snake_to_camel
+class APIModel(SQLModel):
+    class Config(SQLModel.Config):
+        '''This config is used for any models that are returned by our API to
+        automatically convert snake_case fields to camelCase'''
+        allow_population_by_field_name = True
+        alias_generator = snake_to_camel
 
-
-class ConditionalAction(SQLModel, table=True):
-    Config = APIConfig
+class ConditionalAction(APIModel, table=True):
     action_payload: str
     action_type: str
     id: str = Field(primary_key=True)
@@ -66,8 +65,7 @@ class Interview(SQLModel, table=True):
     screens: List["InterviewScreen"] = Relationship(back_populates="interview")
     startingState: List["InterviewScreen"] = Relationship(back_populates="interview")
 
-class InterviewScreen(SQLModel, table=True):
-    Config = APIConfig
+class InterviewScreen(APIModel, table=True):
     actions: List["ConditionalAction"] = Relationship(back_populates="screen")
     entries: List["InterviewScreenEntry"] = Relationship(back_populates="screen")
     order: int
@@ -78,8 +76,7 @@ class InterviewScreen(SQLModel, table=True):
     title: str
 
 
-class InterviewScreenEntry(SQLModel, table=True):
-    Config = APIConfig
+class InterviewScreenEntry(APIModel, table=True):
     name: str
     prompt: str
     response_id: str = Field(primary_key=True)
