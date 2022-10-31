@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import List
 
 from sqlmodel import SQLModel, Field, Relationship, create_engine
@@ -9,19 +10,31 @@ from sqlalchemy import String, Integer
 from sqlalchemy.orm import declarative_base, relationship
 
 from sqlalchemy_utils import create_database, database_exists
+from sqlmodel import Field, Relationship, SQLModel, create_engine
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+def snake_to_camel(snake_str: str) -> str:
+    '''Convert a snake_case string to camelCase'''
+    # upper case each part of the string.
+    # str.title() handles snake case. e.g. ab_cd => Ab_Cd
+    camel = snake_str.title()
+    # remove underscores
+    camel = re.sub("([0-9A-Za-z])_(?=[0-9A-Z])", lambda m: m.group(1), camel)
+    # make the first character lowercase
+    camel = re.sub("(^_*[A-Z])", lambda m: m.group(1).lower(), camel)
+    return camel
 
-def to_camel(string):
-    parts = string.split("_")
-    head = parts[0].lower()
-    tail = [i.capitalize() for i in parts[1:]]
-    return f"{head}{''.join(tail)}"
+class APIConfig(SQLModel.Config):
+    '''This config is used for any models that are returned by our API to
+    automatically convert snake_case fields to camelCase'''
+    allow_population_by_field_name = True
+    alias_generator = snake_to_camel
 
 
 class ConditionalAction(SQLModel, table=True):
+    Config = APIConfig
     action_payload: str
     action_type: str
     id: str = Field(primary_key=True)
@@ -32,6 +45,7 @@ class ConditionalAction(SQLModel, table=True):
     value: str
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     id = Column(String, primary_key=True)
     name = Column(String)
     notes: Column(String)
@@ -40,7 +54,10 @@ class ConditionalAction(SQLModel, table=True):
 =======
 >>>>>>> Converted use of sqlalchemy_pydantic to SQLModel added Post endpoint
 
+=======
+>>>>>>> Added snake case to camelCase conversion
 class Interview(SQLModel, table=True):
+    Config = APIConfig
     created_date: str
     description: str
     id: str = Field(primary_key=True)
@@ -49,11 +66,8 @@ class Interview(SQLModel, table=True):
     screens: List["InterviewScreen"] = Relationship(back_populates="interview")
     startingState: List["InterviewScreen"] = Relationship(back_populates="interview")
 
-    # class Config:
-    #     alias_generator = to_camel
-
-
 class InterviewScreen(SQLModel, table=True):
+    Config = APIConfig
     actions: List["ConditionalAction"] = Relationship(back_populates="screen")
     entries: List["InterviewScreenEntry"] = Relationship(back_populates="screen")
     order: int
@@ -65,6 +79,7 @@ class InterviewScreen(SQLModel, table=True):
 
 
 class InterviewScreenEntry(SQLModel, table=True):
+    Config = APIConfig
     name: str
     prompt: str
     response_id: str = Field(primary_key=True)
