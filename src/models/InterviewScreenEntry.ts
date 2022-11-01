@@ -1,14 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import assertUnreachable from '../util/assertUnreachable';
-import { SerializedInterviewScreenEntryRead } from '../api/models/SerializedInterviewScreenEntryRead';
-import { SerializedInterviewScreenEntryCreate } from '../api/models/SerializedInterviewScreenEntryCreate';
-import { ResponseType } from '../api/models/ResponseType';
 
-export type ResponseTypeOptions = {
-  selectedBase: string;
-  selectedFields: string[];
-  selectedTable: string;
-};
+export enum ResponseType {
+  Boolean = 'boolean',
+  Email = 'email',
+  Number = 'number',
+  Text = 'text',
+}
 
 export const RESPONSE_TYPES: readonly ResponseType[] =
   Object.values(ResponseType);
@@ -28,20 +26,11 @@ interface InterviewScreenEntry {
   /**  The text of the question */
   readonly prompt: string;
 
-<<<<<<< HEAD
   /** The key associated with the response to the question */
   readonly responseKey: string;
-=======
-  /** The id associated with the response to the question */
-  readonly responseId: string;
->>>>>>> Fixed sqlalchemy models
 
   /** The data type expected as a response */
   readonly responseType: ResponseType;
-
-  // TODO: extend this to support response configs for other response types
-  // and not just airtable
-  readonly responseTypeOptions: ResponseTypeOptions;
 
   /** The screen that this entry belongs to */
   readonly screenId: string;
@@ -50,47 +39,36 @@ interface InterviewScreenEntry {
   readonly text: string;
 }
 
-type InterviewScreenEntryCreate = Omit<InterviewScreenEntry, 'id'> & {
-  /**
-   * A temp id used only for identification purposes in the frontend (e.g.
-   * for React keys)
-   */
-  tempId: string;
-};
-
-export function create(
-  values: Omit<InterviewScreenEntry, 'id' | 'responseKey' | 'tempId'>,
-): InterviewScreenEntryCreate {
-  return {
-    ...values,
-    responseKey: uuidv4(),
-    tempId: uuidv4(),
-    responseTypeOptions: values.responseTypeOptions,
-  };
-}
+type SerializedInterviewScreenEntry = InterviewScreenEntry;
 
 export function deserialize(
-  rawObj: SerializedInterviewScreenEntryRead,
+  rawObj: SerializedInterviewScreenEntry,
 ): InterviewScreenEntry {
   return rawObj;
+}
+
+export function create(
+  values: Omit<InterviewScreenEntry, 'id' | 'responseKey'>,
+): InterviewScreenEntry {
+  return {
+    id: uuidv4(),
+    name: values.name,
+    prompt: values.prompt,
+    responseKey: uuidv4(),
+    responseType: values.responseType,
+    screenId: values.screenId,
+    text: values.text,
+    order: values.order,
+  };
 }
 
 /**
  * Convert from deserialized type to serialized
  */
 export function serialize(
-  screenEntry: InterviewScreenEntry,
-): SerializedInterviewScreenEntryRead;
-export function serialize(
-  screenEntry: InterviewScreenEntryCreate,
-): SerializedInterviewScreenEntryCreate;
-export function serialize(
-  screenEntry: InterviewScreenEntry | InterviewScreenEntryCreate,
-): SerializedInterviewScreenEntryRead | SerializedInterviewScreenEntryCreate;
-export function serialize(
-  screenEntry: InterviewScreenEntry | InterviewScreenEntryCreate,
-): SerializedInterviewScreenEntryRead | SerializedInterviewScreenEntryCreate {
-  return screenEntry;
+  interviewScreen: InterviewScreenEntry,
+): SerializedInterviewScreenEntry {
+  return interviewScreen;
 }
 
 /**
@@ -112,18 +90,14 @@ export function getEntryById(
 
 export function getResponseTypeDisplayName(responseType: ResponseType): string {
   switch (responseType) {
-    case ResponseType.AIRTABLE:
-      return 'Airtable';
-    case ResponseType.TEXT:
+    case ResponseType.Text:
       return 'Text';
-    case ResponseType.NUMBER:
+    case ResponseType.Number:
       return 'Number';
-    case ResponseType.BOOLEAN:
+    case ResponseType.Boolean:
       return 'Yes/No';
-    case ResponseType.EMAIL:
+    case ResponseType.Email:
       return 'Email';
-    case ResponseType.PHONE_NUMBER:
-      return 'Phone Number';
     default:
       return assertUnreachable(responseType);
   }
@@ -142,10 +116,8 @@ export function responseTypeStringToEnum(
   );
 
   // if we couldn't find a matching enum, set a default
-  return responseTypeEnum ?? ResponseType.TEXT;
+  return responseTypeEnum ?? ResponseType.Text;
 }
 
-export { ResponseType };
 export type { InterviewScreenEntry as T };
-export type { InterviewScreenEntryCreate as CreateT };
-export type { SerializedInterviewScreenEntryRead as SerializedT };
+export type { SerializedInterviewScreenEntry as SerializedT };

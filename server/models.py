@@ -45,7 +45,7 @@ class InterviewScreenEntry(APIModel, table=True):
     __tablename__: str = "interview_screen_entry"
     name: str
     prompt: str
-    response_id: str = Field(primary_key=True)
+    response_key: str = Field(primary_key=True)
     screen_id: str = Field(foreign_key="interview_screen.id")
     order: int
     response_type: str
