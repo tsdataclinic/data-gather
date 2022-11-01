@@ -1,8 +1,13 @@
-import inspect
+import logging
+import os
 import re
-import sys
 
-from sqlmodel import SQLModel
+from sqlalchemy_utils import create_database, database_exists
+from sqlmodel import SQLModel, create_engine
+
+SQLITE_DB_PATH = os.environ.get("DB_PATH", "./db.sqlite")
+LOG = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def snake_to_camel(snake_str: str) -> str:
@@ -18,24 +23,23 @@ def snake_to_camel(snake_str: str) -> str:
 
 
 class APIModel(SQLModel):
-    """Any models that are returned in our REST API should extend this class.
-    This class handles any snake_case to camelCase conversions."""
+    """Any models that are returned in our REST API should extend this class"""
 
     class Config(SQLModel.Config):
-        """This config sets the correct Pydantic settings to convert
-        snake_case to camelCase"""
+        """This config is used for any models that are returned by our API to
+        automatically convert snake_case fields to camelCase"""
 
         allow_population_by_field_name = True
         alias_generator = snake_to_camel
 
 
-def update_module_forward_refs(module_name: str):
-    """Iterate over all classes in a module and call `update_forward_refs()`
-    on each class that has that function.
-
-    This is used to resolve circular imports in Pydantic models across separate
-    modules.
-    """
-    for _, obj in inspect.getmembers(sys.modules[module_name], inspect.isclass):
-        if hasattr(obj, "update_forward_refs"):
-            obj.update_forward_refs()
+def initialize_dev_db(file_path: str = SQLITE_DB_PATH):
+    """Set up the SQLite database"""
+    url = f"sqlite:///{file_path}"
+    if not database_exists(url):
+        LOG.info(f"No database found at {file_path}, creating...")
+        create_database(url)
+    else:
+        LOG.info(f"Existing database found at {file_path}")
+    engine = create_engine(url)
+    SQLModel.metadata.create_all(engine)

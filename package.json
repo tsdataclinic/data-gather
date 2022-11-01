@@ -45,9 +45,10 @@
   },
   "scripts": {
     "api": "PYTHONPATH=. uvicorn views:app --reload --reload-dir server --app-dir server/api",
-    "eject": "react-scripts eject",
     "build": "react-scripts build",
-    "setup-database": "python3 server/db_setup.py db.sqlite",
+    "eject": "react-scripts eject",
+    "reset-database": "rm db.sqlite && yarn setup-database",
+    "setup-database": "PYTHONPATH=. python3 server/db_setup.py db.sqlite",
     "start": "react-scripts start",
     "sync-types": "openapi --input http://localhost:8000/openapi.json --output src/api --client fetch --indent 2 --name FastAPIService --postfix FastAPIService",
     "test": "react-scripts test"
