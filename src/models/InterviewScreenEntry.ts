@@ -26,8 +26,8 @@ interface InterviewScreenEntry {
   /**  The text of the question */
   readonly prompt: string;
 
-  /** The id associated with the response to the question */
-  readonly responseId: string;
+  /** The key associated with the response to the question */
+  readonly responseKey: string;
 
   /** The data type expected as a response */
   readonly responseType: ResponseType;
@@ -48,13 +48,13 @@ export function deserialize(
 }
 
 export function create(
-  values: Omit<InterviewScreenEntry, 'id' | 'responseId'>,
+  values: Omit<InterviewScreenEntry, 'id' | 'responseKey'>,
 ): InterviewScreenEntry {
   return {
     id: uuidv4(),
     name: values.name,
     prompt: values.prompt,
-    responseId: uuidv4(),
+    responseKey: uuidv4(),
     responseType: values.responseType,
     screenId: values.screenId,
     text: values.text,
