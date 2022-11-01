@@ -26,8 +26,23 @@ interface InterviewScreen {
   /** The id of the interview that this screen belongs to */
   readonly interviewId: string;
 
+  /**
+   * Whether or not this screen should be in the starting state for an
+   * interview's stack.
+   */
+  readonly isInStartingState: boolean;
+
   /** Index of the screen in the interview */
   readonly order: number;
+
+  /**
+   * The index of a screen in the starting state of the interview's stack.
+   * This can be different from the `order` of the screen, which is just the
+   * index of the screen within the interview configuration UI.
+   *
+   * `startingStateOrder` is undefined if `isInStartingState` is false.
+   */
+  readonly startingStateOrder: number | undefined;
 
   /** Title of the page */
   readonly title: string;
@@ -42,7 +57,9 @@ interface SerializedInterviewScreen {
   headerText: string;
   id: string;
   interviewId: string;
+  isInStartingState: boolean;
   order: number;
+  startingStateOrder: number | null;
   title: string;
 }
 

@@ -1,19 +1,16 @@
-import os
 from typing import List
 
 from fastapi import FastAPI
-from server.models import Interview
-from sqlmodel import create_engine, Session
 from fastapi.middleware.cors import CORSMiddleware
+from sqlmodel import Session, create_engine
 
-SQLITE_DB_PATH = os.environ.get("DB_PATH", "./db.sqlite")
+from server.models import Interview
+from server.models_util import SQLITE_DB_PATH
 
 app = FastAPI(title="Interview App API")
 
 # allow access from create-react-app
-origins = [
-    "http://localhost:3000",
-]
+origins = ["http://localhost:3000"]
 
 app.add_middleware(CORSMiddleware, allow_origins=origins)
 
@@ -37,6 +34,5 @@ def create_interview(interview: Interview):
 def get_interviews():
     engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
     session = Session(autocommit=False, autoflush=False, bind=engine)
-
     interviews = session.query(Interview).limit(100).all()
     return interviews

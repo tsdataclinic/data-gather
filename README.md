@@ -22,14 +22,14 @@ pip install -r requirements.txt
 3. Create development database
 
 ```
-./setupDatabase.sh
+yarn setup-database
 ```
 
 If at any point you update the backend SQLAlchemy types or the routes in the `server/api/` directory, remember to run `yarn sync-types` to sync the frontend and backend services.
 
 ### Starting the API server
 
-1. Activate your Python venv
+1. Activate your Python venv, if you haven't already:
 
 ```
 source venv/bin/activate
@@ -64,6 +64,10 @@ yarn start
 This runs the app in the development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser. The page will reload if you make edits.
 
 ## Other Scripts
+
+### `yarn sync-types`
+
+Whenever you update the API models in `server/models.py` or add a new endpoint to `server/api/views.py`, you should run `yarn sync-types` to autogenerate the TypeScript API (in `src/api`) so that our frontend's types are synced with the backend.
 
 ### `yarn test`
 
