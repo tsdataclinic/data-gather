@@ -34,5 +34,9 @@ def create_interview(interview: Interview):
 def get_interviews() -> list[Interview]:
     engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
     session = Session(autocommit=False, autoflush=False, bind=engine)
-    interviews = session.query(Interview).limit(100).all()
+    interviews: List[Interview] = session.query(Interview).limit(100).all()
+
+    first_interview = interviews[0]
+    print(first_interview)
+    print(first_interview.screens)
     return interviews
