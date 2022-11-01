@@ -10,28 +10,47 @@ LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-class Interview(APIModel, table=True):
-    __tablename__: str = "interview"
+class InterviewBase(APIModel):
     created_date: str
     description: str
     id: str = Field(primary_key=True)
     name: str
     notes: str
+
+
+class Interview(InterviewBase, table=True):
+    """The specification for the interview table"""
+
+    __tablename__: str = "interview"
     screens: List["InterviewScreen"] = Relationship(back_populates="interview")
 
 
-class InterviewScreen(APIModel, table=True):
-    __tablename__: str = "interview_screen"
-    actions: List["ConditionalAction"] = Relationship(back_populates="screen")
-    entries: List["InterviewScreenEntry"] = Relationship(back_populates="screen")
+class InterviewGetWithScreens(InterviewBase):
+    """The return model for a GET request that includes nested `screens`"""
+
+    screens: List["InterviewScreenBase"] = []
+
+
+class InterviewScreenBase(APIModel):
     order: int
     header_text: str
     id: str = Field(primary_key=True)
     interview_id: str = Field(foreign_key="interview.id")
-    interview: Interview = Relationship(back_populates="screens")
     title: str
     is_in_starting_state: bool
     starting_state_order: Optional[int]
+
+
+class InterviewScreen(InterviewScreenBase, table=True):
+    """The specification for the interview_screen table"""
+
+    __tablename__: str = "interview_screen"
+    actions: List["ConditionalAction"] = Relationship(back_populates="screen")
+    entries: List["InterviewScreenEntry"] = Relationship(back_populates="screen")
+    interview: Interview = Relationship(back_populates="screens")
+
+
+InterviewGetWithScreens.update_forward_refs()
 
 
 class InterviewScreenEntry(APIModel, table=True):
