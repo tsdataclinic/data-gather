@@ -31,7 +31,7 @@ def create_interview(interview: Interview):
 
 
 @app.get("/api/interviews/", response_model=List[Interview], tags=["interviews"])
-def get_interviews():
+def get_interviews() -> list[Interview]:
     engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
     session = Session(autocommit=False, autoflush=False, bind=engine)
     interviews = session.query(Interview).limit(100).all()
