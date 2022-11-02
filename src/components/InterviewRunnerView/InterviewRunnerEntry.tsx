@@ -52,6 +52,15 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           label={entry.prompt}
         />
       );
+    case InterviewScreenEntry.ResponseType.PhoneNumber:
+      return (
+        <Form.Input
+          type="tel"
+          key={entry.id}
+          name={entry.responseId}
+          label={entry.prompt}
+        />
+      );
     default:
       assertUnreachable(entry.responseType, { throwError: false });
       return (
