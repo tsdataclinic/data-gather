@@ -2,10 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 import assertUnreachable from '../util/assertUnreachable';
 
 export enum ResponseType {
-  Boolean = 'boolean',
-  Email = 'email',
-  Number = 'number',
-  Text = 'text',
+  Boolean = 'BOOLEAN',
+  Email = 'EMAIL',
+  Number = 'NUMBER',
+  PhoneNumber = 'PHONE_NUMBER',
+  Text = 'TEXT',
 }
 
 export const RESPONSE_TYPES: readonly ResponseType[] =
@@ -94,6 +95,8 @@ export function getResponseTypeDisplayName(responseType: ResponseType): string {
       return 'Yes/No';
     case ResponseType.Email:
       return 'Email';
+    case ResponseType.PhoneNumber:
+      return 'Phone Number';
     default:
       return assertUnreachable(responseType);
   }

@@ -16,7 +16,7 @@ type Props = {
   onEnterPress?: (val: string, event: KeyboardEvent<HTMLInputElement>) => void;
   placeholder?: string;
   required?: boolean;
-  type?: 'text' | 'email';
+  type?: 'text' | 'email' | 'tel';
   value?: string;
 };
 
@@ -73,6 +73,14 @@ export default function InputText({
           cursor: not-allowed;
         }
       `}
+      pattern={
+        type === 'tel'
+          ? // this chaotic regex comes from
+            // https://stackoverflow.com/questions/13719367/what-is-the-best-regular-expression-for-phone-numbers
+            '^(?:\\+\\d{1,3}|0\\d{1,3}|00\\d{1,2})?(?:\\s?\\(\\d+\\))?(?:[-\\/\\s.]|\\d)+$'
+          : undefined
+      }
+      minLength={type === 'tel' ? 3 : undefined}
     />
   );
 }
