@@ -122,7 +122,7 @@ def prepare_relationships(
                             model_attrs[attr] = (ModelWithNoRelationships, ...)
 
     if not were_relationships_mutated:
-        # if we didn't mutate any of the relationshpis then just return the
+        # if we didn't mutate any of the relationships then just return the
         # original class
         return Cls
 
