@@ -1,9 +1,9 @@
 import importlib
 import re
 from inspect import isclass
-from typing import Optional, TypeVar, Union, get_args, get_origin, get_type_hints
+from typing import Optional, Type, TypeVar, Union, get_args, get_origin, get_type_hints
 
-from pydantic import create_model
+from pydantic import BaseModel, create_model
 from sqlalchemy.orm import RelationshipProperty
 from sqlmodel import SQLModel
 
@@ -47,7 +47,12 @@ def _get_model_class_from_type_hint(class_type: Union[str, TypeVar]):
         return None
 
 
-def prepare_relationships(Cls, relationships: Optional[list[str]] = None):
+MODELS_DIRECTORY = {}
+
+
+def prepare_relationships(
+    Cls: Type[BaseModel], relationships: Optional[list[str]] = None
+) -> Type[BaseModel]:
     """This function lets you include a model's relationships in the
     response_modelto a FastAPI route. By default, this function will remove
     all relationships from a model and then only include the ones you specify
@@ -72,11 +77,18 @@ def prepare_relationships(Cls, relationships: Optional[list[str]] = None):
         relationships (Optional[list[str]]): The list of relationships we want
             to include.
     """
-    python_type_hints = get_type_hints(Cls)
-    model_attrs = {}
+    new_model_name = None
+    if relationships:
+        relationships_suffix = "And".join([r.title() for r in relationships])
+        new_model_name = f"{Cls.__name__}With{relationships_suffix}"
+    else:
+        new_model_name = f"{Cls.__name__}Base"
+    if new_model_name in MODELS_DIRECTORY:
+        return MODELS_DIRECTORY[new_model_name]
 
     were_relationships_mutated = False
-
+    python_type_hints = get_type_hints(Cls)
+    model_attrs = {}
     for attr, python_type_hint in python_type_hints.items():
         # only process attributes that don't start with __
         if not attr.startswith("__"):
@@ -114,12 +126,6 @@ def prepare_relationships(Cls, relationships: Optional[list[str]] = None):
         # original class
         return Cls
 
-    new_model_name = None
-    if relationships:
-        relationships_suffix = "And".join([r.title() for r in relationships])
-        new_model_name = f"{Cls.__name__}With{relationships_suffix}"
-    else:
-        new_model_name = f"{Cls.__name__}Base"
-
     NewCls = create_model(new_model_name, __base__=APIModel, **model_attrs)
+    MODELS_DIRECTORY[new_model_name] = NewCls
     return NewCls
