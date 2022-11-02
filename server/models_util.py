@@ -1,9 +1,6 @@
-import os
 import re
 
 from sqlmodel import SQLModel
-
-SQLITE_DB_PATH = os.environ.get("DB_PATH", "./db.sqlite")
 
 
 def snake_to_camel(snake_str: str) -> str:
