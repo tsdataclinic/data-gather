@@ -11,6 +11,8 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export type { Interview } from './models/Interview';
+export type { InterviewScreenBase } from './models/InterviewScreenBase';
+export type { InterviewWithScreens } from './models/InterviewWithScreens';
 export type { ValidationError } from './models/ValidationError';
 
 export { DefaultFastAPIService } from './services/DefaultFastAPIService';
