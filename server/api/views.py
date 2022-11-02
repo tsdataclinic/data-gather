@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, create_engine
 
 from server.init_db import SQLITE_DB_PATH
-from server.models import Interview, prepare_relationships
+from server.models import Interview, InterviewScreen, prepare_relationships
 
 app = FastAPI(title="Interview App API")
 
@@ -18,7 +18,7 @@ def hello_api():
     return {"message": "Hello World"}
 
 
-@app.post("/api/interviews/", tags=["interviews"])
+@app.post("/api/interviews/", tags=["Interviews"])
 def create_interview(interview: Interview) -> str:
     engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
     session = Session(autocommit=False, autoflush=False, bind=engine)
@@ -30,7 +30,7 @@ def create_interview(interview: Interview) -> str:
 @app.get(
     "/api/interviews/{interview_id}",
     response_model=prepare_relationships(Interview, ["screens"]),
-    tags=["interviews"],
+    tags=["Interviews"],
 )
 def get_interview(interview_id: str) -> Interview:
     engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
@@ -44,10 +44,25 @@ def get_interview(interview_id: str) -> Interview:
 @app.get(
     "/api/interviews/",
     response_model=list[Interview],
-    tags=["interviews"],
+    tags=["Interviews"],
 )
 def get_interviews() -> list[Interview]:
     engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
     session = Session(autocommit=False, autoflush=False, bind=engine)
     interviews: list[Interview] = session.query(Interview).limit(100).all()
     return interviews
+
+
+# TODO: this needs to return conditional actions and entries as well
+@app.get(
+    "/api/interviewScreens/{screen_id}",
+    response_model=InterviewScreen,
+    tags=["InterviewScreens"],
+)
+def get_interview_screen(screen_id: str) -> InterviewScreen:
+    engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
+    session = Session(autocommit=False, autoflush=False, bind=engine)
+    screen = session.get(InterviewScreen, screen_id)
+    if not screen:
+        raise HTTPException(status_code=404, detail="Interview not found")
+    return screen

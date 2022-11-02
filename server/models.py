@@ -1,6 +1,7 @@
 import logging
 import sys
-from typing import List, Optional, get_args, get_origin, get_type_hints
+from inspect import isclass
+from typing import List, Optional, TypeVar, Union, get_args, get_origin, get_type_hints
 
 from pydantic import create_model
 from sqlalchemy.orm import RelationshipProperty
@@ -10,18 +11,6 @@ from server.models_util import APIModel
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
-
-class Interview(APIModel, table=True):
-    __tablename__: str = "interview"
-    created_date: str
-    description: str
-    id: str = Field(primary_key=True)
-    name: str
-    notes: str
-
-    # relationships
-    screens: list["InterviewScreen"] = Relationship(back_populates="interview")
 
 
 class InterviewScreen(APIModel, table=True):
@@ -37,7 +26,19 @@ class InterviewScreen(APIModel, table=True):
     # relationships
     actions: List["ConditionalAction"] = Relationship(back_populates="screen")
     entries: List["InterviewScreenEntry"] = Relationship(back_populates="screen")
-    interview: Interview = Relationship(back_populates="screens")
+    interview: "Interview" = Relationship(back_populates="screens")
+
+
+class Interview(APIModel, table=True):
+    __tablename__: str = "interview"
+    created_date: str
+    description: str
+    id: str = Field(primary_key=True)
+    name: str
+    notes: str
+
+    # relationships
+    screens: list[InterviewScreen] = Relationship(back_populates="interview")
 
 
 class InterviewScreenEntry(APIModel, table=True):
@@ -66,6 +67,20 @@ class ConditionalAction(APIModel, table=True):
 
     # relationships
     screen: InterviewScreen = Relationship(back_populates="actions")
+
+
+def _get_model_class_from_type_hint(class_type: Union[str, TypeVar]):
+    """This is a helper function used in `prepare_relationships` to get the
+    APIModel Class from a python type hint"""
+    if isinstance(class_type, str):
+        return getattr(sys.modules[__name__], class_type)
+    elif get_origin(class_type) == list:
+        sub_type = get_args(class_type)[0]
+        return _get_model_class_from_type_hint(sub_type)
+    elif isclass(class_type) and issubclass(class_type, APIModel):
+        return class_type
+    else:
+        return None
 
 
 def prepare_relationships(Cls, relationships: Optional[list[str]] = None):
@@ -118,15 +133,17 @@ def prepare_relationships(Cls, relationships: Optional[list[str]] = None):
                     # we now have to go into the related class and remove any
                     # SQLAlchemy relationships to prevent infinite recursion
                     # when fetching data
-                    if get_origin(python_type_hint) == list:
-                        sub_model_type = get_args(python_type_hint)[0]
-
-                        # get the actual Class from the python type hint
-                        sub_model_class = getattr(sys.modules[__name__], sub_model_type)
+                    related_model_class = _get_model_class_from_type_hint(
+                        python_type_hint
+                    )
+                    if related_model_class:
                         ModelWithNoRelationships = prepare_relationships(
-                            sub_model_class
+                            related_model_class
                         )
-                        model_attrs[attr] = (list[ModelWithNoRelationships], ...)
+                        if get_origin(python_type_hint) == list:
+                            model_attrs[attr] = (list[ModelWithNoRelationships], ...)
+                        else:
+                            model_attrs[attr] = (ModelWithNoRelationships, ...)
 
     if not were_relationships_mutated:
         # if we didn't mutate any of the relationshpis then just return the
