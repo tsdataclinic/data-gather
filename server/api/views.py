@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, create_engine
 
 from server.init_db import SQLITE_DB_PATH
-from server.models import Interview, InterviewScreen, prepare_relationships
+from server.models import Interview, InterviewScreen
+from server.models_util import prepare_relationships
 
 app = FastAPI(title="Interview App API")
 
@@ -56,7 +57,7 @@ def get_interviews() -> list[Interview]:
 # TODO: this needs to return conditional actions and entries as well
 @app.get(
     "/api/interviewScreens/{screen_id}",
-    response_model=InterviewScreen,
+    response_model=prepare_relationships(InterviewScreen),
     tags=["InterviewScreens"],
 )
 def get_interview_screen(screen_id: str) -> InterviewScreen:
