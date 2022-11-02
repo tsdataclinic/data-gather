@@ -1,10 +1,9 @@
 import logging
 from typing import List, Optional
 
-from sqlalchemy_utils import create_database, database_exists
-from sqlmodel import Field, Relationship, SQLModel, create_engine
+from sqlmodel import Field, Relationship
 
-from server.models_util import SQLITE_DB_PATH, APIModel
+from server.models_util import APIModel
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -19,16 +18,10 @@ class InterviewBase(APIModel):
 
 
 class Interview(InterviewBase, table=True):
-    """The specification for the interview table"""
+    """The interview table with its relationships"""
 
     __tablename__: str = "interview"
     screens: List["InterviewScreen"] = Relationship(back_populates="interview")
-
-
-class InterviewGetWithScreens(InterviewBase):
-    """The return model for a GET request that includes nested `screens`"""
-
-    screens: List["InterviewScreenBase"] = []
 
 
 class InterviewScreenBase(APIModel):
@@ -42,15 +35,12 @@ class InterviewScreenBase(APIModel):
 
 
 class InterviewScreen(InterviewScreenBase, table=True):
-    """The specification for the interview_screen table"""
+    """The interview_screen table with its relationships"""
 
     __tablename__: str = "interview_screen"
     actions: List["ConditionalAction"] = Relationship(back_populates="screen")
     entries: List["InterviewScreenEntry"] = Relationship(back_populates="screen")
     interview: Interview = Relationship(back_populates="screens")
-
-
-InterviewGetWithScreens.update_forward_refs()
 
 
 class InterviewScreenEntry(APIModel, table=True):
@@ -77,13 +67,8 @@ class ConditionalAction(APIModel, table=True):
     value: str
 
 
-def initialize_dev_db(file_path: str = SQLITE_DB_PATH):
-    """Set up the SQLite database"""
-    url = f"sqlite:///{file_path}"
-    if not database_exists(url):
-        LOG.info(f"No database found at {file_path}, creating...")
-        create_database(url)
-    else:
-        LOG.info(f"Existing database found at {file_path}")
-    engine = create_engine(url)
-    SQLModel.metadata.create_all(engine)
+# Models that are used specifically as response models for API routes
+class InterviewGetWithScreens(InterviewBase):
+    """The return model for a GET request that includes nested `screens`"""
+
+    screens: List[InterviewScreenBase] = []
