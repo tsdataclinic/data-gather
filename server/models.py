@@ -48,8 +48,10 @@ class InterviewScreenEntry(APIModel, table=True):
     screen_id: str = Field(foreign_key="interview_screen.id")
     order: int
     response_type: str
-    screen: InterviewScreen = Relationship(back_populates="entries")
     text: str
+
+    # relationships
+    screen: InterviewScreen = Relationship(back_populates="entries")
 
 
 class ConditionalAction(APIModel, table=True):
@@ -60,8 +62,10 @@ class ConditionalAction(APIModel, table=True):
     order: int
     response_key: str
     screen_id: str = Field(foreign_key="interview_screen.id")
-    screen: InterviewScreen = Relationship(back_populates="actions")
     value: str
+
+    # relationships
+    screen: InterviewScreen = Relationship(back_populates="actions")
 
 
 def prepare_relationships(Cls, relationships: Optional[list[str]] = None):
