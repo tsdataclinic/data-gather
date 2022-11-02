@@ -15,12 +15,6 @@ origins = ["http://localhost:3000"]
 app.add_middleware(CORSMiddleware, allow_origins=origins)
 
 
-def rm_relationships(Cls):
-    NewClass = type("NewClass", Cls.__bases__, dict(Cls.__dict__))
-    delattr(NewClass, "screens")
-    return NewClass
-
-
 @app.get("/")
 def hello_api():
     return {"message": "Hello World"}
