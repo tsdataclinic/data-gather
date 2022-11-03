@@ -1,26 +1,71 @@
-from fastapi import FastAPI
-from airtable_api import * 
+import logging
 
-app = FastAPI(title="Interview App API")
+from typing import Union
+from fastapi import (
+    FastAPI, 
+    Request, 
+    Body, 
+    Path
+)
+from airtable_config import (
+    AIRTABLE_API_KEY,
+    AIRTABLE_BASE_ID
+)
+from airtable_api import (
+    AirtableAPI, 
+    Record, 
+    PartialRecord
+)
+
+TAG_METADATA = [
+    {
+        "name": "airtable",
+        "description": "Endpoints for querying Airtable"
+    }
+]
+
+app = FastAPI(
+    title="Interview App API", 
+    openapi_tags=TAG_METADATA
+)
+
+airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
+
+logger = logging.getLogger("api")
+logger.setLevel(logging.DEBUG)
 
 @app.get("/")
 def hello_api():
     return {"message": "Hello World"}
 
 
-@app.get("/airtable-records")
-def get_all_airtable_records():
-    pass
+@app.get("/airtable-records/{table_name}", tags=["airtable"])
+def get_airtable_records(table_name, request: Request):
+    """
+    Fetch records from an airtable table. Filtering can be performed
+    by adding query parameters to the URL, keyed by column name.
+    """
+    query = dict(request.query_params)
+    return airtable_client.search_records(table_name, query)
 
-@app.get("/airtable-record")
-def get_airtable_record():
-    pass
+@app.get("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
+def get_airtable_record(table_name: str, record_id: str):
+    """
+    Fetch record with a particular id from a table in airtable.
+    """
+    return airtable_client.fetch_record(table_name, record_id)
 
-@app.post("/airtable-record")
-def create_airtable_record():
-    pass
+@app.post("/airtable-records/{table_name}", tags=["airtable"])
+async def create_airtable_record(table_name: str, record: Record = Body(...)):
+    """
+    Create an airtable record in a table.
+    """
+    return airtable_client.create_record(table_name, record)
 
-@app.put("/airtable-record")
-def update_airtable_record():
-    pass
+@app.put("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
+async def update_airtable_record(table_name: str, record_id: str, update: PartialRecord = Body(...)):
+    """
+    Update an airtable record in a table.
+    """
+    return airtable_client.update_record(table_name, record_id, update)
 
