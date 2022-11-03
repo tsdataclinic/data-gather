@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from typing import Union
 from fastapi import (
@@ -30,9 +31,6 @@ app = FastAPI(
 )
 
 airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
-
-logger = logging.getLogger("api")
-logger.setLevel(logging.DEBUG)
 
 @app.get("/")
 def hello_api():

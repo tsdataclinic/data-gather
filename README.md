@@ -25,6 +25,18 @@ pip install -r requirements.txt
 ./setupDatabase.sh
 ```
 
+4. Set the `AIRTABLE_API_KEY` and `AIRTABLE_BASE_ID` environment variables.
+
+5. Start the API
+
+```
+uvicorn views:app --reload
+```
+
+This will spin up an instance of the backend on `http://127.0.0.1:8000`, which will reload
+automatically upon filesystem changes. The API's swagger page
+-where you can test endpoints--will be found at `http://127.0.0.1:8000/docs`.
+
 ### Starting Front-End
 
 This is a basic create-react-app (CRA) application.

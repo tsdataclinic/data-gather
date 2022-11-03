@@ -1,9 +1,10 @@
 import json
 import logging
 import requests
+import sys
 
 from fastapi import HTTPException
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List
 from pyairtable import Api
 from pyairtable.formulas import match
 # https://pyairtable.readthedocs.io/en/latest/api.html
@@ -12,7 +13,14 @@ Record = Dict[str, Any]
 PartialRecord = Dict[str, Any]
 
 logger = logging.getLogger("airtable_api")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
+
+f = logging.Formatter('%(levelname)s:\t  %(filename)s [L%(lineno)d]: %(message)s')
+h = logging.StreamHandler(sys.stdout) 
+h.setFormatter(f)
+
+logger.addHandler(h)
+
 
 def airtable_errors_wrapped(func):
     """
@@ -20,12 +28,14 @@ def airtable_errors_wrapped(func):
     
     Ordinarily, an error thrown by the Airtable API would cause an error 
     500 returned by this API. This decorator forwards the error 
-    from Airtable instead.
+    from Airtable instead, complete with proper error codes and helpful
+    explanatory messages.
     """
     def wrapped(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except requests.exceptions.HTTPError as e:
+            logger.error(f"Receieved error from Airtable when calling {func.__name__}(args={args}, kwargs={kwargs}): {e}")
             if e.response.status_code == 404:
                 raise HTTPException(
                     status_code=e.response.status_code, 
@@ -47,7 +57,16 @@ def airtable_errors_wrapped(func):
 
     return wrapped
 class AirtableAPI: 
+    """
+    A client to query an Airtable base.
+    """
+
     def __init__(self, airtable_api_key, base_id):
+        if not airtable_api_key:
+            logger.warn("**No AIRTABLE_API_KEY environment variable set. Airtable endpoints will not function.**")
+        if not base_id:
+            logger.warn("**No AIRTABLE_BASE_ID environment variable set. Airtable endpoints will not function.**") 
+
         self.api = Api(airtable_api_key)
         self.base_id = base_id
 
@@ -62,6 +81,7 @@ class AirtableAPI:
 
         Returns: An Airtable record
         """
+        logger.debug(f"Fetching record {id} in {table_name}")
         return self.api.get(self.base_id, table_name, id) 
 
     @airtable_errors_wrapped
@@ -76,8 +96,9 @@ class AirtableAPI:
 
         Returns: A list of records matching that query
         """
-        val = self.api.all(self.base_id, table_name, formula=match(query))
-        return val
+        logger.debug(f"Fetching records in {table_name}" + (f"with query {query}" if query else ""))
+        return self.api.all(self.base_id, table_name, formula=match(query))
+        
 
     @airtable_errors_wrapped
     def create_record(self, table_name: str, record: Record):
@@ -90,8 +111,7 @@ class AirtableAPI:
 
         Returns: The new record
         """
-        # AirtableAPI._validate_fields(table_name, record)
-        print(record)
+        logger.debug(f"Creating new record in {table_name}: {record}")
         return self.api.create(self.base_id, table_name, record, typecast=True)
 
     @airtable_errors_wrapped
@@ -107,16 +127,5 @@ class AirtableAPI:
         Returns:
         - The updated response
         """
+        logger.debug(f"Updating record {id} in {table_name}: {update}")
         return self.api.update(table_name, id, update, typecast=True)
-
-    # @staticmethod
-    # def _validate_fields(cls, table_name: str, field_names: Set[str]):
-    #     table_fields = AIRTABLE_FIELD_IDS[table_name].keys()
-
-    #     if not(field_names <= table_fields):
-    #         invalid_fields = table_fields - field_names
-
-    #         raise HTTPException(
-    #             status_code=400,
-    #             detail=f"Invalid field names {invalid_fields}. Allowed fields are {table_fields}"
-    #         )  
