@@ -1,12 +1,7 @@
-import logging
-import sys
-
-from typing import Union
 from fastapi import (
     FastAPI, 
     Request, 
-    Body, 
-    Path
+    Body
 )
 from airtable_config import (
     AIRTABLE_API_KEY,

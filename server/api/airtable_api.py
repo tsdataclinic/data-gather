@@ -4,13 +4,13 @@ import requests
 import sys
 
 from fastapi import HTTPException
-from typing import Any, Dict, List
+from typing import Any
 from pyairtable import Api
 from pyairtable.formulas import match
 # https://pyairtable.readthedocs.io/en/latest/api.html
 
-Record = Dict[str, Any]
-PartialRecord = Dict[str, Any]
+Record = dict[str, Any]
+PartialRecord = dict[str, Any]
 
 logger = logging.getLogger("airtable_api")
 logger.setLevel(logging.INFO)
@@ -85,7 +85,7 @@ class AirtableAPI:
         return self.api.get(self.base_id, table_name, id) 
 
     @airtable_errors_wrapped
-    def search_records(self, table_name: str, query: PartialRecord) -> List[Record]:
+    def search_records(self, table_name: str, query: PartialRecord) -> list[Record]:
         """
         Fetch all records from a table on Airtable that match a particular query. If query
         is empty, all the records in the table are returned. 
@@ -96,12 +96,12 @@ class AirtableAPI:
 
         Returns: A list of records matching that query
         """
-        logger.debug(f"Fetching records in {table_name}" + (f"with query {query}" if query else ""))
+        logger.debug(f"Fetching records in {table_name}" + (f"with {query = }" if query else ""))
         return self.api.all(self.base_id, table_name, formula=match(query))
         
 
     @airtable_errors_wrapped
-    def create_record(self, table_name: str, record: Record):
+    def create_record(self, table_name: str, record: Record) -> Record:
         """
         Create a record in an airtable table
 
@@ -115,14 +115,14 @@ class AirtableAPI:
         return self.api.create(self.base_id, table_name, record, typecast=True)
 
     @airtable_errors_wrapped
-    def update_record(self, table_name: str, id: str, update: PartialRecord):
+    def update_record(self, table_name: str, id: str, update: PartialRecord) -> Record:
         """
         Update a record with a specific id in an airtable table
 
         Arguments:
         - table_name: The name of the table to update the record in
         - id: The id of the record to update
-        - body: The fields in the record to update. All other fields will remain unmodified
+        - update: The fields in the record to update. All other fields will remain unmodified
 
         Returns:
         - The updated response
