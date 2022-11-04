@@ -1,7 +1,9 @@
 import logging
 from typing import List, Optional
 
-from sqlmodel import Field, Relationship
+import uuid
+
+from sqlmodel import Field, Relationship, UniqueConstraint
 
 from server.models_util import APIModel
 
@@ -25,11 +27,10 @@ class InterviewScreen(APIModel, table=True):
     __tablename__: str = "interview_screen"
     order: int
     header_text: str
-    id: str = Field(primary_key=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     interview_id: str = Field(foreign_key="interview.id")
     title: str
-    is_in_starting_state: bool
-    starting_state_order: Optional[int]
+    starting_state_order: int = 0
 
     # relationships
     actions: List["ConditionalAction"] = Relationship(back_populates="screen")
