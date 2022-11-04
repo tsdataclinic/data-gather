@@ -33,7 +33,7 @@ def hello_api():
 
 
 @app.get("/airtable-records/{table_name}", tags=["airtable"])
-def get_airtable_records(table_name, request: Request):
+def get_airtable_records(table_name, request: Request) -> list[Record]:
     """
     Fetch records from an airtable table. Filtering can be performed
     by adding query parameters to the URL, keyed by column name.
@@ -42,21 +42,28 @@ def get_airtable_records(table_name, request: Request):
     return airtable_client.search_records(table_name, query)
 
 @app.get("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
-def get_airtable_record(table_name: str, record_id: str):
+def get_airtable_record(table_name: str, record_id: str) -> Record:
     """
     Fetch record with a particular id from a table in airtable.
     """
     return airtable_client.fetch_record(table_name, record_id)
 
 @app.post("/airtable-records/{table_name}", tags=["airtable"])
-async def create_airtable_record(table_name: str, record: Record = Body(...)):
+async def create_airtable_record(
+    table_name: str, 
+    record: Record = Body(...)
+) -> Record:
     """
     Create an airtable record in a table.
     """
     return airtable_client.create_record(table_name, record)
 
 @app.put("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
-async def update_airtable_record(table_name: str, record_id: str, update: PartialRecord = Body(...)):
+async def update_airtable_record(
+    table_name: str, 
+    record_id: str, 
+    update: PartialRecord = Body(...)
+) -> Record:
     """
     Update an airtable record in a table.
     """
