@@ -29,8 +29,8 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           name={entry.responseId}
           label={entry.prompt}
           options={[
-            { value: true, displayValue: 'Yes' },
-            { value: false, displayValue: 'No' },
+            { value: 'Yes', displayValue: 'Yes' },
+            { value: 'No', displayValue: 'No' },
           ]}
         />
       );
