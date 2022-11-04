@@ -56,6 +56,7 @@ def airtable_errors_wrapped(func):
             raise
 
     return wrapped
+
 class AirtableAPI: 
     """
     A client to query an Airtable base.
@@ -70,6 +71,7 @@ class AirtableAPI:
         self.api = Api(airtable_api_key)
         self.base_id = base_id
 
+
     @airtable_errors_wrapped
     def fetch_record(self, table_name: str, id: str) ->  Record:
         """
@@ -83,6 +85,7 @@ class AirtableAPI:
         """
         logger.debug(f"Fetching record {id} in {table_name}")
         return self.api.get(self.base_id, table_name, id) 
+
 
     @airtable_errors_wrapped
     def search_records(self, table_name: str, query: PartialRecord) -> list[Record]:
@@ -113,6 +116,7 @@ class AirtableAPI:
         """
         logger.debug(f"Creating new record in {table_name}: {record}")
         return self.api.create(self.base_id, table_name, record, typecast=True)
+
 
     @airtable_errors_wrapped
     def update_record(self, table_name: str, id: str, update: PartialRecord) -> Record:
