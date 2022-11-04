@@ -1,4 +1,3 @@
-import invariant from 'invariant';
 import * as React from 'react';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
@@ -7,6 +6,7 @@ import LabelWrapper from '../../ui/LabelWrapper';
 import assertUnreachable from '../../../util/assertUnreachable';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
 import InputText from '../../ui/InputText';
+import MultiSelect from '../../ui/MultiSelect';
 
 const ACTION_TYPE_OPTIONS = ConditionalAction.ACTION_TYPES.map(actionType => ({
   displayValue: ConditionalAction.actionTypeToDisplayString(actionType),
@@ -16,7 +16,7 @@ const ACTION_TYPE_OPTIONS = ConditionalAction.ACTION_TYPES.map(actionType => ({
 type ActionConfig = ConditionalAction.T['actionConfig'];
 
 type Props = {
-  actionConfig: ActionConfig;
+  action: ConditionalAction.T;
   interview: Interview.T;
   onActionConfigChange: (actionConfig: ActionConfig) => void;
 };
@@ -26,10 +26,11 @@ type Props = {
  * It renders differently based off of what the action type is
  */
 export default function ActionConfigEditor({
-  actionConfig,
+  action,
   onActionConfigChange,
   interview,
 }: Props): JSX.Element {
+  const { actionConfig } = action;
   const screens = useInterviewScreens(interview.id);
   const onActionTypeChange = (
     newActionType: ConditionalAction.ActionType,
@@ -37,32 +38,6 @@ export default function ActionConfigEditor({
     onActionConfigChange(
       ConditionalAction.createDefaultActionConfig(newActionType),
     );
-  };
-
-  const onActionPayloadChange = (
-    actionType: ConditionalAction.ActionType,
-    payload: ConditionalAction.T['actionConfig']['payload'],
-  ): void => {
-    switch (actionType) {
-      case ConditionalAction.ActionType.Push:
-        invariant(
-          typeof payload === 'string',
-          'Action payload must be of type string',
-        );
-        onActionConfigChange({
-          type: actionType,
-          payload: [payload],
-        });
-        break;
-      case ConditionalAction.ActionType.Skip:
-      case ConditionalAction.ActionType.Checkpoint:
-      case ConditionalAction.ActionType.Milestone:
-      case ConditionalAction.ActionType.Restore:
-        // TODO: needs implementation
-        break;
-      default:
-        assertUnreachable(actionType);
-    }
   };
 
   const screenOptions = React.useMemo(
@@ -89,16 +64,22 @@ export default function ActionConfigEditor({
         // TODO: we only allow a single screen to be pushed for now. This needs
         // to be updated once we have a multi-select dropdown component.
         return (
-          <LabelWrapper inline label="Next stage" labelTextClassName="w-20">
-            <Dropdown
-              onChange={(newScreenId: string) =>
-                onActionPayloadChange(
-                  ConditionalAction.ActionType.Push,
-                  newScreenId,
-                )
+          <LabelWrapper
+            inline
+            label="Next stage"
+            labelTextClassName="w-20"
+            htmlFor={`${action.id}__push`}
+          >
+            <MultiSelect
+              id={`${action.id}__push`}
+              onChange={(newScreenIds: readonly string[]) =>
+                onActionConfigChange({
+                  type: ConditionalAction.ActionType.Push,
+                  payload: newScreenIds,
+                })
               }
-              placeholder="No stage selected"
-              value={actionConfig.payload[0]}
+              placeholder="Add stage"
+              selectedValues={actionConfig.payload}
               options={screenOptions}
             />
           </LabelWrapper>
