@@ -12,7 +12,7 @@ type Props = {
   containerWidth?: number;
   id?: string;
 
-  onChange: (selectedValues: readonly string[]) => void;
+  onChange: (selectedValues: string[]) => void;
   options: ReadonlyArray<{
     displayValue: React.ReactNode;
     value: string;
