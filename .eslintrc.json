@@ -102,6 +102,7 @@
           "InputNumber",
           "Dropdown",
           "MixedCheckbox",
+          "MultiSelect",
           "TextArea"
         ]
       }
