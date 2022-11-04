@@ -18,7 +18,7 @@ class Interview(APIModel, table=True):
     notes: str
 
     # relationships
-    screens: list["InterviewScreen"] = Relationship(back_populates="interview")
+    screens: List["InterviewScreen"] = Relationship(back_populates="interview")
 
 
 class InterviewScreen(APIModel, table=True):

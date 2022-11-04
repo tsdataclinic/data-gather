@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, create_engine
@@ -44,13 +46,13 @@ def get_interview(interview_id: str) -> Interview:
 
 @app.get(
     "/api/interviews/",
-    response_model=list[Interview],
+    response_model=List[Interview],
     tags=["Interviews"],
 )
-def get_interviews() -> list[Interview]:
+def get_interviews() -> List[Interview]:
     engine = create_engine(f"sqlite:///{SQLITE_DB_PATH}")
     session = Session(autocommit=False, autoflush=False, bind=engine)
-    interviews: list[Interview] = session.query(Interview).limit(100).all()
+    interviews: List[Interview] = session.query(Interview).limit(100).all()
     return interviews
 
 

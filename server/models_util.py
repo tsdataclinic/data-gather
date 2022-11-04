@@ -1,7 +1,16 @@
 import importlib
 import re
 from inspect import isclass
-from typing import Optional, Type, TypeVar, Union, get_args, get_origin, get_type_hints
+from typing import (
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+    List,
+)
 
 from pydantic import BaseModel, create_model
 from sqlalchemy.orm import RelationshipProperty
@@ -51,10 +60,10 @@ MODELS_DIRECTORY = {}
 
 
 def prepare_relationships(
-    Cls: Type[BaseModel], relationships: Optional[list[str]] = None
+    Cls: Type[BaseModel], relationships: Optional[List[str]] = None
 ) -> Type[BaseModel]:
     """This function lets you include a model's relationships in the
-    response_modelto a FastAPI route. By default, this function will remove
+    response_model to a FastAPI route. By default, this function will remove
     all relationships from a model and then only include the ones you specify
     in `relationships`.
 
@@ -74,7 +83,7 @@ def prepare_relationships(
 
     Args:
         Cls (Class): The model we want to return
-        relationships (Optional[list[str]]): The list of relationships we want
+        relationships (Optional[List[str]]): The list of relationships we want
             to include.
     """
     new_model_name = None
@@ -117,7 +126,7 @@ def prepare_relationships(
                             related_model_class
                         )
                         if get_origin(python_type_hint) == list:
-                            model_attrs[attr] = (list[ModelWithNoRelationships], ...)
+                            model_attrs[attr] = (List[ModelWithNoRelationships], ...)
                         else:
                             model_attrs[attr] = (ModelWithNoRelationships, ...)
 
