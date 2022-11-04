@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import '@reach/listbox/styles.css';
 import * as Select from '@radix-ui/react-select';
 
-const StyledTriggerButton = styled(Select.Trigger)`
+export const StyledTriggerButton = styled(Select.Trigger)`
   all: unset;
   border-radius: 4px;
 
@@ -22,6 +22,14 @@ const StyledTriggerButton = styled(Select.Trigger)`
   &:focus {
     // blue outline on focus
     box-shadow: 0 0 0 2px #3b82f6;
+  }
+
+  &[data-disabled] {
+    color: #94a3b8;
+    cursor: not-allowed;
+    &: hover {
+      background-color: inherit;
+    }
   }
 `;
 
@@ -51,7 +59,12 @@ const StyledSelectItem = styled(Select.Item)`
   &[data-highlighted] {
     color: white;
     background: #3b82f6;
-  },
+  }
+
+  &[data-disabled] {
+    color: #94a3b8;
+    cursor: unset;
+  }
 `;
 
 const StyledItemIndicator = styled(Select.ItemIndicator)`
@@ -68,9 +81,12 @@ const StyledItemIndicator = styled(Select.ItemIndicator)`
 type Props<T> = {
   ariaLabel?: string;
   defaultValue?: T | undefined;
+  disabled?: boolean;
+  id?: string;
   name?: string;
   onChange?: (value: T) => void;
   options: ReadonlyArray<{
+    disabled?: boolean;
     displayValue: ReactNode;
     value: T;
   }>;
@@ -90,12 +106,18 @@ export default function Dropdown<T extends string>({
   onChange,
   options,
   value,
+  id,
+  disabled,
 }: Props<T>): JSX.Element {
   const ariaLabelToUse = ariaLabel ?? placeholder;
   const selectItems = useMemo(
     () =>
       options.map(obj => (
-        <StyledSelectItem key={obj.value} value={obj.value}>
+        <StyledSelectItem
+          key={obj.value}
+          value={obj.value}
+          disabled={!!obj.disabled}
+        >
           <Select.ItemText>{obj.displayValue}</Select.ItemText>
           <StyledItemIndicator>
             <FontAwesomeIcon icon={IconType.faCheck} size="sm" />
@@ -112,7 +134,11 @@ export default function Dropdown<T extends string>({
       onValueChange={onChange}
       name={name}
     >
-      <StyledTriggerButton aria-label={ariaLabelToUse}>
+      <StyledTriggerButton
+        id={id}
+        aria-label={ariaLabelToUse}
+        disabled={disabled}
+      >
         <Select.Value placeholder={placeholder} />
         <Select.Icon>
           <FontAwesomeIcon

@@ -77,13 +77,13 @@ export function addScreen(
  * Immutably add a starting screen to a particular position
  * in the interview's default sequence
  */
-export function addStartingScreen(
+export function setStartingState(
   interview: Interview,
-  screenId: string,
+  screenIds: readonly string[],
 ): Interview {
   return {
     ...interview,
-    startingState: [...interview.startingState, screenId],
+    startingState: screenIds,
   };
 }
 
