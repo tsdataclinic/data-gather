@@ -1,8 +1,8 @@
 import logging
-import os
 
 from sqlalchemy_utils import create_database, database_exists
 from sqlmodel import SQLModel, Session
+
 
 # import models so that the classes get registered with SQLModel
 from . import models
@@ -50,6 +50,74 @@ FAKE_SCREENS = [
 ]
 
 
+def generate_fake_actions(
+    screen1: models.InterviewScreen, screen2: models.InterviewScreen
+):
+    return [
+        {
+            "action_payload": "payload_string",
+            "action_type": "re",
+            "id": "action123",
+            "order": 1,
+            "response_key": "rkey",
+            "screen_id": screen1.id,
+            "value": "someval",
+        },
+        {
+            "action_payload": "payload_string",
+            "action_type": "re",
+            "id": "action456",
+            "order": 2,
+            "response_key": "rkey",
+            "screen_id": screen1.id,
+            "value": "someval",
+        },
+        {
+            "action_payload": "payload_string",
+            "action_type": "re",
+            "id": "action789",
+            "order": 1,
+            "response_key": "rkey",
+            "screen_id": screen2.id,
+            "value": "someval",
+        },
+    ]
+
+
+def generate_fake_entries(
+    screen1: models.InterviewScreen, screen2: models.InterviewScreen
+):
+    return [
+        {
+            "name": "somename",
+            "prompt": "hello",
+            "responseKey": "asdf",
+            "screenId": screen1.id,
+            "order": 1,
+            "responseType": "sometype",
+            "text": "sometext",
+        },
+        {
+            "name": "somename",
+            "prompt": "hello",
+            "response_key": "ghjk",
+            "screen_id": screen1.id,
+            "order": 2,
+            "response_type": "sometype",
+            "text": "sometext",
+        },
+        {
+            "name": "somename",
+            "prompt": "hello",
+            "response_key": "qwer",
+            "screen_id": screen2.id,
+            "order": 1,
+            "response_type": "sometype",
+            "text": "sometext",
+        },
+    ]
+
+
 def initialize_dev_db(file_path: str = SQLITE_DB_PATH):
     """Set up the SQLite database"""
     url = f"sqlite:///{file_path}"
@@ -66,9 +134,23 @@ def populate_dev_db(file_path: str = SQLITE_DB_PATH):
     """Populate the dev database with dummy data"""
     LOG.info("Populating DB with dummy data")
     engine = create_fk_constraint_engine(file_path)
-    session = Session(autocommit=False, autoflush=False, bind=engine)
     interview = models.Interview(**FAKE_INTERVIEW)
     screens = [models.InterviewScreen(**i) for i in FAKE_SCREENS]
-    session.add(interview)
-    session.add_all(screens)
-    session.commit()
+    with Session(autocommit=False, autoflush=False, bind=engine) as session:
+        session.add(interview)
+        session.add_all(screens)
+        # commit changes and refresh so we pull in ID's assigned to screens
+        session.commit()
+
+        for i in screens[0:2]:
+            session.refresh(i)
+        actions = [
+            models.ConditionalAction(**i) for i in generate_fake_actions(*screens[0:2])
+        ]
+        entries = [
+            models.InterviewScreenEntry(**i)
+            for i in generate_fake_entries(*screens[0:2])
+        ]
+        session.add_all(actions)
+        session.add_all(entries)
+        session.commit()
