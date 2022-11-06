@@ -3,6 +3,8 @@ import os
 
 from sqlalchemy_utils import create_database, database_exists
 from sqlmodel import SQLModel, Session
+from sqlalchemy import UniqueConstraint
+
 
 # import models so that the classes get registered with SQLModel
 from . import models
@@ -49,6 +51,66 @@ FAKE_SCREENS = [
     },
 ]
 
+FAKE_ACTIONS = [
+    {
+        "actionPayload": "payload_string",
+        "actionType": "re",
+        "id": "action123",
+        "order": 1,
+        "responseKey": "rkey",
+        "screenId": "{}",
+        "value": "someval",
+    },
+    {
+        "actionPayload": "payload_string",
+        "actionType": "re",
+        "id": "{}",
+        "order": 2,
+        "responseKey": "rkey",
+        "screenId": "5678efgh",
+        "value": "someval",
+    },
+    {
+        "actionPayload": "payload_string",
+        "actionType": "re",
+        "id": "action789",
+        "order": 1,
+        "responseKey": "rkey",
+        "screenId": "{}",
+        "value": "someval",
+    },
+]
+
+FAKE_ENTRIES = [
+    {
+        "name": "somename",
+        "prompt": "hello",
+        "responseKey": "asdf",
+        "screenId": "5678efgh",
+        "order": 1,
+        "responseType": "sometype",
+        "text": "sometext",
+    },
+    {
+        "name": "somename",
+        "prompt": "hello",
+        "responseKey": "ghjk",
+        "screenId": "5678efgh",
+        "order": 2,
+        "responseType": "sometype",
+        "text": "sometext",
+    },
+    {
+        "name": "somename",
+        "prompt": "hello",
+        "responseKey": "qwer",
+        "screenId": "8910ijkl",
+        "order": 1,
+        "responseType": "sometype",
+        "text": "sometext",
+    },
+]
+
 
 def initialize_dev_db(file_path: str = SQLITE_DB_PATH):
     """Set up the SQLite database"""
@@ -66,9 +128,16 @@ def populate_dev_db(file_path: str = SQLITE_DB_PATH):
     """Populate the dev database with dummy data"""
     LOG.info("Populating DB with dummy data")
     engine = create_fk_constraint_engine(file_path)
-    session = Session(autocommit=False, autoflush=False, bind=engine)
     interview = models.Interview(**FAKE_INTERVIEW)
     screens = [models.InterviewScreen(**i) for i in FAKE_SCREENS]
-    session.add(interview)
-    session.add_all(screens)
-    session.commit()
+    actions = [models.ConditionalAction(**i) for i in FAKE_ACTIONS]
+    entries = [models.InterviewScreenEntry(**i) for i in FAKE_ENTRIES]
+    with Session(autocommit=False, autoflush=False, bind=engine) as session:
+        session.add(interview)
+        session.add_all(screens)
+        session.commit()
+        all_ids = session.query(models.InterviewScreen.id).limit(100).all()
+        linked_actions = []
+        session.add_all(actions)
+        session.add_all(entries)
+        session.commit()

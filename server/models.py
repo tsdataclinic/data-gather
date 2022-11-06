@@ -27,7 +27,7 @@ class InterviewScreen(APIModel, table=True):
     __tablename__: str = "interview_screen"
     order: int
     header_text: str
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, nullable=False)
     interview_id: str = Field(foreign_key="interview.id")
     title: str
     starting_state_order: int = 0

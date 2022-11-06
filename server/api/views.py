@@ -110,6 +110,18 @@ def create_interview_screen(screen: InterviewScreen) -> InterviewScreen:
         return screen
 
 
+@app.put(
+    "/api/interviewScreens/{screen_id}",
+    response_model=prepare_relationships(InterviewScreen, ["actions", "entries"]),
+    tags=["InterviewScreens"],
+)
+def update_interview_screen(
+    screen_id: str,
+    screen: prepare_relationships(InterviewScreen, ["actions", "entries"]),
+) -> InterviewScreen:
+    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
+
+
 def _adjust_screen_order(
     existing_screens: List[InterviewScreen], new_screen: InterviewScreen
 ) -> List[InterviewScreen]:
