@@ -2,6 +2,8 @@ import logging
 
 from sqlalchemy_utils import create_database, database_exists
 from sqlmodel import SQLModel, Session
+from sqlalchemy import UniqueConstraint
+
 
 
 # import models so that the classes get registered with SQLModel
@@ -46,6 +48,66 @@ FAKE_SCREENS = [
         "title": "Screen3",
         "is_in_starting_state": True,
         "starting_state_order": 2,
+    },
+]
+
+FAKE_ACTIONS = [
+    {
+        "actionPayload": "payload_string",
+        "actionType": "re",
+        "id": "action123",
+        "order": 1,
+        "responseKey": "rkey",
+        "screenId": "{}",
+        "value": "someval",
+    },
+    {
+        "actionPayload": "payload_string",
+        "actionType": "re",
+        "id": "{}",
+        "order": 2,
+        "responseKey": "rkey",
+        "screenId": "5678efgh",
+        "value": "someval",
+    },
+    {
+        "actionPayload": "payload_string",
+        "actionType": "re",
+        "id": "action789",
+        "order": 1,
+        "responseKey": "rkey",
+        "screenId": "{}",
+        "value": "someval",
+    },
+]
+
+FAKE_ENTRIES = [
+    {
+        "name": "somename",
+        "prompt": "hello",
+        "responseKey": "asdf",
+        "screenId": "5678efgh",
+        "order": 1,
+        "responseType": "sometype",
+        "text": "sometext",
+    },
+    {
+        "name": "somename",
+        "prompt": "hello",
+        "responseKey": "ghjk",
+        "screenId": "5678efgh",
+        "order": 2,
+        "responseType": "sometype",
+        "text": "sometext",
+    },
+    {
+        "name": "somename",
+        "prompt": "hello",
+        "responseKey": "qwer",
+        "screenId": "8910ijkl",
+        "order": 1,
+        "responseType": "sometype",
+        "text": "sometext",
     },
 ]
 
