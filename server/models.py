@@ -27,7 +27,9 @@ class InterviewScreen(APIModel, table=True):
     __tablename__: str = "interview_screen"
     order: int
     header_text: str
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4, primary_key=True, nullable=False
+    )
     interview_id: str = Field(foreign_key="interview.id")
     title: str
     starting_state_order: int = 0
@@ -43,7 +45,7 @@ class InterviewScreenEntry(APIModel, table=True):
     name: str
     prompt: str
     response_key: str = Field(primary_key=True)
-    screen_id: str = Field(foreign_key="interview_screen.id")
+    screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
     order: int
     response_type: str
     text: str
@@ -59,7 +61,7 @@ class ConditionalAction(APIModel, table=True):
     id: str = Field(primary_key=True)
     order: int
     response_key: str
-    screen_id: str = Field(foreign_key="interview_screen.id")
+    screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
     value: str
 
     # relationships
