@@ -1,35 +1,22 @@
-from fastapi import (
-    FastAPI, 
-    Request, 
-    Body
-)
-from airtable_config import (
-    AIRTABLE_API_KEY,
-    AIRTABLE_BASE_ID
-)
-from airtable_api import (
-    AirtableAPI, 
-    Record, 
-    PartialRecord
-)
+from airtable_api import AirtableAPI, PartialRecord, Record
+from airtable_config import AIRTABLE_API_KEY, AIRTABLE_BASE_ID
+from fastapi import Body, FastAPI, Request
 
-TAG_METADATA = [
-    {
-        "name": "airtable",
-        "description": "Endpoints for querying Airtable"
-    }
-]
+TAG_METADATA = [{"name": "airtable", "description": "Endpoints for querying Airtable"}]
 
-app = FastAPI(
-    title="Interview App API", 
-    openapi_tags=TAG_METADATA
-)
+app = FastAPI(title="Interview App API", openapi_tags=TAG_METADATA)
 
 airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
+
 
 @app.get("/")
 def hello_api():
     return {"message": "Hello World"}
+
+
+@app.get("/auth-test")
+def auth_api_test():
+    return {"message": "Authenticated!"}
 
 
 @app.get("/airtable-records/{table_name}", tags=["airtable"])
@@ -41,6 +28,7 @@ def get_airtable_records(table_name, request: Request) -> list[Record]:
     query = dict(request.query_params)
     return airtable_client.search_records(table_name, query)
 
+
 @app.get("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
 def get_airtable_record(table_name: str, record_id: str) -> Record:
     """
@@ -48,24 +36,20 @@ def get_airtable_record(table_name: str, record_id: str) -> Record:
     """
     return airtable_client.fetch_record(table_name, record_id)
 
+
 @app.post("/airtable-records/{table_name}", tags=["airtable"])
-async def create_airtable_record(
-    table_name: str, 
-    record: Record = Body(...)
-) -> Record:
+async def create_airtable_record(table_name: str, record: Record = Body(...)) -> Record:
     """
     Create an airtable record in a table.
     """
     return airtable_client.create_record(table_name, record)
 
+
 @app.put("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
 async def update_airtable_record(
-    table_name: str, 
-    record_id: str, 
-    update: PartialRecord = Body(...)
+    table_name: str, record_id: str, update: PartialRecord = Body(...)
 ) -> Record:
     """
     Update an airtable record in a table.
     """
     return airtable_client.update_record(table_name, record_id, update)
-

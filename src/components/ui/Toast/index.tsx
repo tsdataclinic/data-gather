@@ -7,7 +7,7 @@ import styled, { keyframes } from 'styled-components';
 
 type ToastProps = {
   children: React.ReactNode;
-  intent: 'success' | 'danger';
+  intent: 'success' | 'error';
   title: string;
 };
 
@@ -54,7 +54,7 @@ const StyledViewport = styled(RadixToast.Viewport)`
   z-index: 9999;
 `;
 
-const StyledToast = styled(RadixToast.Root)<{ intent: 'success' | 'danger' }>`
+const StyledToast = styled(RadixToast.Root)<{ intent: 'success' | 'error' }>`
   align-items: center;
   background-color: white;
   border-radius: 6px;
@@ -113,7 +113,7 @@ const StyledClose = styled(RadixToast.Close)`
 `;
 
 type ToastAPI = {
-  notifyDanger: (title: string, description: React.ReactNode) => void;
+  notifyError: (title: string, description: React.ReactNode) => void;
   notifySuccess: (title: string, description: React.ReactNode) => void;
 };
 
@@ -155,9 +155,9 @@ function Toaster(
           prevToasts.concat({ title, children, intent: 'success' }),
         );
       },
-      notifyDanger: (title, children: React.ReactNode) => {
+      notifyError: (title, children: React.ReactNode) => {
         setToasts(prevToasts =>
-          prevToasts.concat({ title, children, intent: 'danger' }),
+          prevToasts.concat({ title, children, intent: 'error' }),
         );
       },
     }),
@@ -183,7 +183,7 @@ const ToastManager = React.forwardRef(Toaster);
 const noop = (): void => undefined;
 const noopAPI: ToastAPI = {
   notifySuccess: noop,
-  notifyDanger: noop,
+  notifyError: noop,
 };
 
 /**
