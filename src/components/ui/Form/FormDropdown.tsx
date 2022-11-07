@@ -2,8 +2,6 @@ import * as React from 'react';
 import LabelWrapper from '../LabelWrapper';
 import Dropdown from '../Dropdown';
 
-// TODO: add a required prop to this and `Dropdown`. Make it default to true
-// in FormDropdown.
 type Props<T extends string> = {
   className?: string;
   defaultValue?: T;
@@ -15,6 +13,7 @@ type Props<T extends string> = {
     value: T;
   }>;
   placeholder?: string;
+  required?: boolean;
   value?: T;
 };
 
@@ -27,9 +26,10 @@ export default function FormDropdown<T extends string>({
   options,
   onChange,
   placeholder,
+  required = true,
 }: Props<T>): JSX.Element {
   return (
-    <LabelWrapper className={className} label={label}>
+    <LabelWrapper className={className} label={label + (required ? ' *' : '')}>
       <Dropdown
         options={options}
         name={name}
