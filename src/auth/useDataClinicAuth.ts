@@ -50,6 +50,8 @@ export default function useDataClinicAuth(): {
         await triggerLogoutFlow();
       }
 
+      // TODO: need to clear cached state from react-query on log out
+
       // clear any cached state from apollo client
       // NOTE: we intentionally call `clearStore` instead of `resetStore`
       // because `resetStore` will refetch queries (to reflect the new user

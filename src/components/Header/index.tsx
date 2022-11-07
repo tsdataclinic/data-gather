@@ -8,6 +8,7 @@ import Button from '../ui/Button';
 export default function Header(): JSX.Element {
   const { login, logout } = useDataClinicAuth();
   const { isAuthenticated } = useCurrentUser();
+  console.log('are we authenticated?', isAuthenticated);
 
   return (
     <header className="z-50 flex h-12 w-full items-center bg-slate-800 py-2 px-8 text-white">

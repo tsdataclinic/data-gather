@@ -15,7 +15,11 @@ const INTERVIEW_STORE_CLIENT = new InterviewStore.API();
 
 export default function App(): JSX.Element {
   const [globalState, dispatch] = useAppReducer();
-  console.log('auth token?', getAuthToken());
+
+  // TODO: remove this, this is just to test
+  getAuthToken().then(token => {
+    console.log('auth token?', token);
+  });
 
   return (
     <AuthProvider>
