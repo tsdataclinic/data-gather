@@ -2,12 +2,19 @@ import { v4 as uuidv4 } from 'uuid';
 import assertUnreachable from '../util/assertUnreachable';
 
 export enum ResponseType {
+  Airtable = 'Airtable',
   Boolean = 'BOOLEAN',
   Email = 'EMAIL',
   Number = 'NUMBER',
   PhoneNumber = 'PHONE_NUMBER',
   Text = 'TEXT',
 }
+
+export type ResponseTypeOptions = {
+  selectedBase: string;
+  selectedFields: string[];
+  selectedTable: string;
+};
 
 export const RESPONSE_TYPES: readonly ResponseType[] =
   Object.values(ResponseType);
@@ -29,6 +36,8 @@ interface InterviewScreenEntry {
 
   /** The data type expected as a response */
   readonly responseType: ResponseType;
+
+  readonly responseTypeOptions: ResponseTypeOptions;
 
   /** The screen that this entry belongs to */
   readonly screenId: string;
@@ -54,6 +63,7 @@ export function create(
     prompt: values.prompt,
     responseId: uuidv4(),
     responseType: values.responseType,
+    responseTypeOptions: values.responseTypeOptions,
     screenId: values.screenId,
     text: values.text,
   };
@@ -87,6 +97,8 @@ export function getEntryById(
 
 export function getResponseTypeDisplayName(responseType: ResponseType): string {
   switch (responseType) {
+    case ResponseType.Airtable:
+      return 'Airtable';
     case ResponseType.Text:
       return 'Text';
     case ResponseType.Number:

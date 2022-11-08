@@ -3,6 +3,8 @@ from fastapi import (
     Request, 
     Body
 )
+from fastapi.middleware.cors import CORSMiddleware
+
 from airtable_config import (
     AIRTABLE_API_KEY,
     AIRTABLE_BASE_ID
@@ -23,6 +25,14 @@ TAG_METADATA = [
 app = FastAPI(
     title="Interview App API", 
     openapi_tags=TAG_METADATA
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)

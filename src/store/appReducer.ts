@@ -1,10 +1,31 @@
+import * as AirtableAPISetting from '../models/settings/AirtableAPISetting';
 import * as ConditionalAction from '../models/ConditionalAction';
 import * as Interview from '../models/Interview';
 import * as InterviewScreen from '../models/InterviewScreen';
 import * as InterviewScreenEntry from '../models/InterviewScreenEntry';
 import assertUnreachable from '../util/assertUnreachable';
+import getEnvConfig, { EnvVar } from '../util/getEnvConfig';
 
 export type AppGlobalState = {
+  airtableSettings: {
+    apiKey: string;
+    bases: [
+      {
+        key: string;
+        name: string;
+        tables: [
+          {
+            fields: Array<{
+              fieldID: string;
+              fieldName: string;
+            }>;
+            key: string;
+            name: string;
+          },
+        ];
+      },
+    ];
+  };
   /**
    * A map of all interview conditional actions we have loaded so far.
    * Maps action id to ConditionalAction object.
@@ -22,12 +43,14 @@ export type AppGlobalState = {
    * Maps screen id to InterviewScreen object.
    */
   loadedInterviewScreens: ReadonlyMap<string, InterviewScreen.T>;
-
   /**
    * A map of all interviews that have been loaded so far
    * Maps interview id to Interview object.
    */
   loadedInterviews: ReadonlyMap<string, Interview.T>;
+  settings: {
+    airtableAPISettings: AirtableAPISetting.T;
+  };
 };
 
 export const DEFAULT_APP_STATE: AppGlobalState = {
@@ -35,6 +58,10 @@ export const DEFAULT_APP_STATE: AppGlobalState = {
   loadedInterviewScreenEntries: new Map(),
   loadedInterviewScreens: new Map(),
   loadedInterviews: new Map(),
+  airtableSettings: JSON.parse(getEnvConfig(EnvVar.AirtableConfigJSON)),
+  settings: {
+    airtableAPISettings: AirtableAPISetting.create(),
+  },
 };
 
 export type AppAction =
@@ -78,6 +105,16 @@ export type AppAction =
   | {
       screens: InterviewScreen.T[];
       type: 'SCREENS_UPDATE';
+    }
+  /** Create a new setting */
+  | {
+      setting: AirtableAPISetting.T;
+      type: 'SETTING_CREATE';
+    }
+  /** Update a setting */
+  | {
+      setting: AirtableAPISetting.T;
+      type: 'SETTING_UPDATE';
     };
 
 function cloneMap<K, V>(map: ReadonlyMap<K, V>): Map<K, V> {
@@ -117,6 +154,7 @@ export default function appReducer(
     loadedInterviews,
     loadedInterviewScreenEntries,
     loadedInterviewScreens,
+    settings,
   } = state;
 
   switch (action.type) {
@@ -223,6 +261,24 @@ export default function appReducer(
           action.screens,
           screen => screen.id,
         ),
+      };
+
+    case 'SETTING_CREATE':
+      return {
+        ...state,
+        settings: {
+          ...settings,
+          airtableAPISettings: action.setting,
+        },
+      };
+
+    case 'SETTING_UPDATE':
+      return {
+        ...state,
+        settings: {
+          ...settings,
+          airtableAPISettings: action.setting,
+        },
       };
 
     default:
