@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import uuid
 
-from sqlmodel import Field, Relationship, UniqueConstraint
+from sqlmodel import Field, Relationship
 
 from server.models_util import APIModel
 
