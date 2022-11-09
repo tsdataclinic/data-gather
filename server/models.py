@@ -25,11 +25,15 @@ class Interview(APIModel, table=True):
 
 class InterviewScreen(APIModel, table=True):
     __tablename__: str = "interview_screen"
-    order: int
+    order: int = 0
     header_text: str
+<<<<<<< HEAD
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4, primary_key=True, nullable=False
     )
+=======
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+>>>>>>> Adds screen create endpoint (#96)
     interview_id: str = Field(foreign_key="interview.id")
     title: str
     starting_state_order: int = 0

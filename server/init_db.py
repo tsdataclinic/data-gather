@@ -3,7 +3,6 @@ import logging
 from sqlalchemy_utils import create_database, database_exists
 from sqlmodel import SQLModel, Session
 
-
 # import models so that the classes get registered with SQLModel
 from . import models
 from .engine import create_fk_constraint_engine, SQLITE_DB_PATH
@@ -194,6 +193,7 @@ def populate_dev_db(file_path: str = SQLITE_DB_PATH):
     """Populate the dev database with dummy data"""
     LOG.info("Populating DB with dummy data")
     engine = create_fk_constraint_engine(file_path)
+<<<<<<< HEAD
     interview = models.Interview(**FAKE_INTERVIEW)
     screens = [models.InterviewScreen(**i) for i in FAKE_SCREENS]
     with Session(autocommit=False, autoflush=False, bind=engine) as session:
@@ -214,3 +214,11 @@ def populate_dev_db(file_path: str = SQLITE_DB_PATH):
         session.add_all(actions)
         session.add_all(entries)
         session.commit()
+=======
+    session = Session(autocommit=False, autoflush=False, bind=engine)
+    interview = models.Interview(**FAKE_INTERVIEW)
+    screens = [models.InterviewScreen(**i) for i in FAKE_SCREENS]
+    session.add(interview)
+    session.add_all(screens)
+    session.commit()
+>>>>>>> Adds screen create endpoint (#96)

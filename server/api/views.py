@@ -2,7 +2,11 @@ from typing import Any, Dict, List
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+<<<<<<< HEAD
 from sqlmodel import Session, select, SQLModel
+=======
+from sqlmodel import Session
+>>>>>>> Adds screen create endpoint (#96)
 from sqlalchemy.exc import IntegrityError
 
 from server.init_db import SQLITE_DB_PATH
@@ -58,7 +62,11 @@ def get_interview(interview_id: str) -> Interview:
     response_model=List[Interview],
     tags=["Interviews"],
 )
+<<<<<<< HEAD
 def get_interviews() -> List[Interview]:
+=======
+def get_interviews() -> list[Interview]:
+>>>>>>> Adds screen create endpoint (#96)
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     session = Session(autocommit=False, autoflush=False, bind=engine)
     interviews: List[Interview] = session.query(Interview).limit(100).all()
@@ -115,6 +123,7 @@ def create_interview_screen(screen: InterviewScreen) -> InterviewScreen:
         return screen
 
 
+<<<<<<< HEAD
 @app.put(
     "/api/interviewScreens/{screen_id}",
     # response_model=prepare_relationships(InterviewScreen, ["actions", "entries"]),
@@ -248,6 +257,13 @@ def _adjust_screen_order(
     """
     Given a list of existing screens and a new screen
 
+=======
+def _adjust_screen_order(
+    existing_screens: list[InterviewScreen], new_screen: InterviewScreen
+) -> list[InterviewScreen]:
+    """
+    Given a list of existing screens and a new screen
+>>>>>>> Adds screen create endpoint (#96)
     do the necessary re-ordering
     """
     sorted_screens = sorted(existing_screens, key=lambda x: x.order)
@@ -269,9 +285,13 @@ def _adjust_screen_order(
     # if proposed screen order is the same as existing
     # increment matching screen and subsequent screens by 1
     for screen in sorted_screens:
+<<<<<<< HEAD
         if screen.order < new_screen.order:
             continue
         elif screen.order >= new_screen.order:
+=======
+        if screen.order >= new_screen.order:
+>>>>>>> Adds screen create endpoint (#96)
             screen.order += 1
 
     return sorted_screens + [new_screen]
