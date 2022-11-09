@@ -4,7 +4,6 @@ from sqlalchemy_utils import create_database, database_exists
 from sqlmodel import SQLModel, Session
 
 
-
 # import models so that the classes get registered with SQLModel
 from . import models
 from .engine import create_fk_constraint_engine, SQLITE_DB_PATH
