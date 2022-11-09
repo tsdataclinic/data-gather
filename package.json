@@ -49,6 +49,7 @@
     "eject": "react-scripts eject",
     "reset-database": "rm -f db.sqlite && yarn setup-database",
     "setup-database": "PYTHONPATH=. python3 scripts/db_setup.py db.sqlite",
+    "populate-database": "PYTHONPATH=. python3 -c 'from server.init_db import populate_dev_db; populate_dev_db()'",
     "db": "sqlite3 db.sqlite",
     "start": "react-scripts start",
     "sync-types": "openapi --input http://localhost:8000/openapi.json --output src/api --client fetch --indent 2 --name FastAPIService --postfix FastAPIService",
