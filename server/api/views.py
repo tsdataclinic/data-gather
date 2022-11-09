@@ -1,8 +1,6 @@
-from typing import List
-
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
+from sqlmodel import Session
 from sqlalchemy.exc import IntegrityError
 
 from server.init_db import SQLITE_DB_PATH
@@ -50,13 +48,13 @@ def get_interview(interview_id: str) -> Interview:
 
 @app.get(
     "/api/interviews/",
-    response_model=List[Interview],
+    response_model=list[Interview],
     tags=["Interviews"],
 )
-def get_interviews() -> List[Interview]:
+def get_interviews() -> list[Interview]:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     session = Session(autocommit=False, autoflush=False, bind=engine)
-    interviews: List[Interview] = session.query(Interview).limit(100).all()
+    interviews: list[Interview] = session.query(Interview).limit(100).all()
     return interviews
 
 
@@ -111,11 +109,10 @@ def create_interview_screen(screen: InterviewScreen) -> InterviewScreen:
 
 
 def _adjust_screen_order(
-    existing_screens: List[InterviewScreen], new_screen: InterviewScreen
-) -> List[InterviewScreen]:
+    existing_screens: list[InterviewScreen], new_screen: InterviewScreen
+) -> list[InterviewScreen]:
     """
     Given a list of existing screens and a new screen
-
     do the necessary re-ordering
     """
     sorted_screens = sorted(existing_screens, key=lambda x: x.order)
@@ -137,9 +134,7 @@ def _adjust_screen_order(
     # if proposed screen order is the same as existing
     # increment matching screen and subsequent screens by 1
     for screen in sorted_screens:
-        if screen.order < new_screen.order:
-            continue
-        elif screen.order >= new_screen.order:
+        if screen.order >= new_screen.order:
             screen.order += 1
 
     return sorted_screens + [new_screen]
