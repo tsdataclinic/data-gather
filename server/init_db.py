@@ -2,7 +2,6 @@ import logging
 
 from sqlalchemy_utils import create_database, database_exists
 from sqlmodel import SQLModel, Session
-from sqlalchemy import UniqueConstraint
 
 
 # import models so that the classes get registered with SQLModel

@@ -1,12 +1,17 @@
-from typing import List
+from typing import Any, Dict, List
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
+from sqlmodel import Session, select, SQLModel
 from sqlalchemy.exc import IntegrityError
 
 from server.init_db import SQLITE_DB_PATH
-from server.models import Interview, InterviewScreen
+from server.models import (
+    Interview,
+    InterviewScreen,
+    InterviewScreenEntry,
+    ConditionalAction,
+)
 from server.models_util import prepare_relationships
 from server.engine import create_fk_constraint_engine
 
@@ -112,7 +117,7 @@ def create_interview_screen(screen: InterviewScreen) -> InterviewScreen:
 
 @app.put(
     "/api/interviewScreens/{screen_id}",
-    response_model=prepare_relationships(InterviewScreen, ["actions", "entries"]),
+    # response_model=prepare_relationships(InterviewScreen, ["actions", "entries"]),
     tags=["InterviewScreens"],
 )
 def update_interview_screen(
@@ -120,6 +125,121 @@ def update_interview_screen(
     screen: prepare_relationships(InterviewScreen, ["actions", "entries"]),
 ) -> InterviewScreen:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
+    with Session(autocommit=False, autoflush=False, bind=engine) as session:
+        db_screen = (
+            session.query(InterviewScreen).where(InterviewScreen.id == screen_id).all()
+        )
+        if not db_screen:
+            raise HTTPException(
+                status_code=404, detail=f"Screen with id {screen_id} not found"
+            )
+        # TODO: There is probably a way to make these queries more efficient
+        db_actions = {
+            i.id: i
+            for i in session.query(ConditionalAction)
+            .where(ConditionalAction.screen_id == screen_id)
+            .all()
+        }
+        request_actions = {
+            i.id: ConditionalAction(**i.dict(exclude_unset=True))
+            for i in screen.actions
+        }
+        db_entries = {
+            i.response_key: i
+            for i in session.query(InterviewScreenEntry)
+            .where(InterviewScreenEntry.screen_id == screen_id)
+            .all()
+        }
+        # By default our request model will create <model>Base classes which don't exactly
+        # match our expected models, so cast to their expected types
+        # TODO: Clean ^ up
+        request_entries = {
+            i.response_key: InterviewScreenEntry(**i.dict(exclude_unset=True))
+            for i in screen.entries
+        }
+
+        add_actions, remove_actions, remaining_actions = _get_created_deleted_models(
+            db_actions, request_actions
+        )
+
+        add_entries, remove_entries, remaining_entries = _get_created_deleted_models(
+            db_entries, request_entries
+        )
+
+        # Raise exception if provided order of actions is not sequential
+        add_updated_actions = sorted(
+            [
+                i.order
+                for i in list(add_actions.values()) + list(remaining_actions.values())
+            ]
+        )
+        print("updated")
+        print(add_updated_actions)
+        if (
+            not add_updated_actions
+            == list(range(min(add_updated_actions), max(add_updated_actions) + 1))
+        ) or add_updated_actions[0] != 1:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid order provided for added/updated actions {add_updated_actions}",
+            )
+
+        for id, model in remaining_actions.items():
+            existing_model = db_actions.get(id)
+            if not existing_model:
+                raise ValueError(f"No existing model found for changed model {id}")
+            session.add(_update_model_diff(existing_model, model))
+
+        # for i, j in zip(db_entries, remaining_entries):
+        #     changed.append(_update_model_diff(i, j))
+        # changed.append(request_screen, db_screen[0])
+
+        session.add_all(add_actions.values())
+        for r in remove_actions.values():
+            session.delete(r)
+
+        return f"added: {session.new}...deleted: {session.deleted}...dirty: {session.dirty}"
+
+    # We need to add the abulity to
+    # change order for after deletion/new addition of actions
+
+
+def _get_created_deleted_models(
+    existing_models: Dict[str, SQLModel],
+    new_models: Dict[str, SQLModel],
+):
+    add_models = {
+        i: new_models.get(i)
+        for i in new_models.keys()
+        if existing_models.get(i) is None
+    }
+    delete_models = {
+        i: existing_models.get(i)
+        for i in existing_models.keys()
+        if new_models.get(i) is None
+    }
+
+    return (
+        add_models,
+        delete_models,
+        {
+            n: new_models.get(n)
+            for n in new_models.keys()
+            if n not in list(add_models.keys()) + list(delete_models.keys())
+        },
+    )
+
+
+def _update_model_diff(existing_model: SQLModel, new_model: SQLModel):
+    """Update a model returned from the DB with any changes in the new model"""
+    for key, val in new_model.dict(exclude_unset=True).items():
+        if getattr(existing_model, key) != val:
+            print("AHHHH")
+            print(getattr(existing_model, key))
+            print(val)
+            setattr(existing_model, key, val)
+
+    return existing_model
 
 
 def _adjust_screen_order(
