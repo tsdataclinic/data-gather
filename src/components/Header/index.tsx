@@ -29,7 +29,8 @@ export default function Header(): JSX.Element {
           }
         }}
       >
-        <FontAwesomeIcon size="lg" icon={faUser} />
+        {isAuthenticated ? 'Sign out' : 'Sign in'}
+        <FontAwesomeIcon className="ml-2" size="lg" icon={faUser} />
       </Button>
     </header>
   );
