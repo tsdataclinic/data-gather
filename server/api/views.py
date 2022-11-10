@@ -117,7 +117,6 @@ def create_interview_screen(screen: InterviewScreen) -> InterviewScreen:
 
         return screen
 
-
 @app.put(
     "/api/interviewScreens/{screen_id}",
     response_model=prepare_relationships(InterviewScreen, ["actions", "entries"]),
@@ -262,7 +261,6 @@ def _adjust_screen_order(
 ) -> list[InterviewScreen]:
     """
     Given a list of existing screens and a new screen
-
     do the necessary re-ordering
     """
     sorted_screens = sorted(existing_screens, key=lambda x: x.order)
@@ -284,9 +282,7 @@ def _adjust_screen_order(
     # if proposed screen order is the same as existing
     # increment matching screen and subsequent screens by 1
     for screen in sorted_screens:
-        if screen.order < new_screen.order:
-            continue
-        elif screen.order >= new_screen.order:
+        if screen.order >= new_screen.order:
             screen.order += 1
 
     return sorted_screens + [new_screen]

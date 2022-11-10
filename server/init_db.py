@@ -3,7 +3,6 @@ import logging
 from sqlalchemy_utils import create_database, database_exists
 from sqlmodel import SQLModel, Session
 
-
 # import models so that the classes get registered with SQLModel
 from . import models
 from .engine import create_fk_constraint_engine, SQLITE_DB_PATH
@@ -48,7 +47,6 @@ FAKE_SCREENS = [
         "starting_state_order": 2,
     },
 ]
-
 
 def generate_fake_actions(
     screen1: models.InterviewScreen, screen2: models.InterviewScreen
@@ -116,7 +114,6 @@ def generate_fake_entries(
             "text": "sometext",
         },
     ]
-
 
 def initialize_dev_db(file_path: str = SQLITE_DB_PATH):
     """Set up the SQLite database"""
