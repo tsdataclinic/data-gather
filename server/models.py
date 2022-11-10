@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+from typing import Optional
 
 import uuid
 
@@ -20,7 +20,7 @@ class Interview(APIModel, table=True):
     notes: str
 
     # relationships
-    screens: List["InterviewScreen"] = Relationship(back_populates="interview")
+    screens: list["InterviewScreen"] = Relationship(back_populates="interview")
 
 
 class InterviewScreen(APIModel, table=True):
@@ -35,8 +35,8 @@ class InterviewScreen(APIModel, table=True):
     starting_state_order: int = 0
 
     # relationships
-    actions: List["ConditionalAction"] = Relationship(back_populates="screen")
-    entries: List["InterviewScreenEntry"] = Relationship(back_populates="screen")
+    actions: list["ConditionalAction"] = Relationship(back_populates="screen")
+    entries: list["InterviewScreenEntry"] = Relationship(back_populates="screen")
     interview: Interview = Relationship(back_populates="screens")
 
 

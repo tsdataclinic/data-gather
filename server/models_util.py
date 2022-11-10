@@ -9,7 +9,6 @@ from typing import (
     get_args,
     get_origin,
     get_type_hints,
-    List,
 )
 
 from pydantic import BaseModel, create_model
@@ -60,7 +59,7 @@ MODELS_DIRECTORY = {}
 
 
 def prepare_relationships(
-    Cls: Type[BaseModel], relationships: Optional[List[str]] = None
+    Cls: Type[BaseModel], relationships: Optional[list[str]] = None
 ) -> Type[BaseModel]:
     """This function lets you include a model's relationships in the
     response_model to a FastAPI route. By default, this function will remove
@@ -126,7 +125,7 @@ def prepare_relationships(
                             related_model_class
                         )
                         if get_origin(python_type_hint) == list:
-                            model_attrs[attr] = (List[ModelWithNoRelationships], ...)
+                            model_attrs[attr] = (list[ModelWithNoRelationships], ...)
                         else:
                             model_attrs[attr] = (ModelWithNoRelationships, ...)
 
