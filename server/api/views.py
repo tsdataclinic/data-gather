@@ -79,7 +79,17 @@ def hello_api():
     return {"message": "Hello World"}
 
 
-@app.get("/auth", dependencies=[Security(azure_scheme)])
+@app.on_event('startup')
+async def load_config() -> None:
+    """
+    Load OpenID config on startup.
+    """
+    await azure_scheme.openid_config.load_config()
+
+
+@app.get("/auth", dependencies=[Security(azure_scheme, scopes=[
+  "https://twosigmadataclinic.onmicrosoft.com/interview-app-open-api/user_impersonation",
+])])
 def test_auth():
     return {"message": "auth success!"}
 
