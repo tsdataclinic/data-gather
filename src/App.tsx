@@ -1,4 +1,8 @@
-import { QueryClientProvider, QueryClient , useQuery } from '@tanstack/react-query';
+import {
+  QueryClientProvider,
+  QueryClient,
+  useQuery,
+} from '@tanstack/react-query';
 import { Routes, Route } from 'react-router-dom';
 import AllInterviewsView from './components/AllInterviewsView';
 import Header from './components/Header';
@@ -18,7 +22,7 @@ export default function App(): JSX.Element {
 
   // TODO: remove this, this is just to test
 
-  const { data } = useQuery(async () => {
+  const { data } = useQuery(['testAuth'], async () => {
     const token = await getAuthToken();
     console.log('token', token);
     // TODO: add token to the header
