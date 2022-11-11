@@ -1,4 +1,4 @@
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
+import { QueryClientProvider, QueryClient , useQuery } from '@tanstack/react-query';
 import { Routes, Route } from 'react-router-dom';
 import AllInterviewsView from './components/AllInterviewsView';
 import Header from './components/Header';
@@ -17,9 +17,17 @@ export default function App(): JSX.Element {
   const [globalState, dispatch] = useAppReducer();
 
   // TODO: remove this, this is just to test
-  getAuthToken().then(token => {
-    console.log('auth token?', token);
+
+  const { data } = useQuery(async () => {
+    const token = await getAuthToken();
+    console.log('token', token);
+    // TODO: add token to the header
+    // {
+    //   'Authorization': `Bearer ${token}`,
+    // }
+    return fetch('/auth');
   });
+  console.log(data);
 
   return (
     <AuthProvider>
