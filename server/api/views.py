@@ -35,7 +35,7 @@ airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 class Settings(BaseSettings):
     SECRET_KEY: str = Field('my super secret key', env='SECRET_KEY')
     BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = ['http://localhost:8000']
-    OPENAPI_CLIENT_ID: str = Field(default='f2f390f7-1ace-4333-b7b9-9cf97a3d1318', env='OPENAPI_CLIENT_ID')
+    OPENAPI_CLIENT_ID: str = Field(default='95d99eed-62db-4ca0-b0d6-f58649e90e09', env='OPENAPI_CLIENT_ID')
     APP_CLIENT_ID: str = Field(default='f2f390f7-1ace-4333-b7b9-9cf97a3d1318', env='APP_CLIENT_ID')
     TENANT_ID: str = Field(default='c17c2295-f643-459e-ae89-8e0b2078951e', env='TENANT_ID')
 
@@ -49,7 +49,7 @@ settings = Settings()
 app = FastAPI(
     title="Interview App API", 
     openapi_tags=TAG_METADATA,
-    swagger_ui_oauth2_redirect_url='/',  #TODO: configure this in Azure AD
+    swagger_ui_oauth2_redirect_url='/oauth2-redirect',
     swagger_ui_init_oauth={
         'usePkceWithAuthorizationCodeGrant': True,
         'clientId': settings.OPENAPI_CLIENT_ID,
