@@ -1,36 +1,21 @@
 from typing import Union
-from fastapi import (
-    FastAPI, 
-    Request, 
-    Body,
-    Security
-)
-from fastapi.middleware.cors import CORSMiddleware
-from airtable_config import (
-    AIRTABLE_API_KEY,
-    AIRTABLE_BASE_ID
-)
-from airtable_api import (
-    AirtableAPI, 
-    Record, 
-    PartialRecord
-)
-from pydantic import AnyHttpUrl, BaseSettings, Field
-from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
 
-TAG_METADATA = [
-    {
-        "name": "airtable",
-        "description": "Endpoints for querying Airtable"
-    }
-]
+from airtable_api import AirtableAPI, PartialRecord, Record
+from airtable_config import AIRTABLE_API_KEY, AIRTABLE_BASE_ID
+from fastapi import Body, FastAPI, Request, Security
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
+from pydantic import AnyHttpUrl, BaseSettings, Field
+
+TAG_METADATA = [{"name": "airtable", "description": "Endpoints for querying Airtable"}]
 
 airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
 
-#============#
+# ============#
 # Auth Setup #
-#============#
+# ============#
+
 
 class Settings(BaseSettings):
     SECRET_KEY: str = Field('my super secret key', env='SECRET_KEY')
@@ -40,19 +25,20 @@ class Settings(BaseSettings):
     TENANT_ID: str = Field(default='c17c2295-f643-459e-ae89-8e0b2078951e', env='TENANT_ID')
 
     class Config:
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
+        env_file = ".env"
+        env_file_encoding = "utf-8"
         case_sensitive = True
+
 
 settings = Settings()
 
 app = FastAPI(
-    title="Interview App API", 
+    title="Interview App API",
     openapi_tags=TAG_METADATA,
     swagger_ui_oauth2_redirect_url='/oauth2-redirect',
     swagger_ui_init_oauth={
-        'usePkceWithAuthorizationCodeGrant': True,
-        'clientId': settings.OPENAPI_CLIENT_ID,
+        "usePkceWithAuthorizationCodeGrant": True,
+        "clientId": settings.OPENAPI_CLIENT_ID,
     },
 )
 
@@ -61,16 +47,16 @@ if settings.BACKEND_CORS_ORIGINS:
         CORSMiddleware,
         allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
         allow_credentials=True,
-        allow_methods=['*'],
-        allow_headers=['*'],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
 azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
     app_client_id=settings.APP_CLIENT_ID,
     tenant_id=settings.TENANT_ID,
     scopes={
-        f'api://{settings.APP_CLIENT_ID}/user_impersonation': 'user_impersonation',
-    }
+        f"api://{settings.APP_CLIENT_ID}/user_impersonation": "user_impersonation",
+    },
 )
 
 
@@ -103,6 +89,7 @@ def get_airtable_records(table_name, request: Request) -> list[Record]:
     query = dict(request.query_params)
     return airtable_client.search_records(table_name, query)
 
+
 @app.get("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
 def get_airtable_record(table_name: str, record_id: str) -> Record:
     """
@@ -110,24 +97,20 @@ def get_airtable_record(table_name: str, record_id: str) -> Record:
     """
     return airtable_client.fetch_record(table_name, record_id)
 
+
 @app.post("/airtable-records/{table_name}", tags=["airtable"])
-async def create_airtable_record(
-    table_name: str, 
-    record: Record = Body(...)
-) -> Record:
+async def create_airtable_record(table_name: str, record: Record = Body(...)) -> Record:
     """
     Create an airtable record in a table.
     """
     return airtable_client.create_record(table_name, record)
 
+
 @app.put("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
 async def update_airtable_record(
-    table_name: str, 
-    record_id: str, 
-    update: PartialRecord = Body(...)
+    table_name: str, record_id: str, update: PartialRecord = Body(...)
 ) -> Record:
     """
     Update an airtable record in a table.
     """
     return airtable_client.update_record(table_name, record_id, update)
-
