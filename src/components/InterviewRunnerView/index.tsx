@@ -22,11 +22,12 @@ export default function InterviewRunnerView(): JSX.Element | null {
   const interview = useInterview(interviewId);
   const screens = useInterviewScreens(interviewId);
   const actions = useInterviewConditionalActions(interviewId);
-  const [currentScreen, setCurrentScreen] = useState<InterviewScreen.T | null>(
-    null,
-  );
-  const [responseConsumer, setResponseConsumer] =
-    useState<ResponseConsumer | null>(null);
+  const [currentScreen, setCurrentScreen] = useState<
+    InterviewScreen.T | undefined
+  >(undefined);
+  const [responseConsumer, setResponseConsumer] = useState<
+    ResponseConsumer | undefined
+  >(undefined);
   const [responseData, setResponseData] = useState<ResponseData>({});
   const [complete, setComplete] = useState<boolean>(false);
   const entries = useInterviewScreenEntries(interviewId);

@@ -8,8 +8,8 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
   // eslint-disable-next-line
   constructor(
     private interview: Interview.T,
-    private actions: Map<string, ConditionalAction.T[]>,
-    private screens: Map<string, InterviewScreen.T>,
+    private actions: ReadonlyMap<string, ConditionalAction.T[]>,
+    private screens: ReadonlyMap<string, InterviewScreen.T>,
   ) {}
 
   setup(router: QuestionRouter<InterviewScreen.T>): void {
@@ -30,12 +30,9 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
       return;
     }
     potentialActions.forEach(potentialAction => {
-      if (
-        !ConfigurableScript.evaluateCondition(potentialAction, responseData)
-      ) {
-        return;
+      if (ConfigurableScript.evaluateCondition(potentialAction, responseData)) {
+        this.executeAction(potentialAction, router);
       }
-      this.executeAction(potentialAction, router);
     });
     router.next();
   }
