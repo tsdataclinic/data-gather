@@ -109,7 +109,7 @@ function ActionCard(
           const entries = screenEntriesMap.get(screen.id) || [];
           return entries.map(entry => ({
             displayValue: `${screen.title} - ${entry.name}`,
-            value: entry.id,
+            value: entry.responseId,
           }));
         })
       : [];
