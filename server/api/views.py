@@ -1,9 +1,10 @@
+import copy
 import logging
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, SQLModel
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from server.init_db import SQLITE_DB_PATH
 from server.models import (
@@ -11,6 +12,7 @@ from server.models import (
     InterviewScreen,
     InterviewScreenEntry,
     ConditionalAction,
+    OrderedModel,
 )
 from server.models_util import prepare_relationships
 from server.engine import create_fk_constraint_engine
@@ -128,70 +130,35 @@ def update_interview_screen(
 ) -> InterviewScreen:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     with Session(autocommit=False, autoflush=False, bind=engine) as session:
-        db_screen = (
-            session.query(InterviewScreen).where(InterviewScreen.id == screen_id).all()
-        )
-        if not db_screen:
+        try:
+            db_screen = (
+                session.query(InterviewScreen).where(InterviewScreen.id == screen_id).one()
+            )
+        except NoResultFound:
             raise HTTPException(
                 status_code=404, detail=f"Screen with id {screen_id} not found"
             )
-        # TODO: There is probably a way to make these queries more efficient
-        db_actions = {
-            i.id: i
-            for i in session.query(ConditionalAction)
-            .where(ConditionalAction.screen_id == screen_id)
-            .all()
-        }
-        request_actions = {
-            i.id: ConditionalAction(**i.dict(exclude_unset=True))
-            for i in screen.actions
-        }
-        db_entries = {
-            i.response_key: i
-            for i in session.query(InterviewScreenEntry)
-            .where(InterviewScreenEntry.screen_id == screen_id)
-            .all()
-        }
-        # By default our request model will create <model>Base classes which don't exactly
-        # match our expected models, so cast to their expected types
-        # TODO: fix ^
-        request_entries = {
-            i.response_key: InterviewScreenEntry(**i.dict(exclude_unset=True))
-            for i in screen.entries
-        }
-
-        add_actions, remove_actions, remaining_actions = _get_created_deleted_models(
-            db_actions, request_actions
-        )
-
-        add_entries, remove_entries, remaining_entries = _get_created_deleted_models(
-            db_entries, request_entries
-        )
         
-        # Raise exception if provided order of actions or entries is not sequential starting at 1
-        _validate_sequential_order(add_actions.values(), remaining_actions.values())
-        _validate_sequential_order(add_entries.values(), remaining_entries.values())
-
-        for id, model in list(remaining_actions.items()) + list(remaining_entries.items()):
-            existing_model = db_actions.get(id) or db_entries.get(id)
-            if not existing_model:
-                raise ValueError(f"No existing model found for changed model {model}")
-            
-            session.add(_update_model_diff(existing_model, model.dict(exclude_unset=True)))
-
-        session.add_all(add_actions.values())
-        session.add_all(add_entries.values())
-        for r in remove_actions.values():
-            session.delete(r)
-        for r in remove_entries.values():
-            session.delete(r)
+        _validate_sequential_order(screen.actions)
+        _validate_sequential_order(screen.entries)
         
-        screen_no_rels = screen.dict(exclude_unset=True)
-        screen_no_rels.pop("actions")
-        screen_no_rels.pop("entries")
-        session.add(_update_model_diff(db_screen[0], screen_no_rels))
+        casted_request_screen = _cast_correct_types(screen)
 
-        LOG.info(f"Making changes to screen: Additions {session.new} Deletions: {session.deleted} Updates: {session.dirty}")
+        for rel, primary_key in zip(["actions", "entries"], ["id", "response_key"]):
+            session, db_screen = _update_db_screen_relationships(
+                session,
+                db_screen,
+                casted_request_screen,
+                rel,
+                primary_key,
+            )
+
+        session.add(db_screen)
+
+        LOG.info(f"Making changes to screen:")
+        LOG.info(f"Additions {session.new}" )
+        LOG.info(f"Deletions: {session.deleted}")
+        LOG.info(f"Updates: {session.dirty}")
         
         try:
             session.commit()
@@ -203,57 +170,81 @@ def update_interview_screen(
         return screen
 
 
-def _get_created_deleted_models(
-    existing_models: dict[str, SQLModel],
-    new_models: dict[str, SQLModel],
+def _update_model_diff(existing_model: SQLModel, new_model: SQLModel):
+    """Update a model returned from the DB with any changes in the new model"""
+    for key, val in new_model.dict().items():
+        if getattr(existing_model, key) != val:
+            setattr(existing_model, key, val)
+    
+    return existing_model
+
+def _cast_correct_types(request_screen: InterviewScreen):
+    """Cast the relationship models on the request to the appropriate types"""
+    casted_screen = copy.deepcopy(request_screen)
+    casted_screen.actions = [ConditionalAction(**action.dict()) for action in request_screen.actions]
+    casted_screen.entries = [InterviewScreenEntry(**entry.dict()) for entry in request_screen.entries]
+    return casted_screen
+
+
+def _update_db_screen_relationships(
+    session: Session, 
+    db_screen: InterviewScreen,
+    request_screen: InterviewScreen,
+    relationship: str,
+    rel_primary_key: str,
 ):
-    add_models = {
-        i: new_models.get(i)
-        for i in new_models.keys()
-        if existing_models.get(i) is None
-    }
-    delete_models = {
-        i: existing_models.get(i)
-        for i in existing_models.keys()
-        if new_models.get(i) is None
+    """
+    Handle all necessary adds, deletes and updates to the DB session 
+    for the given screens and relationship.
+    
+    Args:
+        session: DB session 
+        db_screen: The InterviewScreen as read from the DB
+        request_screen: The InterviewScreen sent in the request body
+        relationship: The screen relationship to target for updates
+        rel_primary_key: The primary key to reference on the given relationship object
+
+    """
+    request_models = {
+        getattr(model, rel_primary_key): model
+        for model in getattr(request_screen, relationship)
     }
 
-    return (
-        add_models,
-        delete_models,
-        {
-            n: new_models.get(n)
-            for n in new_models.keys()
-            if n not in list(add_models.keys()) + list(delete_models.keys())
-        },
-    )
+    db_model_ids = []
+    for i, model in enumerate(getattr(db_screen, relationship)):
+        model_id = getattr(model, rel_primary_key)
+        db_model_ids.append(model_id)
+        if request_models.get(model_id) is None:
+            session.delete(model)
+        else:
+            updated_model = _update_model_diff(model, request_models.get(model_id))
+            getattr(db_screen, relationship)[i] = updated_model
 
-def _validate_sequential_order(added_models: list[SQLModel], remaining_models: list[SQLModel]):
-    add_updated_order = sorted(
+    for id, model in request_models.items():
+        if id not in db_model_ids:
+            session.add(model)
+    
+    return session, db_screen
+
+
+def _validate_sequential_order(request_models: list[OrderedModel]):
+    """Validate that the provided ordered models are in sequential order starting at 1"""
+    model_order = sorted(
         [
             i.order
-            for i in list(added_models) + list(remaining_models)
+            for i in request_models
         ]
     )
     exc = HTTPException(
             status_code=400,
-            detail=f"Invalid order provided for added/updated models {add_updated_order}",
+            detail=f"Invalid order provided for added/updated models {model_order}",
         )
-    
-    # Raise exception if provided order of models is not sequential starting at 1
-    if add_updated_order != list(range(min(add_updated_order), max(add_updated_order) + 1)):
+
+    if model_order != list(range(min(model_order), max(model_order) + 1)):
         raise exc
 
-    if add_updated_order[0] != 1:
+    if model_order[0] != 1:
         raise exc
-
-def _update_model_diff(existing_model: SQLModel, new_model: dict[any, any]):
-    """Update a model returned from the DB with any changes in the new model"""
-    for key, val in new_model.items():
-        if getattr(existing_model, key) != val:
-            setattr(existing_model, key, val)
-
-    return existing_model
 
 
 def _adjust_screen_order(
