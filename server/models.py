@@ -23,7 +23,11 @@ class Interview(APIModel, table=True):
     screens: List["InterviewScreen"] = Relationship(back_populates="interview")
 
 
-class InterviewScreen(APIModel, table=True):
+class OrderedModel(APIModel):
+    order: int
+
+
+class InterviewScreen(OrderedModel, table=True):
     __tablename__: str = "interview_screen"
     order: int = 0
     header_text: str
@@ -44,13 +48,12 @@ class InterviewScreen(APIModel, table=True):
     interview: Interview = Relationship(back_populates="screens")
 
 
-class InterviewScreenEntry(APIModel, table=True):
+class InterviewScreenEntry(OrderedModel, table=True):
     __tablename__: str = "interview_screen_entry"
     name: str
     prompt: str
     response_key: str = Field(primary_key=True)
     screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
-    order: int
     response_type: str
     text: str
 
@@ -58,7 +61,7 @@ class InterviewScreenEntry(APIModel, table=True):
     screen: InterviewScreen = Relationship(back_populates="entries")
 
 
-class ConditionalAction(APIModel, table=True):
+class ConditionalAction(OrderedModel, table=True):
     __tablename__: str = "conditional_action"
     action_payload: str
     action_type: str
