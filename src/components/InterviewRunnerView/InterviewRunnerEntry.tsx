@@ -4,7 +4,7 @@ import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import assertUnreachable from '../../util/assertUnreachable';
 import useAirtableQuery from '../../hooks/useAirtableQuery';
 import LabelWrapper from '../ui/LabelWrapper';
-import { useDebouncedState } from '../../hooks/useDebouncedState';
+import { useDebouncedState } from '../../hooks/useDebounce';
 
 type Props = {
   entry: InterviewScreenEntry.T;
