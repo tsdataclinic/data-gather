@@ -103,6 +103,11 @@ function ScreenCard({
       ),
       screenId: screen.id,
       text: vals.get('text') ?? '',
+      responseTypeOptions: {
+        selectedBase: '',
+        selectedTable: '',
+        selectedFields: [],
+      },
     });
 
     await interviewStore.addEntryToScreen(screen.id, entry);
