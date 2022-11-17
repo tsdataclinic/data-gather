@@ -9,22 +9,20 @@ import getEnvConfig, { EnvVar } from '../util/getEnvConfig';
 export type AppGlobalState = {
   airtableSettings: {
     apiKey: string;
-    bases: [
-      {
-        key: string;
-        name: string;
-        tables: [
-          {
-            fields: Array<{
-              fieldID: string;
-              fieldName: string;
-            }>;
-            key: string;
-            name: string;
-          },
-        ];
-      },
-    ];
+    bases: ReadonlyArray<{
+      key: string;
+      name: string;
+      tables: [
+        {
+          fields: Array<{
+            fieldID: string;
+            fieldName: string;
+          }>;
+          key: string;
+          name: string;
+        },
+      ];
+    }>;
   };
   /**
    * A map of all interview conditional actions we have loaded so far.

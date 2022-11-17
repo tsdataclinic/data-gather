@@ -24,26 +24,26 @@ function EntryCard(
   { entry, onEntryChange }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
-  const [selectedBase, SetSelectedBase] = React.useState<string>(
+  const [selectedBase, setSelectedBase] = React.useState<string>(
     entry.responseTypeOptions.selectedBase ?? '',
   );
-  const [selectedTable, SetSelectedTable] = React.useState<string>(
+  const [selectedTable, setSelectedTable] = React.useState<string>(
     entry.responseTypeOptions.selectedTable ?? '',
   );
-  const [selectedField, SetSelectedField] = React.useState<string[]>(
+  const [selectedField, setSelectedField] = React.useState<string[]>(
     entry.responseTypeOptions.selectedFields ?? [],
   );
   const interviewStore = useInterviewStore();
   const { airtableSettings: hardCodedSettings } = useAppState();
   const { bases } = hardCodedSettings;
-  const [availableTables, SetAvailableTables] = React.useState<
-    Array<{
+  const [availableTables, setAvailableTables] = React.useState<
+    ReadonlyArray<{
       displayValue: string;
       value: string;
     }>
   >([]);
-  const [availableFields, SetAvailableFields] = React.useState<
-    Array<{
+  const [availableFields, setAvailableFields] = React.useState<
+    ReadonlyArray<{
       displayValue: string;
       value: string;
     }>
@@ -58,10 +58,10 @@ function EntryCard(
           value: t.key,
         }));
       if (output) {
-        SetAvailableTables(output);
+        setAvailableTables(output);
       }
     } else {
-      SetAvailableTables([]);
+      setAvailableTables([]);
     }
   }, [bases, selectedBase]);
 
@@ -75,10 +75,10 @@ function EntryCard(
           value: f.fieldName,
         }));
       if (output) {
-        SetAvailableFields(output);
+        setAvailableFields(output);
       }
     } else {
-      SetAvailableFields([]);
+      setAvailableFields([]);
     }
   }, [bases, selectedBase, selectedTable]);
 
@@ -164,7 +164,7 @@ function EntryCard(
                 name="airtableBase"
                 value={selectedBase}
                 onChange={(newVal: string) => {
-                  SetSelectedBase(newVal);
+                  setSelectedBase(newVal);
                   onEntryChange({
                     ...entry,
                     responseTypeOptions: {
@@ -185,7 +185,7 @@ function EntryCard(
                   placeholder="Airtable table"
                   value={selectedTable}
                   onChange={(newVal: string) => {
-                    SetSelectedTable(newVal);
+                    setSelectedTable(newVal);
                     onEntryChange({
                       ...entry,
                       responseTypeOptions: {
@@ -201,7 +201,7 @@ function EntryCard(
                 <MultiSelect
                   ariaLabel="Airtable field"
                   onChange={(newVals: string[]) => {
-                    SetSelectedField(newVals);
+                    setSelectedField(newVals);
                     onEntryChange({
                       ...entry,
                       responseTypeOptions: {

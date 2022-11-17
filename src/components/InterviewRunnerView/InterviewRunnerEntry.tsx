@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react';
 import Form from '../ui/Form';
 import InputText from '../ui/InputText';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import assertUnreachable from '../../util/assertUnreachable';
 import useAirtableQuery from '../../hooks/useAirtableQuery';
 import LabelWrapper from '../ui/LabelWrapper';
+import { useDebouncedState } from '../../hooks/useDebouncedState';
 
 type Props = {
   entry: InterviewScreenEntry.T;
 };
 
-const AIRTABLE_QUERY_DELAY = 500;
+const AIRTABLE_QUERY_DELAY_MS = 500;
 
 /**
  * A single entry in an interview screen in the runner (e.g. a form input, or radio group).
@@ -20,19 +20,13 @@ const AIRTABLE_QUERY_DELAY = 500;
  */
 
 export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
-  const [airtableQuery, setAirtableQuery] = useState('');
-  const [debouncedAirtableQuery, setDebouncedAirtableQuery] = useState('');
-  useEffect(() => {
-    const trackDelay = setTimeout(() => {
-      setDebouncedAirtableQuery(airtableQuery);
-    }, AIRTABLE_QUERY_DELAY);
+  const [airtableQuery, setAirtableQuery] = useDebouncedState<string>(
+    '',
+    AIRTABLE_QUERY_DELAY_MS,
+  );
 
-    return () => {
-      clearTimeout(trackDelay);
-    };
-  }, [airtableQuery]);
   const { isError, isLoading, isSuccess, responseData } = useAirtableQuery(
-    debouncedAirtableQuery,
+    airtableQuery,
     entry.responseTypeOptions,
   );
 
@@ -81,12 +75,12 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           <LabelWrapper label="Search for record">
             <InputText onChange={(val: string) => setAirtableQuery(val)} />
           </LabelWrapper>
-          {isLoading && <div>Loading Airtable records...</div>}
+          {isLoading && <p>Loading Airtable records...</p>}
           {isError && (
-            <div>
+            <p>
               There was an error loading matching Airtable records. Please try
               again.
-            </div>
+            </p>
           )}
           {isSuccess &&
             typeof responseData !== 'string' &&
@@ -108,7 +102,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
             )}
           {isSuccess &&
             typeof responseData !== 'string' &&
-            responseData.length < 1 && <div>No matches found</div>}
+            responseData.length < 1 && <p>No matches found</p>}
         </div>
       );
     case InterviewScreenEntry.ResponseType.PhoneNumber:
