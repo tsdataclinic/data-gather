@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+from typing import Optional
 
 import uuid
 
@@ -20,7 +20,7 @@ class Interview(APIModel, table=True):
     notes: str
 
     # relationships
-    screens: List["InterviewScreen"] = Relationship(back_populates="interview")
+    screens: list["InterviewScreen"] = Relationship(back_populates="interview")
 
 # class PublishedInterview(APIModel, table=True):
 #     __tablename__: str = "published_interview"
@@ -37,20 +37,16 @@ class InterviewScreen(OrderedModel, table=True):
     __tablename__: str = "interview_screen"
     order: int = 0
     header_text: str
-<<<<<<< HEAD
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4, primary_key=True, nullable=False
     )
-=======
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
->>>>>>> Adds screen create endpoint (#96)
     interview_id: str = Field(foreign_key="interview.id")
     title: str
     starting_state_order: int = 0
 
     # relationships
-    actions: List["ConditionalAction"] = Relationship(back_populates="screen")
-    entries: List["InterviewScreenEntry"] = Relationship(back_populates="screen")
+    actions: list["ConditionalAction"] = Relationship(back_populates="screen")
+    entries: list["InterviewScreenEntry"] = Relationship(back_populates="screen")
     interview: Interview = Relationship(back_populates="screens")
 
 

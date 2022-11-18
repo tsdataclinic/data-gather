@@ -175,7 +175,10 @@ def generate_fake_entries(
             "text": "sometext",
         },
     ]
+<<<<<<< HEAD
 
+=======
+>>>>>>> Adding update screen endpoint (#98)
 
 def initialize_dev_db(file_path: str = SQLITE_DB_PATH):
     """Set up the SQLite database"""
@@ -193,6 +196,7 @@ def populate_dev_db(file_path: str = SQLITE_DB_PATH):
     """Populate the dev database with dummy data"""
     LOG.info("Populating DB with dummy data")
     engine = create_fk_constraint_engine(file_path)
+<<<<<<< HEAD
 <<<<<<< HEAD
     interview = models.Interview(**FAKE_INTERVIEW)
     screens = [models.InterviewScreen(**i) for i in FAKE_SCREENS]
@@ -222,3 +226,25 @@ def populate_dev_db(file_path: str = SQLITE_DB_PATH):
     session.add_all(screens)
     session.commit()
 >>>>>>> Adds screen create endpoint (#96)
+=======
+    interview = models.Interview(**FAKE_INTERVIEW)
+    screens = [models.InterviewScreen(**i) for i in FAKE_SCREENS]
+    with Session(autocommit=False, autoflush=False, bind=engine) as session:
+        session.add(interview)
+        session.add_all(screens)
+        # commit changes and refresh so we pull in ID's assigned to screens
+        session.commit()
+
+        for i in screens[0:2]:
+            session.refresh(i)
+        actions = [
+            models.ConditionalAction(**i) for i in generate_fake_actions(*screens[0:2])
+        ]
+        entries = [
+            models.InterviewScreenEntry(**i)
+            for i in generate_fake_entries(*screens[0:2])
+        ]
+        session.add_all(actions)
+        session.add_all(entries)
+        session.commit()
+>>>>>>> Adding update screen endpoint (#98)
