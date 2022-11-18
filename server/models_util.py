@@ -1,15 +1,8 @@
 import importlib
 import re
 from inspect import isclass
-from typing import (
-    Optional,
-    Type,
-    TypeVar,
-    Union,
-    get_args,
-    get_origin,
-    get_type_hints,
-)
+from typing import (Optional, Type, TypeVar, Union, cast, get_args, get_origin,
+                    get_type_hints)
 
 from pydantic import BaseModel, create_model
 from sqlalchemy.orm import RelationshipProperty
@@ -55,12 +48,13 @@ def _get_model_class_from_type_hint(class_type: Union[str, TypeVar]):
         return None
 
 
-MODELS_DIRECTORY = {}
+MODEL_CLASSES_CACHE = {}
 
 
-def prepare_relationships(
-    Cls: Type[BaseModel], relationships: Optional[list[str]] = None
-) -> Type[BaseModel]:
+T = TypeVar("T", bound=Type[BaseModel])
+
+
+def prepare_relationships(Cls: T, relationships: Optional[list[str]] = None) -> T:
     """This function lets you include a model's relationships in the
     response_model to a FastAPI route. By default, this function will remove
     all relationships from a model and then only include the ones you specify
@@ -91,8 +85,8 @@ def prepare_relationships(
         new_model_name = f"{Cls.__name__}With{relationships_suffix}"
     else:
         new_model_name = f"{Cls.__name__}Base"
-    if new_model_name in MODELS_DIRECTORY:
-        return MODELS_DIRECTORY[new_model_name]
+    if new_model_name in MODEL_CLASSES_CACHE:
+        return MODEL_CLASSES_CACHE[new_model_name]
 
     were_relationships_mutated = False
     python_type_hints = get_type_hints(Cls)
@@ -135,5 +129,5 @@ def prepare_relationships(
         return Cls
 
     NewCls = create_model(new_model_name, __base__=APIModel, **model_attrs)
-    MODELS_DIRECTORY[new_model_name] = NewCls
-    return NewCls
+    MODEL_CLASSES_CACHE[new_model_name] = NewCls
+    return cast(T, NewCls)
