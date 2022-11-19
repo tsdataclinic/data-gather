@@ -71,7 +71,7 @@ def get_interviews() -> list[Interview]:
 
 
 @app.get(
-    "/api/interviewScreens/{screen_id}",
+    "/api/interview_screens/{screen_id}",
     response_model=prepare_relationships(InterviewScreen, ["actions", "entries"]),
     tags=["InterviewScreens"],
 )
@@ -85,7 +85,7 @@ def get_interview_screen(screen_id: str) -> InterviewScreen:
 
 
 @app.post(
-    "/api/interviewScreens/",
+    "/api/interview_screens/",
     response_model=InterviewScreen,
     tags=["InterviewScreens"],
 )
@@ -126,7 +126,7 @@ InterviewScreenWithActionsAndEntries = NewType(
 
 
 @app.put(
-    "/api/interviewScreens/{screen_id}",
+    "/api/interview_screens/{screen_id}",
     response_model=InterviewScreenWithActionsAndEntries,
     tags=["InterviewScreens"],
 )
