@@ -1,11 +1,11 @@
 import copy
 import logging
-from typing import Iterable, Literal, NewType
+from typing import Iterable, Literal, NewType, TypeVar
 
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from sqlmodel import Session, SQLModel
+from sqlmodel import Session, SQLModel, select
 
 from server.api.exceptions import InvalidOrder
 from server.engine import create_fk_constraint_engine
@@ -66,6 +66,35 @@ def get_interview(interview_id: str, db: Session = Depends(get_db)) -> Interview
     if not interview:
         raise HTTPException(status_code=404, detail="Interview not found")
     return interview
+
+
+@app.get(
+    "/api/interviews/{interview_id}",
+    response_model=Interview,
+    tags=["Interviews"],
+)
+def update_interview(interview_id: str, interview: Interview) -> Interview:
+    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
+    with Session(autocommit=False, autoflush=False, bind=engine) as session:
+        try:
+            db_interview = session.exec(
+                select(Interview).where(Interview.id == interview_id)
+            ).one()
+        except NoResultFound:
+            raise HTTPException(
+                status_code=404, detail=f"Interview with id {interview_id} not found"
+            )
+
+        # now update the db_interview
+        _update_model_diff(db_interview, interview)
+        session.add(db_interview)
+
+        try:
+            session.commit()
+        except IntegrityError as e:
+            raise HTTPException(status_code=400, detail=str(e.orig))
+
+        return db_interview
 
 
 @app.get(
@@ -266,9 +295,11 @@ def update_interview_screen(
 ) -> InterviewScreen:
     request_screen = _cast_relationship_orm_types(screen)
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    with Session(autocommit=False, autoflush=False, bind=engine) as session:
+    with Session(
+        autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
+    ) as session:
         try:
-            db_screen = (
+            db_screen: InterviewScreen = (
                 session.query(InterviewScreen)
                 .where(InterviewScreen.id == screen_id)
                 .one()
@@ -282,25 +313,28 @@ def update_interview_screen(
         _validate_sequential_order(screen.entries)
 
         # update the InterviewScreen relationships (actions and entries)
-        _update_db_screen_relationships(
-            session,
-            db_screen,
-            request_screen,
-            "actions",
+        actions_to_set, actions_to_delete = _update_db_screen_relationships(
+            db_screen.actions,
+            request_screen.actions,
         )
-        _update_db_screen_relationships(
-            session,
-            db_screen,
-            request_screen,
-            "entries",
+        entries_to_set, entries_to_delete = _update_db_screen_relationships(
+            db_screen.entries,
+            request_screen.entries,
         )
+
+        # set the updated relationships
+        db_screen.actions = actions_to_set
+        db_screen.entries = entries_to_set
 
         # update the top-level InterviewScreen model values
         _update_model_diff(
             db_screen, request_screen.copy(exclude={"actions", "entries"})
         )
 
+        # now apply all changes to the session
         session.add(db_screen)
+        for model in actions_to_delete + entries_to_delete:
+            session.delete(model)
 
         LOG.info(f"Making changes to screen:")
         LOG.info(f"Additions {session.new}")
@@ -311,7 +345,7 @@ def update_interview_screen(
             session.commit()
         except IntegrityError as e:
             raise HTTPException(status_code=400, detail=str(e.orig))
-        return screen
+        return db_screen
 
 
 def _update_model_diff(existing_model: SQLModel, new_model: SQLModel):
@@ -336,51 +370,53 @@ def _cast_relationship_orm_types(request_screen: InterviewScreen):
     return casted_screen
 
 
+TScreenChild = TypeVar("TScreenChild", ConditionalAction, InterviewScreenEntry)
+
+
 def _update_db_screen_relationships(
-    session: Session,
-    db_screen: InterviewScreen,
-    request_screen: InterviewScreen,
-    relationship_type: Literal["actions", "entries"],
-):
+    db_models: list[TScreenChild],
+    request_models: list[TScreenChild],
+) -> tuple[list[TScreenChild], list[TScreenChild]]:
     """
     Handle all necessary adds, deletes and updates to the DB session
     for the given screens and relationship.
 
     Args:
-        session: DB session
-        db_screen: The InterviewScreen as read from the DB
-        request_screen: The InterviewScreen sent in the request body
-        relationship_type: The screen relationship to target for updates
+        db_models: The list of ConditionalAction or InterviewScreenEntry
+            models from the db
+        request_models: The list of ConditionalAction or InterviewScreenEntry
+            models sent in the request body
 
+    Returns:
+        A tuple of: list of models to set and list of models to delete
     """
-    id_key = "id" if relationship_type == "actions" else "response_key"
-
     # create map of id to request_model (i.e. the models not in the db)
-    request_models: dict[str, SQLModel] = {
-        getattr(model, id_key): model
-        for model in getattr(request_screen, relationship_type)
+    request_models_dict: dict[str, SQLModel] = {
+        model.getId(): model for model in request_models
     }
+    db_model_ids = set(db_model.getId() for db_model in db_models)
 
-    db_model_ids = set()
+    models_to_set = []
+    models_to_delete = []
+    for db_model in db_models:
+        request_model = request_models_dict.get(db_model.getId())
 
-    for db_model in getattr(db_screen, relationship_type):
-        db_model_id = getattr(db_model, id_key)
-        db_model_ids.add(db_model_id)
-
-        if db_model_id in request_models:
-            # if the db model is one of our request models, then we should
-            # update it
-            request_model = request_models[db_model_id]
-            _update_model_diff(db_model, request_model)
+        if request_model:
+            # if the db_model id matched one of our request models, then we
+            # update the db_model with the request_model data
+            models_to_set.append(_update_model_diff(db_model, request_model))
         else:
             # otherwise, delete the db model because it should no longer
-            # exist (it wasn't in our request_models)
-            session.delete(db_model)
+            # exist (it wasn't in our request_models_dict)
+            models_to_delete.append(db_model)
 
-    # all models in request_models that *aren't* in the db should now get added
-    for id, request_model in request_models.items():
+    # all models in request_models_dict that *aren't* in the db should now
+    # get added as is
+    for id, request_model in request_models_dict.items():
         if id not in db_model_ids:
-            session.add(request_model)
+            models_to_set.append(request_model)
+
+    return (models_to_set, models_to_delete)
 
 
 def _validate_sequential_order(request_models: Iterable[OrderedModel]):
