@@ -1,7 +1,6 @@
 import logging
-from typing import Optional
-
 import uuid
+from typing import Optional
 
 from sqlmodel import Field, Relationship
 

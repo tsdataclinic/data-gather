@@ -1,8 +1,16 @@
 import importlib
 import re
 from inspect import isclass
-from typing import (Optional, Type, TypeVar, Union, cast, get_args, get_origin,
-                    get_type_hints)
+from typing import (
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from pydantic import BaseModel, create_model
 from sqlalchemy.orm import RelationshipProperty
@@ -19,6 +27,9 @@ def snake_to_camel(snake_str: str) -> str:
     # make the first character lowercase
     camel = re.sub("(^_*[A-Z])", lambda m: m.group(1).lower(), camel)
     return camel
+
+
+TSQLModel = TypeVar("TSQLModel", bound=Type[SQLModel])
 
 
 class APIModel(SQLModel):
@@ -51,10 +62,9 @@ def _get_model_class_from_type_hint(class_type: Union[str, TypeVar]):
 MODEL_CLASSES_CACHE = {}
 
 
-T = TypeVar("T", bound=Type[BaseModel])
-
-
-def prepare_relationships(Cls: T, relationships: Optional[list[str]] = None) -> T:
+def prepare_relationships(
+    Cls: TSQLModel, relationships: Optional[list[str]] = None
+) -> TSQLModel:
     """This function lets you include a model's relationships in the
     response_model to a FastAPI route. By default, this function will remove
     all relationships from a model and then only include the ones you specify
@@ -105,7 +115,7 @@ def prepare_relationships(Cls: T, relationships: Optional[list[str]] = None) -> 
             else:
                 # this is a RelationshipProperty so we're either going to
                 # exclude it entirely or we're going to clean it up if its
-                # in our `relationships` dict
+                # in our `relationships` list
                 were_relationships_mutated = True
                 if relationships and attr in relationships:
                     # we now have to go into the related class and remove any
@@ -128,6 +138,10 @@ def prepare_relationships(Cls: T, relationships: Optional[list[str]] = None) -> 
         # original class
         return Cls
 
-    NewCls = create_model(new_model_name, __base__=APIModel, **model_attrs)
+    NewCls = create_model(
+        new_model_name,
+        __base__=APIModel,
+        **model_attrs,
+    )
     MODEL_CLASSES_CACHE[new_model_name] = NewCls
-    return cast(T, NewCls)
+    return cast(TSQLModel, NewCls)
