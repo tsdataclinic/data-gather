@@ -2,7 +2,7 @@ import logging
 import uuid
 from typing import Optional
 
-from sqlmodel import Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
 
 from server.models_util import APIModel
 
@@ -55,6 +55,9 @@ class InterviewScreenEntry(OrderedModel, table=True):
     # relationships
     screen: InterviewScreen = Relationship(back_populates="entries")
 
+    def getId(self):
+        return self.response_key
+
 
 class ConditionalAction(OrderedModel, table=True):
     __tablename__: str = "conditional_action"
@@ -68,3 +71,6 @@ class ConditionalAction(OrderedModel, table=True):
 
     # relationships
     screen: InterviewScreen = Relationship(back_populates="actions")
+
+    def getId(self):
+        return self.id
