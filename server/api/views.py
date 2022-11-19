@@ -58,14 +58,16 @@ def get_interview(interview_id: str) -> Interview:
     return interview
 
 
-@app.get(
+@app.put(
     "/api/interviews/{interview_id}",
     response_model=Interview,
     tags=["Interviews"],
 )
 def update_interview(interview_id: str, interview: Interview) -> Interview:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    with Session(autocommit=False, autoflush=False, bind=engine) as session:
+    with Session(
+        autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
+    ) as session:
         try:
             db_interview = session.exec(
                 select(Interview).where(Interview.id == interview_id)
