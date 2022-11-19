@@ -293,6 +293,11 @@ def update_interview_screen(
     screen_id: str,
     screen: InterviewScreenWithActionsAndEntries,
 ) -> InterviewScreen:
+    """
+    Update an Interview Screen. This API function updates the values
+    of an InterviewScreen as well as its nested Conditional Actions
+    and Entries.
+    """
     request_screen = _cast_relationship_orm_types(screen)
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     with Session(
@@ -378,8 +383,9 @@ def _update_db_screen_relationships(
     request_models: list[TScreenChild],
 ) -> tuple[list[TScreenChild], list[TScreenChild]]:
     """
-    Handle all necessary adds, deletes and updates to the DB session
-    for the given screens and relationship.
+    Given two list of models, diff them to come up with the list of
+    the list of models to set in the db (which includes the models to
+    update and the models to add) and the list of models to delete.
 
     Args:
         db_models: The list of ConditionalAction or InterviewScreenEntry
