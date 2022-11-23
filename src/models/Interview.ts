@@ -124,7 +124,7 @@ export function updateNotes(interview: Interview, notes: string): Interview {
 export function deserialize(rawObj: SerializedInterview): Interview {
   return {
     ...rawObj,
-    createdDate: DateTime.fromMillis(rawObj.createdDate),
+    createdDate: DateTime.fromISO(rawObj.createdDate),
   };
 }
 
