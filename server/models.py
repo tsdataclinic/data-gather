@@ -77,22 +77,22 @@ class ConditionalOperator(str, enum.Enum):
     """The different types of conditional operator that can be used for a
     ConditionalAction"""
 
-    always_execute = "ALWAYS_EXECUTE"
-    equals = "eq"
-    greater_than = "gt"
-    greater_than_or_equal = "gte"
-    less_than = "lt"
-    less_than_or_equal = "lte"
+    ALWAYS_EXECUTE = "ALWAYS_EXECUTE"
+    EQUALS = "eq"
+    GREATER_THAN = "gt"
+    GREATER_THAN_OR_EQUAL = "gte"
+    LESS_THAN = "lt"
+    LESS_THAN_OR_EQUAL = "lte"
 
 
 class ActionType(str, enum.Enum):
     """The different action types a ConditionalAction can be"""
 
-    checkpoint = "checkpoint"
-    milestone = "milestone"
-    push = "push"
-    restore = "restore"
-    skip = "skip"
+    CHECKPOINT = "checkpoint"
+    MILESTONE = "milestone"
+    PUSH = "push"
+    RESTORE = "restore"
+    SKIP = "skip"
 
 
 class ConditionalAction(OrderedModel, table=True):
