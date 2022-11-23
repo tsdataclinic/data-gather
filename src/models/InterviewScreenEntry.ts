@@ -44,7 +44,6 @@ export function create(
   values: Omit<InterviewScreenEntry, 'id' | 'responseKey'>,
 ): InterviewScreenEntry {
   return {
-    id: uuidv4(),
     name: values.name,
     prompt: values.prompt,
     responseKey: uuidv4(),
