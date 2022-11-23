@@ -1,8 +1,12 @@
+import enum
 import logging
 import uuid
+from datetime import datetime
 from typing import Optional
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import Column, DateTime
+from sqlalchemy.sql import func
+from sqlmodel import Enum, Field, Relationship
 
 from server.models_util import APIModel
 
@@ -11,8 +15,12 @@ logging.basicConfig(level=logging.INFO)
 
 
 class Interview(APIModel, table=True):
+    """This model represents an Interview's metadata"""
+
     __tablename__: str = "interview"
-    created_date: str
+    created_date: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=func.now())
+    )
     description: str
     id: str = Field(primary_key=True)
     name: str
@@ -59,10 +67,35 @@ class InterviewScreenEntry(OrderedModel, table=True):
         return self.response_key
 
 
+class ConditionalOperator(str, enum.Enum):
+    """The different types of conditional operator that can be used for a
+    ConditionalAction"""
+
+    always_execute = "ALWAYS_EXECUTE"
+    equals = "eq"
+    greater_than = "gt"
+    greater_than_or_equal = "gte"
+    less_than = "lt"
+    less_than_or_equal = "lte"
+
+
+class ActionType(str, enum.Enum):
+    """The different action types a ConditionalAction can be"""
+
+    checkpoint = "checkpoint"
+    milestone = "milestone"
+    push = "push"
+    restore = "restore"
+    skip = "skip"
+
+
 class ConditionalAction(OrderedModel, table=True):
     __tablename__: str = "conditional_action"
     action_payload: str
-    action_type: str
+    action_type: ActionType = Field(sa_column=Column(Enum(ActionType)))
+    conditional_operator: ConditionalOperator = Field(
+        sa_column=Column(Enum(ConditionalOperator))
+    )
     id: str = Field(primary_key=True)
     order: int
     response_key: str
