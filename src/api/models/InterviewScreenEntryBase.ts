@@ -18,3 +18,4 @@ export type InterviewScreenEntryBase = {
   responseType: ResponseType;
   text: string;
 };
+

@@ -71,9 +71,7 @@ class ResponseType(str, enum.Enum):
 
 class InterviewScreenEntry(OrderedModel, table=True):
     __tablename__: str = "interview_screen_entry"
-    id: Optional[uuid.UUID] = Field(
-        default_factory=uuid.uuid4, primary_key=True, nullable=False
-    )
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str
     prompt: str
     response_key: str
