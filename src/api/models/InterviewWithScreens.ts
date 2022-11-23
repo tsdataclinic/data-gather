@@ -10,9 +10,9 @@ import type { InterviewScreenBase } from './InterviewScreenBase';
  */
 export type InterviewWithScreens = {
   screens: Array<InterviewScreenBase>;
+  id: string;
   createdDate: string;
   description: string;
-  id: string;
   name: string;
   notes: string;
 };

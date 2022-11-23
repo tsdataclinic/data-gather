@@ -1,6 +1,7 @@
 import copy
 import logging
-from typing import Iterable, Literal, NewType, TypeVar
+import uuid
+from typing import Iterable, NewType, Optional, TypeVar
 
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -399,15 +400,15 @@ def _update_db_screen_relationships(
         A tuple of: list of models to set and list of models to delete
     """
     # create map of id to request_model (i.e. the models not in the db)
-    request_models_dict: dict[str, SQLModel] = {
-        model.getId(): model for model in request_models
+    request_models_dict: dict[Optional[uuid.UUID], SQLModel] = {
+        model.id: model for model in request_models
     }
-    db_model_ids = set(db_model.getId() for db_model in db_models)
+    db_model_ids = set(db_model.id for db_model in db_models)
 
     models_to_set = []
     models_to_delete = []
     for db_model in db_models:
-        request_model = request_models_dict.get(db_model.getId())
+        request_model = request_models_dict.get(db_model.id)
 
         if request_model:
             # if the db_model id matched one of our request models, then we

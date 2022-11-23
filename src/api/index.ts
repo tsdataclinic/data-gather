@@ -19,6 +19,7 @@ export type { InterviewScreenBase } from './models/InterviewScreenBase';
 export type { InterviewScreenEntryBase } from './models/InterviewScreenEntryBase';
 export type { InterviewScreenWithActionsAndEntries } from './models/InterviewScreenWithActionsAndEntries';
 export type { InterviewWithScreens } from './models/InterviewWithScreens';
+export { ResponseType } from './models/ResponseType';
 export type { ValidationError } from './models/ValidationError';
 
 export { DefaultFastAPIService } from './services/DefaultFastAPIService';

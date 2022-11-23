@@ -18,11 +18,14 @@ class Interview(APIModel, table=True):
     """This model represents an Interview's metadata"""
 
     __tablename__: str = "interview"
-    created_date: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), server_default=func.now())
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4, primary_key=True, nullable=False
+    )
+    created_date: Optional[datetime] = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+        nullable=False,
     )
     description: str
-    id: str = Field(primary_key=True)
     name: str
     notes: str
 
@@ -42,12 +45,12 @@ class OrderedModel(APIModel):
 
 class InterviewScreen(OrderedModel, table=True):
     __tablename__: str = "interview_screen"
-    order: int = 0
-    header_text: str
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4, primary_key=True, nullable=False
     )
-    interview_id: str = Field(foreign_key="interview.id")
+    order: int = 0
+    header_text: str
+    interview_id: uuid.UUID = Field(foreign_key="interview.id")
     title: str
     starting_state_order: int = 0
 
@@ -57,20 +60,29 @@ class InterviewScreen(OrderedModel, table=True):
     interview: Interview = Relationship(back_populates="screens")
 
 
+class ResponseType(str, enum.Enum):
+    """The different types of responses that can be used in a screen entry"""
+
+    BOOLEAN = "boolean"
+    EMAIL = "email"
+    NUMBER = "number"
+    TEXT = "text"
+
+
 class InterviewScreenEntry(OrderedModel, table=True):
     __tablename__: str = "interview_screen_entry"
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4, primary_key=True, nullable=False
+    )
     name: str
     prompt: str
-    response_key: str = Field(primary_key=True)
+    response_key: str
     screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
-    response_type: str
+    response_type: ResponseType = Field(sa_column=Column(Enum(ResponseType)))
     text: str
 
     # relationships
     screen: InterviewScreen = Relationship(back_populates="entries")
-
-    def getId(self):
-        return self.response_key
 
 
 class ConditionalOperator(str, enum.Enum):
@@ -96,13 +108,15 @@ class ActionType(str, enum.Enum):
 
 
 class ConditionalAction(OrderedModel, table=True):
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4, primary_key=True, nullable=False
+    )
     __tablename__: str = "conditional_action"
     action_payload: str
     action_type: ActionType = Field(sa_column=Column(Enum(ActionType)))
     conditional_operator: ConditionalOperator = Field(
         sa_column=Column(Enum(ConditionalOperator))
     )
-    id: str = Field(primary_key=True)
     order: int
     response_key: str
     screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
@@ -110,6 +124,3 @@ class ConditionalAction(OrderedModel, table=True):
 
     # relationships
     screen: InterviewScreen = Relationship(back_populates="actions")
-
-    def getId(self):
-        return self.id
