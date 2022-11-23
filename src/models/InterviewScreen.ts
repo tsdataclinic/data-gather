@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as InterviewScreenEntry from './InterviewScreenEntry';
 import * as ConditionalAction from './ConditionalAction';
+import { InterviewScreenWithActionsAndEntries as SerializedInterviewScreen } from '../api/models/InterviewScreenWithActionsAndEntries';
 
 /**
  * A group of entries, corresponding to a particular state in the interview.
@@ -12,10 +13,10 @@ interface InterviewScreen {
    * The actions executed after the page is complete.
    * Represented by an array of action types.
    */
-  readonly actions: readonly string[];
+  readonly actions: readonly ConditionalAction.T[];
 
   /** The entries on this page. Represented by an array of entry ids. */
-  readonly entries: readonly string[];
+  readonly entries: readonly InterviewScreenEntry.T[];
 
   /** Description text for the page */
   readonly headerText: string;
@@ -46,21 +47,6 @@ interface InterviewScreen {
 
   /** Title of the page */
   readonly title: string;
-}
-
-/**
- * This is the serialized type as it is stored on the backend.
- */
-interface SerializedInterviewScreen {
-  actions: string[];
-  entries: string[];
-  headerText: string;
-  id: string;
-  interviewId: string;
-  isInStartingState: boolean;
-  order: number;
-  startingStateOrder: number | null;
-  title: string;
 }
 
 /**

@@ -64,4 +64,29 @@ export class InterviewsFastAPIService {
     });
   }
 
+  /**
+   * Update Interview
+   * @param interviewId
+   * @param requestBody
+   * @returns Interview Successful Response
+   * @throws ApiError
+   */
+  public updateInterviewApiInterviewsInterviewIdPut(
+    interviewId: string,
+    requestBody: Interview,
+  ): CancelablePromise<Interview> {
+    return this.httpRequest.request({
+      method: 'PUT',
+      url: '/api/interviews/{interview_id}',
+      path: {
+        'interview_id': interviewId,
+      },
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
 }

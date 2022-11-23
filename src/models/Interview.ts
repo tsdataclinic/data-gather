@@ -4,7 +4,7 @@ import * as InterviewScreen from './InterviewScreen';
 import { Interview as SerializedInterview } from '../api/models/Interview';
 
 /**
- * Represents all the data associated with interview flow.
+ * Represents all the metadata data for an interview.
  *
  * This is the serialized type as it is used on the frontend.
  */
@@ -14,12 +14,6 @@ interface Interview {
   readonly id: string;
   readonly name: string;
   readonly notes: string;
-
-  /** Array of screen ids */
-  readonly screens: readonly string[];
-
-  /** Array of starting screen ids */
-  readonly startingState: readonly string[];
 }
 
 /**
@@ -43,8 +37,6 @@ export function create(values: {
     id: uuidv4(),
     name: values.name,
     notes: '',
-    screens: [],
-    startingState: [],
   };
 }
 
@@ -134,9 +126,7 @@ export function deserialize(rawObj: SerializedInterview): Interview {
 export function serialize(interview: Interview): SerializedInterview {
   return {
     ...interview,
-    createdDate: interview.createdDate.toMillis(),
-    screens: [...interview.screens],
-    startingState: [...interview.startingState],
+    createdDate: interview.createdDate.toISO(),
   };
 }
 

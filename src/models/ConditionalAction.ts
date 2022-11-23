@@ -5,10 +5,7 @@ import assertUnreachable from '../util/assertUnreachable';
 import nullsToUndefined from '../util/nullsToUndefined';
 import { ActionType } from '../api/models/ActionType';
 import { ConditionalOperator } from '../api/models/ConditionalOperator';
-import { SerializedConditionalActionRead } from '../api/models/SerializedConditionalActionRead';
-import { SerializedConditionalActionCreate } from '../api/models/SerializedConditionalActionCreate';
-
-const PUSH_ACTION_DELIMITER = ';';
+import { ConditionalActionBase as SerializedConditionalAction } from '../api/models/ConditionalActionBase';
 
 /**
  * An array of all all conditional operators. Useful for populating a list of
@@ -70,60 +67,27 @@ interface ConditionalAction {
   /**
    * The key within the response data which maps to the datum being compared.
    */
-  readonly responseKey?: string;
+  readonly responseKey: string | undefined;
 
   /** The screen that this action belongs to */
   readonly screenId: string;
 
   /** The value to compare the response datum to. */
-  readonly value?: string;
+  readonly value: string | undefined;
 }
-
-<<<<<<< HEAD
-type ConditionalActionCreate = Omit<ConditionalAction, 'id'> & {
-  /**
-   * A temp id used only for identification purposes in the frontend (e.g.
-   * for React keys)
-   */
-  tempId: string;
-};
-=======
-/**
- * This is the serialized type as it is stored on the backend.
- * A serialized ConditionalAction can be represented by just its type
- * ('push', 'skip', etc.)
- */
-interface SerializedConditionalAction extends Indexable {
-  actionPayload: string | string[] | ResponseData;
-  actionType: ActionType;
-  conditionalOperator: ConditionalOperator;
-  id: string;
-  order: number;
-  responseKey: string | null;
-  screenId: string;
-  value: string | null;
-}
->>>>>>> Fixed sqlalchemy models
 
 export function create(vals: {
   order: number;
   screenId: string;
-<<<<<<< HEAD
-}): ConditionalActionCreate {
-=======
 }): ConditionalAction {
->>>>>>> Fixed sqlalchemy models
   return {
     actionConfig: { payload: [], type: ActionType.PUSH },
     conditionalOperator: ConditionalOperator.ALWAYS_EXECUTE,
+    id: uuidv4(),
     responseKey: undefined,
     screenId: vals.screenId,
     value: undefined,
     order: vals.order,
-<<<<<<< HEAD
-    tempId: uuidv4(),
-=======
->>>>>>> Fixed sqlalchemy models
   };
 }
 
@@ -136,14 +100,20 @@ function isObject(maybeObj: unknown): maybeObj is Record<string, unknown> {
   );
 }
 
+// Helper predicate function to check if something is a string array
+function isStringArray(maybeArr: unknown): maybeArr is string[] {
+  return (
+    Array.isArray(maybeArr) &&
+    (maybeArr.length === 0 || typeof maybeArr[0] === 'string')
+  );
+}
+
 /**
  * Validate if a conditional action is valid to be saved.
  * @returns {[boolean, string]} A tuple of whether or not validation passed,
  * and an error string if validation did not pass.
  */
-export function validate(
-  action: ConditionalAction | ConditionalActionCreate,
-): [boolean, string] {
+export function validate(action: ConditionalAction): [boolean, string] {
   // if we're **not** using the ALWAYS_EXECUTE operator then don't allow an
   // empty `responseKey` or an empty `value`
   if (action.conditionalOperator !== ConditionalOperator.ALWAYS_EXECUTE) {
@@ -176,16 +146,20 @@ export function validate(
  * the correct values. Otherwise, it means something went wrong during storage.
  */
 export function deserialize(
-  rawObj: SerializedConditionalActionRead,
+  rawObj: SerializedConditionalAction,
 ): ConditionalAction {
   const { actionPayload, actionType, ...condition } = nullsToUndefined(rawObj);
 
   switch (actionType) {
     case ActionType.PUSH:
+      invariant(
+        isStringArray(actionPayload),
+        `[ConditionalAction] Deserialization error. 'actionPayload' must be an array of strings.`,
+      );
       return {
         ...condition,
         actionConfig: {
-          payload: actionPayload.split(PUSH_ACTION_DELIMITER),
+          payload: actionPayload,
           type: actionType,
         },
       };
@@ -224,7 +198,7 @@ function serializeActionPayload(
   payload: string | readonly string[] | Readonly<ResponseData>,
 ): string {
   if (Array.isArray(payload)) {
-    return payload.join(PUSH_ACTION_DELIMITER);
+    return payload.join(';');
   }
   if (typeof payload === 'object') {
     return JSON.stringify(payload);
@@ -233,28 +207,12 @@ function serializeActionPayload(
 }
 
 export function serialize(
-  action: ConditionalAction,
-): SerializedConditionalActionRead;
-export function serialize(
-  action: ConditionalActionCreate,
-): SerializedConditionalActionCreate;
-export function serialize(
-  action: ConditionalAction | ConditionalActionCreate,
-): SerializedConditionalActionRead | SerializedConditionalActionCreate;
-export function serialize(
-  action: ConditionalAction | ConditionalActionCreate,
-): SerializedConditionalActionRead | SerializedConditionalActionCreate {
+  conditionalAction: ConditionalAction,
+): SerializedConditionalAction {
   // validate the conditional action before serializing to make sure it's safe to store
-  const [isValid, errorMsg] = validate(action);
+  const [isValid, errorMsg] = validate(conditionalAction);
   invariant(isValid, errorMsg);
 
-<<<<<<< HEAD
-  const { actionConfig, ...conditionalAction } = action;
-  return {
-    ...conditionalAction,
-    actionPayload: serializeActionPayload(actionConfig.payload),
-    actionType: actionConfig.type,
-=======
   const {
     actionConfig,
     conditionalOperator,
@@ -264,16 +222,18 @@ export function serialize(
     value,
     order,
   } = conditionalAction;
+  invariant(responseKey, 'A `responseKey` must exist');
+  invariant(value, 'A `value` must exist');
+
   return {
     order,
     id,
     screenId,
-    actionPayload: actionConfig.payload,
+    responseKey,
+    value,
+    actionPayload: serializeActionPayload(actionConfig.payload),
     actionType: actionConfig.type,
     conditionalOperator,
-    responseKey: responseKey ?? null,
-    value: value ?? null,
->>>>>>> Fixed sqlalchemy models
   };
 }
 
@@ -302,6 +262,23 @@ export function actionTypeToDisplayString(
   }
   // capitalize first letter
   return actionType[0].toUpperCase() + actionType.substring(1);
+}
+
+/**
+ * Returns an action corresponding to the given id from a list of action
+ *
+ * @param actionId
+ * @param actions
+ */
+export function getActionById(
+  actionId: string,
+  actions: ConditionalAction[] | undefined,
+): ConditionalAction | undefined {
+  if (actions === undefined) {
+    return undefined;
+  }
+
+  return actions.find(entry => entry.id === actionId);
 }
 
 /**
@@ -334,7 +311,6 @@ export function createDefaultActionConfig(
 }
 
 export type { ConditionalAction as T };
-export type { ConditionalActionCreate as CreateT };
-export type { SerializedConditionalActionRead as SerializedT };
-export { ConditionalOperator };
-export { ActionType };
+export type { SerializedConditionalAction as SerializedT };
+export type { ConditionalOperator };
+export type { ActionType };

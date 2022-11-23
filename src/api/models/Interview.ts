@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * Any models that are returned in our REST API should extend this class
+ * This model represents an Interview's metadata
  */
 export type Interview = {
   createdDate: string;

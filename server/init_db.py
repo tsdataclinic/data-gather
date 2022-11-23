@@ -1,18 +1,18 @@
 import logging
+from datetime import datetime
 
 from sqlalchemy_utils import create_database, database_exists
-from sqlmodel import SQLModel, Session
+from sqlmodel import Session, SQLModel
 
 # import models so that the classes get registered with SQLModel
 from . import models
-from .engine import create_fk_constraint_engine, SQLITE_DB_PATH
-
+from .engine import SQLITE_DB_PATH, create_fk_constraint_engine
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 FAKE_INTERVIEW = {
-    "created_date": "2022-01-01",
+    "created_date": datetime.now(),
     "description": "Super important interview",
     "id": "1234abcd",
     "name": "Interview McInterviewFace",
@@ -45,66 +45,6 @@ FAKE_SCREENS = [
         "title": "Screen3",
         "is_in_starting_state": True,
         "starting_state_order": 2,
-    },
-]
-
-FAKE_ACTIONS = [
-    {
-        "actionPayload": "payload_string",
-        "actionType": "re",
-        "id": "action123",
-        "order": 1,
-        "responseKey": "rkey",
-        "screenId": "{}",
-        "value": "someval",
-    },
-    {
-        "actionPayload": "payload_string",
-        "actionType": "re",
-        "id": "{}",
-        "order": 2,
-        "responseKey": "rkey",
-        "screenId": "5678efgh",
-        "value": "someval",
-    },
-    {
-        "actionPayload": "payload_string",
-        "actionType": "re",
-        "id": "action789",
-        "order": 1,
-        "responseKey": "rkey",
-        "screenId": "{}",
-        "value": "someval",
-    },
-]
-
-FAKE_ENTRIES = [
-    {
-        "name": "somename",
-        "prompt": "hello",
-        "responseKey": "asdf",
-        "screenId": "5678efgh",
-        "order": 1,
-        "responseType": "sometype",
-        "text": "sometext",
-    },
-    {
-        "name": "somename",
-        "prompt": "hello",
-        "responseKey": "ghjk",
-        "screenId": "5678efgh",
-        "order": 2,
-        "responseType": "sometype",
-        "text": "sometext",
-    },
-    {
-        "name": "somename",
-        "prompt": "hello",
-        "responseKey": "qwer",
-        "screenId": "8910ijkl",
-        "order": 1,
-        "responseType": "sometype",
-        "text": "sometext",
     },
 ]
 
@@ -175,10 +115,7 @@ def generate_fake_entries(
             "text": "sometext",
         },
     ]
-<<<<<<< HEAD
 
-=======
->>>>>>> Adding update screen endpoint (#98)
 
 def initialize_dev_db(file_path: str = SQLITE_DB_PATH):
     """Set up the SQLite database"""
@@ -196,8 +133,6 @@ def populate_dev_db(file_path: str = SQLITE_DB_PATH):
     """Populate the dev database with dummy data"""
     LOG.info("Populating DB with dummy data")
     engine = create_fk_constraint_engine(file_path)
-<<<<<<< HEAD
-<<<<<<< HEAD
     interview = models.Interview(**FAKE_INTERVIEW)
     screens = [models.InterviewScreen(**i) for i in FAKE_SCREENS]
     with Session(autocommit=False, autoflush=False, bind=engine) as session:
@@ -218,33 +153,3 @@ def populate_dev_db(file_path: str = SQLITE_DB_PATH):
         session.add_all(actions)
         session.add_all(entries)
         session.commit()
-=======
-    session = Session(autocommit=False, autoflush=False, bind=engine)
-    interview = models.Interview(**FAKE_INTERVIEW)
-    screens = [models.InterviewScreen(**i) for i in FAKE_SCREENS]
-    session.add(interview)
-    session.add_all(screens)
-    session.commit()
->>>>>>> Adds screen create endpoint (#96)
-=======
-    interview = models.Interview(**FAKE_INTERVIEW)
-    screens = [models.InterviewScreen(**i) for i in FAKE_SCREENS]
-    with Session(autocommit=False, autoflush=False, bind=engine) as session:
-        session.add(interview)
-        session.add_all(screens)
-        # commit changes and refresh so we pull in ID's assigned to screens
-        session.commit()
-
-        for i in screens[0:2]:
-            session.refresh(i)
-        actions = [
-            models.ConditionalAction(**i) for i in generate_fake_actions(*screens[0:2])
-        ]
-        entries = [
-            models.InterviewScreenEntry(**i)
-            for i in generate_fake_entries(*screens[0:2])
-        ]
-        session.add_all(actions)
-        session.add_all(entries)
-        session.commit()
->>>>>>> Adding update screen endpoint (#98)
