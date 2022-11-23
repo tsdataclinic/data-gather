@@ -6,9 +6,9 @@
  * This model represents an Interview's metadata
  */
 export type Interview = {
-  createdDate: string;
+  id?: string;
+  createdDate?: string;
   description: string;
-  id: string;
   name: string;
   notes: string;
 };

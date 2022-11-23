@@ -1,12 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import assertUnreachable from '../util/assertUnreachable';
-
-export enum ResponseType {
-  Boolean = 'boolean',
-  Email = 'email',
-  Number = 'number',
-  Text = 'text',
-}
+import { InterviewScreenEntryBase as SerializedInterviewScreenEntry } from '../api/models/InterviewScreenEntryBase';
+import { ResponseType } from '../api/models/ResponseType';
 
 export const RESPONSE_TYPES: readonly ResponseType[] =
   Object.values(ResponseType);
@@ -38,8 +33,6 @@ interface InterviewScreenEntry {
   /** Additional flavor text associated with the question */
   readonly text: string;
 }
-
-type SerializedInterviewScreenEntry = InterviewScreenEntry;
 
 export function deserialize(
   rawObj: SerializedInterviewScreenEntry,
@@ -90,13 +83,13 @@ export function getEntryById(
 
 export function getResponseTypeDisplayName(responseType: ResponseType): string {
   switch (responseType) {
-    case ResponseType.Text:
+    case ResponseType.TEXT:
       return 'Text';
-    case ResponseType.Number:
+    case ResponseType.NUMBER:
       return 'Number';
-    case ResponseType.Boolean:
+    case ResponseType.BOOLEAN:
       return 'Yes/No';
-    case ResponseType.Email:
+    case ResponseType.EMAIL:
       return 'Email';
     default:
       return assertUnreachable(responseType);
@@ -116,8 +109,9 @@ export function responseTypeStringToEnum(
   );
 
   // if we couldn't find a matching enum, set a default
-  return responseTypeEnum ?? ResponseType.Text;
+  return responseTypeEnum ?? ResponseType.TEXT;
 }
 
 export type { InterviewScreenEntry as T };
 export type { SerializedInterviewScreenEntry as SerializedT };
+export type { ResponseType };
