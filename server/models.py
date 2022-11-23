@@ -4,7 +4,6 @@ from typing import List, Optional
 import uuid
 
 from sqlmodel import Field, Relationship
-from sqlalchemy import UniqueConstraint
 
 from server.models_util import APIModel
 
@@ -14,16 +13,20 @@ logging.basicConfig(level=logging.INFO)
 
 class Interview(APIModel, table=True):
     __tablename__: str = "interview"
-    __table_args__ = (UniqueConstraint("name"),)
     created_date: str
     description: str
     id: str = Field(primary_key=True)
     name: str
     notes: str
-    published_url: Field(default=)
 
     # relationships
     screens: List["InterviewScreen"] = Relationship(back_populates="interview")
+
+# class PublishedInterview(APIModel, table=True):
+#     __tablename__: str = "published_interview"
+#     interview_id: str = Field(foreign_key="interview.id")
+#     vanity_url: str
+
 
 
 class OrderedModel(APIModel):

@@ -2,6 +2,7 @@ import os
 from sqlmodel import create_engine
 
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import event
 
 SQLITE_DB_PATH = os.environ.get("DB_PATH", "./db.sqlite")
@@ -18,3 +19,6 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 def create_fk_constraint_engine(file_path: str = SQLITE_DB_PATH):
     return create_engine(f"sqlite:///{file_path}")
+
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=create_fk_constraint_engine())

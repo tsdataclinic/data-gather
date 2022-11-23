@@ -1,7 +1,7 @@
 import copy
 import logging
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, SQLModel
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -15,7 +15,7 @@ from server.models import (
     OrderedModel,
 )
 from server.models_util import prepare_relationships
-from server.engine import create_fk_constraint_engine
+from server.engine import SessionLocal
 
 from server.api.exceptions import InvalidOrder
 
@@ -29,19 +29,28 @@ origins = ["http://localhost:3000"]
 
 app.add_middleware(CORSMiddleware, allow_origins=origins)
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 @app.get("/")
 def hello_api():
     return {"message": "Hello World"}
 
 
-@app.post("/api/interviews/", tags=["Interviews"])
-def create_interview(interview: Interview) -> str:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    session = Session(autocommit=False, autoflush=False, bind=engine)
-    session.add(interview)
-    session.commit()
-    return "success"
+@app.post(
+    "/api/interviews/", 
+    tags=["Interviews"],
+    response_model=Interview,
+)
+def create_interview(interview: Interview, db: Session = Depends(get_db)) -> str:
+    db.add(interview)
+    db.commit()
+    return interview
 
 
 @app.get(
@@ -49,10 +58,8 @@ def create_interview(interview: Interview) -> str:
     response_model=prepare_relationships(Interview, ["screens"]),
     tags=["Interviews"],
 )
-def get_interview(interview_id: str) -> Interview:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    session = Session(autocommit=False, autoflush=False, bind=engine)
-    interview = session.get(Interview, interview_id)
+def get_interview(interview_id: str, db: Session = Depends(get_db)) -> Interview:
+    interview = db.get(Interview, interview_id)
     if not interview:
         raise HTTPException(status_code=404, detail="Interview not found")
     return interview
@@ -63,12 +70,9 @@ def get_interview(interview_id: str) -> Interview:
     response_model=list[Interview],
     tags=["Interviews"],
 )
-def get_interviews() -> list[Interview]:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    session = Session(autocommit=False, autoflush=False, bind=engine)
-    interviews: list[Interview] = session.query(Interview).limit(100).all()
+def get_interviews(db: Session = Depends(get_db)) -> list[Interview]:
+    interviews: list[Interview] = db.query(Interview).limit(100).all()
     return interviews
-
 
 # TODO: this needs to return conditional actions and entries as well
 @app.get(
@@ -76,10 +80,8 @@ def get_interviews() -> list[Interview]:
     response_model=prepare_relationships(InterviewScreen, ["actions", "entries"]),
     tags=["InterviewScreens"],
 )
-def get_interview_screen(screen_id: str) -> InterviewScreen:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    session = Session(autocommit=False, autoflush=False, bind=engine)
-    screen = session.get(InterviewScreen, screen_id)
+def get_interview_screen(screen_id: str, db: Session = Depends(get_db)) -> InterviewScreen:
+    screen = db.get(InterviewScreen, screen_id)
     if not screen:
         raise HTTPException(status_code=404, detail="Interview not found")
     return screen
@@ -90,34 +92,32 @@ def get_interview_screen(screen_id: str) -> InterviewScreen:
     response_model=InterviewScreen,
     tags=["InterviewScreens"],
 )
-def create_interview_screen(screen: InterviewScreen) -> InterviewScreen:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    with Session(autocommit=False, autoflush=False, bind=engine) as session:
-        existing_screens = (
-            session.query(InterviewScreen)
-            .where(InterviewScreen.interview_id == screen.interview_id)
-            .all()
-        )
-        if not existing_screens:
-            screen.order = 1
-            session.add(screen)
-        else:
-            try:
-                ordered_screens = _adjust_screen_order(existing_screens, screen)
-                session.add_all(ordered_screens)
-            except InvalidOrder as e:
-                raise HTTPException(status_code=400, detail=str(e.message))
-
+def create_interview_screen(screen: InterviewScreen, db: Session = Depends(get_db)) -> InterviewScreen:
+    existing_screens = (
+        db.query(InterviewScreen)
+        .where(InterviewScreen.interview_id == screen.interview_id)
+        .all()
+    )
+    if not existing_screens:
+        screen.order = 1
+        db.add(screen)
+    else:
         try:
-            session.commit()
-        except IntegrityError as e:
-            raise HTTPException(
-                status_code=400,
-                detail=str(e.orig),
-            )
-        session.refresh(screen)
+            ordered_screens = _adjust_screen_order(existing_screens, screen)
+            db.add_all(ordered_screens)
+        except InvalidOrder as e:
+            raise HTTPException(status_code=400, detail=str(e.message))
 
-        return screen
+    try:
+        db.commit()
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e.orig),
+        )
+    db.refresh(screen)
+
+    return screen
 
 @app.put(
     "/api/interviewScreens/{screen_id}",
@@ -127,47 +127,46 @@ def create_interview_screen(screen: InterviewScreen) -> InterviewScreen:
 def update_interview_screen(
     screen_id: str,
     screen: prepare_relationships(InterviewScreen, ["actions", "entries"]),
+    db: Session = Depends(get_db),
 ) -> InterviewScreen:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    with Session(autocommit=False, autoflush=False, bind=engine) as session:
-        try:
-            db_screen = (
-                session.query(InterviewScreen).where(InterviewScreen.id == screen_id).one()
-            )
-        except NoResultFound:
-            raise HTTPException(
-                status_code=404, detail=f"Screen with id {screen_id} not found"
-            )
-        
-        _validate_sequential_order(screen.actions)
-        _validate_sequential_order(screen.entries)
-        
-        casted_request_screen = _cast_correct_types(screen)
+    try:
+        db_screen = (
+            db.query(InterviewScreen).where(InterviewScreen.id == screen_id).one()
+        )
+    except NoResultFound:
+        raise HTTPException(
+            status_code=404, detail=f"Screen with id {screen_id} not found"
+        )
+    
+    _validate_sequential_order(screen.actions)
+    _validate_sequential_order(screen.entries)
+    
+    casted_request_screen = _cast_correct_types(screen)
 
-        for rel, primary_key in zip(["actions", "entries"], ["id", "response_key"]):
-            session, db_screen = _update_db_screen_relationships(
-                session,
-                db_screen,
-                casted_request_screen,
-                rel,
-                primary_key,
-            )
+    for rel, primary_key in zip(["actions", "entries"], ["id", "response_key"]):
+        db, db_screen = _update_db_screen_relationships(
+            db,
+            db_screen,
+            casted_request_screen,
+            rel,
+            primary_key,
+        )
 
-        session.add(db_screen)
+    db.add(db_screen)
 
-        LOG.info(f"Making changes to screen:")
-        LOG.info(f"Additions {session.new}" )
-        LOG.info(f"Deletions: {session.deleted}")
-        LOG.info(f"Updates: {session.dirty}")
-        
-        try:
-            session.commit()
-        except IntegrityError as e:
-            raise HTTPException(
-                status_code=400,
-                detail=str(e.orig),
-            )
-        return screen
+    LOG.info(f"Making changes to screen:")
+    LOG.info(f"Additions {db.new}" )
+    LOG.info(f"Deletions: {db.deleted}")
+    LOG.info(f"Updates: {db.dirty}")
+    
+    try:
+        db.commit()
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e.orig),
+        )
+    return screen
 
 
 def _update_model_diff(existing_model: SQLModel, new_model: SQLModel):
