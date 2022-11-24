@@ -12,6 +12,7 @@ export type InterviewScreen = {
   headerText: string;
   interviewId: string;
   title: string;
+  isInStartingState: boolean;
   startingStateOrder?: number;
 };
 

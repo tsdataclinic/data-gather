@@ -1,5 +1,4 @@
 import { DateTime } from 'luxon';
-import { v4 as uuidv4 } from 'uuid';
 import * as InterviewScreen from './InterviewScreen';
 import { Interview as SerializedInterview } from '../api/models/Interview';
 
@@ -9,9 +8,9 @@ import { Interview as SerializedInterview } from '../api/models/Interview';
  * This is the serialized type as it is used on the frontend.
  */
 interface Interview {
-  readonly createdDate: DateTime;
+  readonly createdDate?: DateTime;
   readonly description: string;
-  readonly id: string;
+  readonly id?: string;
   readonly name: string;
   readonly notes: string;
 }
@@ -32,9 +31,7 @@ export function create(values: {
   name: string;
 }): Interview {
   return {
-    createdDate: DateTime.now(),
     description: values.description,
-    id: uuidv4(),
     name: values.name,
     notes: '',
   };

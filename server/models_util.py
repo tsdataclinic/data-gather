@@ -12,7 +12,7 @@ from typing import (
     get_type_hints,
 )
 
-from pydantic import BaseModel, create_model
+from pydantic import create_model
 from sqlalchemy.orm import RelationshipProperty
 from sqlmodel import SQLModel
 
@@ -60,6 +60,17 @@ def _get_model_class_from_type_hint(class_type: Union[str, TypeVar]):
 
 
 MODEL_CLASSES_CACHE = {}
+
+
+def is_optional_type(type_hint):
+    """Check if a type hint is of type Optional. Note, this is a bit of a meta
+    check. We aren't checking if a **value** is of type Optional. We are
+    checking if a type annotation itself is an Optional type."""
+    if get_origin(type_hint) == Union:
+        union_args = get_args(type_hint)
+        none_type = type(None)
+        return none_type in union_args
+    return False
 
 
 def prepare_relationships(
@@ -111,7 +122,8 @@ def prepare_relationships(
             if not isinstance(property_type, RelationshipProperty):
                 # if its not a RelationshipProperty then just add it to the
                 # model attributes
-                model_attrs[attr] = (python_type_hint, ...)
+                default_val = None if is_optional_type(python_type_hint) else ...
+                model_attrs[attr] = (python_type_hint, default_val)
             else:
                 # this is a RelationshipProperty so we're either going to
                 # exclude it entirely or we're going to clean it up if its

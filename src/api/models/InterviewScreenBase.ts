@@ -8,10 +8,11 @@
  */
 export type InterviewScreenBase = {
   order: number;
-  id: string;
+  id?: string;
   headerText: string;
   interviewId: string;
   title: string;
-  startingStateOrder: number;
+  isInStartingState: boolean;
+  startingStateOrder?: number;
 };
 

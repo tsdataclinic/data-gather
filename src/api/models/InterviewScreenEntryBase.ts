@@ -10,12 +10,12 @@ import type { ResponseType } from './ResponseType';
  */
 export type InterviewScreenEntryBase = {
   order: number;
-  id: string;
+  id?: string;
   name: string;
   prompt: string;
   responseKey: string;
-  screenId: string;
   responseType: ResponseType;
+  screenId: string;
   text: string;
 };
 

@@ -46,7 +46,8 @@ class InterviewScreen(OrderedModel, table=True):
     header_text: str
     interview_id: uuid.UUID = Field(foreign_key="interview.id")
     title: str
-    starting_state_order: int = 0
+    is_in_starting_state: bool
+    starting_state_order: Optional[int]
 
     # relationships
     actions: list["ConditionalAction"] = Relationship(back_populates="screen")
@@ -65,12 +66,14 @@ class ResponseType(str, enum.Enum):
 
 class InterviewScreenEntry(OrderedModel, table=True):
     __tablename__: str = "interview_screen_entry"
-    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: Optional[uuid.UUID] = Field(
+        default_factory=uuid.uuid4, primary_key=True, nullable=False
+    )
     name: str
     prompt: str
     response_key: str
-    screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
     response_type: ResponseType = Field(sa_column=Column(Enum(ResponseType)))
+    screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
     text: str
 
     # relationships

@@ -13,10 +13,11 @@ export type InterviewScreenWithActionsAndEntries = {
   order: number;
   actions: Array<ConditionalActionBase>;
   entries: Array<InterviewScreenEntryBase>;
-  id: string;
+  id?: string;
   headerText: string;
   interviewId: string;
   title: string;
-  startingStateOrder: number;
+  isInStartingState: boolean;
+  startingStateOrder?: number;
 };
 

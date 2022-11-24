@@ -10,7 +10,7 @@ export const RESPONSE_TYPES: readonly ResponseType[] =
  * Represents a single question asked to the interview subject
  */
 interface InterviewScreenEntry {
-  readonly id: string;
+  readonly id?: string;
 
   /**  The name to display on the sidebar */
   readonly name: string;
@@ -44,6 +44,7 @@ export function create(
   values: Omit<InterviewScreenEntry, 'id' | 'responseKey'>,
 ): InterviewScreenEntry {
   return {
+    id: uuidv4(),
     name: values.name,
     prompt: values.prompt,
     responseKey: uuidv4(),

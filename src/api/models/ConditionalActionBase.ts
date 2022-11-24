@@ -11,7 +11,7 @@ import type { ConditionalOperator } from './ConditionalOperator';
  */
 export type ConditionalActionBase = {
   order: number;
-  id: string;
+  id?: string;
   actionPayload: string;
   actionType: ActionType;
   conditionalOperator: ConditionalOperator;

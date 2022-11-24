@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import * as InterviewScreenEntry from './InterviewScreenEntry';
 import * as ConditionalAction from './ConditionalAction';
 import { InterviewScreenWithActionsAndEntries as SerializedInterviewScreen } from '../api/models/InterviewScreenWithActionsAndEntries';
@@ -22,7 +21,7 @@ interface InterviewScreen {
   readonly headerText: string;
 
   /** The id of this screen */
-  readonly id: string;
+  readonly id?: string;
 
   /** The id of the interview that this screen belongs to */
   readonly interviewId: string;
@@ -43,7 +42,7 @@ interface InterviewScreen {
    *
    * `startingStateOrder` is undefined if `isInStartingState` is false.
    */
-  readonly startingStateOrder: number | undefined;
+  readonly startingStateOrder?: number;
 
   /** Title of the page */
   readonly title: string;
@@ -54,6 +53,7 @@ interface InterviewScreen {
  */
 export function create(values: {
   headerText?: string;
+  interviewId: string;
   order: number;
   title: string;
 }): InterviewScreen {
@@ -61,9 +61,10 @@ export function create(values: {
     actions: [],
     entries: [],
     headerText: values.headerText ?? '',
-    id: uuidv4(),
     title: values.title,
     order: values.order,
+    isInStartingState: false,
+    interviewId: values.interviewId,
   };
 }
 
@@ -87,7 +88,7 @@ export function addEntry(
 ): InterviewScreen {
   return {
     ...screen,
-    entries: screen.entries.concat(entry.id),
+    entries: screen.entries.concat(entry),
   };
 }
 
@@ -100,7 +101,7 @@ export function addAction(
 ): InterviewScreen {
   return {
     ...screen,
-    actions: screen.actions.concat(conditionalAction.id),
+    actions: screen.actions.concat(conditionalAction),
   };
 }
 
@@ -111,7 +112,7 @@ export function removeEntry(
   screen: InterviewScreen,
   entry: InterviewScreenEntry.T,
 ): InterviewScreen {
-  const index = screen.entries.indexOf(entry.id);
+  const index = screen.entries.findIndex(e => e.id === entry.id);
   if (index > -1)
     return {
       ...screen,
@@ -129,7 +130,11 @@ export function removeEntry(
 export function deserialize(
   rawObj: SerializedInterviewScreen,
 ): InterviewScreen {
-  return rawObj;
+  return {
+    ...rawObj,
+    actions: rawObj.actions.map(ConditionalAction.deserialize),
+    entries: rawObj.entries.map(InterviewScreenEntry.deserialize),
+  };
 }
 
 /**
@@ -140,8 +145,8 @@ export function serialize(
 ): SerializedInterviewScreen {
   return {
     ...interviewScreen,
-    actions: [...interviewScreen.actions],
-    entries: [...interviewScreen.entries],
+    actions: interviewScreen.actions.map(ConditionalAction.serialize),
+    entries: interviewScreen.entries.map(InterviewScreenEntry.serialize),
   };
 }
 
