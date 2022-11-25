@@ -16,7 +16,7 @@ export class InterviewsFastAPIService {
    * @returns Interview Successful Response
    * @throws ApiError
    */
-  public getInterviewsApiInterviewsGet(): CancelablePromise<Array<Interview>> {
+  public getInterviews(): CancelablePromise<Array<Interview>> {
     return this.httpRequest.request({
       method: 'GET',
       url: '/api/interviews/',
@@ -26,12 +26,12 @@ export class InterviewsFastAPIService {
   /**
    * Create Interview
    * @param requestBody
-   * @returns any Successful Response
+   * @returns Interview Successful Response
    * @throws ApiError
    */
-  public createInterviewApiInterviewsPost(
+  public createInterview(
     requestBody: Interview,
-  ): CancelablePromise<any> {
+  ): CancelablePromise<Interview> {
     return this.httpRequest.request({
       method: 'POST',
       url: '/api/interviews/',
@@ -49,7 +49,7 @@ export class InterviewsFastAPIService {
    * @returns InterviewWithScreens Successful Response
    * @throws ApiError
    */
-  public getInterviewApiInterviewsInterviewIdGet(
+  public getInterview(
     interviewId: string,
   ): CancelablePromise<InterviewWithScreens> {
     return this.httpRequest.request({
@@ -71,7 +71,7 @@ export class InterviewsFastAPIService {
    * @returns Interview Successful Response
    * @throws ApiError
    */
-  public updateInterviewApiInterviewsInterviewIdPut(
+  public updateInterview(
     interviewId: string,
     requestBody: Interview,
   ): CancelablePromise<Interview> {

@@ -51,7 +51,7 @@
     "populate-database": "PYTHONPATH=. python3 -c 'from server.init_db import populate_dev_db; populate_dev_db()'",
     "db": "sqlite3 db.sqlite",
     "start": "react-scripts start",
-    "sync-types": "openapi --input http://localhost:8000/openapi.json --output src/api --client fetch --indent 2 --name FastAPIService --postfix FastAPIService",
+    "sync-types": "python scripts/openapi_processor.py && openapi --input openapi.json --output src/api --client fetch --indent 2 --name FastAPIService --postfix FastAPIService && rm -f openapi.json",
     "test": "react-scripts test"
   },
   "eslintConfig": {
@@ -108,4 +108,3 @@
   },
   "proxy": "http://localhost:8000"
 }
-

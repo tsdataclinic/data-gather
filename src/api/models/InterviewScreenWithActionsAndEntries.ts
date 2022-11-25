@@ -10,7 +10,7 @@ import type { InterviewScreenEntryBase } from './InterviewScreenEntryBase';
  * This class handles any snake_case to camelCase conversions.
  */
 export type InterviewScreenWithActionsAndEntries = {
-  order: number;
+  order?: number;
   actions: Array<ConditionalActionBase>;
   entries: Array<InterviewScreenEntryBase>;
   id?: string;

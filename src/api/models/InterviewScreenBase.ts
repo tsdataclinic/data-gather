@@ -7,7 +7,7 @@
  * This class handles any snake_case to camelCase conversions.
  */
 export type InterviewScreenBase = {
-  order: number;
+  order?: number;
   id?: string;
   headerText: string;
   interviewId: string;

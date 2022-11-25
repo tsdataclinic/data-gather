@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 import * as InterviewScreen from './InterviewScreen';
-import { Interview as SerializedInterview } from '../api/models/Interview';
+import { Interview as SerializedInterviewBase } from '../api/models/Interview';
 
 /**
  * Represents all the metadata data for an interview.
@@ -8,11 +8,30 @@ import { Interview as SerializedInterview } from '../api/models/Interview';
  * This is the serialized type as it is used on the frontend.
  */
 interface Interview {
+  /**
+   * The date when this interview was created. Undefined only when creating
+   * because this value is assigned by the database on creation.
+   */
   readonly createdDate?: DateTime;
   readonly description: string;
+
+  /**
+   * The interview's uuid. Undefined only when creating because this value
+   * is assigned by the database on creation.
+   */
   readonly id?: string;
   readonly name: string;
   readonly notes: string;
+
+  /**
+   * The screens that belong to this interview. Undefined if the screens
+   * have not been loaded.
+   */
+  readonly screens?: InterviewScreen.T[];
+}
+
+interface SerializedInterview extends SerializedInterviewBase {
+  screens?: InterviewScreen.SerializedT[];
 }
 
 /**
@@ -46,7 +65,7 @@ export function addScreen(
 ): Interview {
   return {
     ...interview,
-    screens: interview.screens.concat(screen.id),
+    screens: interview.screens?.concat(screen),
   };
 }
 
@@ -113,7 +132,10 @@ export function updateNotes(interview: Interview, notes: string): Interview {
 export function deserialize(rawObj: SerializedInterview): Interview {
   return {
     ...rawObj,
-    createdDate: DateTime.fromISO(rawObj.createdDate),
+    createdDate: rawObj.createdDate
+      ? DateTime.fromISO(rawObj.createdDate)
+      : undefined,
+    screens: rawObj.screens?.map(InterviewScreen.deserialize),
   };
 }
 
@@ -123,7 +145,8 @@ export function deserialize(rawObj: SerializedInterview): Interview {
 export function serialize(interview: Interview): SerializedInterview {
   return {
     ...interview,
-    createdDate: interview.createdDate.toISO(),
+    createdDate: interview.createdDate?.toISO(),
+    screens: interview.screens?.map(InterviewScreen.serialize),
   };
 }
 

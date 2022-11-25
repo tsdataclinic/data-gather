@@ -17,7 +17,7 @@ export class InterviewScreensFastAPIService {
    * @returns InterviewScreenWithActionsAndEntries Successful Response
    * @throws ApiError
    */
-  public getInterviewScreenApiInterviewScreensScreenIdGet(
+  public getInterviewScreen(
     screenId: string,
   ): CancelablePromise<InterviewScreenWithActionsAndEntries> {
     return this.httpRequest.request({
@@ -42,7 +42,7 @@ export class InterviewScreensFastAPIService {
    * @returns InterviewScreenWithActionsAndEntries Successful Response
    * @throws ApiError
    */
-  public updateInterviewScreenApiInterviewScreensScreenIdPut(
+  public updateInterviewScreen(
     screenId: string,
     requestBody: InterviewScreenWithActionsAndEntries,
   ): CancelablePromise<InterviewScreenWithActionsAndEntries> {
@@ -66,7 +66,7 @@ export class InterviewScreensFastAPIService {
    * @returns InterviewScreen Successful Response
    * @throws ApiError
    */
-  public createInterviewScreenApiInterviewScreensPost(
+  public createInterviewScreen(
     requestBody: InterviewScreen,
   ): CancelablePromise<InterviewScreen> {
     return this.httpRequest.request({

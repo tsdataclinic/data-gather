@@ -42,7 +42,7 @@ class InterviewScreen(OrderedModel, table=True):
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4, primary_key=True, nullable=False
     )
-    order: int = 0
+    order: Optional[int]
     header_text: str
     interview_id: uuid.UUID = Field(foreign_key="interview.id")
     title: str
