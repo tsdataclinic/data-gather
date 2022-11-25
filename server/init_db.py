@@ -137,6 +137,11 @@ def populate_dev_db(file_path: str = SQLITE_DB_PATH):
     screens = [models.InterviewScreen(**i) for i in FAKE_SCREENS]
     with Session(autocommit=False, autoflush=False, bind=engine) as session:
         session.add(interview)
+        # commit interview and refresh to pull in auto-generated id
+        session.commit()
+        session.refresh(interview)
+        for screen in screens:
+            screen.interview_id = interview.id
         session.add_all(screens)
         # commit changes and refresh so we pull in ID's assigned to screens
         session.commit()

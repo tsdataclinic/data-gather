@@ -6,7 +6,8 @@ from typing import Optional
 
 from sqlalchemy import Column, DateTime
 from sqlalchemy.sql import func
-from sqlmodel import Enum, Field, Relationship
+from sqlalchemy.orm import validates
+from sqlmodel import Enum, Field, Relationship, UniqueConstraint
 
 from server.models_util import APIModel
 
@@ -14,9 +15,13 @@ LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
+class ValidationError(Exception):
+    pass
+
 class Interview(APIModel, table=True):
     """This model represents an Interview's metadata"""
-
+    
+    __table_args__ = (UniqueConstraint("vanity_url"),)
     __tablename__: str = "interview"
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4, primary_key=True, nullable=False
@@ -32,11 +37,10 @@ class Interview(APIModel, table=True):
     # relationships
     screens: list["InterviewScreen"] = Relationship(back_populates="interview")
 
-# class PublishedInterview(APIModel, table=True):
-#     __tablename__: str = "published_interview"
-#     interview_id: str = Field(foreign_key="interview.id")
-#     vanity_url: str
-
+    @validates("published")
+    def validate_publish(self, key, published):
+        if published and not self.vanity_url:
+            raise ValidationError(f"Published Interview must have a vanity url")
 
 
 class OrderedModel(APIModel):
