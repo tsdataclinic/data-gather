@@ -33,14 +33,6 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     }
     return this.localStore.getAllInterviews();
   };
-
-  getInterview = async (interview_id: string): Promise<Interview.T> => {
-    if (this.isAuthenticated) {
-      return this.backendStore.getInterview(interview_id);
-    }
-    // return this.localStore.getInterview(interview_id);
-    return this.backendStore.getInterview(interview_id);
-  };
 }
 
 const InterviewServiceContext = React.createContext<

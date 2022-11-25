@@ -17,15 +17,5 @@ export default class ServerInterviewService implements InterviewServiceAPI {
 
     return serializedInterviews.map(Interview.deserialize);
   }
-
-  async getInterview(interview_id: string): Promise<Interview.T> {
-    const serializedInterview =
-      await this.api.interviews.getInterviewApiInterviewsInterviewIdGet(
-        interview_id,
-      );
-    console.log('SINGLE INTERVIEW', serializedInterview);
-
-    return Interview.deserialize(serializedInterview);
-  }
 }
 /* eslint-enable */
