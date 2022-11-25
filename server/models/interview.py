@@ -4,9 +4,14 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlmodel import Field, Relationship
+from sqlmodel import Field, Relationship, UniqueConstraint
+from sqlalchemy.orm import validates
 
 from server.models_util import APIModel, update_module_forward_refs
+
+
+class ValidationError(Exception):
+    pass
 
 
 class InterviewBase(APIModel):
@@ -15,12 +20,15 @@ class InterviewBase(APIModel):
     description: str
     name: str
     notes: str
+    vanity_url: Optional[str]
+    published: bool
 
 
 class Interview(InterviewBase, table=True):
     """The Interview model as a database table."""
 
     __tablename__: str = "interview"
+    __table_args__ = (UniqueConstraint("vanity_url"),)
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4, primary_key=True, nullable=False
     )
@@ -30,6 +38,11 @@ class Interview(InterviewBase, table=True):
 
     # relationships
     screens: list["InterviewScreen"] = Relationship(back_populates="interview")
+
+    @validates("published")
+    def validate_publish(self, key, published):
+        if published and not self.vanity_url:
+            raise ValidationError(f"Published Interview must have a vanity url")
 
 
 class InterviewCreate(InterviewBase):

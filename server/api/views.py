@@ -3,6 +3,7 @@ import uuid
 from typing import Optional, Sequence, TypeVar
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -21,6 +22,7 @@ from server.models.interview import (
     InterviewRead,
     InterviewReadWithScreens,
     InterviewUpdate,
+    ValidationError
 )
 from server.models.interview_screen import (
     InterviewScreen,
@@ -33,13 +35,6 @@ from server.models.interview_screen_entry import InterviewScreenEntry
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
-engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -72,39 +67,48 @@ app.add_middleware(
 
 airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
+engine = create_fk_constraint_engine(SQLITE_DB_PATH)
+
+
+def get_session():
+    with Session(engine) as session:
+        yield session
+
 
 @app.get("/")
 def hello_api():
     return {"message": "Hello World"}
 
+# Because the exception is raised on instantiation from the SQLAlchemy validator
+# we need to globally handle it
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: Request, exc: ValidationError):
+    return JSONResponse(
+        status_code=400,
+        content={"message": str(exc)},
+    )
 
-@app.post("/api/interviews/", response_model=InterviewRead, tags=["interviews"])
-def create_interview(interview: InterviewCreate) -> Interview:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    with Session(autocommit=False, autoflush=False, bind=engine) as session:
-        db_interview = Interview.from_orm(interview)
-        session.add(db_interview)
-        try:
-            session.commit()
-        except IntegrityError as e:
-            raise HTTPException(
-                status_code=400,
-                detail=str(e.orig),
-            )
-        session.refresh(db_interview)
-        return db_interview
+
+@app.post(
+    "/api/interviews/", 
+    tags=["Interviews"],
+    response_model=Interview,
+)
+def create_interview(interview: Interview, session: Session = Depends(get_session)) -> str:
+    session.add(interview)
+    try:
+        session.commit()
+    except (IntegrityError, ValidationError) as e:
+        raise HTTPException(status_code=400, detail=str(e.orig))
+    return interview
 
 
 @app.get(
     "/api/interviews/{interview_id}",
     response_model=InterviewReadWithScreens,
-    tags=["interviews"],
+    tags=["Interviews"],
 )
-def get_interview(interview_id: str) -> Interview:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    session = Session(
-        autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
-    )
+def get_interview(interview_id: str, session: Session = Depends(get_session)) -> Interview:
     interview = session.get(Interview, interview_id)
     if not interview:
         raise HTTPException(status_code=404, detail="Interview not found")
@@ -114,37 +118,34 @@ def get_interview(interview_id: str) -> Interview:
 @app.put(
     "/api/interviews/{interview_id}",
     response_model=InterviewRead,
-    tags=["interviews"],
+    tags=["Interviews"],
 )
-def update_interview(interview_id: str, interview: InterviewUpdate) -> Interview:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    with Session(
-        autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
-    ) as session:
-        try:
-            db_interview = session.exec(
-                select(Interview).where(Interview.id == interview_id)
-            ).one()
-        except NoResultFound:
-            raise HTTPException(
-                status_code=404, detail=f"Interview with id {interview_id} not found"
-            )
+def update_interview(interview_id: str, interview: Interview, session: Session = Depends(get_session)) -> Interview:
+    try:
+        db_interview = session.exec(
+            select(Interview).where(Interview.id == interview_id)
+        ).one()
+    except NoResultFound:
+        raise HTTPException(
+            status_code=404, detail=f"Interview with id {interview_id} not found"
+        )
 
-        # now update the db_interview
-        _update_model_diff(db_interview, interview)
-        session.add(db_interview)
-        try:
-            session.commit()
-        except IntegrityError as e:
-            raise HTTPException(status_code=400, detail=str(e.orig))
+    # now update the db_interview
+    _update_model_diff(db_interview, interview)
+    session.add(db_interview)
 
-        return db_interview
+    try:
+        session.commit()
+    except (IntegrityError, ValidationError) as e:
+        raise HTTPException(status_code=400, detail=str(e.orig))
+
+    return db_interview
 
 
 @app.post(
     "/api/interviews/{interview_id}/starting_state",
     response_model=InterviewReadWithScreens,
-    tags=["interviews"],
+    tags=["Interviews"],
 )
 def update_interview_starting_state(
     *,
@@ -188,11 +189,9 @@ def update_interview_starting_state(
 @app.get(
     "/api/interviews/",
     response_model=list[InterviewRead],
-    tags=["interviews"],
+    tags=["Interviews"],
 )
-def get_interviews() -> list[Interview]:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    session = Session(autocommit=False, autoflush=False, bind=engine)
+def get_interviews(session: Session = Depends(get_session)) -> list[Interview]:
     interviews = session.exec(select(Interview).limit(100)).all()
     return interviews
 
