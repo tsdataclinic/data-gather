@@ -1,10 +1,8 @@
-import { useLiveQuery } from 'dexie-react-hooks';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import * as InterviewScreenEntry from '../models/InterviewScreenEntry';
-import isNonNullable from '../util/isNonNullable';
 import useAppDispatch from './useAppDispatch';
 import useAppState from './useAppState';
-import useInterviewScreens from './useInterviewScreens';
 import useInterviewStore from './useInterviewStore';
 
 /**
@@ -24,16 +22,26 @@ export default function useInterviewScreenEntries(
   const dispatch = useAppDispatch();
   const interviewStore = useInterviewStore();
   const { loadedInterviewScreenEntries } = useAppState();
-  const screens = useInterviewScreens(interviewId);
 
   // load screen entries from backend
-  const screenEntriesFromStorage = useLiveQuery(
-    () =>
-      interviewId === undefined
-        ? undefined
-        : interviewStore.getScreenEntriesOfInterview(interviewId),
-    [interviewId],
-  );
+  const { data: screenEntriesFromStorage } = useQuery({
+    queryKey: ['interviewScreenEntries', interviewId],
+    queryFn: async () => {
+      if (interviewId === undefined) {
+        return undefined;
+      }
+      const interview = await interviewStore.InterviewAPI.getInterview(
+        interviewId,
+      );
+
+      const screens = await Promise.all(
+        interview.screens.map(screen =>
+          interviewStore.InterviewScreenAPI.getInterviewScreen(screen.id),
+        ),
+      );
+      return screens.flatMap(screen => screen.entries);
+    },
+  });
 
   // if the screenEntriesFromStorage has changed then we should update it in
   // our global state
@@ -49,18 +57,22 @@ export default function useInterviewScreenEntries(
   // load the screen entries from global state (which should be up-to-date with
   // whatever is in storage)
   const screensToEntriesMap = useMemo(() => {
-    if (screens) {
+    if (screenEntriesFromStorage) {
       const screenIdToEntriesMap = new Map<string, InterviewScreenEntry.T[]>();
-      screens.forEach(screen => {
-        const entries = screen.entries
-          .map(entryId => loadedInterviewScreenEntries.get(entryId))
-          .filter(isNonNullable);
-        screenIdToEntriesMap.set(screen.id, entries);
+      screenEntriesFromStorage.forEach(entry => {
+        const loadedEntry = loadedInterviewScreenEntries.get(entry.id);
+        if (loadedEntry) {
+          const entries = screenIdToEntriesMap.get(loadedEntry.screenId) ?? [];
+          screenIdToEntriesMap.set(
+            loadedEntry.screenId,
+            entries.concat(loadedEntry),
+          );
+        }
       });
       return screenIdToEntriesMap;
     }
     return undefined;
-  }, [screens, loadedInterviewScreenEntries]);
+  }, [loadedInterviewScreenEntries, screenEntriesFromStorage]);
 
   return interviewId === undefined ? undefined : screensToEntriesMap;
 }
