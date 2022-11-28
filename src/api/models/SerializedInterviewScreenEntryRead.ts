@@ -5,17 +5,19 @@
 import type { ResponseType } from './ResponseType';
 
 /**
- * Any models that are returned in our REST API should extend this class.
- * This class handles any snake_case to camelCase conversions.
+ * The InterviewScreenEntry model used in HTTP responses when reading
+ * from the database.
+ *
+ * `id` is not optional because it must exist already if it's in the database.
  */
-export type InterviewScreenEntryBase = {
+export type SerializedInterviewScreenEntryRead = {
   order: number;
-  id?: string;
   name: string;
   prompt: string;
   responseKey: string;
   responseType: ResponseType;
   screenId: string;
   text: string;
+  id: string;
 };
 

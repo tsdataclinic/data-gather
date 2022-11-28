@@ -3,23 +3,25 @@ import * as InterviewScreen from '../../models/InterviewScreen';
 
 export interface InterviewServiceAPI {
   InterviewAPI: {
-    createInterview(interview: Interview.T): Promise<Interview.T>;
+    createInterview(interview: Interview.CreateT): Promise<Interview.T>;
     getAllInterviews(): Promise<Interview.T[]>;
-    getInterview(interviewId: string): Promise<Interview.T>;
+    getInterview(interviewId: string): Promise<Interview.WithScreensT>;
     updateInterview(
       interviewId: string,
-      interview: Interview.T,
+      interview: Interview.UpdateT,
     ): Promise<Interview.T>;
   };
 
   InterviewScreenAPI: {
     createInterviewScreen(
-      screen: InterviewScreen.T,
+      screen: InterviewScreen.CreateT,
     ): Promise<InterviewScreen.T>;
-    getInterviewScreen(screenId: string): Promise<InterviewScreen.T>;
+    getInterviewScreen(
+      screenId: string,
+    ): Promise<InterviewScreen.WithChildrenT>;
     updateInterviewScreen(
       screenId: string,
-      screen: InterviewScreen.T,
-    ): Promise<InterviewScreen.T>;
+      screen: InterviewScreen.UpdateT,
+    ): Promise<InterviewScreen.WithChildrenT>;
   };
 }

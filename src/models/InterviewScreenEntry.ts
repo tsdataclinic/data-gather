@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import assertUnreachable from '../util/assertUnreachable';
-import { InterviewScreenEntryBase as SerializedInterviewScreenEntry } from '../api/models/InterviewScreenEntryBase';
+import { SerializedInterviewScreenEntryRead } from '../api/models/SerializedInterviewScreenEntryRead';
+import { SerializedInterviewScreenEntryCreate } from '../api/models/SerializedInterviewScreenEntryCreate';
 import { ResponseType } from '../api/models/ResponseType';
 
 export const RESPONSE_TYPES: readonly ResponseType[] =
@@ -10,7 +11,7 @@ export const RESPONSE_TYPES: readonly ResponseType[] =
  * Represents a single question asked to the interview subject
  */
 interface InterviewScreenEntry {
-  readonly id?: string;
+  readonly id: string;
 
   /**  The name to display on the sidebar */
   readonly name: string;
@@ -34,8 +35,10 @@ interface InterviewScreenEntry {
   readonly text: string;
 }
 
+type InterviewScreenEntryCreate = Omit<InterviewScreenEntry, 'id'>;
+
 export function deserialize(
-  rawObj: SerializedInterviewScreenEntry,
+  rawObj: SerializedInterviewScreenEntryRead,
 ): InterviewScreenEntry {
   return rawObj;
 }
@@ -59,9 +62,15 @@ export function create(
  * Convert from deserialized type to serialized
  */
 export function serialize(
-  interviewScreen: InterviewScreenEntry,
-): SerializedInterviewScreenEntry {
-  return interviewScreen;
+  screenEntry: InterviewScreenEntry,
+): SerializedInterviewScreenEntryRead;
+export function serialize(
+  screenEntry: InterviewScreenEntryCreate,
+): SerializedInterviewScreenEntryCreate;
+export function serialize(
+  screenEntry: InterviewScreenEntry | InterviewScreenEntryCreate,
+): SerializedInterviewScreenEntryRead | SerializedInterviewScreenEntryCreate {
+  return screenEntry;
 }
 
 /**
@@ -112,6 +121,7 @@ export function responseTypeStringToEnum(
   return responseTypeEnum ?? ResponseType.TEXT;
 }
 
+export { ResponseType };
 export type { InterviewScreenEntry as T };
-export type { SerializedInterviewScreenEntry as SerializedT };
-export type { ResponseType };
+export type { InterviewScreenEntryCreate as CreateT };
+export type { SerializedInterviewScreenEntryRead as SerializedT };

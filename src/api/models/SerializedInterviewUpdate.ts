@@ -3,13 +3,13 @@
 /* eslint-disable */
 
 /**
- * This model represents an Interview's metadata
+ * The Interview model used on update requests.
  */
-export type Interview = {
-  id?: string;
-  createdDate?: string;
+export type SerializedInterviewUpdate = {
   description: string;
   name: string;
   notes: string;
+  id: string;
+  createdDate: string;
 };
 

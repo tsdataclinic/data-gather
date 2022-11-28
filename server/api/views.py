@@ -1,7 +1,7 @@
 import copy
 import logging
 import uuid
-from typing import Iterable, NewType, Optional, TypeVar
+from typing import Optional, Sequence, TypeVar
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,14 +12,23 @@ from sqlmodel import Session, SQLModel, select
 from server.api.exceptions import InvalidOrder
 from server.engine import create_fk_constraint_engine
 from server.init_db import SQLITE_DB_PATH
-from server.models import (
-    ConditionalAction,
+from server.models.common import OrderedModel
+from server.models.conditional_action import ConditionalAction
+from server.models.interview import (
     Interview,
-    InterviewScreen,
-    InterviewScreenEntry,
-    OrderedModel,
+    InterviewCreate,
+    InterviewRead,
+    InterviewReadWithScreens,
+    InterviewUpdate,
 )
-from server.models_util import prepare_relationships
+from server.models.interview_screen import (
+    InterviewScreen,
+    InterviewScreenCreate,
+    InterviewScreenRead,
+    InterviewScreenReadWithChildren,
+    InterviewScreenUpdate,
+)
+from server.models.interview_screen_entry import InterviewScreenEntry
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -51,11 +60,12 @@ def hello_api():
     return {"message": "Hello World"}
 
 
-@app.post("/api/interviews/", response_model=Interview, tags=["Interviews"])
-def create_interview(interview: Interview) -> Interview:
+@app.post("/api/interviews/", response_model=InterviewRead, tags=["Interviews"])
+def create_interview(interview: InterviewCreate) -> Interview:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     with Session(autocommit=False, autoflush=False, bind=engine) as session:
-        session.add(interview)
+        db_interview = Interview.from_orm(interview)
+        session.add(db_interview)
         try:
             session.commit()
         except IntegrityError as e:
@@ -63,13 +73,13 @@ def create_interview(interview: Interview) -> Interview:
                 status_code=400,
                 detail=str(e.orig),
             )
-        session.refresh(interview)
-        return interview
+        session.refresh(db_interview)
+        return db_interview
 
 
 @app.get(
     "/api/interviews/{interview_id}",
-    response_model=prepare_relationships(Interview, ["screens"]),
+    response_model=InterviewReadWithScreens,
     tags=["Interviews"],
 )
 def get_interview(interview_id: str) -> Interview:
@@ -83,10 +93,10 @@ def get_interview(interview_id: str) -> Interview:
 
 @app.put(
     "/api/interviews/{interview_id}",
-    response_model=Interview,
+    response_model=InterviewRead,
     tags=["Interviews"],
 )
-def update_interview(interview_id: str, interview: Interview) -> Interview:
+def update_interview(interview_id: str, interview: InterviewUpdate) -> Interview:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     with Session(
         autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
@@ -103,7 +113,6 @@ def update_interview(interview_id: str, interview: Interview) -> Interview:
         # now update the db_interview
         _update_model_diff(db_interview, interview)
         session.add(db_interview)
-
         try:
             session.commit()
         except IntegrityError as e:
@@ -114,19 +123,19 @@ def update_interview(interview_id: str, interview: Interview) -> Interview:
 
 @app.get(
     "/api/interviews/",
-    response_model=list[Interview],
+    response_model=list[InterviewRead],
     tags=["Interviews"],
 )
 def get_interviews() -> list[Interview]:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     session = Session(autocommit=False, autoflush=False, bind=engine)
-    interviews: list[Interview] = session.query(Interview).limit(100).all()
+    interviews = session.exec(select(Interview).limit(100)).all()
     return interviews
 
 
 @app.get(
     "/api/interview_screens/{screen_id}",
-    response_model=prepare_relationships(InterviewScreen, ["actions", "entries"]),
+    response_model=InterviewScreenReadWithChildren,
     tags=["InterviewScreens"],
 )
 def get_interview_screen(screen_id: str) -> InterviewScreen:
@@ -134,29 +143,30 @@ def get_interview_screen(screen_id: str) -> InterviewScreen:
     session = Session(autocommit=False, autoflush=False, bind=engine)
     screen = session.get(InterviewScreen, screen_id)
     if not screen:
-        raise HTTPException(status_code=404, detail="Interview not found")
+        raise HTTPException(status_code=404, detail="InterviewScreen not found")
     return screen
 
 
 @app.post(
     "/api/interview_screens/",
-    response_model=InterviewScreen,
+    response_model=InterviewScreenRead,
     tags=["InterviewScreens"],
 )
-def create_interview_screen(screen: InterviewScreen) -> InterviewScreen:
+def create_interview_screen(screen: InterviewScreenCreate) -> InterviewScreenCreate:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     with Session(autocommit=False, autoflush=False, bind=engine) as session:
+        db_screen = InterviewScreen.from_orm(screen)
         existing_screens = (
             session.query(InterviewScreen)
             .where(InterviewScreen.interview_id == screen.interview_id)
             .all()
         )
         if not existing_screens:
-            screen.order = 1
-            session.add(screen)
+            db_screen.order = 1
+            session.add(db_screen)
         else:
             try:
-                ordered_screens = _adjust_screen_order(existing_screens, screen)
+                ordered_screens = _adjust_screen_order(existing_screens, db_screen)
                 session.add_all(ordered_screens)
             except InvalidOrder as e:
                 raise HTTPException(status_code=400, detail=str(e.message))
@@ -173,27 +183,20 @@ def create_interview_screen(screen: InterviewScreen) -> InterviewScreen:
         return screen
 
 
-InterviewScreenWithActionsAndEntries = NewType(
-    "InterviewScreenWithActionsAndEntries",
-    prepare_relationships(InterviewScreen, ["actions", "entries"]),
-)
-
-
 @app.put(
     "/api/interview_screens/{screen_id}",
-    response_model=InterviewScreenWithActionsAndEntries,
+    response_model=InterviewScreenReadWithChildren,
     tags=["InterviewScreens"],
 )
 def update_interview_screen(
     screen_id: str,
-    screen: InterviewScreenWithActionsAndEntries,
+    screen: InterviewScreenUpdate,
 ) -> InterviewScreen:
     """
     Update an Interview Screen. This API function updates the values
     of an InterviewScreen as well as its nested Conditional Actions
     and Entries.
     """
-    request_screen = _cast_relationship_orm_types(screen)
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     with Session(
         autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
@@ -209,27 +212,26 @@ def update_interview_screen(
                 status_code=404, detail=f"Screen with id {screen_id} not found"
             )
 
+        # update the top-level InterviewScreen model values
+        _update_model_diff(db_screen, screen.copy(exclude={"actions", "entries"}))
+
+        # validate that actions and entries have valid orders
         _validate_sequential_order(screen.actions)
         _validate_sequential_order(screen.entries)
 
         # update the InterviewScreen relationships (actions and entries)
         actions_to_set, actions_to_delete = _update_db_screen_relationships(
             db_screen.actions,
-            request_screen.actions,
+            [ConditionalAction.from_orm(action) for action in screen.actions],
         )
         entries_to_set, entries_to_delete = _update_db_screen_relationships(
             db_screen.entries,
-            request_screen.entries,
+            [InterviewScreenEntry.from_orm(entry) for entry in screen.entries],
         )
 
         # set the updated relationships
         db_screen.actions = actions_to_set
         db_screen.entries = entries_to_set
-
-        # update the top-level InterviewScreen model values
-        _update_model_diff(
-            db_screen, request_screen.copy(exclude={"actions", "entries"})
-        )
 
         # now apply all changes to the session
         session.add(db_screen)
@@ -258,18 +260,6 @@ def _update_model_diff(existing_model: SQLModel, new_model: SQLModel):
     return existing_model
 
 
-def _cast_relationship_orm_types(request_screen: InterviewScreen):
-    """Cast the relationship models on the request to the appropriate types"""
-    casted_screen = copy.deepcopy(request_screen)
-    casted_screen.actions = [
-        ConditionalAction.from_orm(action) for action in request_screen.actions
-    ]
-    casted_screen.entries = [
-        InterviewScreenEntry.from_orm(entry) for entry in request_screen.entries
-    ]
-    return casted_screen
-
-
 TScreenChild = TypeVar("TScreenChild", ConditionalAction, InterviewScreenEntry)
 
 
@@ -283,10 +273,10 @@ def _update_db_screen_relationships(
     update and the models to add) and the list of models to delete.
 
     Args:
-        db_models: The list of ConditionalAction or InterviewScreenEntry
-            models from the db
+        db_models: The existing list of ConditionalAction or
+            InterviewScreenEntry models from the db
         request_models: The list of ConditionalAction or InterviewScreenEntry
-            models sent in the request body
+            models to update or create
 
     Returns:
         A tuple of: list of models to set and list of models to delete
@@ -320,19 +310,20 @@ def _update_db_screen_relationships(
     return (models_to_set, models_to_delete)
 
 
-def _validate_sequential_order(request_models: Iterable[OrderedModel]):
+def _validate_sequential_order(request_models: Sequence[OrderedModel]):
     """Validate that the provided ordered models are in sequential order starting at 1"""
-    model_order = sorted([i.order for i in request_models])
+    sorted_models = sorted([i.order for i in request_models])
     exc = HTTPException(
         status_code=400,
-        detail=f"Invalid order provided for added/updated models {model_order}",
+        detail=f"Invalid order provided for added/updated models {sorted_models}",
     )
 
-    if model_order != list(range(min(model_order), max(model_order) + 1)):
-        raise exc
+    if len(request_models) > 0:
+        if sorted_models != list(range(min(sorted_models), max(sorted_models) + 1)):
+            raise exc
 
-    if model_order[0] != 1:
-        raise exc
+        if sorted_models[0] != 1:
+            raise exc
 
 
 def _adjust_screen_order(

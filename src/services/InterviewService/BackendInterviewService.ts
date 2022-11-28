@@ -7,10 +7,13 @@ export default class BackendInterviewService implements InterviewServiceAPI {
   private api = new FastAPIService();
 
   InterviewAPI = {
-    createInterview: async (interview: Interview.T): Promise<Interview.T> => {
+    createInterview: async (
+      interview: Interview.CreateT,
+    ): Promise<Interview.T> => {
       const serializedInterview = await this.api.interviews.createInterview(
-        Interview.serialize(interview),
+        interview,
       );
+
       return Interview.deserialize(serializedInterview);
     },
 
@@ -19,7 +22,9 @@ export default class BackendInterviewService implements InterviewServiceAPI {
       return serializedInterviews.map(Interview.deserialize);
     },
 
-    getInterview: async (interviewId: string): Promise<Interview.T> => {
+    getInterview: async (
+      interviewId: string,
+    ): Promise<Interview.WithScreensT> => {
       const serializedInterview = await this.api.interviews.getInterview(
         interviewId,
       );
@@ -28,7 +33,7 @@ export default class BackendInterviewService implements InterviewServiceAPI {
 
     updateInterview: async (
       interviewId: string,
-      interview: Interview.T,
+      interview: Interview.UpdateT,
     ): Promise<Interview.T> => {
       const serializedInterview = await this.api.interviews.updateInterview(
         interviewId,
@@ -40,7 +45,7 @@ export default class BackendInterviewService implements InterviewServiceAPI {
 
   InterviewScreenAPI = {
     createInterviewScreen: async (
-      screen: InterviewScreen.T,
+      screen: InterviewScreen.CreateT,
     ): Promise<InterviewScreen.T> => {
       const serializedScreen =
         await this.api.interviewScreens.createInterviewScreen(
@@ -51,7 +56,7 @@ export default class BackendInterviewService implements InterviewServiceAPI {
 
     getInterviewScreen: async (
       screenId: string,
-    ): Promise<InterviewScreen.T> => {
+    ): Promise<InterviewScreen.WithChildrenT> => {
       const serializedScreen =
         await this.api.interviewScreens.getInterviewScreen(screenId);
       return InterviewScreen.deserialize(serializedScreen);
@@ -59,15 +64,13 @@ export default class BackendInterviewService implements InterviewServiceAPI {
 
     updateInterviewScreen: async (
       screenId: string,
-      screen: InterviewScreen.T,
-    ): Promise<InterviewScreen.T> => {
-      const requestScreen = InterviewScreen.serialize(screen);
+      screen: InterviewScreen.UpdateT,
+    ): Promise<InterviewScreen.WithChildrenT> => {
       const serializedScreen =
-        await this.api.interviewScreens.updateInterviewScreen(screenId, {
-          ...requestScreen,
-          actions: requestScreen.actions ?? [],
-          entries: requestScreen.entries ?? [],
-        });
+        await this.api.interviewScreens.updateInterviewScreen(
+          screenId,
+          InterviewScreen.serialize(screen),
+        );
       return InterviewScreen.deserialize(serializedScreen);
     },
   };

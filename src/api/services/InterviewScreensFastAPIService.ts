@@ -1,8 +1,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { InterviewScreen } from '../models/InterviewScreen';
-import type { InterviewScreenWithActionsAndEntries } from '../models/InterviewScreenWithActionsAndEntries';
+import type { SerializedInterviewScreenCreate } from '../models/SerializedInterviewScreenCreate';
+import type { SerializedInterviewScreenRead } from '../models/SerializedInterviewScreenRead';
+import type { SerializedInterviewScreenReadWithChildren } from '../models/SerializedInterviewScreenReadWithChildren';
+import type { SerializedInterviewScreenUpdate } from '../models/SerializedInterviewScreenUpdate';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -14,12 +16,12 @@ export class InterviewScreensFastAPIService {
   /**
    * Get Interview Screen
    * @param screenId
-   * @returns InterviewScreenWithActionsAndEntries Successful Response
+   * @returns SerializedInterviewScreenReadWithChildren Successful Response
    * @throws ApiError
    */
   public getInterviewScreen(
     screenId: string,
-  ): CancelablePromise<InterviewScreenWithActionsAndEntries> {
+  ): CancelablePromise<SerializedInterviewScreenReadWithChildren> {
     return this.httpRequest.request({
       method: 'GET',
       url: '/api/interview_screens/{screen_id}',
@@ -39,13 +41,13 @@ export class InterviewScreensFastAPIService {
    * and Entries.
    * @param screenId
    * @param requestBody
-   * @returns InterviewScreenWithActionsAndEntries Successful Response
+   * @returns SerializedInterviewScreenReadWithChildren Successful Response
    * @throws ApiError
    */
   public updateInterviewScreen(
     screenId: string,
-    requestBody: InterviewScreenWithActionsAndEntries,
-  ): CancelablePromise<InterviewScreenWithActionsAndEntries> {
+    requestBody: SerializedInterviewScreenUpdate,
+  ): CancelablePromise<SerializedInterviewScreenReadWithChildren> {
     return this.httpRequest.request({
       method: 'PUT',
       url: '/api/interview_screens/{screen_id}',
@@ -63,12 +65,12 @@ export class InterviewScreensFastAPIService {
   /**
    * Create Interview Screen
    * @param requestBody
-   * @returns InterviewScreen Successful Response
+   * @returns SerializedInterviewScreenRead Successful Response
    * @throws ApiError
    */
   public createInterviewScreen(
-    requestBody: InterviewScreen,
-  ): CancelablePromise<InterviewScreen> {
+    requestBody: SerializedInterviewScreenCreate,
+  ): CancelablePromise<SerializedInterviewScreenRead> {
     return this.httpRequest.request({
       method: 'POST',
       url: '/api/interview_screens/',

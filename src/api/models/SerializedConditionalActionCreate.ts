@@ -6,17 +6,17 @@ import type { ActionType } from './ActionType';
 import type { ConditionalOperator } from './ConditionalOperator';
 
 /**
- * Any models that are returned in our REST API should extend this class.
- * This class handles any snake_case to camelCase conversions.
+ * The ConditionalAction model used when creating a new model.
+ * `id` is optional because it is set by the database.
  */
-export type ConditionalActionBase = {
+export type SerializedConditionalActionCreate = {
   order: number;
-  id?: string;
   actionPayload: string;
   actionType: ActionType;
   conditionalOperator: ConditionalOperator;
-  responseKey: string;
+  responseKey?: string;
   screenId: string;
-  value: string;
+  value?: string;
+  id?: string;
 };
 

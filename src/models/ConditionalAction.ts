@@ -5,7 +5,8 @@ import assertUnreachable from '../util/assertUnreachable';
 import nullsToUndefined from '../util/nullsToUndefined';
 import { ActionType } from '../api/models/ActionType';
 import { ConditionalOperator } from '../api/models/ConditionalOperator';
-import { ConditionalActionBase as SerializedConditionalAction } from '../api/models/ConditionalActionBase';
+import { SerializedConditionalActionRead } from '../api/models/SerializedConditionalActionRead';
+import { SerializedConditionalActionCreate } from '../api/models/SerializedConditionalActionCreate';
 
 /**
  * An array of all all conditional operators. Useful for populating a list of
@@ -67,14 +68,16 @@ interface ConditionalAction {
   /**
    * The key within the response data which maps to the datum being compared.
    */
-  readonly responseKey: string | undefined;
+  readonly responseKey?: string;
 
   /** The screen that this action belongs to */
   readonly screenId: string;
 
   /** The value to compare the response datum to. */
-  readonly value: string | undefined;
+  readonly value?: string;
 }
+
+type ConditionalActionCreate = Omit<ConditionalAction, 'id'>;
 
 export function create(vals: {
   order: number;
@@ -113,7 +116,9 @@ function isStringArray(maybeArr: unknown): maybeArr is string[] {
  * @returns {[boolean, string]} A tuple of whether or not validation passed,
  * and an error string if validation did not pass.
  */
-export function validate(action: ConditionalAction): [boolean, string] {
+export function validate(
+  action: ConditionalAction | ConditionalActionCreate,
+): [boolean, string] {
   // if we're **not** using the ALWAYS_EXECUTE operator then don't allow an
   // empty `responseKey` or an empty `value`
   if (action.conditionalOperator !== ConditionalOperator.ALWAYS_EXECUTE) {
@@ -146,7 +151,7 @@ export function validate(action: ConditionalAction): [boolean, string] {
  * the correct values. Otherwise, it means something went wrong during storage.
  */
 export function deserialize(
-  rawObj: SerializedConditionalAction,
+  rawObj: SerializedConditionalActionRead,
 ): ConditionalAction {
   const { actionPayload, actionType, ...condition } = nullsToUndefined(rawObj);
 
@@ -207,33 +212,23 @@ function serializeActionPayload(
 }
 
 export function serialize(
-  conditionalAction: ConditionalAction,
-): SerializedConditionalAction {
+  action: ConditionalAction,
+): SerializedConditionalActionRead;
+export function serialize(
+  action: ConditionalActionCreate,
+): SerializedConditionalActionCreate;
+export function serialize(
+  action: ConditionalAction | ConditionalActionCreate,
+): SerializedConditionalActionRead | SerializedConditionalActionCreate {
   // validate the conditional action before serializing to make sure it's safe to store
-  const [isValid, errorMsg] = validate(conditionalAction);
+  const [isValid, errorMsg] = validate(action);
   invariant(isValid, errorMsg);
 
-  const {
-    actionConfig,
-    conditionalOperator,
-    id,
-    responseKey,
-    screenId,
-    value,
-    order,
-  } = conditionalAction;
-  invariant(responseKey, 'A `responseKey` must exist');
-  invariant(value, 'A `value` must exist');
-
+  const { actionConfig, ...conditionalAction } = action;
   return {
-    order,
-    id,
-    screenId,
-    responseKey,
-    value,
+    ...conditionalAction,
     actionPayload: serializeActionPayload(actionConfig.payload),
     actionType: actionConfig.type,
-    conditionalOperator,
   };
 }
 
@@ -311,6 +306,7 @@ export function createDefaultActionConfig(
 }
 
 export type { ConditionalAction as T };
-export type { SerializedConditionalAction as SerializedT };
+export type { ConditionalActionCreate as CreateT };
+export type { SerializedConditionalActionRead as SerializedT };
 export type { ConditionalOperator };
 export type { ActionType };

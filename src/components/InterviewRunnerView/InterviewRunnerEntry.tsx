@@ -14,7 +14,7 @@ type Props = {
  */
 export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
   switch (entry.responseType) {
-    case InterviewScreenEntry.ResponseType.Text:
+    case InterviewScreenEntry.ResponseType.TEXT:
       return (
         <Form.Input
           key={entry.id}
@@ -22,7 +22,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           label={entry.prompt}
         />
       );
-    case InterviewScreenEntry.ResponseType.Boolean:
+    case InterviewScreenEntry.ResponseType.BOOLEAN:
       return (
         <Form.Input
           type="radio"
@@ -34,7 +34,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           ]}
         />
       );
-    case InterviewScreenEntry.ResponseType.Number:
+    case InterviewScreenEntry.ResponseType.NUMBER:
       return (
         <Form.Input
           type="number"
@@ -43,7 +43,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           label={entry.prompt}
         />
       );
-    case InterviewScreenEntry.ResponseType.Email:
+    case InterviewScreenEntry.ResponseType.EMAIL:
       return (
         <Form.Input
           type="email"
