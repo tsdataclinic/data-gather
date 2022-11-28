@@ -67,7 +67,11 @@ type InterviewScreenCreate = Omit<InterviewScreen, 'id' | 'order'>;
  * The InterviewScreen model used on an update request.
  * InterviewScreen models allow nested updates, so the Update model includes
  * the nested actions and entries.
- * */
+ *
+ * Note that the nested models can also be Create models! So it is possible
+ * for an interview screen update to also accept actions or entries that
+ * lack ids (because they have yet to be created in the database).
+ */
 type InterviewScreenUpdate = Override<
   InterviewScreenWithChildren,
   {

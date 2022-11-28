@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import assertUnreachable from '../util/assertUnreachable';
 import { SerializedInterviewScreenEntryRead } from '../api/models/SerializedInterviewScreenEntryRead';
 import { SerializedInterviewScreenEntryCreate } from '../api/models/SerializedInterviewScreenEntryCreate';
@@ -41,21 +40,6 @@ export function deserialize(
   rawObj: SerializedInterviewScreenEntryRead,
 ): InterviewScreenEntry {
   return rawObj;
-}
-
-export function create(
-  values: Omit<InterviewScreenEntry, 'id' | 'responseKey'>,
-): InterviewScreenEntry {
-  return {
-    id: uuidv4(),
-    name: values.name,
-    prompt: values.prompt,
-    responseKey: uuidv4(),
-    responseType: values.responseType,
-    screenId: values.screenId,
-    text: values.text,
-    order: values.order,
-  };
 }
 
 /**
