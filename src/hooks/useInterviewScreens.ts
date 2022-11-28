@@ -1,10 +1,9 @@
-import { useLiveQuery } from 'dexie-react-hooks';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import * as InterviewScreen from '../models/InterviewScreen';
 import isNonNullable from '../util/isNonNullable';
 import useAppDispatch from './useAppDispatch';
 import useAppState from './useAppState';
-import useInterview from './useInterview';
 import useInterviewStore from './useInterviewStore';
 
 /**
@@ -21,16 +20,20 @@ export default function useInterviewScreens(
   const dispatch = useAppDispatch();
   const interviewStore = useInterviewStore();
   const { loadedInterviewScreens } = useAppState();
-  const interview = useInterview(interviewId);
 
   // load interview screens from backend
-  const screensFromStorage = useLiveQuery(
-    () =>
-      interviewId === undefined
-        ? undefined
-        : interviewStore.getScreensOfInterview(interviewId),
-    [interviewId],
-  );
+  const { data: screensFromStorage } = useQuery({
+    queryKey: ['interviewScreens', interviewId],
+    queryFn: async () => {
+      if (interviewId === undefined) {
+        return undefined;
+      }
+      const interview = await interviewStore.InterviewAPI.getInterview(
+        interviewId,
+      );
+      return interview.screens;
+    },
+  });
 
   // if the screensFromStorage has changed then we should update it in
   // our global state
@@ -45,10 +48,12 @@ export default function useInterviewScreens(
 
   const screens = useMemo(
     () =>
-      interview?.screens
-        .map(screenId => loadedInterviewScreens.get(screenId))
-        .filter(isNonNullable),
-    [interview, loadedInterviewScreens],
+      screensFromStorage
+        ? screensFromStorage
+            .map(screen => loadedInterviewScreens.get(screen.id))
+            .filter(isNonNullable)
+        : undefined,
+    [screensFromStorage, loadedInterviewScreens],
   );
 
   return interviewId === undefined ? undefined : screens;

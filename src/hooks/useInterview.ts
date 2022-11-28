@@ -1,4 +1,4 @@
-import { useLiveQuery } from 'dexie-react-hooks';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import * as Interview from '../models/Interview';
 import useAppDispatch from './useAppDispatch';
@@ -21,10 +21,11 @@ export default function useInterview(
   const { loadedInterviews } = useAppState();
 
   // load interview from backend
-  const interviewFromStorage = useLiveQuery(
-    () => (id === undefined ? undefined : interviewStore.getInterview(id)),
-    [id],
-  );
+  const { data: interviewFromStorage } = useQuery({
+    queryKey: ['interview', id],
+    queryFn: () =>
+      id ? interviewStore.InterviewAPI.getInterview(id) : undefined,
+  });
 
   // if the interviewFromStorage has changed then we should update it in
   // our global state
