@@ -23,35 +23,37 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
   }
 
   InterviewAPI = {
-    createInterview: (interview: Interview.T): Promise<Interview.T> =>
+    createInterview: (interview: Interview.CreateT): Promise<Interview.T> =>
       this.getStore().InterviewAPI.createInterview(interview),
 
     getAllInterviews: (): Promise<Interview.T[]> =>
       this.getStore().InterviewAPI.getAllInterviews(),
 
-    getInterview: (interviewId: string): Promise<Interview.T> =>
+    getInterview: (interviewId: string): Promise<Interview.WithScreensT> =>
       this.getStore().InterviewAPI.getInterview(interviewId),
 
     updateInterview: (
       interviewId: string,
-      interview: Interview.T,
+      interview: Interview.UpdateT,
     ): Promise<Interview.T> =>
       this.getStore().InterviewAPI.updateInterview(interviewId, interview),
   };
 
   InterviewScreenAPI = {
     createInterviewScreen: (
-      screen: InterviewScreen.T,
+      screen: InterviewScreen.CreateT,
     ): Promise<InterviewScreen.T> =>
       this.getStore().InterviewScreenAPI.createInterviewScreen(screen),
 
-    getInterviewScreen: (screenId: string): Promise<InterviewScreen.T> =>
+    getInterviewScreen: (
+      screenId: string,
+    ): Promise<InterviewScreen.WithChildrenT> =>
       this.getStore().InterviewScreenAPI.getInterviewScreen(screenId),
 
     updateInterviewScreen: (
       screenId: string,
-      screen: InterviewScreen.T,
-    ): Promise<InterviewScreen.T> =>
+      screen: InterviewScreen.UpdateT,
+    ): Promise<InterviewScreen.WithChildrenT> =>
       this.getStore().InterviewScreenAPI.updateInterviewScreen(
         screenId,
         screen,
