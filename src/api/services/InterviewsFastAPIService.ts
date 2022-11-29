@@ -91,4 +91,29 @@ export class InterviewsFastAPIService {
     });
   }
 
+  /**
+   * Update Interview Starting State
+   * @param interviewId
+   * @param requestBody
+   * @returns SerializedInterviewReadWithScreens Successful Response
+   * @throws ApiError
+   */
+  public updateInterviewStartingState(
+    interviewId: string,
+    requestBody: Array<string>,
+  ): CancelablePromise<SerializedInterviewReadWithScreens> {
+    return this.httpRequest.request({
+      method: 'POST',
+      url: '/api/interviews/{interview_id}/starting_state',
+      path: {
+        'interview_id': interviewId,
+      },
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
 }

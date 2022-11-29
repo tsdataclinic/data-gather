@@ -16,7 +16,7 @@ import useInterviewStore from './useInterviewStore';
  */
 export default function useInterviewScreens(
   interviewId: string | undefined,
-): InterviewScreen.T[] | undefined {
+): InterviewScreen.WithChildrenT[] | undefined {
   const dispatch = useAppDispatch();
   const interviewStore = useInterviewStore();
   const { loadedInterviewScreens } = useAppState();
@@ -31,7 +31,11 @@ export default function useInterviewScreens(
       const interview = await interviewStore.InterviewAPI.getInterview(
         interviewId,
       );
-      return interview.screens;
+      return Promise.all(
+        interview.screens.map(screen =>
+          interviewStore.InterviewScreenAPI.getInterviewScreen(screen.id),
+        ),
+      );
     },
   });
 

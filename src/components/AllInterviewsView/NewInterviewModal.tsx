@@ -3,6 +3,7 @@ import useAppDispatch from '../../hooks/useAppDispatch';
 import useInterviewStore from '../../hooks/useInterviewStore';
 import Form from '../ui/Form';
 import Modal from '../ui/Modal';
+import * as Interview from '../../models/Interview';
 
 type Props = {
   isOpen: boolean;
@@ -21,9 +22,11 @@ export default function NewInterviewModal({
 
   const onSubmit = useCallback(
     async (vals: Map<string, string>): Promise<void> => {
-      const interview = await interviewStore.createInterview(
-        vals.get('name') ?? '',
-        vals.get('description') ?? '',
+      const interview = await interviewStore.InterviewAPI.createInterview(
+        Interview.create({
+          name: vals.get('name') ?? '',
+          description: vals.get('description') ?? '',
+        }),
       );
       dispatch({
         interview,

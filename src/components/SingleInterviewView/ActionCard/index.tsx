@@ -16,16 +16,18 @@ import useInterviewScreens from '../../../hooks/useInterviewScreens';
 // remove 'ALWAYS_EXECUTE' from being one of the options in the dropdown
 // because this operator is handled separately
 const OPERATOR_OPTIONS = ConditionalAction.CONDITIONAL_OPERATORS.filter(
-  operator => operator !== ConditionalAction.ConditionalOperator.AlwaysExecute,
+  operator => operator !== ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE,
 ).map(operator => ({
   displayValue: ConditionalAction.operatorToDisplayString(operator),
   value: operator,
 }));
 
 type Props = {
-  action: ConditionalAction.T;
+  action: ConditionalAction.T | ConditionalAction.CreateT;
   interview: Interview.T;
-  onActionChange: (action: ConditionalAction.T) => void;
+  onActionChange: (
+    action: ConditionalAction.T | ConditionalAction.CreateT,
+  ) => void;
 };
 
 function ActionCard(
@@ -38,7 +40,7 @@ function ActionCard(
 
   const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] = React.useState(
     action.conditionalOperator ===
-      ConditionalAction.ConditionalOperator.AlwaysExecute,
+      ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE,
   );
 
   const onAlwaysExecuteChange = React.useCallback(
@@ -51,11 +53,11 @@ function ActionCard(
       if (
         !isChecked &&
         action.conditionalOperator ===
-          ConditionalAction.ConditionalOperator.AlwaysExecute
+          ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
       ) {
         onActionChange({
           ...action,
-          conditionalOperator: ConditionalAction.ConditionalOperator.Equals,
+          conditionalOperator: ConditionalAction.ConditionalOperator.EQ,
         });
       }
     },
@@ -143,7 +145,6 @@ function ActionCard(
 
   return (
     <ScrollableElement
-      key={action.id}
       name="ACTION"
       className="grid h-60 w-full grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg"
     >

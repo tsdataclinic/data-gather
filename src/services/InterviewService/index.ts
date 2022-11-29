@@ -37,6 +37,15 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
       interview: Interview.UpdateT,
     ): Promise<Interview.T> =>
       this.getStore().InterviewAPI.updateInterview(interviewId, interview),
+
+    updateInterviewStartingState: (
+      interviewId: string,
+      startingScreenIds: readonly string[],
+    ): Promise<Interview.WithScreensT> =>
+      this.getStore().InterviewAPI.updateInterviewStartingState(
+        interviewId,
+        startingScreenIds,
+      ),
   };
 
   InterviewScreenAPI = {

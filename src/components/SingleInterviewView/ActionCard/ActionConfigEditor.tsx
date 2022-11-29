@@ -44,7 +44,7 @@ export default function ActionConfigEditor({
     payload: ConditionalAction.T['actionConfig']['payload'],
   ): void => {
     switch (actionType) {
-      case ConditionalAction.ActionType.Push:
+      case ConditionalAction.ActionType.PUSH:
         invariant(
           typeof payload === 'string',
           'Action payload must be of type string',
@@ -54,10 +54,10 @@ export default function ActionConfigEditor({
           payload: [payload],
         });
         break;
-      case ConditionalAction.ActionType.Skip:
-      case ConditionalAction.ActionType.Checkpoint:
-      case ConditionalAction.ActionType.Milestone:
-      case ConditionalAction.ActionType.Restore:
+      case ConditionalAction.ActionType.SKIP:
+      case ConditionalAction.ActionType.CHECKPOINT:
+      case ConditionalAction.ActionType.MILESTONE:
+      case ConditionalAction.ActionType.RESTORE:
         // TODO: needs implementation
         break;
       default:
@@ -85,7 +85,7 @@ export default function ActionConfigEditor({
 
   const renderEditor = (): JSX.Element | null => {
     switch (actionConfig.type) {
-      case ConditionalAction.ActionType.Push:
+      case ConditionalAction.ActionType.PUSH:
         // TODO: we only allow a single screen to be pushed for now. This needs
         // to be updated once we have a multi-select dropdown component.
         return (
@@ -93,7 +93,7 @@ export default function ActionConfigEditor({
             <Dropdown
               onChange={(newScreenId: string) =>
                 onActionPayloadChange(
-                  ConditionalAction.ActionType.Push,
+                  ConditionalAction.ActionType.PUSH,
                   newScreenId,
                 )
               }
@@ -103,26 +103,26 @@ export default function ActionConfigEditor({
             />
           </LabelWrapper>
         );
-      case ConditionalAction.ActionType.Skip:
+      case ConditionalAction.ActionType.SKIP:
         return (
           <LabelWrapper inline label="Payload" labelTextClassName="w-20">
             <InputText required onChange={() => {}} />
             <InputText required onChange={() => {}} />
           </LabelWrapper>
         );
-      case ConditionalAction.ActionType.Checkpoint:
+      case ConditionalAction.ActionType.CHECKPOINT:
         return (
           <LabelWrapper inline label="Payload" labelTextClassName="w-20">
             <InputText required onChange={() => {}} />
           </LabelWrapper>
         );
-      case ConditionalAction.ActionType.Milestone:
+      case ConditionalAction.ActionType.MILESTONE:
         return (
           <LabelWrapper inline label="Payload" labelTextClassName="w-20">
             <InputText required onChange={() => {}} />
           </LabelWrapper>
         );
-      case ConditionalAction.ActionType.Restore:
+      case ConditionalAction.ActionType.RESTORE:
         return (
           <LabelWrapper inline label="Payload" labelTextClassName="w-20">
             <InputText required onChange={() => {}} />

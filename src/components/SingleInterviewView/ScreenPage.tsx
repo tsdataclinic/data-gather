@@ -16,19 +16,17 @@ import { useToast } from '../ui/Toast';
 type Props = {
   defaultActions: readonly ConditionalAction.T[];
   defaultEntries: readonly InterviewScreenEntry.T[];
-  defaultScreen: InterviewScreen.T;
+  defaultScreen: InterviewScreen.WithChildrenT;
   interview: Interview.T;
 };
+
+type EditableAction = ConditionalAction.T | ConditionalAction.CreateT;
+type EditableEntry = InterviewScreenEntry.T | InterviewScreenEntry.CreateT;
 
 /**
  * The ScreenCard is an uncontrolled component because any changes to actions
  * are only tracked internally. These changes are not bubbled up to the rest
  * of the app until "Save" is clicked.
- *
- * TODO: currently this component is only tracking `actions` in an uncontrolled
- * manner. We need to apply the same treatment to the rest of the Screen object
- * (for the entries and the header configuration). Any prop with a `default`
- * prefix implies it is uncontrolled.
  */
 function ScreenCard({
   defaultEntries,
@@ -52,11 +50,13 @@ function ScreenCard({
 
   // track actions internallly so we can modify them without persisting until
   // 'save' is clicked
-  const [allActions, setAllActions] = React.useState(defaultActions);
+  const [allActions, setAllActions] =
+    React.useState<readonly EditableAction[]>(defaultActions);
 
   // track entries internally so we can modify them without persisting until
   // 'save' is clicked
-  const [allEntries, setAllEntries] = React.useState(defaultEntries);
+  const [allEntries, setAllEntries] =
+    React.useState<readonly EditableEntry[]>(defaultEntries);
 
   const allFormRefs = React.useRef(new Map<string, HTMLFormElement>());
 
@@ -64,48 +64,66 @@ function ScreenCard({
     setAllActions(prevActions =>
       prevActions.concat(
         ConditionalAction.create({
+          order: prevActions.length + 1,
           screenId: screen.id,
         }),
       ),
     );
 
-  const onActionChange = React.useCallback((newAction: ConditionalAction.T) => {
+  const onActionChange = React.useCallback((newAction: EditableAction) => {
     setAllActions(prevActions =>
-      prevActions.map(action =>
-        action.id === newAction.id ? newAction : action,
-      ),
+      prevActions.map(action => {
+        if ('id' in action && 'id' in newAction) {
+          return action.id === newAction.id ? newAction : action;
+        }
+        if ('tempId' in action && 'tempId' in newAction) {
+          return action.tempId === newAction.tempId ? newAction : action;
+        }
+        return action;
+      }),
     );
   }, []);
 
-  const onEntryChange = React.useCallback(
-    (newEntry: InterviewScreenEntry.T) => {
-      setAllEntries(prevEntries =>
-        prevEntries.map(entry => (entry.id === newEntry.id ? newEntry : entry)),
-      );
+  const onEntryChange = React.useCallback((newEntry: EditableEntry) => {
+    setAllEntries(prevEntries =>
+      prevEntries.map(entry => {
+        if ('id' in entry && 'id' in newEntry) {
+          return entry.id === newEntry.id ? newEntry : entry;
+        }
+        if ('tempId' in entry && 'tempId' in newEntry) {
+          return entry.tempId === newEntry.tempId ? newEntry : entry;
+        }
+        return entry;
+      }),
+    );
+  }, []);
+
+  const onScreenChange = React.useCallback(
+    (newScreen: InterviewScreen.WithChildrenT) => {
+      setScreen(newScreen);
     },
     [],
   );
-
-  const onScreenChange = React.useCallback((newScreen: InterviewScreen.T) => {
-    setScreen(newScreen);
-  }, []);
 
   const onNewEntryClick = React.useCallback(() => {
     setIsNewEntryModalOpen(true);
   }, []);
 
   const onNewEntrySubmit = async (vals: Map<string, string>): Promise<void> => {
-    const entry = InterviewScreenEntry.create({
-      name: vals.get('name') ?? '',
-      prompt: vals.get('prompt') ?? '',
-      responseType: InterviewScreenEntry.responseTypeStringToEnum(
-        vals.get('responseType'),
+    setAllEntries(prevEntries =>
+      prevEntries.concat(
+        InterviewScreenEntry.create({
+          name: vals.get('name') ?? '',
+          prompt: vals.get('prompt') ?? '',
+          responseType: InterviewScreenEntry.responseTypeStringToEnum(
+            vals.get('responseType'),
+          ),
+          screenId: screen.id,
+          text: vals.get('text') ?? '',
+          order: prevEntries.length + 1,
+        }),
       ),
-      screenId: screen.id,
-      text: vals.get('text') ?? '',
-    });
-
-    await interviewStore.addEntryToScreen(screen.id, entry);
+    );
     setIsNewEntryModalOpen(false);
   };
 
@@ -118,21 +136,16 @@ function ScreenCard({
     });
 
     if (allFormsValid) {
-      // TODO: we should just have a single updateScreen function that just
-      // replaces the screen object and updates the screenEntries and conditionalActions
-      // dbs by adding/removing whatever is necessary
+      const updatedScreen =
+        await interviewStore.InterviewScreenAPI.updateInterviewScreen(
+          screen.id,
+          { ...screen, actions: allActions, entries: allEntries },
+        );
+
       dispatch({
-        screen,
+        screen: updatedScreen,
         type: 'SCREEN_UPDATE',
       });
-
-      await interviewStore.putScreen(screen);
-      await interviewStore.updateScreenEntries(screen.id, allEntries);
-      await interviewStore.updateScreenConditionalActions(
-        screen.id,
-        allActions,
-      );
-
       toaster.notifySuccess('Saved!', `Successfully saved ${screen.title}`);
     }
   }, [allActions, screen, interviewStore, allEntries, dispatch, toaster]);
@@ -164,16 +177,16 @@ function ScreenCard({
           />
           {allEntries.map(entry => (
             <EntryCard
-              key={entry.id}
-              ref={formRefSetter(entry.id)}
+              key={'id' in entry ? entry.id : entry.tempId}
+              ref={formRefSetter('id' in entry ? entry.id : entry.tempId)}
               entry={entry}
               onEntryChange={onEntryChange}
             />
           ))}
           {allActions.map(action => (
             <ActionCard
-              key={action.id}
-              ref={formRefSetter(action.id)}
+              key={'id' in action ? action.id : action.tempId}
+              ref={formRefSetter('id' in action ? action.id : action.tempId)}
               action={action}
               onActionChange={onActionChange}
               interview={interview}

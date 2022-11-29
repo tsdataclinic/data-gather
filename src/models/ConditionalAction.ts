@@ -77,20 +77,26 @@ interface ConditionalAction {
   readonly value?: string;
 }
 
-type ConditionalActionCreate = Omit<ConditionalAction, 'id'>;
+type ConditionalActionCreate = Omit<ConditionalAction, 'id'> & {
+  /**
+   * A temp id used only for identification purposes in the frontend (e.g.
+   * for React keys)
+   */
+  tempId: string;
+};
 
 export function create(vals: {
   order: number;
   screenId: string;
-}): ConditionalAction {
+}): ConditionalActionCreate {
   return {
     actionConfig: { payload: [], type: ActionType.PUSH },
     conditionalOperator: ConditionalOperator.ALWAYS_EXECUTE,
-    id: uuidv4(),
     responseKey: undefined,
     screenId: vals.screenId,
     value: undefined,
     order: vals.order,
+    tempId: uuidv4(),
   };
 }
 
@@ -308,5 +314,5 @@ export function createDefaultActionConfig(
 export type { ConditionalAction as T };
 export type { ConditionalActionCreate as CreateT };
 export type { SerializedConditionalActionRead as SerializedT };
-export type { ConditionalOperator };
-export type { ActionType };
+export { ConditionalOperator };
+export { ActionType };

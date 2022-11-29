@@ -10,6 +10,10 @@ export interface InterviewServiceAPI {
       interviewId: string,
       interview: Interview.UpdateT,
     ): Promise<Interview.T>;
+    updateInterviewStartingState(
+      interviewId: string,
+      startingScreenIds: readonly string[],
+    ): Promise<Interview.WithScreensT>;
   };
 
   InterviewScreenAPI: {

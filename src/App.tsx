@@ -4,7 +4,6 @@ import AllInterviewsView from './components/AllInterviewsView';
 import Header from './components/Header';
 import InterviewRunnerView from './components/InterviewRunnerView';
 import SingleInterviewView from './components/SingleInterviewView';
-import ApiDemo from './components/apiDemo';
 import InterviewService from './services/InterviewService';
 import { AppState, AppDispatch, useAppReducer } from './store/appState';
 
@@ -31,7 +30,6 @@ export default function App(): JSX.Element {
                   path="/interview/:interviewId/*"
                   element={<SingleInterviewView />}
                 />
-                <Route path="/apidemo" element={<ApiDemo />} />
               </Routes>
             </div>
           </AppDispatch.Provider>

@@ -15,7 +15,7 @@ import useInterviewStore from './useInterviewStore';
  */
 export default function useInterview(
   id: string | undefined,
-): Interview.T | undefined {
+): Interview.WithScreensT | undefined {
   const dispatch = useAppDispatch();
   const interviewStore = useInterviewStore();
   const { loadedInterviews } = useAppState();

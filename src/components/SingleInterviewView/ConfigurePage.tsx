@@ -10,18 +10,25 @@ import LabelWrapper from '../ui/LabelWrapper';
 import TextArea from '../ui/TextArea';
 
 type Props = {
-  interview: Interview.T;
+  interview: Interview.WithScreensT;
 };
 
 function ConfigureCard({ interview }: Props): JSX.Element {
-  const { startingState } = interview;
   const interviewStore = useInterviewStore();
   const screens = useInterviewScreens(interview.id);
+  const startingState = React.useMemo(
+    () => Interview.getStartingScreens(interview),
+    [interview],
+  );
 
   const [displayedNotes, setDisplayedNotes] = useState(interview.notes);
 
   const saveNotes = useCallback((): void => {
-    interviewStore.updateNotes(interview.id, displayedNotes);
+    const newInterview = {
+      ...interview,
+      notes: displayedNotes,
+    };
+    interviewStore.InterviewAPI.updateInterview(newInterview.id, newInterview);
   }, [displayedNotes, interviewStore, interview]);
 
   const changeStartScreen = useCallback(
@@ -104,10 +111,10 @@ function ConfigureCard({ interview }: Props): JSX.Element {
                   flexDirection: 'column',
                 }}
               >
-                {startingState.map((state, idx) => (
+                {startingState.map((screen, idx) => (
                   <div
                     // eslint-disable-next-line react/no-array-index-key
-                    key={`startingstate_${state}_${idx}`}
+                    key={`startingstate_${screen.id}_${idx}`}
                     style={{
                       display: 'flex',
                       marginBottom: '20px',
@@ -117,7 +124,7 @@ function ConfigureCard({ interview }: Props): JSX.Element {
                     <span className="w-32">
                       <Dropdown
                         onChange={screenId => changeStartScreen(idx, screenId)}
-                        value={state}
+                        value={screen.id}
                         options={getOptions()}
                         placeholder=""
                       />

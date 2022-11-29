@@ -7,8 +7,10 @@ import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import useInterviewStore from '../../hooks/useInterviewStore';
 
 type Props = {
-  entry: InterviewScreenEntry.T;
-  onEntryChange: (entry: InterviewScreenEntry.T) => void;
+  entry: InterviewScreenEntry.T | InterviewScreenEntry.CreateT;
+  onEntryChange: (
+    entry: InterviewScreenEntry.T | InterviewScreenEntry.CreateT,
+  ) => void;
 };
 
 const ENTRY_RESPONSE_TYPE_OPTIONS = InterviewScreenEntry.RESPONSE_TYPES.map(

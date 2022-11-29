@@ -6,8 +6,8 @@ import * as InterviewScreen from '../../models/InterviewScreen';
 import Form from '../ui/Form';
 
 type Props = {
-  onScreenChange: (newScreen: InterviewScreen.T) => void;
-  screen: InterviewScreen.T;
+  onScreenChange: (newScreen: InterviewScreen.WithChildrenT) => void;
+  screen: InterviewScreen.WithChildrenT;
 };
 
 function HeaderCard(

@@ -18,7 +18,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
       return (
         <Form.Input
           key={entry.id}
-          name={entry.responseId}
+          name={entry.responseKey}
           label={entry.prompt}
         />
       );
@@ -26,7 +26,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
       return (
         <Form.Input
           type="radio"
-          name={entry.responseId}
+          name={entry.responseKey}
           label={entry.prompt}
           options={[
             { value: true, displayValue: 'Yes' },
@@ -39,7 +39,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
         <Form.Input
           type="number"
           key={entry.id}
-          name={entry.responseId}
+          name={entry.responseKey}
           label={entry.prompt}
         />
       );
@@ -48,7 +48,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
         <Form.Input
           type="email"
           key={entry.id}
-          name={entry.responseId}
+          name={entry.responseKey}
           label={entry.prompt}
         />
       );

@@ -1,4 +1,3 @@
-import copy
 import logging
 import uuid
 from typing import Optional, Sequence, TypeVar
@@ -7,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from sqlmodel import Session, SQLModel, select
+from sqlmodel import Session, SQLModel, col, select
 
 from server.api.exceptions import InvalidOrder
 from server.engine import create_fk_constraint_engine
@@ -121,6 +120,49 @@ def update_interview(interview_id: str, interview: InterviewUpdate) -> Interview
         return db_interview
 
 
+@app.post(
+    "/api/interviews/{interview_id}/starting_state",
+    response_model=InterviewReadWithScreens,
+    tags=["Interviews"],
+)
+def update_interview_starting_state(
+    interview_id: str, starting_state: list[str]
+) -> Interview:
+    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
+    with Session(autocommit=False, autoflush=False, bind=engine) as session:
+        db_screens = session.exec(
+            select(InterviewScreen).where(InterviewScreen.interview_id == interview_id)
+        ).all()
+
+        starting_screen_to_idx = {
+            screen_id: i for i, screen_id in enumerate(starting_state)
+        }
+        for db_screen in db_screens:
+            if db_screen.id in starting_screen_to_idx:
+                idx = starting_screen_to_idx[db_screen.id]
+                db_screen.is_in_starting_state = True
+                db_screen.starting_state_order = idx
+            else:
+                db_screen.is_in_starting_state = False
+                db_screen.starting_state_order = None
+
+        session.add_all(db_screens)
+        try:
+            session.commit()
+        except IntegrityError as e:
+            raise HTTPException(
+                status_code=400,
+                detail=str(e.orig),
+            )
+
+        db_interview = session.get(Interview, interview_id)
+        if not db_interview:
+            raise HTTPException(
+                status_code=404, detail=f"Interview with id {interview_id} not found"
+            )
+        return db_interview
+
+
 @app.get(
     "/api/interviews/",
     response_model=list[InterviewRead],
@@ -152,7 +194,7 @@ def get_interview_screen(screen_id: str) -> InterviewScreen:
     response_model=InterviewScreenRead,
     tags=["InterviewScreens"],
 )
-def create_interview_screen(screen: InterviewScreenCreate) -> InterviewScreenCreate:
+def create_interview_screen(screen: InterviewScreenCreate) -> InterviewScreen:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     with Session(autocommit=False, autoflush=False, bind=engine) as session:
         db_screen = InterviewScreen.from_orm(screen)
@@ -180,7 +222,7 @@ def create_interview_screen(screen: InterviewScreenCreate) -> InterviewScreenCre
             )
         session.refresh(screen)
 
-        return screen
+        return db_screen
 
 
 @app.put(

@@ -85,6 +85,43 @@ export default class LocalInterviewService
         `Cannot update interview. Interview with id '${interviewId}' does not exist`,
       );
     },
+
+    updateInterviewStartingState: async (
+      interviewId: string,
+      startingScreenIds: readonly string[],
+    ): Promise<Interview.WithScreensT> => {
+      const serializedInterview = await this.interviews.get(interviewId);
+      if (serializedInterview) {
+        // get screens for this interview
+        const screens = await this.interviewScreens
+          .where({ interviewId })
+          .toArray();
+
+        // map each starting screen id to its index
+        const startingScreenToIdx: Record<string, number> = {};
+        startingScreenIds.forEach((screenId, idx) => {
+          startingScreenToIdx[screenId] = idx;
+        });
+
+        const newScreens = screens.map(screen => ({
+          ...screen,
+          isInStartingState: screen.id in startingScreenToIdx,
+          startingStateOrder:
+            screen.id in startingScreenToIdx
+              ? startingScreenToIdx[screen.id]
+              : undefined,
+        }));
+
+        // now write the screens back
+        await this.interviewScreens.bulkPut(newScreens);
+
+        return Interview.deserialize({
+          ...serializedInterview,
+          screens: newScreens,
+        });
+      }
+      throw new Error(`Could not find an interview with id '${interviewId}'`);
+    },
   };
 
   InterviewScreenAPI = {

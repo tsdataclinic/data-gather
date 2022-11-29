@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import assertUnreachable from '../util/assertUnreachable';
 import { SerializedInterviewScreenEntryRead } from '../api/models/SerializedInterviewScreenEntryRead';
 import { SerializedInterviewScreenEntryCreate } from '../api/models/SerializedInterviewScreenEntryCreate';
@@ -34,7 +35,23 @@ interface InterviewScreenEntry {
   readonly text: string;
 }
 
-type InterviewScreenEntryCreate = Omit<InterviewScreenEntry, 'id'>;
+type InterviewScreenEntryCreate = Omit<InterviewScreenEntry, 'id'> & {
+  /**
+   * A temp id used only for identification purposes in the frontend (e.g.
+   * for React keys)
+   */
+  tempId: string;
+};
+
+export function create(
+  values: Omit<InterviewScreenEntry, 'id' | 'responseKey' | 'tempId'>,
+): InterviewScreenEntryCreate {
+  return {
+    ...values,
+    responseKey: uuidv4(),
+    tempId: uuidv4(),
+  };
+}
 
 export function deserialize(
   rawObj: SerializedInterviewScreenEntryRead,

@@ -56,17 +56,18 @@ export function create(values: {
   };
 }
 
-/**
- * Immutably add a screen to an interview
- */
-export function addScreen(
-  interview: Interview,
-  screen: InterviewScreen.T,
-): Interview {
-  return {
-    ...interview,
-    screens: interview.screens?.concat(screen),
-  };
+export function getStartingScreens(
+  interview: InterviewWithScreens,
+): InterviewScreen.T[] {
+  const startingScreens = interview.screens.filter(
+    screen =>
+      screen.isInStartingState && screen.startingStateOrder !== undefined,
+  );
+  const sortedScreens = startingScreens.sort(
+    (scr1, scr2) =>
+      (scr2.startingStateOrder ?? 0) - (scr1.startingStateOrder ?? 0),
+  );
+  return sortedScreens;
 }
 
 /**
