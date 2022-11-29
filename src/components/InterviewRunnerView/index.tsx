@@ -39,7 +39,8 @@ export default function InterviewRunnerView(): JSX.Element | null {
     }
 
     // Load screens for interview and index them by their ID
-    const indexedScreens: Map<string, InterviewScreen.T> = new Map();
+    const indexedScreens: Map<string, InterviewScreen.WithChildrenT> =
+      new Map();
     screens.forEach(screen => indexedScreens.set(screen.id, screen));
 
     // Create a script from the interview definition

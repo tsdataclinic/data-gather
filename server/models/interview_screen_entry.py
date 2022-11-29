@@ -1,6 +1,6 @@
 import enum
 import uuid
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 from sqlmodel import Field, Relationship
 

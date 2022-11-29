@@ -46,13 +46,13 @@ def custom_generate_unique_id(route: APIRoute) -> str:
         return f"{route.name}"
 
 
-app = FastAPI(
-    title="Interview App API", generate_unique_id_function=custom_generate_unique_id
-)
-
 TAG_METADATA = [{"name": "airtable", "description": "Endpoints for querying Airtable"}]
 
-app = FastAPI(title="Interview App API", openapi_tags=TAG_METADATA)
+app = FastAPI(
+    title="Interview App API",
+    generate_unique_id_function=custom_generate_unique_id,
+    openapi_tags=TAG_METADATA,
+)
 
 app.add_middleware(
     CORSMiddleware,

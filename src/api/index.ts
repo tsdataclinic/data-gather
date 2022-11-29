@@ -27,6 +27,7 @@ export type { SerializedInterviewScreenUpdate } from './models/SerializedIntervi
 export type { SerializedInterviewUpdate } from './models/SerializedInterviewUpdate';
 export type { ValidationError } from './models/ValidationError';
 
+export { AirtableFastAPIService } from './services/AirtableFastAPIService';
 export { DefaultFastAPIService } from './services/DefaultFastAPIService';
 export { InterviewsFastAPIService } from './services/InterviewsFastAPIService';
 export { InterviewScreensFastAPIService } from './services/InterviewScreensFastAPIService';

@@ -16,7 +16,7 @@ const ACTION_TYPE_OPTIONS = ConditionalAction.ACTION_TYPES.map(actionType => ({
 type ActionConfig = ConditionalAction.T['actionConfig'];
 
 type Props = {
-  action: ConditionalAction.T;
+  action: ConditionalAction.T | ConditionalAction.CreateT;
   interview: Interview.T;
   onActionConfigChange: (actionConfig: ActionConfig) => void;
 };
@@ -39,6 +39,7 @@ export default function ActionConfigEditor({
       ConditionalAction.createDefaultActionConfig(newActionType),
     );
   };
+  const actionId = 'id' in action ? action.id : action.tempId;
 
   const screenOptions = React.useMemo(
     () =>
@@ -68,13 +69,13 @@ export default function ActionConfigEditor({
             inline
             label="Next stage"
             labelTextClassName="w-20"
-            htmlFor={`${action.id}__push`}
+            htmlFor={`${actionId}__push`}
           >
             <MultiSelect
-              id={`${action.id}__push`}
+              id={`${actionId}__push`}
               onChange={(newScreenIds: readonly string[]) =>
                 onActionConfigChange({
-                  type: ConditionalAction.ActionType.Push,
+                  type: ConditionalAction.ActionType.PUSH,
                   payload: newScreenIds,
                 })
               }

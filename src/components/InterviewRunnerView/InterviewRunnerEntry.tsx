@@ -69,7 +69,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           label={entry.prompt}
         />
       );
-    case InterviewScreenEntry.ResponseType.Airtable:
+    case InterviewScreenEntry.ResponseType.AIRTABLE:
       return (
         <div>
           <LabelWrapper label="Search for record">
@@ -87,7 +87,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
             responseData.length > 0 && (
               <Form.Dropdown
                 key={entry.id}
-                name={entry.responseId}
+                name={entry.responseKey}
                 label={entry.prompt}
                 placeholder={isLoading ? 'Loading...' : 'Select a record...'}
                 options={
@@ -105,12 +105,12 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
             responseData.length < 1 && <p>No matches found</p>}
         </div>
       );
-    case InterviewScreenEntry.ResponseType.PhoneNumber:
+    case InterviewScreenEntry.ResponseType.PHONE_NUMBER:
       return (
         <Form.Input
           type="tel"
           key={entry.id}
-          name={entry.responseId}
+          name={entry.responseKey}
           label={entry.prompt}
         />
       );

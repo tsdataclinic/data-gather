@@ -32,8 +32,10 @@ function ConfigureCard({ interview }: Props): JSX.Element {
   const onStartingStateChange = useCallback(
     (screenIds: string[]): void => {
       setStartingState(screenIds);
-      const newInterview = Interview.setStartingState(interview, screenIds);
-      interviewStore.putInterview(newInterview);
+      interviewStore.InterviewAPI.updateInterviewStartingState(
+        interview.id,
+        screenIds,
+      );
     },
     [interviewStore, interview],
   );
