@@ -1,34 +1,50 @@
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useCallback, useState } from 'react';
+import * as React from 'react';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
 import useInterviewStore from '../../hooks/useInterviewStore';
 import * as Interview from '../../models/Interview';
 import LabelWrapper from '../ui/LabelWrapper';
 import TextArea from '../ui/TextArea';
 import MultiSelect from '../ui/MultiSelect';
+import Button from '../ui/Button';
+import { useToast } from '../ui/Toast';
 
 type Props = {
-  interview: Interview.T;
+  interview: Interview.WithScreensT;
 };
 
 function ConfigureCard({ interview }: Props): JSX.Element {
+  const toaster = useToast();
   const interviewStore = useInterviewStore();
   const screens = useInterviewScreens(interview.id);
-
-  const [displayedNotes, setDisplayedNotes] = useState(interview.notes);
-
-  const saveNotes = useCallback((): void => {
-    interviewStore.updateNotes(interview.id, displayedNotes);
-  }, [displayedNotes, interviewStore, interview]);
-
-  const onStartingStateChange = useCallback(
-    (screenIds: string[]): void => {
-      const newInterview = Interview.setStartingState(interview, screenIds);
-      interviewStore.putInterview(newInterview);
-    },
-    [interviewStore, interview],
+  const [startingState, setStartingState] = React.useState<readonly string[]>(
+    () => Interview.getStartingScreens(interview).map(screen => screen.id),
   );
+
+  const [displayedNotes, setDisplayedNotes] = React.useState(interview.notes);
+
+  const onSaveClick = async (): Promise<void> => {
+    try {
+      await Promise.all([
+        interviewStore.InterviewAPI.updateInterview(interview.id, {
+          ...interview,
+          notes: displayedNotes,
+        }),
+        interviewStore.InterviewAPI.updateInterviewStartingState(
+          interview.id,
+          startingState,
+        ),
+      ]);
+      toaster.notifySuccess('Saved!', `Successfully saved changes`);
+    } catch (error) {
+      console.error(error);
+      toaster.notifyError(
+        'Error!',
+        `There was a server error when saving your changes`,
+      );
+    }
+  };
 
   if (!screens) {
     return <p>No stages have been created yet!</p>;
@@ -60,11 +76,7 @@ function ConfigureCard({ interview }: Props): JSX.Element {
             labelTextClassName="w-40"
             inlineContainerStyles={{ verticalAlign: 'text-top' }}
           >
-            <TextArea
-              onChange={setDisplayedNotes}
-              onEnterPress={saveNotes}
-              value={displayedNotes}
-            />
+            <TextArea onChange={setDisplayedNotes} value={displayedNotes} />
           </LabelWrapper>
 
           <span>
@@ -76,13 +88,16 @@ function ConfigureCard({ interview }: Props): JSX.Element {
             >
               <div className="w-40">Starting State</div>
               <MultiSelect
-                onChange={onStartingStateChange}
+                onChange={setStartingState}
                 placeholder="Add a stage"
-                selectedValues={interview.startingState}
+                selectedValues={startingState}
                 options={getOptions()}
               />
             </div>
           </span>
+          <Button intent="primary" onClick={onSaveClick}>
+            Save
+          </Button>
         </div>
       </div>
     </div>

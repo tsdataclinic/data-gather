@@ -1,10 +1,29 @@
+// import * as AirtableAPISetting from '../models/settings/AirtableAPISetting';
 import * as ConditionalAction from '../models/ConditionalAction';
 import * as Interview from '../models/Interview';
 import * as InterviewScreen from '../models/InterviewScreen';
 import * as InterviewScreenEntry from '../models/InterviewScreenEntry';
 import assertUnreachable from '../util/assertUnreachable';
+import getEnvConfig, { EnvVar } from '../util/getEnvConfig';
 
 export type AppGlobalState = {
+  airtableSettings: {
+    apiKey: string;
+    bases: ReadonlyArray<{
+      key: string;
+      name: string;
+      tables: [
+        {
+          fields: Array<{
+            fieldID: string;
+            fieldName: string;
+          }>;
+          key: string;
+          name: string;
+        },
+      ];
+    }>;
+  };
   /**
    * A map of all interview conditional actions we have loaded so far.
    * Maps action id to ConditionalAction object.
@@ -21,13 +40,16 @@ export type AppGlobalState = {
    * A map of all interview screens we have loaded so far.
    * Maps screen id to InterviewScreen object.
    */
-  loadedInterviewScreens: ReadonlyMap<string, InterviewScreen.T>;
+  loadedInterviewScreens: ReadonlyMap<string, InterviewScreen.WithChildrenT>;
 
   /**
    * A map of all interviews that have been loaded so far
    * Maps interview id to Interview object.
    */
-  loadedInterviews: ReadonlyMap<string, Interview.T>;
+  loadedInterviews: ReadonlyMap<string, Interview.WithScreensT>;
+  // settings: {
+  //   airtableAPISettings: AirtableAPISetting.T;
+  // };
 };
 
 export const DEFAULT_APP_STATE: AppGlobalState = {
@@ -35,6 +57,10 @@ export const DEFAULT_APP_STATE: AppGlobalState = {
   loadedInterviewScreenEntries: new Map(),
   loadedInterviewScreens: new Map(),
   loadedInterviews: new Map(),
+  airtableSettings: JSON.parse(getEnvConfig(EnvVar.AirtableConfigJSON)),
+  // settings: {
+  //   airtableAPISettings: AirtableAPISetting.create(),
+  // },
 };
 
 export type AppAction =
@@ -43,26 +69,10 @@ export type AppAction =
       conditionalActions: ConditionalAction.T[];
       type: 'CONDITIONAL_ACTIONS_UPDATE';
     }
-  /** Update a bunch of interviews */
-  | {
-      interviews: Interview.T[];
-      type: 'INTERVIEWS_UPDATE';
-    }
   /** Update a single interview */
   | {
-      interview: Interview.T;
+      interview: Interview.WithScreensT;
       type: 'INTERVIEW_UPDATE';
-    }
-  /** Create a new interview */
-  | {
-      interview: Interview.T;
-      type: 'INTERVIEW_CREATE';
-    }
-  /** Add a screen to an interview */
-  | {
-      interviewId: string;
-      screen: InterviewScreen.T;
-      type: 'SCREEN_ADD';
     }
   /** Update a bunch of interview screen entries */
   | {
@@ -71,14 +81,24 @@ export type AppAction =
     }
   /** Update a single interview screen */
   | {
-      screen: InterviewScreen.T;
+      screen: InterviewScreen.WithChildrenT;
       type: 'SCREEN_UPDATE';
     }
   /** Update a bunch of interview screens */
   | {
-      screens: InterviewScreen.T[];
+      screens: InterviewScreen.WithChildrenT[];
       type: 'SCREENS_UPDATE';
     };
+// /** Create a new setting */
+// | {
+//     setting: AirtableAPISetting.T;
+//     type: 'SETTING_CREATE';
+//   }
+// /** Update a setting */
+// | {
+//     setting: AirtableAPISetting.T;
+//     type: 'SETTING_UPDATE';
+//   };
 
 function cloneMap<K, V>(map: ReadonlyMap<K, V>): Map<K, V> {
   return new Map(Array.from(map.entries()));
@@ -117,6 +137,7 @@ export default function appReducer(
     loadedInterviews,
     loadedInterviewScreenEntries,
     loadedInterviewScreens,
+    // settings,
   } = state;
 
   switch (action.type) {
@@ -129,16 +150,6 @@ export default function appReducer(
           conditionalAction => conditionalAction.id,
         ),
       };
-    case 'INTERVIEWS_UPDATE': {
-      return {
-        ...state,
-        loadedInterviews: setMapMultiple(
-          loadedInterviews,
-          action.interviews,
-          interview => interview.id,
-        ),
-      };
-    }
 
     case 'INTERVIEW_UPDATE': {
       return {
@@ -149,50 +160,6 @@ export default function appReducer(
           action.interview,
         ),
       };
-    }
-
-    case 'INTERVIEW_CREATE':
-      return {
-        ...state,
-        loadedInterviews: setMap(
-          loadedInterviews,
-          action.interview.id,
-          action.interview,
-        ),
-      };
-
-    case 'SCREEN_ADD': {
-      const { interviewId, screen } = action;
-
-      // find the interview to update
-      const interview = loadedInterviews.get(interviewId);
-
-      if (interview) {
-        // add the new screen id to the interview
-        const newInterview = {
-          ...interview,
-          screens: interview.screens.concat(screen.id),
-        };
-
-        return {
-          ...state,
-
-          // add the screen to the loadedInterviewScreens map (immutable operation)
-          loadedInterviewScreens: setMap(
-            loadedInterviewScreens,
-            screen.id,
-            screen,
-          ),
-
-          loadedInterviews: setMap(
-            loadedInterviews,
-            action.interviewId,
-            newInterview,
-          ),
-        };
-      }
-
-      return state;
     }
 
     case 'SCREEN_ENTRIES_UPDATE':
@@ -224,6 +191,24 @@ export default function appReducer(
           screen => screen.id,
         ),
       };
+
+    // case 'SETTING_CREATE':
+    //   return {
+    //     ...state,
+    //     settings: {
+    //       ...settings,
+    //       airtableAPISettings: action.setting,
+    //     },
+    //   };
+
+    // case 'SETTING_UPDATE':
+    //   return {
+    //     ...state,
+    //     settings: {
+    //       ...settings,
+    //       airtableAPISettings: action.setting,
+    //     },
+    //   };
 
     default:
       return assertUnreachable(action);

@@ -10,13 +10,8 @@ import { useState, useEffect } from 'react';
 import { NavLink, useMatch } from 'react-router-dom';
 import { Link as ScrollLink } from 'react-scroll';
 import useInterviewStore from '../../../hooks/useInterviewStore';
-import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as InterviewScreen from '../../../models/InterviewScreen';
-import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import {
-  actionTypeToDisplayString,
-  getActionById,
-} from '../../../models/ConditionalAction';
+import { actionTypeToDisplayString } from '../../../models/ConditionalAction';
 
 type Props = {
   isSelected: boolean;
@@ -34,22 +29,22 @@ export default function ScreenLink({
     undefined,
   );
   const interviewStore = useInterviewStore();
-  const [screenEntries, setScreenEntries] = useState<
-    InterviewScreenEntry.T[] | undefined
-  >(undefined);
-  const [screenActions, setScreenActions] = useState<
-    ConditionalAction.T[] | undefined
+  const [fullScreen, setFullScreen] = useState<
+    InterviewScreen.WithChildrenT | undefined
   >(undefined);
 
   useEffect(() => {
+    // TODO: replace this with a useQuery hook instead
+    async function fetchAndSetFullScreen(screenId: string): Promise<void> {
+      const screenWithChildren =
+        await interviewStore.InterviewScreenAPI.getInterviewScreen(screenId);
+      setFullScreen(screenWithChildren);
+    }
+
     if (screen !== 'configure') {
-      interviewStore.getScreenEntries(screen.entries).then(setScreenEntries);
-      interviewStore
-        .getConditionalActions(screen.actions)
-        .then(setScreenActions);
+      fetchAndSetFullScreen(screen.id);
     } else {
-      setScreenEntries(undefined);
-      setScreenActions(undefined);
+      setFullScreen(undefined);
     }
   }, [interviewStore, screen]);
 
@@ -109,25 +104,25 @@ export default function ScreenLink({
           </ScrollLink>
 
           {/* Entries */}
-          {screen.entries.map(entryId => (
+          {fullScreen?.entries.map(entry => (
             <ScrollLink
-              className={entryMenuItemClass(entryId)}
-              key={entryId}
+              className={entryMenuItemClass(entry.id)}
+              key={entry.id}
               activeClass="active"
-              to={entryId}
+              to={entry.id}
               duration={250}
               containerId="scrollContainer"
-              onClick={() => setSelectedEntry(entryId)}
+              onClick={() => setSelectedEntry(entry.id)}
             >
               <FontAwesomeIcon size="1x" icon={faQuestion} />
-              {InterviewScreenEntry.getEntryById(entryId, screenEntries)?.name}
+              {entry.name}
             </ScrollLink>
           ))}
 
           {/* Action */}
-          {screen.actions.map(actionId => (
+          {fullScreen?.actions.map(action => (
             <ScrollLink
-              key={actionId}
+              key={action.id}
               className={entryMenuItemClass('ACTION')}
               activeClass="active"
               to="ACTION"
@@ -136,10 +131,7 @@ export default function ScreenLink({
               onClick={() => setSelectedEntry('ACTION')}
             >
               <FontAwesomeIcon size="1x" icon={faLocationArrow} />
-              Action:{' '}
-              {actionTypeToDisplayString(
-                getActionById(actionId, screenActions)?.actionConfig.type,
-              )}
+              Action: {actionTypeToDisplayString(action.actionConfig.type)}
             </ScrollLink>
           ))}
         </div>

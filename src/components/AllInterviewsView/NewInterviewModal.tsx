@@ -1,8 +1,9 @@
 import { useCallback } from 'react';
-import useAppDispatch from '../../hooks/useAppDispatch';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import useInterviewStore from '../../hooks/useInterviewStore';
 import Form from '../ui/Form';
 import Modal from '../ui/Modal';
+import * as Interview from '../../models/Interview';
 
 type Props = {
   isOpen: boolean;
@@ -16,22 +17,28 @@ export default function NewInterviewModal({
   isOpen,
   onDismiss,
 }: Props): JSX.Element {
-  const dispatch = useAppDispatch();
   const interviewStore = useInterviewStore();
-
-  const onSubmit = useCallback(
-    async (vals: Map<string, string>): Promise<void> => {
-      const interview = await interviewStore.createInterview(
-        vals.get('name') ?? '',
-        vals.get('description') ?? '',
-      );
-      dispatch({
-        interview,
-        type: 'INTERVIEW_CREATE',
+  const queryClient = useQueryClient();
+  const createInterviewFn = useMutation({
+    mutationFn: interviewStore.InterviewAPI.createInterview,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['allInterviews'],
       });
       onDismiss();
     },
-    [interviewStore, dispatch, onDismiss],
+  });
+
+  const onSubmit = useCallback(
+    async (vals: Map<string, string>): Promise<void> => {
+      createInterviewFn.mutate(
+        Interview.create({
+          name: vals.get('name') ?? '',
+          description: vals.get('description') ?? '',
+        }),
+      );
+    },
+    [createInterviewFn],
   );
 
   return (

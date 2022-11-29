@@ -1,19 +1,18 @@
-import { useMemo, useState } from 'react';
-import useAppState from '../../hooks/useAppState';
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import Button from '../ui/Button';
 import InterviewCard from './InterviewCard';
 import NewInterviewModal from './NewInterviewModal';
-import useLoadInitialInterviews from './useLoadInitialInterviews';
+import useInterviewStore from '../../hooks/useInterviewStore';
 
 export default function AllInterviewsView(): JSX.Element {
-  const { isError } = useLoadInitialInterviews();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { loadedInterviews } = useAppState();
+  const interviewStore = useInterviewStore();
+  const { data: allInterviews = [], isError } = useQuery({
+    queryKey: ['allInterviews'],
+    queryFn: interviewStore.InterviewAPI.getAllInterviews,
+  });
 
-  const interviews = useMemo(
-    () => Array.from(loadedInterviews.values()),
-    [loadedInterviews],
-  );
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   return (
     <div className="container mx-auto space-y-8 pt-8">
@@ -30,10 +29,12 @@ export default function AllInterviewsView(): JSX.Element {
 
       {isError ? <p>There was an error loading your interviews.</p> : null}
 
-      {interviews.length === 0 ? <p>You do not have any interviews.</p> : null}
+      {allInterviews.length === 0 ? (
+        <p>You do not have any interviews.</p>
+      ) : null}
 
       <div className="space-x-4">
-        {interviews.map(interview => (
+        {allInterviews?.map(interview => (
           <InterviewCard key={interview.id} interview={interview} />
         ))}
       </div>

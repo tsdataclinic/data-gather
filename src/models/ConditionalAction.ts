@@ -1,26 +1,14 @@
 import { ResponseData } from '@dataclinic/interview';
 import invariant from 'invariant';
 import { v4 as uuidv4 } from 'uuid';
-import { Indexable } from '../util/Indexable';
 import assertUnreachable from '../util/assertUnreachable';
 import nullsToUndefined from '../util/nullsToUndefined';
+import { ActionType } from '../api/models/ActionType';
+import { ConditionalOperator } from '../api/models/ConditionalOperator';
+import { SerializedConditionalActionRead } from '../api/models/SerializedConditionalActionRead';
+import { SerializedConditionalActionCreate } from '../api/models/SerializedConditionalActionCreate';
 
-export enum ConditionalOperator {
-  AlwaysExecute = 'ALWAYS_EXECUTE',
-  Equals = '=',
-  GreaterThan = '>',
-  GreaterThanOrEqual = '>=',
-  LessThan = '<',
-  LessThanOrEqual = '<=',
-}
-
-export enum ActionType {
-  Checkpoint = 'checkpoint',
-  Milestone = 'milestone',
-  Push = 'push',
-  Restore = 'restore',
-  Skip = 'skip',
-}
+const PUSH_ACTION_DELIMITER = ';';
 
 /**
  * An array of all all conditional operators. Useful for populating a list of
@@ -52,14 +40,14 @@ interface ConditionalAction {
     /** Push some entries on to the stack */
     | {
         payload: readonly string[];
-        type: ActionType.Push;
+        type: ActionType.PUSH;
       }
     /**
      * Skip the next screen and add response data in place of the user
      */
     | {
         payload: Readonly<ResponseData>;
-        type: ActionType.Skip;
+        type: ActionType.SKIP;
       }
     /**
      * Add a checkpoint, restore a checkpoint, or declare a milestone to be
@@ -67,7 +55,7 @@ interface ConditionalAction {
      */
     | {
         payload: string;
-        type: ActionType.Checkpoint | ActionType.Restore | ActionType.Milestone;
+        type: ActionType.CHECKPOINT | ActionType.RESTORE | ActionType.MILESTONE;
       }
   >;
 
@@ -76,41 +64,41 @@ interface ConditionalAction {
 
   readonly id: string;
 
+  /** The index of this action in the screen */
+  readonly order: number;
+
   /**
    * The key within the response data which maps to the datum being compared.
    */
-  readonly responseKey: string | undefined;
+  readonly responseKey?: string;
 
   /** The screen that this action belongs to */
   readonly screenId: string;
 
   /** The value to compare the response datum to. */
-  readonly value: string | undefined;
+  readonly value?: string;
 }
 
-/**
- * This is the serialized type as it is stored on the backend.
- * A serialized ConditionalAction can be represented by just its type
- * ('push', 'skip', etc.)
- */
-interface SerializedConditionalAction extends Indexable {
-  actionPayload: string | string[] | ResponseData;
-  actionType: ActionType;
-  conditionalOperator: ConditionalOperator;
-  id: string;
-  responseKey: string | null;
+type ConditionalActionCreate = Omit<ConditionalAction, 'id'> & {
+  /**
+   * A temp id used only for identification purposes in the frontend (e.g.
+   * for React keys)
+   */
+  tempId: string;
+};
+
+export function create(vals: {
+  order: number;
   screenId: string;
-  value: string | null;
-}
-
-export function create(vals: { screenId: string }): ConditionalAction {
+}): ConditionalActionCreate {
   return {
-    actionConfig: { payload: [], type: ActionType.Push },
-    conditionalOperator: ConditionalOperator.AlwaysExecute,
-    id: uuidv4(),
+    actionConfig: { payload: [], type: ActionType.PUSH },
+    conditionalOperator: ConditionalOperator.ALWAYS_EXECUTE,
     responseKey: undefined,
     screenId: vals.screenId,
     value: undefined,
+    order: vals.order,
+    tempId: uuidv4(),
   };
 }
 
@@ -123,23 +111,17 @@ function isObject(maybeObj: unknown): maybeObj is Record<string, unknown> {
   );
 }
 
-// Helper predicate function to check if something is a string array
-function isStringArray(maybeArr: unknown): maybeArr is string[] {
-  return (
-    Array.isArray(maybeArr) &&
-    (maybeArr.length === 0 || typeof maybeArr[0] === 'string')
-  );
-}
-
 /**
  * Validate if a conditional action is valid to be saved.
  * @returns {[boolean, string]} A tuple of whether or not validation passed,
  * and an error string if validation did not pass.
  */
-export function validate(action: ConditionalAction): [boolean, string] {
+export function validate(
+  action: ConditionalAction | ConditionalActionCreate,
+): [boolean, string] {
   // if we're **not** using the ALWAYS_EXECUTE operator then don't allow an
   // empty `responseKey` or an empty `value`
-  if (action.conditionalOperator !== ConditionalOperator.AlwaysExecute) {
+  if (action.conditionalOperator !== ConditionalOperator.ALWAYS_EXECUTE) {
     if (
       action.responseKey === undefined ||
       action.responseKey === '' ||
@@ -154,7 +136,7 @@ export function validate(action: ConditionalAction): [boolean, string] {
 
   // do not allow Push actions to have an empty payload
   if (
-    action.actionConfig.type === ActionType.Push &&
+    action.actionConfig.type === ActionType.PUSH &&
     action.actionConfig.payload.length === 0
   ) {
     return [false, 'A Push action cannot have an empty payload'];
@@ -169,24 +151,20 @@ export function validate(action: ConditionalAction): [boolean, string] {
  * the correct values. Otherwise, it means something went wrong during storage.
  */
 export function deserialize(
-  rawObj: SerializedConditionalAction,
+  rawObj: SerializedConditionalActionRead,
 ): ConditionalAction {
   const { actionPayload, actionType, ...condition } = nullsToUndefined(rawObj);
 
   switch (actionType) {
-    case ActionType.Push:
-      invariant(
-        isStringArray(actionPayload),
-        `[ConditionalAction] Deserialization error. 'actionPayload' must be an array of strings.`,
-      );
+    case ActionType.PUSH:
       return {
         ...condition,
         actionConfig: {
-          payload: actionPayload,
+          payload: actionPayload.split(PUSH_ACTION_DELIMITER),
           type: actionType,
         },
       };
-    case ActionType.Skip:
+    case ActionType.SKIP:
       invariant(
         isObject(actionPayload),
         `[ConditionalAction] Deserialization error. 'actionPayload' must be an object.`,
@@ -198,9 +176,9 @@ export function deserialize(
           type: actionType,
         },
       };
-    case ActionType.Checkpoint:
-    case ActionType.Restore:
-    case ActionType.Milestone:
+    case ActionType.CHECKPOINT:
+    case ActionType.RESTORE:
+    case ActionType.MILESTONE:
       invariant(
         typeof actionPayload === 'string',
         `[ConditionalAction] Deserialization error. 'payload' must be a string.`,
@@ -217,29 +195,39 @@ export function deserialize(
   }
 }
 
+function serializeActionPayload(
+  payload: string | readonly string[] | Readonly<ResponseData>,
+): string {
+  if (Array.isArray(payload)) {
+    return payload.join(PUSH_ACTION_DELIMITER);
+  }
+  if (typeof payload === 'object') {
+    return JSON.stringify(payload);
+  }
+  return payload;
+}
+
 export function serialize(
-  conditionalAction: ConditionalAction,
-): SerializedConditionalAction {
+  action: ConditionalAction,
+): SerializedConditionalActionRead;
+export function serialize(
+  action: ConditionalActionCreate,
+): SerializedConditionalActionCreate;
+export function serialize(
+  action: ConditionalAction | ConditionalActionCreate,
+): SerializedConditionalActionRead | SerializedConditionalActionCreate;
+export function serialize(
+  action: ConditionalAction | ConditionalActionCreate,
+): SerializedConditionalActionRead | SerializedConditionalActionCreate {
   // validate the conditional action before serializing to make sure it's safe to store
-  const [isValid, errorMsg] = validate(conditionalAction);
+  const [isValid, errorMsg] = validate(action);
   invariant(isValid, errorMsg);
 
-  const {
-    actionConfig,
-    conditionalOperator,
-    id,
-    responseKey,
-    screenId,
-    value,
-  } = conditionalAction;
+  const { actionConfig, ...conditionalAction } = action;
   return {
-    actionPayload: actionConfig.payload,
+    ...conditionalAction,
+    actionPayload: serializeActionPayload(actionConfig.payload),
     actionType: actionConfig.type,
-    conditionalOperator,
-    id,
-    responseKey: responseKey ?? null,
-    screenId,
-    value: value ?? null,
   };
 }
 
@@ -249,7 +237,7 @@ export function serialize(
  */
 export function operatorToDisplayString(operator: ConditionalOperator): string {
   switch (operator) {
-    case ConditionalOperator.AlwaysExecute:
+    case ConditionalOperator.ALWAYS_EXECUTE:
       return 'Always execute';
     default:
       return operator;
@@ -271,42 +259,25 @@ export function actionTypeToDisplayString(
 }
 
 /**
- * Returns an action corresponding to the given id from a list of action
- *
- * @param actionId
- * @param actions
- */
-export function getActionById(
-  actionId: string,
-  actions: ConditionalAction[] | undefined,
-): ConditionalAction | undefined {
-  if (actions === undefined) {
-    return undefined;
-  }
-
-  return actions.find(entry => entry.id === actionId);
-}
-
-/**
  * Create a default action config (with a default payload) given an `actionType`
  */
 export function createDefaultActionConfig(
   actionType: ActionType,
 ): ConditionalAction['actionConfig'] {
   switch (actionType) {
-    case ActionType.Push:
+    case ActionType.PUSH:
       return {
         payload: [],
         type: actionType,
       };
-    case ActionType.Skip:
+    case ActionType.SKIP:
       return {
         payload: {},
         type: actionType,
       };
-    case ActionType.Checkpoint:
-    case ActionType.Restore:
-    case ActionType.Milestone:
+    case ActionType.CHECKPOINT:
+    case ActionType.RESTORE:
+    case ActionType.MILESTONE:
       return {
         payload: '',
         type: actionType,
@@ -317,4 +288,7 @@ export function createDefaultActionConfig(
 }
 
 export type { ConditionalAction as T };
-export type { SerializedConditionalAction as SerializedT };
+export type { ConditionalActionCreate as CreateT };
+export type { SerializedConditionalActionRead as SerializedT };
+export { ConditionalOperator };
+export { ActionType };

@@ -13,19 +13,24 @@ import Form from '../../ui/Form';
 import useInterviewScreenEntries from '../../../hooks/useInterviewScreenEntries';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
 
+export type EditableAction = ConditionalAction.T | ConditionalAction.CreateT;
+
 // remove 'ALWAYS_EXECUTE' from being one of the options in the dropdown
 // because this operator is handled separately
 const OPERATOR_OPTIONS = ConditionalAction.CONDITIONAL_OPERATORS.filter(
-  operator => operator !== ConditionalAction.ConditionalOperator.AlwaysExecute,
+  operator => operator !== ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE,
 ).map(operator => ({
   displayValue: ConditionalAction.operatorToDisplayString(operator),
   value: operator,
 }));
 
 type Props = {
-  action: ConditionalAction.T;
+  action: EditableAction;
   interview: Interview.T;
-  onActionChange: (action: ConditionalAction.T) => void;
+  onActionChange: (
+    actionToReplace: EditableAction,
+    newAction: EditableAction,
+  ) => void;
 };
 
 function ActionCard(
@@ -38,7 +43,7 @@ function ActionCard(
 
   const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] = React.useState(
     action.conditionalOperator ===
-      ConditionalAction.ConditionalOperator.AlwaysExecute,
+      ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE,
   );
 
   const onAlwaysExecuteChange = React.useCallback(
@@ -51,11 +56,11 @@ function ActionCard(
       if (
         !isChecked &&
         action.conditionalOperator ===
-          ConditionalAction.ConditionalOperator.AlwaysExecute
+          ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
       ) {
-        onActionChange({
+        onActionChange(action, {
           ...action,
-          conditionalOperator: ConditionalAction.ConditionalOperator.Equals,
+          conditionalOperator: ConditionalAction.ConditionalOperator.EQ,
         });
       }
     },
@@ -64,7 +69,7 @@ function ActionCard(
 
   const onConditionalOperatorChange = React.useCallback(
     (newConditionalOperator: ConditionalAction.ConditionalOperator) => {
-      onActionChange({
+      onActionChange(action, {
         ...action,
         conditionalOperator: newConditionalOperator,
       });
@@ -74,7 +79,7 @@ function ActionCard(
 
   const onResponseKeyChange = React.useCallback(
     (newResponseKey: string) => {
-      onActionChange({
+      onActionChange(action, {
         ...action,
         responseKey: newResponseKey,
       });
@@ -84,7 +89,7 @@ function ActionCard(
 
   const onConditionalValueChange = React.useCallback(
     (newValue: string) => {
-      onActionChange({
+      onActionChange(action, {
         ...action,
         value: newValue,
       });
@@ -94,7 +99,7 @@ function ActionCard(
 
   const onActionConfigChange = React.useCallback(
     (newActionConfig: ConditionalAction.T['actionConfig']) => {
-      onActionChange({
+      onActionChange(action, {
         ...action,
         actionConfig: newActionConfig,
       });
@@ -109,7 +114,7 @@ function ActionCard(
           const entries = screenEntriesMap.get(screen.id) || [];
           return entries.map(entry => ({
             displayValue: `${screen.title} - ${entry.name}`,
-            value: entry.id,
+            value: entry.responseKey,
           }));
         })
       : [];
@@ -143,7 +148,6 @@ function ActionCard(
 
   return (
     <ScrollableElement
-      key={action.id}
       name="ACTION"
       className="grid w-full grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg"
     >

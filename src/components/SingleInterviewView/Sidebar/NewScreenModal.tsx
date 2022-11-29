@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import useAppDispatch from '../../../hooks/useAppDispatch';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import useInterviewStore from '../../../hooks/useInterviewStore';
 import * as Interview from '../../../models/Interview';
 import * as InterviewScreen from '../../../models/InterviewScreen';
@@ -21,24 +21,27 @@ export default function NewScreenModal({
   onDismiss,
 }: Props): JSX.Element {
   const interviewStore = useInterviewStore();
-  const dispatch = useAppDispatch();
-
-  const onSubmit = useCallback(
-    async (vals: Map<string, string>): Promise<void> => {
-      const screen = InterviewScreen.create({
-        title: vals.get('name') ?? '',
-      });
-
-      await interviewStore.addScreenToInterview(interview.id, screen);
-
-      dispatch({
-        interviewId: interview.id,
-        screen,
-        type: 'SCREEN_ADD',
+  const queryClient = useQueryClient();
+  const createScreenFn = useMutation({
+    mutationFn: interviewStore.InterviewScreenAPI.createInterviewScreen,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['interviewScreens', interview.id],
       });
       onDismiss();
     },
-    [interviewStore, dispatch, interview, onDismiss],
+  });
+
+  const onSubmit = useCallback(
+    (vals: Map<string, string>) => {
+      createScreenFn.mutate(
+        InterviewScreen.create({
+          title: vals.get('name') ?? '',
+          interviewId: interview.id,
+        }),
+      );
+    },
+    [createScreenFn, interview],
   );
 
   return (
