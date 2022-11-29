@@ -40,12 +40,13 @@ export type AppGlobalState = {
    * A map of all interview screens we have loaded so far.
    * Maps screen id to InterviewScreen object.
    */
-  loadedInterviewScreens: ReadonlyMap<string, InterviewScreen.T>;
+  loadedInterviewScreens: ReadonlyMap<string, InterviewScreen.WithChildrenT>;
+
   /**
    * A map of all interviews that have been loaded so far
    * Maps interview id to Interview object.
    */
-  loadedInterviews: ReadonlyMap<string, Interview.T>;
+  loadedInterviews: ReadonlyMap<string, Interview.WithScreensT>;
   // settings: {
   //   airtableAPISettings: AirtableAPISetting.T;
   // };
@@ -68,26 +69,10 @@ export type AppAction =
       conditionalActions: ConditionalAction.T[];
       type: 'CONDITIONAL_ACTIONS_UPDATE';
     }
-  /** Update a bunch of interviews */
-  | {
-      interviews: Interview.T[];
-      type: 'INTERVIEWS_UPDATE';
-    }
   /** Update a single interview */
   | {
-      interview: Interview.T;
+      interview: Interview.WithScreensT;
       type: 'INTERVIEW_UPDATE';
-    }
-  /** Create a new interview */
-  | {
-      interview: Interview.T;
-      type: 'INTERVIEW_CREATE';
-    }
-  /** Add a screen to an interview */
-  | {
-      interviewId: string;
-      screen: InterviewScreen.T;
-      type: 'SCREEN_ADD';
     }
   /** Update a bunch of interview screen entries */
   | {
@@ -96,12 +81,12 @@ export type AppAction =
     }
   /** Update a single interview screen */
   | {
-      screen: InterviewScreen.T;
+      screen: InterviewScreen.WithChildrenT;
       type: 'SCREEN_UPDATE';
     }
   /** Update a bunch of interview screens */
   | {
-      screens: InterviewScreen.T[];
+      screens: InterviewScreen.WithChildrenT[];
       type: 'SCREENS_UPDATE';
     };
 // /** Create a new setting */
@@ -165,16 +150,6 @@ export default function appReducer(
           conditionalAction => conditionalAction.id,
         ),
       };
-    case 'INTERVIEWS_UPDATE': {
-      return {
-        ...state,
-        loadedInterviews: setMapMultiple(
-          loadedInterviews,
-          action.interviews,
-          interview => interview.id,
-        ),
-      };
-    }
 
     case 'INTERVIEW_UPDATE': {
       return {
@@ -185,50 +160,6 @@ export default function appReducer(
           action.interview,
         ),
       };
-    }
-
-    case 'INTERVIEW_CREATE':
-      return {
-        ...state,
-        loadedInterviews: setMap(
-          loadedInterviews,
-          action.interview.id,
-          action.interview,
-        ),
-      };
-
-    case 'SCREEN_ADD': {
-      const { interviewId, screen } = action;
-
-      // find the interview to update
-      const interview = loadedInterviews.get(interviewId);
-
-      if (interview) {
-        // add the new screen id to the interview
-        const newInterview = {
-          ...interview,
-          screens: interview.screens.concat(screen.id),
-        };
-
-        return {
-          ...state,
-
-          // add the screen to the loadedInterviewScreens map (immutable operation)
-          loadedInterviewScreens: setMap(
-            loadedInterviewScreens,
-            screen.id,
-            screen,
-          ),
-
-          loadedInterviews: setMap(
-            loadedInterviews,
-            action.interviewId,
-            newInterview,
-          ),
-        };
-      }
-
-      return state;
     }
 
     case 'SCREEN_ENTRIES_UPDATE':

@@ -31,19 +31,19 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
   );
 
   switch (entry.responseType) {
-    case InterviewScreenEntry.ResponseType.Text:
+    case InterviewScreenEntry.ResponseType.TEXT:
       return (
         <Form.Input
           key={entry.id}
-          name={entry.responseId}
+          name={entry.responseKey}
           label={entry.prompt}
         />
       );
-    case InterviewScreenEntry.ResponseType.Boolean:
+    case InterviewScreenEntry.ResponseType.BOOLEAN:
       return (
         <Form.Input
           type="radio"
-          name={entry.responseId}
+          name={entry.responseKey}
           label={entry.prompt}
           options={[
             { value: 'Yes', displayValue: 'Yes' },
@@ -51,25 +51,25 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           ]}
         />
       );
-    case InterviewScreenEntry.ResponseType.Number:
+    case InterviewScreenEntry.ResponseType.NUMBER:
       return (
         <Form.Input
           type="number"
           key={entry.id}
-          name={entry.responseId}
+          name={entry.responseKey}
           label={entry.prompt}
         />
       );
-    case InterviewScreenEntry.ResponseType.Email:
+    case InterviewScreenEntry.ResponseType.EMAIL:
       return (
         <Form.Input
           type="email"
           key={entry.id}
-          name={entry.responseId}
+          name={entry.responseKey}
           label={entry.prompt}
         />
       );
-    case InterviewScreenEntry.ResponseType.Airtable:
+    case InterviewScreenEntry.ResponseType.AIRTABLE:
       return (
         <div>
           <LabelWrapper label="Search for record">
@@ -87,7 +87,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
             responseData.length > 0 && (
               <Form.Dropdown
                 key={entry.id}
-                name={entry.responseId}
+                name={entry.responseKey}
                 label={entry.prompt}
                 placeholder={isLoading ? 'Loading...' : 'Select a record...'}
                 options={
@@ -105,12 +105,12 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
             responseData.length < 1 && <p>No matches found</p>}
         </div>
       );
-    case InterviewScreenEntry.ResponseType.PhoneNumber:
+    case InterviewScreenEntry.ResponseType.PHONE_NUMBER:
       return (
         <Form.Input
           type="tel"
           key={entry.id}
-          name={entry.responseId}
+          name={entry.responseKey}
           label={entry.prompt}
         />
       );

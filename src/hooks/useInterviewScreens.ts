@@ -1,10 +1,7 @@
-import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import * as InterviewScreen from '../models/InterviewScreen';
-import isNonNullable from '../util/isNonNullable';
 import useAppDispatch from './useAppDispatch';
-import useAppState from './useAppState';
-import useInterview from './useInterview';
 import useInterviewStore from './useInterviewStore';
 
 /**
@@ -17,20 +14,28 @@ import useInterviewStore from './useInterviewStore';
  */
 export default function useInterviewScreens(
   interviewId: string | undefined,
-): InterviewScreen.T[] | undefined {
+): InterviewScreen.WithChildrenT[] | undefined {
   const dispatch = useAppDispatch();
   const interviewStore = useInterviewStore();
-  const { loadedInterviewScreens } = useAppState();
-  const interview = useInterview(interviewId);
 
   // load interview screens from backend
-  const screensFromStorage = useLiveQuery(
-    () =>
-      interviewId === undefined
-        ? undefined
-        : interviewStore.getScreensOfInterview(interviewId),
-    [interviewId],
-  );
+  const { data: screensFromStorage } = useQuery({
+    enabled: !!interviewId,
+    queryKey: ['interviewScreens', interviewId],
+    queryFn: async () => {
+      if (interviewId === undefined) {
+        return undefined;
+      }
+      const interview = await interviewStore.InterviewAPI.getInterview(
+        interviewId,
+      );
+      return Promise.all(
+        interview.screens.map(screen =>
+          interviewStore.InterviewScreenAPI.getInterviewScreen(screen.id),
+        ),
+      );
+    },
+  });
 
   // if the screensFromStorage has changed then we should update it in
   // our global state
@@ -43,13 +48,5 @@ export default function useInterviewScreens(
     }
   }, [screensFromStorage, dispatch]);
 
-  const screens = useMemo(
-    () =>
-      interview?.screens
-        .map(screenId => loadedInterviewScreens.get(screenId))
-        .filter(isNonNullable),
-    [interview, loadedInterviewScreens],
-  );
-
-  return interviewId === undefined ? undefined : screens;
+  return screensFromStorage;
 }

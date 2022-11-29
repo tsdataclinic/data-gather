@@ -16,7 +16,7 @@
     "@reach/listbox": "^0.17.0",
     "@reach/visually-hidden": "^0.17.0",
     "@react-aria/utils": "^3.14.0",
-    "@tanstack/react-query": "^4.0.10",
+    "@tanstack/react-query": "^4.18.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
@@ -44,10 +44,15 @@
     "web-vitals": "^2.1.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "api": "PYTHONPATH=. uvicorn views:app --reload --reload-dir server --app-dir server/api",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "setup-database": "rm -f db.sqlite && PYTHONPATH=. python3 scripts/db_setup.py db.sqlite",
+    "populate-database": "PYTHONPATH=. python3 -c 'from server.init_db import populate_dev_db; populate_dev_db()'",
+    "db": "sqlite3 db.sqlite",
+    "start": "react-scripts start",
+    "sync-types": "python scripts/openapi_processor.py && openapi --input openapi.json --output src/api --client fetch --indent 2 --name FastAPIService --postfix FastAPIService && rm -f openapi.json",
+    "test": "react-scripts test"
   },
   "eslintConfig": {
     "extends": [
@@ -83,6 +88,7 @@
     "eslint-plugin-react-hooks": "^4.5.0",
     "eslint-plugin-tailwindcss": "^3.5.0",
     "eslint-plugin-typescript-sort-keys": "^2.1.0",
+    "openapi-typescript-codegen": "^0.23.0",
     "prettier": "^2.6.2",
     "typescript": "^4.7.4"
   },
@@ -99,5 +105,6 @@
   },
   "resolutions": {
     "styled-components": "^5"
-  }
+  },
+  "proxy": "http://localhost:8000"
 }

@@ -7,13 +7,16 @@ import * as ConditionalAction from '../models/ConditionalAction';
 class ConfigurableScript implements Script<InterviewScreen.T> {
   // eslint-disable-next-line
   constructor(
-    private interview: Interview.T,
+    private interview: Interview.WithScreensT,
     private actions: ReadonlyMap<string, ConditionalAction.T[]>,
-    private screens: ReadonlyMap<string, InterviewScreen.T>,
+    private screens: ReadonlyMap<string, InterviewScreen.WithChildrenT>,
   ) {}
 
   setup(router: QuestionRouter<InterviewScreen.T>): void {
-    this.pushInReverseOrder(this.interview.startingState, router);
+    this.pushInReverseOrder(
+      Interview.getStartingScreens(this.interview).map(screen => screen.id),
+      router,
+    );
   }
 
   // eslint-disable-next-line
@@ -44,7 +47,7 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
     if (
       !action.responseKey ||
       action.conditionalOperator ===
-        ConditionalAction.ConditionalOperator.AlwaysExecute
+        ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
     ) {
       return true;
     }
@@ -54,15 +57,15 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
       return false;
     }
     switch (action.conditionalOperator) {
-      case ConditionalAction.ConditionalOperator.Equals:
+      case ConditionalAction.ConditionalOperator.EQ:
         return responseValue === testValue;
-      case ConditionalAction.ConditionalOperator.GreaterThan:
+      case ConditionalAction.ConditionalOperator.GT:
         return responseValue > testValue;
-      case ConditionalAction.ConditionalOperator.GreaterThanOrEqual:
+      case ConditionalAction.ConditionalOperator.GTE:
         return responseValue >= testValue;
-      case ConditionalAction.ConditionalOperator.LessThan:
+      case ConditionalAction.ConditionalOperator.LT:
         return responseValue < testValue;
-      case ConditionalAction.ConditionalOperator.LessThanOrEqual:
+      case ConditionalAction.ConditionalOperator.LTE:
         return responseValue <= testValue;
       default:
         assertUnreachable(action.conditionalOperator, { throwError: false });
@@ -75,19 +78,19 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
     router: QuestionRouter<InterviewScreen.T>,
   ): void {
     switch (action.actionConfig.type) {
-      case ConditionalAction.ActionType.Push:
+      case ConditionalAction.ActionType.PUSH:
         this.pushInReverseOrder(action.actionConfig.payload, router);
         break;
-      case ConditionalAction.ActionType.Skip:
+      case ConditionalAction.ActionType.SKIP:
         router.skip(action.actionConfig.payload);
         break;
-      case ConditionalAction.ActionType.Checkpoint:
+      case ConditionalAction.ActionType.CHECKPOINT:
         router.checkpoint(action.actionConfig.payload);
         break;
-      case ConditionalAction.ActionType.Restore:
+      case ConditionalAction.ActionType.RESTORE:
         router.restore(action.actionConfig.payload);
         break;
-      case ConditionalAction.ActionType.Milestone:
+      case ConditionalAction.ActionType.MILESTONE:
         router.milestone(action.actionConfig.payload);
         break;
       default:

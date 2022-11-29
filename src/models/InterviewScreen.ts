@@ -1,6 +1,10 @@
-import { v4 as uuidv4 } from 'uuid';
 import * as InterviewScreenEntry from './InterviewScreenEntry';
 import * as ConditionalAction from './ConditionalAction';
+import { SerializedInterviewScreenCreate } from '../api/models/SerializedInterviewScreenCreate';
+import { SerializedInterviewScreenRead } from '../api/models/SerializedInterviewScreenRead';
+import { SerializedInterviewScreenUpdate } from '../api/models/SerializedInterviewScreenUpdate';
+import { SerializedInterviewScreenReadWithChildren } from '../api/models/SerializedInterviewScreenReadWithChildren';
+import { Override } from '../util/types';
 
 /**
  * A group of entries, corresponding to a particular state in the interview.
@@ -8,49 +12,91 @@ import * as ConditionalAction from './ConditionalAction';
  * This is the serialized type as it is used on the frontend.
  */
 interface InterviewScreen {
-  /**
-   * The actions executed after the page is complete.
-   * Represented by an array of action types.
-   */
-  readonly actions: readonly string[];
-
-  /** The entries on this page. Represented by an array of entry ids. */
-  readonly entries: readonly string[];
-
   /** Description text for the page */
   readonly headerText: string;
 
-  /** The id of this screen */
+  /**
+   * The id of this screen. Undefined when we're creating an interview and
+   * don't have an id yet (an id is auto-assigned by the db on creation).
+   */
   readonly id: string;
+
+  /** The id of the interview that this screen belongs to */
+  readonly interviewId: string;
+
+  /**
+   * Whether or not this screen should be in the starting state for an
+   * interview's stack.
+   */
+  readonly isInStartingState: boolean;
+
+  /**
+   * Index of the screen in the interview. Undefined when we're creating
+   * an interview, this gets set by the database.
+   * */
+  readonly order: number;
+
+  /**
+   * The index of a screen in the starting state of the interview's stack.
+   * This can be different from the `order` of the screen, which is just the
+   * index of the screen within the interview configuration UI.
+   *
+   * `startingStateOrder` is undefined if `isInStartingState` is false.
+   */
+  readonly startingStateOrder?: number;
 
   /** Title of the page */
   readonly title: string;
 }
 
-/**
- * This is the serialized type as it is stored on the backend.
- */
-interface SerializedInterviewScreen {
-  actions: string[];
-  entries: string[];
-  headerText: string;
-  id: string;
-  title: string;
+interface InterviewScreenWithChildren extends InterviewScreen {
+  /** The actions executed after the page is complete. */
+  readonly actions: readonly ConditionalAction.T[];
+
+  /** The entries on this page. */
+  readonly entries: readonly InterviewScreenEntry.T[];
 }
+
+/**
+ * The InterviewScreen model used on a Create request. `id` and `order` are no
+ * longer necessary because they get set by the database.
+ */
+type InterviewScreenCreate = Omit<InterviewScreen, 'id' | 'order'>;
+
+/**
+ * The InterviewScreen model used on an update request.
+ * InterviewScreen models allow nested updates, so the Update model includes
+ * the nested actions and entries.
+ *
+ * Note that the nested models can also be Create models! So it is possible
+ * for an interview screen update to also accept actions or entries that
+ * lack ids (because they have yet to be created in the database).
+ */
+type InterviewScreenUpdate = Override<
+  InterviewScreenWithChildren,
+  {
+    readonly actions: ReadonlyArray<
+      ConditionalAction.T | ConditionalAction.CreateT
+    >;
+    readonly entries: ReadonlyArray<
+      InterviewScreenEntry.T | InterviewScreenEntry.CreateT
+    >;
+  }
+>;
 
 /**
  * Create a new empty screen
  */
 export function create(values: {
   headerText?: string;
+  interviewId: string;
   title: string;
-}): InterviewScreen {
+}): InterviewScreenCreate {
   return {
-    actions: [],
-    entries: [],
     headerText: values.headerText ?? '',
-    id: uuidv4(),
     title: values.title,
+    isInStartingState: false,
+    interviewId: values.interviewId,
   };
 }
 
@@ -66,71 +112,52 @@ export function update(
 }
 
 /**
- * Immutably add an entry to a screen
- */
-export function addEntry(
-  screen: InterviewScreen,
-  entry: InterviewScreenEntry.T,
-): InterviewScreen {
-  return {
-    ...screen,
-    entries: screen.entries.concat(entry.id),
-  };
-}
-
-/**
- * Immutably add an action to a screen
- */
-export function addAction(
-  screen: InterviewScreen,
-  conditionalAction: ConditionalAction.T,
-): InterviewScreen {
-  return {
-    ...screen,
-    actions: screen.actions.concat(conditionalAction.id),
-  };
-}
-
-/**
- * Immutably removes an entry from a screen
- */
-export function removeEntry(
-  screen: InterviewScreen,
-  entry: InterviewScreenEntry.T,
-): InterviewScreen {
-  const index = screen.entries.indexOf(entry.id);
-  if (index > -1)
-    return {
-      ...screen,
-      entries: [
-        ...screen.entries.slice(0, index),
-        ...screen.entries.slice(index + 1),
-      ],
-    };
-  return screen;
-}
-
-/**
- * Convert from serialized type to deserialized
+ * Deserialize a SerializedInterviewScreenRead model.
  */
 export function deserialize(
-  rawObj: SerializedInterviewScreen,
-): InterviewScreen {
+  rawObj: SerializedInterviewScreenReadWithChildren,
+): InterviewScreenWithChildren;
+export function deserialize(
+  rawObj: SerializedInterviewScreenRead,
+): InterviewScreen;
+export function deserialize(
+  rawObj:
+    | SerializedInterviewScreenReadWithChildren
+    | SerializedInterviewScreenRead,
+): InterviewScreen | InterviewScreenWithChildren {
+  if ('actions' in rawObj && 'entries' in rawObj) {
+    return {
+      ...rawObj,
+      actions: rawObj.actions?.map(ConditionalAction.deserialize),
+      entries: rawObj.entries?.map(InterviewScreenEntry.deserialize),
+    };
+  }
+
   return rawObj;
 }
 
-/**
- * Convert from deserialized type to serialized
- */
+/** Serialize an InterviewScreenUpdate or Create model */
 export function serialize(
-  interviewScreen: InterviewScreen,
-): SerializedInterviewScreen {
-  return {
-    ...interviewScreen,
-    actions: [...interviewScreen.actions],
-    entries: [...interviewScreen.entries],
-  };
+  screen: InterviewScreenUpdate,
+): SerializedInterviewScreenUpdate;
+export function serialize(
+  screen: InterviewScreenCreate,
+): SerializedInterviewScreenCreate;
+export function serialize(
+  screen: InterviewScreenUpdate | InterviewScreenCreate,
+): SerializedInterviewScreenCreate | SerializedInterviewScreenUpdate {
+  if ('actions' in screen && 'entries' in screen) {
+    return {
+      ...screen,
+      actions: screen.actions?.map(ConditionalAction.serialize),
+      entries: screen.entries?.map(InterviewScreenEntry.serialize),
+    };
+  }
+  return screen;
 }
 
 export type { InterviewScreen as T };
-export type { SerializedInterviewScreen as SerializedT };
+export type { InterviewScreenWithChildren as WithChildrenT };
+export type { InterviewScreenCreate as CreateT };
+export type { InterviewScreenUpdate as UpdateT };
+export type { SerializedInterviewScreenRead as SerializedT };
