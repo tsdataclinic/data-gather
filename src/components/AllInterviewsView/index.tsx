@@ -9,7 +9,7 @@ export default function AllInterviewsView(): JSX.Element {
   const interviewStore = useInterviewStore();
   const { data: allInterviews = [], isError } = useQuery({
     queryKey: ['allInterviews'],
-    queryFn: () => interviewStore.InterviewAPI.getAllInterviews(),
+    queryFn: interviewStore.InterviewAPI.getAllInterviews,
   });
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
