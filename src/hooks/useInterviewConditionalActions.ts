@@ -1,9 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 import * as ConditionalAction from '../models/ConditionalAction';
 import useAppDispatch from './useAppDispatch';
-import useAppState from './useAppState';
-import useInterviewStore from './useInterviewStore';
+import useInterviewScreens from './useInterviewScreens';
 
 /**
  * Fetch all interview conditional actions linked to a given interview.
@@ -20,29 +18,13 @@ export default function useInterviewConditionalActions(
   interviewId: string | undefined,
 ): Map<string, ConditionalAction.T[]> | undefined {
   const dispatch = useAppDispatch();
-  const interviewStore = useInterviewStore();
-  const { loadedConditionalActions } = useAppState();
 
   // load conditional actions from backend
-  const { data: conditionalActionsFromStorage } = useQuery({
-    queryKey: ['conditionalActions', interviewId],
-    queryFn: async () => {
-      if (interviewId === undefined) {
-        return undefined;
-      }
-
-      const interview = await interviewStore.InterviewAPI.getInterview(
-        interviewId,
-      );
-
-      const screens = await Promise.all(
-        interview.screens.map(screen =>
-          interviewStore.InterviewScreenAPI.getInterviewScreen(screen.id),
-        ),
-      );
-      return screens.flatMap(screen => screen.actions);
-    },
-  });
+  const fullScreens = useInterviewScreens(interviewId);
+  const conditionalActionsFromStorage = useMemo(
+    () => fullScreens?.flatMap(screen => screen.actions),
+    [fullScreens],
+  );
 
   // if the screenEntriesFromStorage has changed then we should update it in
   // our global state
@@ -55,25 +37,19 @@ export default function useInterviewConditionalActions(
     }
   }, [conditionalActionsFromStorage, dispatch]);
 
-  // load the conditional actions from global state (which should be up-to-date with
-  // whatever is in storage)
   const screensToActionsMap = useMemo(() => {
     if (conditionalActionsFromStorage) {
       const screenIdToActionMap = new Map<string, ConditionalAction.T[]>();
       conditionalActionsFromStorage.forEach(action => {
-        const loadedAction = loadedConditionalActions.get(action.id);
-        if (loadedAction) {
+        if (action) {
           const actions = screenIdToActionMap.get(action.screenId) ?? [];
-          screenIdToActionMap.set(
-            loadedAction.screenId,
-            actions.concat(loadedAction),
-          );
+          screenIdToActionMap.set(action.screenId, actions.concat(action));
         }
       });
       return screenIdToActionMap;
     }
     return undefined;
-  }, [loadedConditionalActions, conditionalActionsFromStorage]);
+  }, [conditionalActionsFromStorage]);
 
   return interviewId === undefined ? undefined : screensToActionsMap;
 }

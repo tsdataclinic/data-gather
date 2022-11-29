@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import * as InterviewScreen from '../models/InterviewScreen';
-import isNonNullable from '../util/isNonNullable';
 import useAppDispatch from './useAppDispatch';
-import useAppState from './useAppState';
 import useInterviewStore from './useInterviewStore';
 
 /**
@@ -19,10 +17,10 @@ export default function useInterviewScreens(
 ): InterviewScreen.WithChildrenT[] | undefined {
   const dispatch = useAppDispatch();
   const interviewStore = useInterviewStore();
-  const { loadedInterviewScreens } = useAppState();
 
   // load interview screens from backend
   const { data: screensFromStorage } = useQuery({
+    enabled: !!interviewId,
     queryKey: ['interviewScreens', interviewId],
     queryFn: async () => {
       if (interviewId === undefined) {
@@ -50,15 +48,5 @@ export default function useInterviewScreens(
     }
   }, [screensFromStorage, dispatch]);
 
-  const screens = useMemo(
-    () =>
-      screensFromStorage
-        ? screensFromStorage
-            .map(screen => loadedInterviewScreens.get(screen.id))
-            .filter(isNonNullable)
-        : undefined,
-    [screensFromStorage, loadedInterviewScreens],
-  );
-
-  return interviewId === undefined ? undefined : screens;
+  return screensFromStorage;
 }

@@ -109,14 +109,6 @@ function isObject(maybeObj: unknown): maybeObj is Record<string, unknown> {
   );
 }
 
-// Helper predicate function to check if something is a string array
-function isStringArray(maybeArr: unknown): maybeArr is string[] {
-  return (
-    Array.isArray(maybeArr) &&
-    (maybeArr.length === 0 || typeof maybeArr[0] === 'string')
-  );
-}
-
 /**
  * Validate if a conditional action is valid to be saved.
  * @returns {[boolean, string]} A tuple of whether or not validation passed,
@@ -163,14 +155,10 @@ export function deserialize(
 
   switch (actionType) {
     case ActionType.PUSH:
-      invariant(
-        isStringArray(actionPayload),
-        `[ConditionalAction] Deserialization error. 'actionPayload' must be an array of strings.`,
-      );
       return {
         ...condition,
         actionConfig: {
-          payload: actionPayload,
+          payload: actionPayload.split(';'),
           type: actionType,
         },
       };

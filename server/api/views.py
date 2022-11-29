@@ -2,7 +2,7 @@ import logging
 import uuid
 from typing import Optional, Sequence, TypeVar
 
-from fastapi import Body, FastAPI, HTTPException, Request
+from fastapi import Body, Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -33,6 +33,13 @@ from server.models.interview_screen_entry import InterviewScreenEntry
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+engine = create_fk_constraint_engine(SQLITE_DB_PATH)
+
+
+def get_session():
+    with Session(engine) as session:
+        yield session
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -95,7 +102,9 @@ def create_interview(interview: InterviewCreate) -> Interview:
 )
 def get_interview(interview_id: str) -> Interview:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    session = Session(autocommit=False, autoflush=False, bind=engine)
+    session = Session(
+        autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
+    )
     interview = session.get(Interview, interview_id)
     if not interview:
         raise HTTPException(status_code=404, detail="Interview not found")
@@ -192,9 +201,9 @@ def get_interviews() -> list[Interview]:
     response_model=InterviewScreenReadWithChildren,
     tags=["interviewScreens"],
 )
-def get_interview_screen(screen_id: str) -> InterviewScreen:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    session = Session(autocommit=False, autoflush=False, bind=engine)
+def get_interview_screen(
+    *, session: Session = Depends(get_session), screen_id: str
+) -> InterviewScreen:
     screen = session.get(InterviewScreen, screen_id)
     if not screen:
         raise HTTPException(status_code=404, detail="InterviewScreen not found")
@@ -208,7 +217,9 @@ def get_interview_screen(screen_id: str) -> InterviewScreen:
 )
 def create_interview_screen(screen: InterviewScreenCreate) -> InterviewScreen:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    with Session(autocommit=False, autoflush=False, bind=engine) as session:
+    with Session(
+        autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
+    ) as session:
         db_screen = InterviewScreen.from_orm(screen)
         existing_screens = (
             session.query(InterviewScreen)
