@@ -26,6 +26,7 @@ export default function NewEntryModal({
           placeholder="What type of data is this?"
           options={[
             { displayValue: 'Text', value: 'text' },
+            { displayValue: 'Airtable', value: 'Airtable' },
             { displayValue: 'Number', value: 'number' },
             { displayValue: 'Yes/No', value: 'boolean' },
           ]}
