@@ -34,8 +34,8 @@ export default function ScreenLink({
   >(undefined);
 
   useEffect(() => {
+    // TODO: replace this with a useQuery hook instead
     async function fetchAndSetFullScreen(screenId: string): Promise<void> {
-      // TODO: replace this with a useQuery hook instead
       const screenWithChildren =
         await interviewStore.InterviewScreenAPI.getInterviewScreen(screenId);
       setFullScreen(screenWithChildren);

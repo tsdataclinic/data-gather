@@ -70,56 +70,6 @@ export function getStartingScreens(
   return sortedScreens;
 }
 
-/**
- * Immutably add a starting screen to a particular position
- * in the interview's default sequence
- */
-export function setStartingState(
-  interview: Interview,
-  screenIds: readonly string[],
-): Interview {
-  return {
-    ...interview,
-    startingState: screenIds,
-  };
-}
-
-/**
- * Immutably update a starting screen at a particular position
- * in the interview's default sequence
- */
-export function updateStartingScreen(
-  interview: Interview,
-  index: number,
-  screenId: string,
-): Interview {
-  return {
-    ...interview,
-    startingState: [
-      ...interview.startingState.slice(0, index),
-      screenId,
-      ...interview.startingState.slice(index + 1),
-    ],
-  };
-}
-
-/**
- * Immutably remove a starting screen from a particular position
- * in the interview's default sequence
- */
-export function removeStartingScreen(
-  interview: Interview,
-  index: number,
-): Interview {
-  return {
-    ...interview,
-    startingState: [
-      ...interview.startingState.slice(0, index),
-      ...interview.startingState.slice(index + 1),
-    ],
-  };
-}
-
 export function updateNotes(interview: Interview, notes: string): Interview {
   return {
     ...interview,
