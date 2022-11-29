@@ -8,6 +8,8 @@ import { ConditionalOperator } from '../api/models/ConditionalOperator';
 import { SerializedConditionalActionRead } from '../api/models/SerializedConditionalActionRead';
 import { SerializedConditionalActionCreate } from '../api/models/SerializedConditionalActionCreate';
 
+const PUSH_ACTION_DELIMITER = ';';
+
 /**
  * An array of all all conditional operators. Useful for populating a list of
  * operators, e.g. for a dropdown.
@@ -158,7 +160,7 @@ export function deserialize(
       return {
         ...condition,
         actionConfig: {
-          payload: actionPayload.split(';'),
+          payload: actionPayload.split(PUSH_ACTION_DELIMITER),
           type: actionType,
         },
       };
@@ -197,7 +199,7 @@ function serializeActionPayload(
   payload: string | readonly string[] | Readonly<ResponseData>,
 ): string {
   if (Array.isArray(payload)) {
-    return payload.join(';');
+    return payload.join(PUSH_ACTION_DELIMITER);
   }
   if (typeof payload === 'object') {
     return JSON.stringify(payload);

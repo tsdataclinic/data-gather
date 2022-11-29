@@ -158,7 +158,6 @@ def update_interview_starting_state(
     starting_screen_to_idx = {
         screen_id: i for i, screen_id in enumerate(starting_state)
     }
-    print(starting_screen_to_idx)
     for db_screen in db_screens:
         db_screen_id = str(db_screen.id)
         if db_screen_id in starting_screen_to_idx:

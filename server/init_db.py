@@ -1,6 +1,5 @@
 import logging
 
-from sqlalchemy.dialects.sqlite.base import default
 from sqlalchemy_utils import create_database, database_exists
 from sqlmodel import Session, SQLModel
 
@@ -54,22 +53,14 @@ def generate_fake_screens(
 def generate_fake_actions(
     screen1: models.interview_screen.InterviewScreen,
     screen2: models.interview_screen.InterviewScreen,
+    screen3: models.interview_screen.InterviewScreen,
 ) -> None:
     if screen1.id:
         screen1.actions = [
             models.conditional_action.ConditionalAction(
-                action_payload="payload_string",
+                action_payload=f"{screen2.id};{screen3.id}",
                 action_type=models.conditional_action.ActionType.PUSH,
                 order=1,
-                response_key="rkey",
-                screen_id=screen1.id,
-                value=None,
-                conditional_operator=models.conditional_action.ConditionalOperator.ALWAYS_EXECUTE,
-            ),
-            models.conditional_action.ConditionalAction(
-                action_payload="payload_string",
-                action_type=models.conditional_action.ActionType.PUSH,
-                order=2,
                 response_key="rkey",
                 screen_id=screen1.id,
                 value=None,
@@ -80,7 +71,7 @@ def generate_fake_actions(
     if screen2.id:
         screen2.actions = [
             models.conditional_action.ConditionalAction(
-                action_payload="payload_string",
+                action_payload=f"{screen3.id}",
                 action_type=models.conditional_action.ActionType.PUSH,
                 order=1,
                 response_key="rkey",
@@ -105,7 +96,7 @@ def generate_fake_entries(
     if screen1.id:
         screen1.entries = [
             models.interview_screen_entry.InterviewScreenEntry(
-                name="somename",
+                name="First Entry",
                 prompt="hello",
                 response_key="asdf",
                 order=1,
@@ -115,7 +106,7 @@ def generate_fake_entries(
                 response_type_options=default_response_type_options,
             ),
             models.interview_screen_entry.InterviewScreenEntry(
-                name="somename",
+                name="Second Entry",
                 prompt="hello",
                 response_key="ghjk",
                 screen_id=screen1.id,
@@ -129,7 +120,7 @@ def generate_fake_entries(
     if screen2.id:
         screen2.entries = [
             models.interview_screen_entry.InterviewScreenEntry(
-                name="somename",
+                name="First Entry",
                 prompt="hello",
                 response_key="qwer",
                 screen_id=screen2.id,
@@ -172,7 +163,7 @@ def populate_dev_db(file_path: str = SQLITE_DB_PATH):
         for screen in screens:
             session.refresh(screen)
 
-        generate_fake_actions(screens[0], screens[1])
+        generate_fake_actions(screens[0], screens[1], screens[2])
         generate_fake_entries(screens[0], screens[1])
 
         session.commit()
