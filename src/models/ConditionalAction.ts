@@ -225,6 +225,9 @@ export function serialize(
 ): SerializedConditionalActionCreate;
 export function serialize(
   action: ConditionalAction | ConditionalActionCreate,
+): SerializedConditionalActionRead | SerializedConditionalActionCreate;
+export function serialize(
+  action: ConditionalAction | ConditionalActionCreate,
 ): SerializedConditionalActionRead | SerializedConditionalActionCreate {
   // validate the conditional action before serializing to make sure it's safe to store
   const [isValid, errorMsg] = validate(action);
@@ -263,23 +266,6 @@ export function actionTypeToDisplayString(
   }
   // capitalize first letter
   return actionType[0].toUpperCase() + actionType.substring(1);
-}
-
-/**
- * Returns an action corresponding to the given id from a list of action
- *
- * @param actionId
- * @param actions
- */
-export function getActionById(
-  actionId: string,
-  actions: ConditionalAction[] | undefined,
-): ConditionalAction | undefined {
-  if (actions === undefined) {
-    return undefined;
-  }
-
-  return actions.find(entry => entry.id === actionId);
 }
 
 /**

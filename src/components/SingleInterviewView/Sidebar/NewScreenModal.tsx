@@ -25,15 +25,17 @@ export default function NewScreenModal({
 
   const onSubmit = useCallback(
     async (vals: Map<string, string>): Promise<void> => {
-      const screen = InterviewScreen.create({
-        title: vals.get('name') ?? '',
-      });
-
-      await interviewStore.addScreenToInterview(interview.id, screen);
+      const newScreen =
+        await interviewStore.InterviewScreenAPI.createInterviewScreen(
+          InterviewScreen.create({
+            title: vals.get('name') ?? '',
+            interviewId: interview.id,
+          }),
+        );
 
       dispatch({
         interviewId: interview.id,
-        screen,
+        screen: newScreen,
         type: 'SCREEN_ADD',
       });
       onDismiss();

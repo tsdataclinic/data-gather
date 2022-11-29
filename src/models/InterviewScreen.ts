@@ -112,53 +112,6 @@ export function update(
 }
 
 /**
- * Immutably add an entry to a screen
- */
-export function addEntry(
-  screen: InterviewScreen,
-  entry: InterviewScreenEntry.T,
-): InterviewScreen {
-  return {
-    ...screen,
-    entries: screen.entries?.concat(entry),
-  };
-}
-
-/**
- * Immutably add an action to a screen
- */
-export function addAction(
-  screen: InterviewScreen,
-  conditionalAction: ConditionalAction.T,
-): InterviewScreen {
-  return {
-    ...screen,
-    actions: screen.actions?.concat(conditionalAction),
-  };
-}
-
-/**
- * Immutably removes an entry from a screen
- */
-export function removeEntry(
-  screen: InterviewScreen,
-  entry: InterviewScreenEntry.T,
-): InterviewScreen {
-  const index = screen.entries?.findIndex(e => e.id === entry.id);
-  if (index !== undefined && index > -1)
-    return {
-      ...screen,
-      entries: screen.entries
-        ? [
-            ...screen.entries.slice(0, index),
-            ...screen.entries.slice(index + 1),
-          ]
-        : undefined,
-    };
-  return screen;
-}
-
-/**
  * Deserialize a SerializedInterviewScreenRead model.
  */
 export function deserialize(

@@ -1,5 +1,6 @@
 import logging
 
+from sqlalchemy.dialects.sqlite.base import default
 from sqlalchemy_utils import create_database, database_exists
 from sqlmodel import Session, SQLModel
 
@@ -94,6 +95,13 @@ def generate_fake_entries(
     screen1: models.interview_screen.InterviewScreen,
     screen2: models.interview_screen.InterviewScreen,
 ) -> None:
+    # TODO: change this once we have a different expected response_type_options
+    # depending on the response type
+    default_response_type_options = {
+        "selectedBase": "",
+        "selectedTable": "",
+        "selectedFields": [],
+    }
     if screen1.id:
         screen1.entries = [
             models.interview_screen_entry.InterviewScreenEntry(
@@ -104,6 +112,7 @@ def generate_fake_entries(
                 response_type=models.interview_screen_entry.ResponseType.TEXT,
                 text="sometext",
                 screen_id=screen1.id,
+                response_type_options=default_response_type_options,
             ),
             models.interview_screen_entry.InterviewScreenEntry(
                 name="somename",
@@ -113,6 +122,7 @@ def generate_fake_entries(
                 order=2,
                 response_type=models.interview_screen_entry.ResponseType.NUMBER,
                 text="sometext",
+                response_type_options=default_response_type_options,
             ),
         ]
 
@@ -126,6 +136,7 @@ def generate_fake_entries(
                 order=1,
                 response_type=models.interview_screen_entry.ResponseType.BOOLEAN,
                 text="sometext",
+                response_type_options=default_response_type_options,
             ),
         ]
 

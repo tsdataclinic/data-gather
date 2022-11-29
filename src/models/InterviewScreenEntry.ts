@@ -34,6 +34,8 @@ interface InterviewScreenEntry {
   /** The data type expected as a response */
   readonly responseType: ResponseType;
 
+  // TODO: extend this to support response configs for other response types
+  // and not just airtable
   readonly responseTypeOptions: ResponseTypeOptions;
 
   /** The screen that this entry belongs to */
@@ -77,6 +79,9 @@ export function serialize(
 export function serialize(
   screenEntry: InterviewScreenEntryCreate,
 ): SerializedInterviewScreenEntryCreate;
+export function serialize(
+  screenEntry: InterviewScreenEntry | InterviewScreenEntryCreate,
+): SerializedInterviewScreenEntryRead | SerializedInterviewScreenEntryCreate;
 export function serialize(
   screenEntry: InterviewScreenEntry | InterviewScreenEntryCreate,
 ): SerializedInterviewScreenEntryRead | SerializedInterviewScreenEntryCreate {

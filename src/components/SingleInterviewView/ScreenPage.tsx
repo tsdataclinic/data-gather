@@ -3,8 +3,8 @@ import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
-import ActionCard from './ActionCard';
-import EntryCard from './EntryCard';
+import ActionCard, { type EditableAction } from './ActionCard';
+import EntryCard, { type EditableEntry } from './EntryCard';
 import useInterviewStore from '../../hooks/useInterviewStore';
 import HeaderCard from './HeaderCard';
 import ScreenToolbar from './ScreenToolbar';
@@ -19,9 +19,6 @@ type Props = {
   defaultScreen: InterviewScreen.WithChildrenT;
   interview: Interview.T;
 };
-
-type EditableAction = ConditionalAction.T | ConditionalAction.CreateT;
-type EditableEntry = InterviewScreenEntry.T | InterviewScreenEntry.CreateT;
 
 /**
  * The ScreenCard is an uncontrolled component because any changes to actions
@@ -70,31 +67,29 @@ function ScreenCard({
       ),
     );
 
-  const onActionChange = React.useCallback((newAction: EditableAction) => {
-    setAllActions(prevActions =>
-      prevActions.map(action => {
-        if ('id' in action && 'id' in newAction) {
-          return action.id === newAction.id ? newAction : action;
-        }
-        if ('tempId' in action && 'tempId' in newAction) {
-          return action.tempId === newAction.tempId ? newAction : action;
-        }
-        return action;
-      }),
-    );
-  }, []);
+  const onActionChange = React.useCallback(
+    (actionToReplace: EditableAction, newAction: EditableAction) => {
+      setAllActions(prevActions =>
+        prevActions.map(action =>
+          action === actionToReplace ? newAction : action,
+        ),
+      );
+    },
+    [],
+  );
 
-  const onEntryChange = React.useCallback((newEntry: EditableEntry) => {
+  const onEntryChange = React.useCallback(
+    (entryToReplace: EditableEntry, newEntry: EditableEntry) => {
+      setAllEntries(prevEntries =>
+        prevEntries.map(entry => (entry === entryToReplace ? newEntry : entry)),
+      );
+    },
+    [],
+  );
+
+  const onEntryDelete = React.useCallback((entryToDelete: EditableEntry) => {
     setAllEntries(prevEntries =>
-      prevEntries.map(entry => {
-        if ('id' in entry && 'id' in newEntry) {
-          return entry.id === newEntry.id ? newEntry : entry;
-        }
-        if ('tempId' in entry && 'tempId' in newEntry) {
-          return entry.tempId === newEntry.tempId ? newEntry : entry;
-        }
-        return entry;
-      }),
+      prevEntries.filter(entry => entry !== entryToDelete),
     );
   }, []);
 
@@ -186,6 +181,7 @@ function ScreenCard({
               ref={formRefSetter('id' in entry ? entry.id : entry.tempId)}
               entry={entry}
               onEntryChange={onEntryChange}
+              onEntryDelete={onEntryDelete}
             />
           ))}
           {allActions.map(action => (

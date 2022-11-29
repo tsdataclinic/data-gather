@@ -13,6 +13,8 @@ import Form from '../../ui/Form';
 import useInterviewScreenEntries from '../../../hooks/useInterviewScreenEntries';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
 
+export type EditableAction = ConditionalAction.T | ConditionalAction.CreateT;
+
 // remove 'ALWAYS_EXECUTE' from being one of the options in the dropdown
 // because this operator is handled separately
 const OPERATOR_OPTIONS = ConditionalAction.CONDITIONAL_OPERATORS.filter(
@@ -23,10 +25,11 @@ const OPERATOR_OPTIONS = ConditionalAction.CONDITIONAL_OPERATORS.filter(
 }));
 
 type Props = {
-  action: ConditionalAction.T | ConditionalAction.CreateT;
+  action: EditableAction;
   interview: Interview.T;
   onActionChange: (
-    action: ConditionalAction.T | ConditionalAction.CreateT,
+    actionToReplace: EditableAction,
+    newAction: EditableAction,
   ) => void;
 };
 
@@ -55,7 +58,7 @@ function ActionCard(
         action.conditionalOperator ===
           ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
       ) {
-        onActionChange({
+        onActionChange(action, {
           ...action,
           conditionalOperator: ConditionalAction.ConditionalOperator.EQ,
         });
@@ -66,7 +69,7 @@ function ActionCard(
 
   const onConditionalOperatorChange = React.useCallback(
     (newConditionalOperator: ConditionalAction.ConditionalOperator) => {
-      onActionChange({
+      onActionChange(action, {
         ...action,
         conditionalOperator: newConditionalOperator,
       });
@@ -76,7 +79,7 @@ function ActionCard(
 
   const onResponseKeyChange = React.useCallback(
     (newResponseKey: string) => {
-      onActionChange({
+      onActionChange(action, {
         ...action,
         responseKey: newResponseKey,
       });
@@ -86,7 +89,7 @@ function ActionCard(
 
   const onConditionalValueChange = React.useCallback(
     (newValue: string) => {
-      onActionChange({
+      onActionChange(action, {
         ...action,
         value: newValue,
       });
@@ -96,7 +99,7 @@ function ActionCard(
 
   const onActionConfigChange = React.useCallback(
     (newActionConfig: ConditionalAction.T['actionConfig']) => {
-      onActionChange({
+      onActionChange(action, {
         ...action,
         actionConfig: newActionConfig,
       });

@@ -16,6 +16,7 @@ export type SerializedInterviewScreenEntryRead = {
   prompt: string;
   responseKey: string;
   responseType: ResponseType;
+  responseTypeOptions: any;
   screenId: string;
   text: string;
   id: string;

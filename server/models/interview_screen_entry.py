@@ -2,6 +2,8 @@ import enum
 import uuid
 from typing import Optional
 
+from sqlalchemy import Column
+from sqlalchemy.dialects.sqlite import JSON
 from sqlmodel import Field, Relationship
 
 from server.models.common import OrderedModel
@@ -26,6 +28,7 @@ class InterviewScreenEntryBase(OrderedModel):
     prompt: str
     response_key: str
     response_type: ResponseType
+    response_type_options: dict = Field(sa_column=Column(JSON))
     screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
     text: str
 
