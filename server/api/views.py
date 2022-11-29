@@ -147,41 +147,43 @@ def update_interview(interview_id: str, interview: InterviewUpdate) -> Interview
     tags=["interviews"],
 )
 def update_interview_starting_state(
-    interview_id: str, starting_state: list[str]
+    *,
+    session: Session = Depends(get_session),
+    interview_id: str,
+    starting_state: list[str],
 ) -> Interview:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    with Session(autocommit=False, autoflush=False, bind=engine) as session:
-        db_screens = session.exec(
-            select(InterviewScreen).where(InterviewScreen.interview_id == interview_id)
-        ).all()
+    db_screens = session.exec(
+        select(InterviewScreen).where(InterviewScreen.interview_id == interview_id)
+    ).all()
+    starting_screen_to_idx = {
+        screen_id: i for i, screen_id in enumerate(starting_state)
+    }
+    print(starting_screen_to_idx)
+    for db_screen in db_screens:
+        db_screen_id = str(db_screen.id)
+        if db_screen_id in starting_screen_to_idx:
+            idx = starting_screen_to_idx[db_screen_id]
+            db_screen.is_in_starting_state = True
+            db_screen.starting_state_order = idx
+        else:
+            db_screen.is_in_starting_state = False
+            db_screen.starting_state_order = None
 
-        starting_screen_to_idx = {
-            screen_id: i for i, screen_id in enumerate(starting_state)
-        }
-        for db_screen in db_screens:
-            if db_screen.id in starting_screen_to_idx:
-                idx = starting_screen_to_idx[db_screen.id]
-                db_screen.is_in_starting_state = True
-                db_screen.starting_state_order = idx
-            else:
-                db_screen.is_in_starting_state = False
-                db_screen.starting_state_order = None
+    session.add_all(db_screens)
+    try:
+        session.commit()
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e.orig),
+        )
 
-        session.add_all(db_screens)
-        try:
-            session.commit()
-        except IntegrityError as e:
-            raise HTTPException(
-                status_code=400,
-                detail=str(e.orig),
-            )
-
-        db_interview = session.get(Interview, interview_id)
-        if not db_interview:
-            raise HTTPException(
-                status_code=404, detail=f"Interview with id {interview_id} not found"
-            )
-        return db_interview
+    db_interview = session.get(Interview, interview_id)
+    if not db_interview:
+        raise HTTPException(
+            status_code=404, detail=f"Interview with id {interview_id} not found"
+        )
+    return db_interview
 
 
 @app.get(
@@ -254,6 +256,8 @@ def create_interview_screen(screen: InterviewScreenCreate) -> InterviewScreen:
     tags=["interviewScreens"],
 )
 def update_interview_screen(
+    *,
+    session: Session = Depends(get_session),
     screen_id: str,
     screen: InterviewScreenUpdate,
 ) -> InterviewScreen:
@@ -262,57 +266,51 @@ def update_interview_screen(
     of an InterviewScreen as well as its nested Conditional Actions
     and Entries.
     """
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    with Session(
-        autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
-    ) as session:
-        try:
-            db_screen: InterviewScreen = (
-                session.query(InterviewScreen)
-                .where(InterviewScreen.id == screen_id)
-                .one()
-            )
-        except NoResultFound:
-            raise HTTPException(
-                status_code=404, detail=f"Screen with id {screen_id} not found"
-            )
-
-        # update the top-level InterviewScreen model values
-        _update_model_diff(db_screen, screen.copy(exclude={"actions", "entries"}))
-
-        # validate that actions and entries have valid orders
-        _validate_sequential_order(screen.actions)
-        _validate_sequential_order(screen.entries)
-
-        # update the InterviewScreen relationships (actions and entries)
-        actions_to_set, actions_to_delete = _update_db_screen_relationships(
-            db_screen.actions,
-            [ConditionalAction.from_orm(action) for action in screen.actions],
+    try:
+        db_screen: InterviewScreen = (
+            session.query(InterviewScreen).where(InterviewScreen.id == screen_id).one()
         )
-        entries_to_set, entries_to_delete = _update_db_screen_relationships(
-            db_screen.entries,
-            [InterviewScreenEntry.from_orm(entry) for entry in screen.entries],
+    except NoResultFound:
+        raise HTTPException(
+            status_code=404, detail=f"Screen with id {screen_id} not found"
         )
 
-        # set the updated relationships
-        db_screen.actions = actions_to_set
-        db_screen.entries = entries_to_set
+    # update the top-level InterviewScreen model values
+    _update_model_diff(db_screen, screen.copy(exclude={"actions", "entries"}))
 
-        # now apply all changes to the session
-        session.add(db_screen)
-        for model in actions_to_delete + entries_to_delete:
-            session.delete(model)
+    # validate that actions and entries have valid orders
+    _validate_sequential_order(screen.actions)
+    _validate_sequential_order(screen.entries)
 
-        LOG.info(f"Making changes to screen:")
-        LOG.info(f"Additions {session.new}")
-        LOG.info(f"Deletions: {session.deleted}")
-        LOG.info(f"Updates: {session.dirty}")
+    # update the InterviewScreen relationships (actions and entries)
+    actions_to_set, actions_to_delete = _update_db_screen_relationships(
+        db_screen.actions,
+        [ConditionalAction.from_orm(action) for action in screen.actions],
+    )
+    entries_to_set, entries_to_delete = _update_db_screen_relationships(
+        db_screen.entries,
+        [InterviewScreenEntry.from_orm(entry) for entry in screen.entries],
+    )
 
-        try:
-            session.commit()
-        except IntegrityError as e:
-            raise HTTPException(status_code=400, detail=str(e.orig))
-        return db_screen
+    # set the updated relationships
+    db_screen.actions = actions_to_set
+    db_screen.entries = entries_to_set
+
+    # now apply all changes to the session
+    session.add(db_screen)
+    for model in actions_to_delete + entries_to_delete:
+        session.delete(model)
+
+    LOG.info(f"Making changes to screen:")
+    LOG.info(f"Additions {session.new}")
+    LOG.info(f"Deletions: {session.deleted}")
+    LOG.info(f"Updates: {session.dirty}")
+
+    try:
+        session.commit()
+    except IntegrityError as e:
+        raise HTTPException(status_code=400, detail=str(e.orig))
+    return db_screen
 
 
 def _update_model_diff(existing_model: SQLModel, new_model: SQLModel):

@@ -113,7 +113,7 @@ const StyledClose = styled(RadixToast.Close)`
 `;
 
 type ToastAPI = {
-  notifyDanger: (title: string, description: React.ReactNode) => void;
+  notifyError: (title: string, description: React.ReactNode) => void;
   notifySuccess: (title: string, description: React.ReactNode) => void;
 };
 
@@ -155,7 +155,7 @@ function Toaster(
           prevToasts.concat({ title, children, intent: 'success' }),
         );
       },
-      notifyDanger: (title, children: React.ReactNode) => {
+      notifyError: (title, children: React.ReactNode) => {
         setToasts(prevToasts =>
           prevToasts.concat({ title, children, intent: 'danger' }),
         );
@@ -183,7 +183,7 @@ const ToastManager = React.forwardRef(Toaster);
 const noop = (): void => undefined;
 const noopAPI: ToastAPI = {
   notifySuccess: noop,
-  notifyDanger: noop,
+  notifyError: noop,
 };
 
 /**
