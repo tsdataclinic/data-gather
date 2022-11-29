@@ -22,7 +22,7 @@ export default function NewScreenModal({
 }: Props): JSX.Element {
   const interviewStore = useInterviewStore();
   const queryClient = useQueryClient();
-  const createScreenMutation = useMutation({
+  const createScreenFn = useMutation({
     mutationFn: interviewStore.InterviewScreenAPI.createInterviewScreen,
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -34,14 +34,14 @@ export default function NewScreenModal({
 
   const onSubmit = useCallback(
     (vals: Map<string, string>) => {
-      createScreenMutation.mutate(
+      createScreenFn.mutate(
         InterviewScreen.create({
           title: vals.get('name') ?? '',
           interviewId: interview.id,
         }),
       );
     },
-    [createScreenMutation, interview],
+    [createScreenFn, interview],
   );
 
   return (

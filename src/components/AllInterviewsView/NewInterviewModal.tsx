@@ -19,7 +19,7 @@ export default function NewInterviewModal({
 }: Props): JSX.Element {
   const interviewStore = useInterviewStore();
   const queryClient = useQueryClient();
-  const newInterviewMutation = useMutation({
+  const createInterviewFn = useMutation({
     mutationFn: interviewStore.InterviewAPI.createInterview,
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -31,14 +31,14 @@ export default function NewInterviewModal({
 
   const onSubmit = useCallback(
     async (vals: Map<string, string>): Promise<void> => {
-      newInterviewMutation.mutate(
+      createInterviewFn.mutate(
         Interview.create({
           name: vals.get('name') ?? '',
           description: vals.get('description') ?? '',
         }),
       );
     },
-    [newInterviewMutation],
+    [createInterviewFn],
   );
 
   return (
