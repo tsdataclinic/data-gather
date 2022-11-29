@@ -74,17 +74,6 @@ export type AppAction =
       interview: Interview.WithScreensT;
       type: 'INTERVIEW_UPDATE';
     }
-  /** Create a new interview */
-  | {
-      interview: Interview.T;
-      type: 'INTERVIEW_CREATE';
-    }
-  /** Add a screen to an interview */
-  | {
-      interviewId: string;
-      screen: InterviewScreen.T;
-      type: 'SCREEN_ADD';
-    }
   /** Update a bunch of interview screen entries */
   | {
       screenEntries: InterviewScreenEntry.T[];
@@ -171,49 +160,6 @@ export default function appReducer(
           action.interview,
         ),
       };
-    }
-
-    case 'INTERVIEW_CREATE':
-      return {
-        ...state,
-        loadedInterviews: setMap(loadedInterviews, action.interview.id, {
-          ...action.interview,
-          screens: [],
-        }),
-      };
-
-    case 'SCREEN_ADD': {
-      const { interviewId, screen } = action;
-
-      // find the interview to update
-      const interview = loadedInterviews.get(interviewId);
-
-      if (interview) {
-        // add the new screen id to the interview
-        const newInterview = {
-          ...interview,
-          screens: interview.screens.concat(screen),
-        };
-
-        return {
-          ...state,
-
-          // add the screen to the loadedInterviewScreens map (immutable operation)
-          loadedInterviewScreens: setMap(loadedInterviewScreens, screen.id, {
-            ...screen,
-            actions: [],
-            entries: [],
-          }),
-
-          loadedInterviews: setMap(
-            loadedInterviews,
-            action.interviewId,
-            newInterview,
-          ),
-        };
-      }
-
-      return state;
     }
 
     case 'SCREEN_ENTRIES_UPDATE':

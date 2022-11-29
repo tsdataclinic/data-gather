@@ -216,37 +216,36 @@ def get_interview_screen(
     response_model=InterviewScreenRead,
     tags=["interviewScreens"],
 )
-def create_interview_screen(screen: InterviewScreenCreate) -> InterviewScreen:
-    engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-    with Session(
-        autocommit=False, autoflush=False, bind=engine, expire_on_commit=False
-    ) as session:
+def create_interview_screen(
+    *, session: Session = Depends(get_session), screen: InterviewScreenCreate
+) -> InterviewScreen:
+    existing_screens = (
+        session.query(InterviewScreen)
+        .where(InterviewScreen.interview_id == screen.interview_id)
+        .all()
+    )
+
+    if not existing_screens:
+        screen.order = 1
         db_screen = InterviewScreen.from_orm(screen)
-        existing_screens = (
-            session.query(InterviewScreen)
-            .where(InterviewScreen.interview_id == screen.interview_id)
-            .all()
-        )
-        if not existing_screens:
-            db_screen.order = 1
-            session.add(db_screen)
-        else:
-            try:
-                ordered_screens = _adjust_screen_order(existing_screens, db_screen)
-                session.add_all(ordered_screens)
-            except InvalidOrder as e:
-                raise HTTPException(status_code=400, detail=str(e.message))
-
+        session.add(db_screen)
+    else:
         try:
-            session.commit()
-        except IntegrityError as e:
-            raise HTTPException(
-                status_code=400,
-                detail=str(e.orig),
-            )
-        session.refresh(screen)
+            db_screen, ordered_screens = _adjust_screen_order(existing_screens, screen)
+            session.add_all(ordered_screens)
+        except InvalidOrder as e:
+            raise HTTPException(status_code=400, detail=str(e.message))
 
-        return db_screen
+    try:
+        session.commit()
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e.orig),
+        )
+
+    session.refresh(db_screen)
+    return db_screen
 
 
 @app.put(
@@ -389,35 +388,37 @@ def _validate_sequential_order(request_models: Sequence[OrderedModel]):
 
 
 def _adjust_screen_order(
-    existing_screens: list[InterviewScreen], new_screen: InterviewScreen
-) -> list[InterviewScreen]:
+    existing_screens: list[InterviewScreen], new_screen: InterviewScreenCreate
+) -> tuple[InterviewScreen, list[InterviewScreen]]:
     """
     Given a list of existing screens and a new screen
-    do the necessary re-ordering
+    do the necessary re-ordering.
+
+    Return the newly created screen and the new list of ordered screens.
     """
     sorted_screens = sorted(existing_screens, key=lambda x: x.order)
     # If an order was not speficied for the new screen add it to the end
-    if new_screen.order == 0:
+    if new_screen.order == None:
         new_screen.order = sorted_screens[-1].order + 1
-        return existing_screens + [new_screen]
+    else:
+        # Screens shouldn't be created with an order that is
+        # not in or adjacent to the current screen orders
+        existing_orders = [i.order for i in sorted_screens]
+        if (
+            new_screen.order not in existing_orders
+            and new_screen.order != existing_orders[0] + 1
+            and new_screen.order != existing_orders[-1] + 1
+        ):
+            raise InvalidOrder(new_screen.order, existing_orders)
 
-    # Screens shouldn't be created with an order that is
-    # not in or adjacent to the current screen orders
-    existing_orders = [i.order for i in sorted_screens]
-    if (
-        new_screen.order not in existing_orders
-        and new_screen.order != existing_orders[0] + 1
-        and new_screen.order != existing_orders[-1] + 1
-    ):
-        raise InvalidOrder(new_screen.order, existing_orders)
+        # if proposed screen order is the same as existing
+        # increment matching screen and subsequent screens by 1
+        for screen in sorted_screens:
+            if screen.order >= new_screen.order:
+                screen.order += 1
 
-    # if proposed screen order is the same as existing
-    # increment matching screen and subsequent screens by 1
-    for screen in sorted_screens:
-        if screen.order >= new_screen.order:
-            screen.order += 1
-
-    return sorted_screens + [new_screen]
+    db_screen = InterviewScreen.from_orm(new_screen)
+    return (db_screen, sorted_screens + [db_screen])
 
 
 @app.get("/airtable-records/{table_name}", tags=["airtable"])
