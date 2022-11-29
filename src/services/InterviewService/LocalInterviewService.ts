@@ -31,9 +31,9 @@ export default class LocalInterviewService
 
     // id is our primary key
     this.version(1).stores({
-      conditionalActions: '++id',
-      interviewScreenEntries: '++id',
-      interviewScreens: '++id',
+      conditionalActions: '++id, screenId',
+      interviewScreenEntries: '++id, screenId',
+      interviewScreens: '++id, interviewId',
       interviews: '++id',
     });
   }
@@ -138,7 +138,7 @@ export default class LocalInterviewService
       const serializedScreen: InterviewScreen.SerializedT = {
         ...screen,
         id: uuidv4(),
-        order: lastScreen.order + 1,
+        order: lastScreen === undefined ? 1 : lastScreen.order + 1,
       };
 
       await this.interviewScreens.add(serializedScreen);
