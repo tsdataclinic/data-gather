@@ -4,10 +4,9 @@ import React, { useCallback, useState } from 'react';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
 import useInterviewStore from '../../hooks/useInterviewStore';
 import * as Interview from '../../models/Interview';
-import Button from '../ui/Button';
-import Dropdown from '../ui/Dropdown';
 import LabelWrapper from '../ui/LabelWrapper';
 import TextArea from '../ui/TextArea';
+import MultiSelect from '../ui/MultiSelect';
 
 type Props = {
   interview: Interview.WithScreensT;
@@ -16,9 +15,8 @@ type Props = {
 function ConfigureCard({ interview }: Props): JSX.Element {
   const interviewStore = useInterviewStore();
   const screens = useInterviewScreens(interview.id);
-  const startingState = React.useMemo(
-    () => Interview.getStartingScreens(interview),
-    [interview],
+  const [startingState, setStartingState] = React.useState<readonly string[]>(
+    () => Interview.getStartingScreens(interview).map(screen => screen.id),
   );
 
   const [displayedNotes, setDisplayedNotes] = useState(interview.notes);
@@ -31,36 +29,17 @@ function ConfigureCard({ interview }: Props): JSX.Element {
     interviewStore.InterviewAPI.updateInterview(newInterview.id, newInterview);
   }, [displayedNotes, interviewStore, interview]);
 
-  const changeStartScreen = useCallback(
-    (index: number, screenId: string): void => {
-      const newInterview = Interview.updateStartingScreen(
-        interview,
-        index,
-        screenId,
-      );
+  const onStartingStateChange = useCallback(
+    (screenIds: string[]): void => {
+      setStartingState(screenIds);
+      const newInterview = Interview.setStartingState(interview, screenIds);
       interviewStore.putInterview(newInterview);
-    },
-    [interviewStore, interview],
-  );
-
-  const addStartScreen = useCallback(
-    (screenId: string): void => {
-      const newInterview = Interview.addStartingScreen(interview, screenId);
-      interviewStore.putInterview(newInterview);
-    },
-    [interviewStore, interview],
-  );
-
-  const removeStartScreen = useCallback(
-    async (index: number): Promise<void> => {
-      const newInterview = Interview.removeStartingScreen(interview, index);
-      await interviewStore.putInterview(newInterview);
     },
     [interviewStore, interview],
   );
 
   if (!screens) {
-    return <p>No screens yet!</p>;
+    return <p>No stages have been created yet!</p>;
   }
 
   const getOptions = (): Array<{
@@ -104,54 +83,12 @@ function ConfigureCard({ interview }: Props): JSX.Element {
               }}
             >
               <div className="w-40">Starting State</div>
-              <div
-                className="ml-4"
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-                {startingState.map((screen, idx) => (
-                  <div
-                    // eslint-disable-next-line react/no-array-index-key
-                    key={`startingstate_${screen.id}_${idx}`}
-                    style={{
-                      display: 'flex',
-                      marginBottom: '20px',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <span className="w-32">
-                      <Dropdown
-                        onChange={screenId => changeStartScreen(idx, screenId)}
-                        value={screen.id}
-                        options={getOptions()}
-                        placeholder=""
-                      />
-                    </span>
-
-                    <span className="ml-2">
-                      <Button
-                        type="button"
-                        onClick={() => removeStartScreen(idx)}
-                      >
-                        -
-                      </Button>
-                    </span>
-                  </div>
-                ))}
-                <Dropdown
-                  // We reset the key so that the component remounts, thus
-                  // clearing the selection. This is due to a radix bug where
-                  // `undefined` values make the component be treated as
-                  // uncontrolled
-                  key={startingState.length}
-                  onChange={addStartScreen}
-                  placeholder="Add another screen!"
-                  value={undefined}
-                  options={getOptions()}
-                />
-              </div>
+              <MultiSelect
+                onChange={onStartingStateChange}
+                placeholder="Add a stage"
+                selectedValues={startingState}
+                options={getOptions()}
+              />
             </div>
           </span>
         </div>

@@ -11,9 +11,11 @@ from server.models_util import update_module_forward_refs
 class ResponseType(str, enum.Enum):
     """The different types of responses that can be used in a screen entry"""
 
+    AIRTABLE = "airtable"
     BOOLEAN = "boolean"
     EMAIL = "email"
     NUMBER = "number"
+    PHONE_NUMBER = "phone_number"
     TEXT = "text"
 
 

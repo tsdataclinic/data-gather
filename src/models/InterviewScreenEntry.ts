@@ -4,6 +4,12 @@ import { SerializedInterviewScreenEntryRead } from '../api/models/SerializedInte
 import { SerializedInterviewScreenEntryCreate } from '../api/models/SerializedInterviewScreenEntryCreate';
 import { ResponseType } from '../api/models/ResponseType';
 
+export type ResponseTypeOptions = {
+  selectedBase: string;
+  selectedFields: string[];
+  selectedTable: string;
+};
+
 export const RESPONSE_TYPES: readonly ResponseType[] =
   Object.values(ResponseType);
 
@@ -28,6 +34,8 @@ interface InterviewScreenEntry {
   /** The data type expected as a response */
   readonly responseType: ResponseType;
 
+  readonly responseTypeOptions: ResponseTypeOptions;
+
   /** The screen that this entry belongs to */
   readonly screenId: string;
 
@@ -50,6 +58,7 @@ export function create(
     ...values,
     responseKey: uuidv4(),
     tempId: uuidv4(),
+    responseTypeOptions: values.responseTypeOptions,
   };
 }
 
@@ -93,6 +102,8 @@ export function getEntryById(
 
 export function getResponseTypeDisplayName(responseType: ResponseType): string {
   switch (responseType) {
+    case ResponseType.AIRTABLE:
+      return 'Airtable';
     case ResponseType.TEXT:
       return 'Text';
     case ResponseType.NUMBER:
@@ -101,6 +112,8 @@ export function getResponseTypeDisplayName(responseType: ResponseType): string {
       return 'Yes/No';
     case ResponseType.EMAIL:
       return 'Email';
+    case ResponseType.PHONE_NUMBER:
+      return 'Phone Number';
     default:
       return assertUnreachable(responseType);
   }

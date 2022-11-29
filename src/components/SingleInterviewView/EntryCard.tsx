@@ -5,6 +5,8 @@ import { Element as ScrollableElement } from 'react-scroll';
 import Form from '../ui/Form';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import useInterviewStore from '../../hooks/useInterviewStore';
+import useAppState from '../../hooks/useAppState';
+import MultiSelect from '../ui/MultiSelect';
 
 type Props = {
   entry: InterviewScreenEntry.T | InterviewScreenEntry.CreateT;
@@ -24,7 +26,63 @@ function EntryCard(
   { entry, onEntryChange }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
+  const [selectedBase, setSelectedBase] = React.useState<string>(
+    entry.responseTypeOptions.selectedBase ?? '',
+  );
+  const [selectedTable, setSelectedTable] = React.useState<string>(
+    entry.responseTypeOptions.selectedTable ?? '',
+  );
+  const [selectedField, setSelectedField] = React.useState<string[]>(
+    entry.responseTypeOptions.selectedFields ?? [],
+  );
   const interviewStore = useInterviewStore();
+  const { airtableSettings: hardCodedSettings } = useAppState();
+  const { bases } = hardCodedSettings;
+  const [availableTables, setAvailableTables] = React.useState<
+    ReadonlyArray<{
+      displayValue: string;
+      value: string;
+    }>
+  >([]);
+  const [availableFields, setAvailableFields] = React.useState<
+    ReadonlyArray<{
+      displayValue: string;
+      value: string;
+    }>
+  >([]);
+
+  React.useEffect(() => {
+    if (bases && selectedBase) {
+      const output = bases
+        .find(b => b.name === selectedBase)
+        ?.tables.map(t => ({
+          displayValue: t.name,
+          value: t.key,
+        }));
+      if (output) {
+        setAvailableTables(output);
+      }
+    } else {
+      setAvailableTables([]);
+    }
+  }, [bases, selectedBase]);
+
+  React.useEffect(() => {
+    if (bases && selectedBase && selectedTable) {
+      const output = bases
+        .find(b => b.name === selectedBase)
+        ?.tables.find(b => b.key === selectedTable)
+        ?.fields.map(f => ({
+          displayValue: f.fieldName,
+          value: f.fieldName,
+        }));
+      if (output) {
+        setAvailableFields(output);
+      }
+    } else {
+      setAvailableFields([]);
+    }
+  }, [bases, selectedBase, selectedTable]);
 
   const onDeleteClick = (): void => {
     interviewStore.removeEntryFromScreen(entry).then(value => {
@@ -100,6 +158,67 @@ function EntryCard(
               });
             }}
           />
+          {entry.responseType ===
+            InterviewScreenEntry.ResponseType.Airtable && (
+            <>
+              <Form.Dropdown
+                label="Airtable base"
+                name="airtableBase"
+                value={selectedBase}
+                onChange={(newVal: string) => {
+                  setSelectedBase(newVal);
+                  onEntryChange({
+                    ...entry,
+                    responseTypeOptions: {
+                      ...entry.responseTypeOptions,
+                      selectedBase: newVal,
+                    },
+                  });
+                }}
+                options={bases.map(b => ({
+                  displayValue: b.name,
+                  value: b.name,
+                }))}
+              />
+              {selectedBase && (
+                <Form.Dropdown
+                  label="Airtable table"
+                  name="airtableTable"
+                  placeholder="Airtable table"
+                  value={selectedTable}
+                  onChange={(newVal: string) => {
+                    setSelectedTable(newVal);
+                    onEntryChange({
+                      ...entry,
+                      responseTypeOptions: {
+                        ...entry.responseTypeOptions,
+                        selectedTable: newVal,
+                      },
+                    });
+                  }}
+                  options={availableTables}
+                />
+              )}
+              {selectedBase && selectedTable && (
+                <MultiSelect
+                  ariaLabel="Airtable field"
+                  onChange={(newVals: string[]) => {
+                    setSelectedField(newVals);
+                    onEntryChange({
+                      ...entry,
+                      responseTypeOptions: {
+                        ...entry.responseTypeOptions,
+                        selectedFields: newVals,
+                      },
+                    });
+                  }}
+                  options={availableFields}
+                  placeholder="Airtable field"
+                  selectedValues={selectedField}
+                />
+              )}
+            </>
+          )}
         </Form.Group>
       </Form>
     </ScrollableElement>

@@ -25,7 +25,13 @@ pip install -r requirements.txt
 yarn setup-database
 ```
 
-If at any point you update the backend SQLAlchemy types or the routes in the `server/api/` directory, remember to run `yarn sync-types` to sync the frontend and backend services.
+4. Populate the database
+
+```
+yarn populate-database
+```
+
+If at any point you update the backend SQLModel types or the routes in the `server/api/` directory, remember to run `yarn sync-types` to sync the frontend and backend services.
 
 ### Starting the API server
 
@@ -35,7 +41,9 @@ If at any point you update the backend SQLAlchemy types or the routes in the `se
 source venv/bin/activate
 ```
 
-2. Start the API server
+2. Set the `AIRTABLE_API_KEY` and `AIRTABLE_BASE_ID` environment variables.
+
+3. Start the API server
 
 ```
 yarn api
@@ -43,7 +51,11 @@ yarn api
 
 This starts the API server in http://localhost:8000
 
+The server will reload automatically upon filestystem changes.
+
 To view the API docs, open http://localhost:8000/docs
+
+This is the API's swagger page where you can test endpoints.
 
 ### Starting Front-End
 

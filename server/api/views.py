@@ -2,12 +2,14 @@ import logging
 import uuid
 from typing import Optional, Sequence, TypeVar
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from sqlmodel import Session, SQLModel, col, select
+from sqlmodel import Session, SQLModel, select
 
+from server.api.airtable_api import AirtableAPI, PartialRecord, Record
+from server.api.airtable_config import AIRTABLE_API_KEY, AIRTABLE_BASE_ID
 from server.api.exceptions import InvalidOrder
 from server.engine import create_fk_constraint_engine
 from server.init_db import SQLITE_DB_PATH
@@ -48,10 +50,20 @@ app = FastAPI(
     title="Interview App API", generate_unique_id_function=custom_generate_unique_id
 )
 
-# allow access from create-react-app
-origins = ["http://localhost:3000"]
+TAG_METADATA = [{"name": "airtable", "description": "Endpoints for querying Airtable"}]
 
-app.add_middleware(CORSMiddleware, allow_origins=origins)
+app = FastAPI(title="Interview App API", openapi_tags=TAG_METADATA)
+
+app.add_middleware(
+    CORSMiddleware,
+    # allow access from create-react-app
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
 
 @app.get("/")
@@ -59,7 +71,7 @@ def hello_api():
     return {"message": "Hello World"}
 
 
-@app.post("/api/interviews/", response_model=InterviewRead, tags=["Interviews"])
+@app.post("/api/interviews/", response_model=InterviewRead, tags=["interviews"])
 def create_interview(interview: InterviewCreate) -> Interview:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
     with Session(autocommit=False, autoflush=False, bind=engine) as session:
@@ -79,7 +91,7 @@ def create_interview(interview: InterviewCreate) -> Interview:
 @app.get(
     "/api/interviews/{interview_id}",
     response_model=InterviewReadWithScreens,
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def get_interview(interview_id: str) -> Interview:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
@@ -93,7 +105,7 @@ def get_interview(interview_id: str) -> Interview:
 @app.put(
     "/api/interviews/{interview_id}",
     response_model=InterviewRead,
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def update_interview(interview_id: str, interview: InterviewUpdate) -> Interview:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
@@ -123,7 +135,7 @@ def update_interview(interview_id: str, interview: InterviewUpdate) -> Interview
 @app.post(
     "/api/interviews/{interview_id}/starting_state",
     response_model=InterviewReadWithScreens,
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def update_interview_starting_state(
     interview_id: str, starting_state: list[str]
@@ -166,7 +178,7 @@ def update_interview_starting_state(
 @app.get(
     "/api/interviews/",
     response_model=list[InterviewRead],
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def get_interviews() -> list[Interview]:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
@@ -178,7 +190,7 @@ def get_interviews() -> list[Interview]:
 @app.get(
     "/api/interview_screens/{screen_id}",
     response_model=InterviewScreenReadWithChildren,
-    tags=["InterviewScreens"],
+    tags=["interviewScreens"],
 )
 def get_interview_screen(screen_id: str) -> InterviewScreen:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
@@ -192,7 +204,7 @@ def get_interview_screen(screen_id: str) -> InterviewScreen:
 @app.post(
     "/api/interview_screens/",
     response_model=InterviewScreenRead,
-    tags=["InterviewScreens"],
+    tags=["interviewScreens"],
 )
 def create_interview_screen(screen: InterviewScreenCreate) -> InterviewScreen:
     engine = create_fk_constraint_engine(SQLITE_DB_PATH)
@@ -228,7 +240,7 @@ def create_interview_screen(screen: InterviewScreenCreate) -> InterviewScreen:
 @app.put(
     "/api/interview_screens/{screen_id}",
     response_model=InterviewScreenReadWithChildren,
-    tags=["InterviewScreens"],
+    tags=["interviewScreens"],
 )
 def update_interview_screen(
     screen_id: str,
@@ -398,3 +410,39 @@ def _adjust_screen_order(
             screen.order += 1
 
     return sorted_screens + [new_screen]
+
+
+@app.get("/airtable-records/{table_name}", tags=["airtable"])
+def get_airtable_records(table_name, request: Request) -> list[Record]:
+    """
+    Fetch records from an airtable table. Filtering can be performed
+    by adding query parameters to the URL, keyed by column name.
+    """
+    query = dict(request.query_params)
+    return airtable_client.search_records(table_name, query)
+
+
+@app.get("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
+def get_airtable_record(table_name: str, record_id: str) -> Record:
+    """
+    Fetch record with a particular id from a table in airtable.
+    """
+    return airtable_client.fetch_record(table_name, record_id)
+
+
+@app.post("/airtable-records/{table_name}", tags=["airtable"])
+async def create_airtable_record(table_name: str, record: Record = Body(...)) -> Record:
+    """
+    Create an airtable record in a table.
+    """
+    return airtable_client.create_record(table_name, record)
+
+
+@app.put("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
+async def update_airtable_record(
+    table_name: str, record_id: str, update: PartialRecord = Body(...)
+) -> Record:
+    """
+    Update an airtable record in a table.
+    """
+    return airtable_client.update_record(table_name, record_id, update)

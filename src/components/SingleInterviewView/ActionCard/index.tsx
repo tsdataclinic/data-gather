@@ -111,7 +111,7 @@ function ActionCard(
           const entries = screenEntriesMap.get(screen.id) || [];
           return entries.map(entry => ({
             displayValue: `${screen.title} - ${entry.name}`,
-            value: entry.id,
+            value: entry.responseId,
           }));
         })
       : [];
@@ -146,7 +146,7 @@ function ActionCard(
   return (
     <ScrollableElement
       name="ACTION"
-      className="grid h-60 w-full grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg"
+      className="grid w-full grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg"
     >
       <div className="space-x-3">
         <FontAwesomeIcon size="1x" icon={faLocationArrow} />
@@ -165,7 +165,7 @@ function ActionCard(
         </LabelWrapper>
         {conditionalOperatorRow}
         <ActionConfigEditor
-          actionConfig={action.actionConfig}
+          action={action}
           onActionConfigChange={onActionConfigChange}
           interview={interview}
         />

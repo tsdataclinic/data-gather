@@ -1,122 +1,114 @@
 import { QuestionRouter, ResponseData, Script } from '@dataclinic/interview';
 import assertUnreachable from '../util/assertUnreachable';
-import {
-  Condition,
-  ConditionalAction,
-  ScriptConfigSchema,
-} from './ScriptConfigSchema';
+import * as Interview from '../models/Interview';
+import * as InterviewScreen from '../models/InterviewScreen';
+import * as ConditionalAction from '../models/ConditionalAction';
 
-/**
- * Script implementation which is driven by a JSON configuration. Instances of the Question type T
- * must be identifiable by a string ID, and able to be constructed by a factory function when passed
- * a valid ID.
- */
-class ConfigurableScript<T extends { getId(): string }> implements Script<T> {
-  /**
-   * Constructor.
-   *
-   * @param config            The config file which will drive the Script's logic.
-   * @param questionFactory   A function which can return an instance of the question type T when given
-   *                          a string ID.
-   */
+class ConfigurableScript implements Script<InterviewScreen.T> {
   // eslint-disable-next-line
   constructor(
-    private config: ScriptConfigSchema,
-    private questionFactory: (questionId: string) => T,
+    private interview: Interview.T,
+    private actions: ReadonlyMap<string, ConditionalAction.T[]>,
+    private screens: ReadonlyMap<string, InterviewScreen.T>,
   ) {}
 
-  setup(router: QuestionRouter<T>): void {
-    this.pushInReverseOrder(this.config.startingState.slice(), router);
+  setup(router: QuestionRouter<InterviewScreen.T>): void {
+    this.pushInReverseOrder(this.interview.startingState, router);
   }
 
   // eslint-disable-next-line
   prepare(): void {}
 
   process(
-    router: QuestionRouter<T>,
-    question: T,
+    router: QuestionRouter<InterviewScreen.T>,
+    screen: InterviewScreen.T,
     responseData: ResponseData,
   ): void {
-    const potentialActions: ConditionalAction[] =
-      this.config.actions[question.getId()] || [];
+    const potentialActions: ConditionalAction.T[] | undefined =
+      this.actions.get(screen.id);
+    if (!potentialActions) {
+      return;
+    }
     potentialActions.forEach(potentialAction => {
-      if (potentialAction.condition) {
-        if (!this.evaluateCondition(potentialAction.condition, responseData)) {
-          return;
-        }
-        this.executeAction(potentialAction, router);
-      } else {
+      if (ConfigurableScript.evaluateCondition(potentialAction, responseData)) {
         this.executeAction(potentialAction, router);
       }
     });
     router.next();
   }
 
-  // eslint-disable-next-line
-  private evaluateCondition(
-    condition: Condition,
+  private static evaluateCondition(
+    action: ConditionalAction.T,
     responseData: ResponseData,
   ): boolean {
-    const responseValue = responseData[condition.key];
-    const testValue = condition.value;
-    let result = false;
-    switch (condition.operator) {
-      case '=':
-        result = responseValue === testValue;
-        break;
-      case '!=':
-        result = responseValue !== testValue;
-        break;
-      case '>':
-        result = responseValue > testValue;
-        break;
-      case '<':
-        result = responseValue < testValue;
-        break;
-      case '>=':
-        result = responseValue >= testValue;
-        break;
-      case '<=':
-        result = responseValue <= testValue;
-        break;
-      default:
-        assertUnreachable(condition.operator, { throwError: false });
+    if (
+      !action.responseKey ||
+      action.conditionalOperator ===
+        ConditionalAction.ConditionalOperator.AlwaysExecute
+    ) {
+      return true;
     }
-    return result;
+    const responseValue = responseData[action.responseKey];
+    const testValue = action.value;
+    if (!testValue) {
+      return false;
+    }
+    switch (action.conditionalOperator) {
+      case ConditionalAction.ConditionalOperator.Equals:
+        return responseValue === testValue;
+      case ConditionalAction.ConditionalOperator.GreaterThan:
+        return responseValue > testValue;
+      case ConditionalAction.ConditionalOperator.GreaterThanOrEqual:
+        return responseValue >= testValue;
+      case ConditionalAction.ConditionalOperator.LessThan:
+        return responseValue < testValue;
+      case ConditionalAction.ConditionalOperator.LessThanOrEqual:
+        return responseValue <= testValue;
+      default:
+        assertUnreachable(action.conditionalOperator, { throwError: false });
+    }
+    return false;
   }
 
   private executeAction(
-    action: ConditionalAction,
-    router: QuestionRouter<T>,
+    action: ConditionalAction.T,
+    router: QuestionRouter<InterviewScreen.T>,
   ): void {
-    switch (action.action) {
-      case 'push':
-        this.pushInReverseOrder(action.target, router);
+    switch (action.actionConfig.type) {
+      case ConditionalAction.ActionType.Push:
+        this.pushInReverseOrder(action.actionConfig.payload, router);
         break;
-      case 'skip':
-        router.skip(action.target);
+      case ConditionalAction.ActionType.Skip:
+        router.skip(action.actionConfig.payload);
         break;
-      case 'checkpoint':
-        router.checkpoint(action.target);
+      case ConditionalAction.ActionType.Checkpoint:
+        router.checkpoint(action.actionConfig.payload);
         break;
-      case 'restore':
-        router.restore(action.target);
+      case ConditionalAction.ActionType.Restore:
+        router.restore(action.actionConfig.payload);
         break;
-      case 'milestone':
-        router.milestone(action.target);
+      case ConditionalAction.ActionType.Milestone:
+        router.milestone(action.actionConfig.payload);
         break;
       default:
-        assertUnreachable(action, { throwError: false });
+        assertUnreachable(action.actionConfig, { throwError: false });
     }
   }
 
   private pushInReverseOrder(
-    questionIds: string[],
-    router: QuestionRouter<T>,
+    questionIds: readonly string[],
+    router: QuestionRouter<InterviewScreen.T>,
   ): void {
     questionIds
+      .slice()
       .reverse()
-      .forEach(questionId => router.push(this.questionFactory(questionId)));
+      .forEach(questionId => {
+        const screen: InterviewScreen.T | undefined =
+          this.screens.get(questionId);
+        if (screen) {
+          router.push(screen);
+        }
+      });
   }
 }
 

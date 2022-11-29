@@ -8,6 +8,8 @@ type Props = {
   onClick?: MouseEventHandler<HTMLButtonElement>;
   type?: 'button' | 'submit';
 
+  unstyled?: boolean;
+
   /**
    * Render the button in different default styles.
    * - `full`: Render the button with 100% width in its container and sharp edges.
@@ -22,20 +24,27 @@ export default function Button({
   type = 'button',
   variant = 'normal',
   intent = 'default',
+  unstyled = false,
 }: Props): JSX.Element {
   const buttonClassName = classNames(
     className,
-    'py-2 px-4 transition-colors block focus-visible:outline-fuchsia-700 duration-200',
-    {
-      rounded: variant === 'normal',
-      'w-full rounded-none': variant === 'full',
-      'bg-blue-500 hover:bg-blue-400 active:bg-blue-500 text-white':
-        intent === 'primary',
-      'bg-red-500 hover:bg-red-400 active:bg-red-500 text-white':
-        intent === 'danger',
-      'bg-gray-200 hover:bg-gray-300 active:bg-gray-200 text-gray-800 hover:text-gray-900':
-        intent === 'default',
-    },
+    'focus-visible:outline-fuchsia-700',
+    unstyled
+      ? undefined
+      : {
+          'py-2 px-4 transition-colors duration-200': true,
+          // variant-dependent styles
+          rounded: variant === 'normal',
+          'w-full rounded-none': variant === 'full',
+
+          // intent-dependent styles (only apply if our variant isn't "unstyled")
+          'bg-blue-500 hover:bg-blue-400 active:bg-blue-500 text-white':
+            intent === 'primary',
+          'bg-red-500 hover:bg-red-400 active:bg-red-500 text-white':
+            intent === 'danger',
+          'bg-gray-200 hover:bg-gray-300 active:bg-gray-200 text-gray-800 hover:text-gray-900':
+            intent === 'default',
+        },
   );
 
   return (

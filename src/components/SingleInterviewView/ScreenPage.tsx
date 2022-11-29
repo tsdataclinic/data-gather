@@ -121,6 +121,11 @@ function ScreenCard({
           screenId: screen.id,
           text: vals.get('text') ?? '',
           order: prevEntries.length + 1,
+          responseTypeOptions: {
+            selectedBase: '',
+            selectedTable: '',
+            selectedFields: [],
+          },
         }),
       ),
     );

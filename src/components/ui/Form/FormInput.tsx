@@ -16,7 +16,7 @@ type Props = {
   onChange?: (val: string, event: React.ChangeEvent<HTMLInputElement>) => void;
   options?: ReadonlyArray<{ displayValue: string; value: string | boolean }>;
   required?: boolean;
-  type?: 'text' | 'radio' | 'number' | 'email';
+  type?: 'text' | 'radio' | 'number' | 'email' | 'tel';
   value?: string;
 };
 
@@ -53,6 +53,7 @@ export default function FormInput({
           />
         </LabelWrapper>
       );
+    case 'tel':
     case 'text':
     case 'email':
       return (
