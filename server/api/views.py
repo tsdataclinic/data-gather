@@ -119,7 +119,7 @@ azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
     app_client_id=settings.APP_CLIENT_ID,
     tenant_id=settings.TENANT_ID,
     scopes={
-        "https://twosigmadataclinic.onmicrosoft.com/interview-app-open-api/user_impersonation": "user_impersonation",
+        "https://twosigmadataclinic.onmicrosoft.com/scout-dev-api/Scout.API": "scout_api",
     },
 )
 
@@ -143,10 +143,6 @@ async def load_config() -> None:
     dependencies=[
         Security(
             azure_scheme,
-            scopes=[
-                "https://twosigmadataclinic.onmicrosoft.com/interview-app-open-api/InterviewApp.OpenAPI",
-                "https://twosigmadataclinic.onmicrosoft.com/interview-app-open-api/user_impersonation",
-            ],
         )
     ],
 )

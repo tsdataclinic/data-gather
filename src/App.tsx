@@ -14,19 +14,6 @@ const INTERVIEW_API_CLIENT = new InterviewService.API();
 export default function App(): JSX.Element {
   const [globalState, dispatch] = useAppReducer();
 
-  // TODO: remove this, this is just to test
-
-  // const { data } = useQuery(['testAuth'], async () => {
-  //   const token = await getAuthToken();
-  //   console.log('token', token);
-  //   // TODO: add token to the header
-  //   // {
-  //   //   'Authorization': `Bearer ${token}`,
-  //   // }
-  //   return fetch('/auth');
-  // });
-  // console.log(data);
-
   return (
     <AuthProvider>
       <QueryClientProvider client={QUERY_CLIENT}>

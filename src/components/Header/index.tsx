@@ -53,7 +53,7 @@ export default function Header(): JSX.Element {
             headers: {
               Accept: 'application/json',
               'Content-Type': 'application/json',
-              Authorization: token,
+              Authorization: `Bearer ${token}`,
             },
           })
             .then(response => response.json())
