@@ -16,7 +16,7 @@
     "@reach/listbox": "^0.17.0",
     "@reach/visually-hidden": "^0.17.0",
     "@react-aria/utils": "^3.14.0",
-    "@tanstack/react-query": "^4.0.10",
+    "@tanstack/react-query": "^4.18.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
@@ -51,7 +51,7 @@
     "populate-database": "PYTHONPATH=. python3 -c 'from server.init_db import populate_dev_db; populate_dev_db()'",
     "db": "sqlite3 db.sqlite",
     "start": "react-scripts start",
-    "sync-types": "openapi --input http://localhost:8000/openapi.json --output src/api --client fetch --indent 2 --name FastAPIService --postfix FastAPIService",
+    "sync-types": "python scripts/openapi_processor.py && openapi --input openapi.json --output src/api --client fetch --indent 2 --name FastAPIService --postfix FastAPIService && rm -f openapi.json",
     "test": "react-scripts test"
   },
   "eslintConfig": {
@@ -106,5 +106,5 @@
   "resolutions": {
     "styled-components": "^5"
   },
-  "proxy": "http://127.0.0.1:8000"
+  "proxy": "http://localhost:8000"
 }

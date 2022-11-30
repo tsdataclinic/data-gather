@@ -11,7 +11,7 @@ import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
 export class InterviewScreensFastAPIService {
 
-  constructor(public readonly httpRequest: BaseHttpRequest) { }
+  constructor(public readonly httpRequest: BaseHttpRequest) {}
 
   /**
    * Get Interview Screen

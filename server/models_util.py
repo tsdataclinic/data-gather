@@ -1,19 +1,7 @@
-import importlib
+import inspect
 import re
-from inspect import isclass
-from typing import (
-    Optional,
-    Type,
-    TypeVar,
-    Union,
-    cast,
-    get_args,
-    get_origin,
-    get_type_hints,
-)
+import sys
 
-from pydantic import BaseModel, create_model
-from sqlalchemy.orm import RelationshipProperty
 from sqlmodel import SQLModel
 
 
@@ -29,9 +17,6 @@ def snake_to_camel(snake_str: str) -> str:
     return camel
 
 
-TSQLModel = TypeVar("TSQLModel", bound=Type[SQLModel])
-
-
 class APIModel(SQLModel):
     """Any models that are returned in our REST API should extend this class.
     This class handles any snake_case to camelCase conversions."""
@@ -44,104 +29,13 @@ class APIModel(SQLModel):
         alias_generator = snake_to_camel
 
 
-def _get_model_class_from_type_hint(class_type: Union[str, TypeVar]):
-    """This is a helper function used in `prepare_relationships` to get the
-    SQLModel Class from a python type hint"""
-    if isinstance(class_type, str):
-        models_module = importlib.import_module("server.models")
-        return getattr(models_module, class_type)
-    elif get_origin(class_type) == list:
-        sub_type = get_args(class_type)[0]
-        return _get_model_class_from_type_hint(sub_type)
-    elif isclass(class_type) and issubclass(class_type, SQLModel):
-        return class_type
-    else:
-        return None
+def update_module_forward_refs(module_name: str):
+    """Iterate over all classes in a module and call `update_forward_refs()`
+    on each class that has that function.
 
-
-MODEL_CLASSES_CACHE = {}
-
-
-def prepare_relationships(
-    Cls: TSQLModel, relationships: Optional[list[str]] = None
-) -> TSQLModel:
-    """This function lets you include a model's relationships in the
-    response_model to a FastAPI route. By default, this function will remove
-    all relationships from a model and then only include the ones you specify
-    in `relationships`.
-
-    By default, FastAPI does not include a model's relationships (their nested
-    models) in a response because it can lead to bloated responses and infinite
-    recursion. The correct way to include relationships is verbose and is
-    outlined here: https://sqlmodel.tiangolo.com/tutorial/fastapi/relationships/
-
-    This helper function makes it easier to include relationships in a response.
-    Usage:
-        @app.get(
-            "/api/interviews/{interview_id}",
-            response_model=prepare_relationships(Interview, ["screens"])
-        )
-        def get_interview(interview_id: str):
-            pass
-
-    Args:
-        Cls (Class): The model we want to return
-        relationships (Optional[List[str]]): The list of relationships we want
-            to include.
+    This is used to resolve circular imports in Pydantic models across separate
+    modules.
     """
-    new_model_name = None
-    if relationships:
-        relationships_suffix = "And".join([r.title() for r in relationships])
-        new_model_name = f"{Cls.__name__}With{relationships_suffix}"
-    else:
-        new_model_name = f"{Cls.__name__}Base"
-    if new_model_name in MODEL_CLASSES_CACHE:
-        return MODEL_CLASSES_CACHE[new_model_name]
-
-    were_relationships_mutated = False
-    python_type_hints = get_type_hints(Cls)
-    model_attrs = {}
-    for attr, python_type_hint in python_type_hints.items():
-        # only process attributes that don't start with __
-        if not attr.startswith("__"):
-            member_val = getattr(Cls, attr)
-            property_type = (
-                member_val.property if hasattr(member_val, "property") else None
-            )
-            if not isinstance(property_type, RelationshipProperty):
-                # if its not a RelationshipProperty then just add it to the
-                # model attributes
-                model_attrs[attr] = (python_type_hint, ...)
-            else:
-                # this is a RelationshipProperty so we're either going to
-                # exclude it entirely or we're going to clean it up if its
-                # in our `relationships` list
-                were_relationships_mutated = True
-                if relationships and attr in relationships:
-                    # we now have to go into the related class and remove any
-                    # SQLAlchemy relationships to prevent infinite recursion
-                    # when fetching data
-                    related_model_class = _get_model_class_from_type_hint(
-                        python_type_hint
-                    )
-                    if related_model_class:
-                        ModelWithNoRelationships = prepare_relationships(
-                            related_model_class
-                        )
-                        if get_origin(python_type_hint) == list:
-                            model_attrs[attr] = (list[ModelWithNoRelationships], ...)
-                        else:
-                            model_attrs[attr] = (ModelWithNoRelationships, ...)
-
-    if not were_relationships_mutated:
-        # if we didn't mutate any of the relationships then just return the
-        # original class
-        return Cls
-
-    NewCls = create_model(
-        new_model_name,
-        __base__=APIModel,
-        **model_attrs,
-    )
-    MODEL_CLASSES_CACHE[new_model_name] = NewCls
-    return cast(TSQLModel, NewCls)
+    for _, obj in inspect.getmembers(sys.modules[module_name], inspect.isclass):
+        if hasattr(obj, "update_forward_refs"):
+            obj.update_forward_refs()

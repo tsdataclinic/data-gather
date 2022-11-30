@@ -13,7 +13,7 @@ export class DefaultFastAPIService {
    * @returns any Successful Response
    * @throws ApiError
    */
-  public helloApiGet(): CancelablePromise<any> {
+  public helloApi(): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'GET',
       url: '/',

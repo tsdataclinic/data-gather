@@ -18,7 +18,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 def create_fk_constraint_engine(file_path: str = SQLITE_DB_PATH):
-    return create_engine(f"sqlite:///{file_path}")
+    return create_engine(f"sqlite:///{file_path}",  connect_args={"check_same_thread": False})
 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=create_fk_constraint_engine())
