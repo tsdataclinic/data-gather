@@ -1,14 +1,29 @@
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import useDataClinicAuth from '../../auth/useDataClinicAuth';
 import useCurrentUser from '../../auth/useCurrentUser';
 import Button from '../ui/Button';
+import getAuthToken from '../../auth/getAuthToken';
 
 export default function Header(): JSX.Element {
   const { login, logout } = useDataClinicAuth();
   const { isAuthenticated } = useCurrentUser();
   console.log('are we authenticated?', isAuthenticated);
+  const [token, setToken] = useState<string>('');
+
+  useEffect(() => {
+    getAuthToken().then(value => {
+      if (!value) {
+        console.log('token not found');
+        setToken('');
+      } else {
+        console.log(`obtained auth token = ${value}`);
+        setToken(value);
+      }
+    });
+  }, []);
 
   return (
     <header className="z-50 flex h-12 w-full items-center bg-slate-800 py-2 px-8 text-white">
@@ -31,6 +46,23 @@ export default function Header(): JSX.Element {
       >
         {isAuthenticated ? 'Sign out' : 'Sign in'}
         <FontAwesomeIcon className="ml-2" size="lg" icon={faUser} />
+      </Button>
+      <Button
+        onClick={() => {
+          fetch('/auth', {
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              Authorization: token,
+            },
+          })
+            .then(response => response.json())
+            .then(value => {
+              console.log(value);
+            });
+        }}
+      >
+        test auth
       </Button>
     </header>
   );

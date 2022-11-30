@@ -124,8 +124,9 @@ azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
 )
 
 
-@app.get("/")
+@app.get("/hello")
 def hello_api():
+    print("in hello world api")
     return {"message": "Hello World"}
 
 
@@ -150,6 +151,7 @@ async def load_config() -> None:
     ],
 )
 def test_auth():
+    print("in auth api")
     return {"message": "auth success!"}
 
 

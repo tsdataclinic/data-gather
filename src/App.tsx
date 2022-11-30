@@ -1,8 +1,4 @@
-import {
-  QueryClientProvider,
-  QueryClient,
-  useQuery,
-} from '@tanstack/react-query';
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { Routes, Route } from 'react-router-dom';
 import AllInterviewsView from './components/AllInterviewsView';
 import Header from './components/Header';
@@ -11,7 +7,6 @@ import SingleInterviewView from './components/SingleInterviewView';
 import InterviewService from './services/InterviewService';
 import { AppState, AppDispatch, useAppReducer } from './store/appState';
 import AuthProvider from './auth/AuthProvider';
-import getAuthToken from './auth/getAuthToken';
 
 const QUERY_CLIENT = new QueryClient();
 const INTERVIEW_API_CLIENT = new InterviewService.API();
@@ -21,16 +16,16 @@ export default function App(): JSX.Element {
 
   // TODO: remove this, this is just to test
 
-  const { data } = useQuery(['testAuth'], async () => {
-    const token = await getAuthToken();
-    console.log('token', token);
-    // TODO: add token to the header
-    // {
-    //   'Authorization': `Bearer ${token}`,
-    // }
-    return fetch('/auth');
-  });
-  console.log(data);
+  // const { data } = useQuery(['testAuth'], async () => {
+  //   const token = await getAuthToken();
+  //   console.log('token', token);
+  //   // TODO: add token to the header
+  //   // {
+  //   //   'Authorization': `Bearer ${token}`,
+  //   // }
+  //   return fetch('/auth');
+  // });
+  // console.log(data);
 
   return (
     <AuthProvider>
