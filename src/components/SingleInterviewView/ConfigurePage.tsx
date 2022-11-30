@@ -1,4 +1,5 @@
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as React from 'react';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
@@ -23,20 +24,39 @@ function ConfigureCard({ interview }: Props): JSX.Element {
   );
 
   const [displayedNotes, setDisplayedNotes] = React.useState(interview.notes);
+  const queryClient = useQueryClient();
+  const updateScreenFn = useMutation({
+    mutationFn: (data: {
+      interview: Interview.WithScreensT;
+      startingState: readonly string[];
+    }) =>
+      Promise.all([
+        interviewStore.InterviewAPI.updateInterview(
+          data.interview.id,
+          data.interview,
+        ),
+        interviewStore.InterviewAPI.updateInterviewStartingState(
+          data.interview.id,
+          data.startingState,
+        ),
+      ]),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['interview', interview.id]);
+    },
+  });
 
   const onSaveClick = async (): Promise<void> => {
     try {
-      await Promise.all([
-        interviewStore.InterviewAPI.updateInterview(interview.id, {
-          ...interview,
-          notes: displayedNotes,
-        }),
-        interviewStore.InterviewAPI.updateInterviewStartingState(
-          interview.id,
+      updateScreenFn.mutate(
+        {
           startingState,
-        ),
-      ]);
-      toaster.notifySuccess('Saved!', `Successfully saved changes`);
+          interview: { ...interview, notes: displayedNotes },
+        },
+        {
+          onSuccess: () =>
+            toaster.notifySuccess('Saved!', `Successfully saved changes`),
+        },
+      );
     } catch (error) {
       console.error(error);
       toaster.notifyError(

@@ -25,7 +25,6 @@ export default function NewInterviewModal({
       queryClient.invalidateQueries({
         queryKey: ['allInterviews'],
       });
-      onDismiss();
     },
   });
 
@@ -36,9 +35,12 @@ export default function NewInterviewModal({
           name: vals.get('name') ?? '',
           description: vals.get('description') ?? '',
         }),
+        {
+          onSuccess: () => onDismiss(),
+        },
       );
     },
-    [createInterviewFn],
+    [createInterviewFn, onDismiss],
   );
 
   return (

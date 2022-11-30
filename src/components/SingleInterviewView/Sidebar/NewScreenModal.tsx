@@ -28,7 +28,6 @@ export default function NewScreenModal({
       queryClient.invalidateQueries({
         queryKey: ['interviewScreens', interview.id],
       });
-      onDismiss();
     },
   });
 
@@ -39,9 +38,12 @@ export default function NewScreenModal({
           title: vals.get('name') ?? '',
           interviewId: interview.id,
         }),
+        {
+          onSuccess: () => onDismiss(),
+        },
       );
     },
-    [createScreenFn, interview],
+    [onDismiss, createScreenFn, interview],
   );
 
   return (
