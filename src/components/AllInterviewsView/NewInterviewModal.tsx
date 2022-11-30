@@ -1,9 +1,10 @@
 import { useCallback } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import useInterviewStore from '../../hooks/useInterviewStore';
 import Form from '../ui/Form';
 import Modal from '../ui/Modal';
 import * as Interview from '../../models/Interview';
+import useInterviewMutation, {
+  type InterviewServiceAPI,
+} from '../../hooks/useInterviewMutation';
 
 type Props = {
   isOpen: boolean;
@@ -17,20 +18,15 @@ export default function NewInterviewModal({
   isOpen,
   onDismiss,
 }: Props): JSX.Element {
-  const interviewStore = useInterviewStore();
-  const queryClient = useQueryClient();
-  const createInterviewFn = useMutation({
-    mutationFn: interviewStore.InterviewAPI.createInterview,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['allInterviews'],
-      });
-    },
+  const createInterview = useInterviewMutation({
+    mutation: (interview: Interview.CreateT, api: InterviewServiceAPI) =>
+      api.InterviewAPI.createInterview(interview),
+    invalidateQuery: ['allInterviews'],
   });
 
   const onSubmit = useCallback(
     async (vals: Map<string, string>): Promise<void> => {
-      createInterviewFn.mutate(
+      createInterview(
         Interview.create({
           name: vals.get('name') ?? '',
           description: vals.get('description') ?? '',
@@ -40,7 +36,7 @@ export default function NewInterviewModal({
         },
       );
     },
-    [createInterviewFn, onDismiss],
+    [createInterview, onDismiss],
   );
 
   return (

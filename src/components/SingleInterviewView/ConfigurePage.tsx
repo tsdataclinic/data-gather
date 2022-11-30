@@ -1,69 +1,68 @@
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as React from 'react';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
-import useInterviewStore from '../../hooks/useInterviewStore';
 import * as Interview from '../../models/Interview';
 import LabelWrapper from '../ui/LabelWrapper';
 import TextArea from '../ui/TextArea';
 import MultiSelect from '../ui/MultiSelect';
 import Button from '../ui/Button';
 import { useToast } from '../ui/Toast';
+import useInterviewMutation, {
+  type InterviewServiceAPI,
+} from '../../hooks/useInterviewMutation';
 
 type Props = {
   interview: Interview.WithScreensT;
 };
 
+async function saveUpdatedScreen(
+  data: {
+    interview: Interview.WithScreensT;
+    startingState: readonly string[];
+  },
+  api: InterviewServiceAPI,
+): Promise<void> {
+  await Promise.all([
+    api.InterviewAPI.updateInterview(data.interview.id, data.interview),
+    api.InterviewAPI.updateInterviewStartingState(
+      data.interview.id,
+      data.startingState,
+    ),
+  ]);
+}
+
 function ConfigureCard({ interview }: Props): JSX.Element {
   const toaster = useToast();
-  const interviewStore = useInterviewStore();
   const screens = useInterviewScreens(interview.id);
   const [startingState, setStartingState] = React.useState<readonly string[]>(
     () => Interview.getStartingScreens(interview).map(screen => screen.id),
   );
 
   const [displayedNotes, setDisplayedNotes] = React.useState(interview.notes);
-  const queryClient = useQueryClient();
-  const updateScreenFn = useMutation({
-    mutationFn: (data: {
-      interview: Interview.WithScreensT;
-      startingState: readonly string[];
-    }) =>
-      Promise.all([
-        interviewStore.InterviewAPI.updateInterview(
-          data.interview.id,
-          data.interview,
-        ),
-        interviewStore.InterviewAPI.updateInterviewStartingState(
-          data.interview.id,
-          data.startingState,
-        ),
-      ]),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['interview', interview.id]);
-    },
+  const updateScreen = useInterviewMutation({
+    mutation: saveUpdatedScreen,
+    invalidateQuery: ['interview', interview.id],
   });
 
-  const onSaveClick = async (): Promise<void> => {
-    try {
-      updateScreenFn.mutate(
-        {
-          startingState,
-          interview: { ...interview, notes: displayedNotes },
+  const onSaveClick = (): void => {
+    updateScreen(
+      {
+        startingState,
+        interview: { ...interview, notes: displayedNotes },
+      },
+      {
+        onSuccess: () =>
+          toaster.notifySuccess('Saved!', `Successfully saved changes`),
+        onError: error => {
+          toaster.notifyError(
+            'Error!',
+            `There was a server error when saving your changes`,
+          );
+          console.error(error);
         },
-        {
-          onSuccess: () =>
-            toaster.notifySuccess('Saved!', `Successfully saved changes`),
-        },
-      );
-    } catch (error) {
-      console.error(error);
-      toaster.notifyError(
-        'Error!',
-        `There was a server error when saving your changes`,
-      );
-    }
+      },
+    );
   };
 
   if (!screens) {
