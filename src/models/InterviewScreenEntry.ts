@@ -4,11 +4,13 @@ import { SerializedInterviewScreenEntryRead } from '../api/models/SerializedInte
 import { SerializedInterviewScreenEntryCreate } from '../api/models/SerializedInterviewScreenEntryCreate';
 import { ResponseType } from '../api/models/ResponseType';
 
-export type ResponseTypeOptions = {
+export type AirtableOptions = {
   selectedBase: string;
   selectedFields: string[];
   selectedTable: string;
 };
+
+export type ResponseTypeOptions = AirtableOptions;
 
 export const RESPONSE_TYPES: readonly ResponseType[] =
   Object.values(ResponseType);
@@ -43,6 +45,13 @@ interface InterviewScreenEntry {
 
   /** Additional flavor text associated with the question */
   readonly text: string;
+
+  /**
+   * The configuration object for how this response should get written
+   * back to a data store. If empty, then the response to this Entry
+   * does not get written back anywhere.
+   */
+  readonly writebackOptions?: AirtableOptions;
 }
 
 type InterviewScreenEntryCreate = Omit<InterviewScreenEntry, 'id'> & {
@@ -61,6 +70,14 @@ export function create(
     responseKey: uuidv4(),
     tempId: uuidv4(),
     responseTypeOptions: values.responseTypeOptions,
+  };
+}
+
+export function createDefaultAirtableOptions(): AirtableOptions {
+  return {
+    selectedBase: '',
+    selectedFields: [],
+    selectedTable: '',
   };
 }
 
@@ -108,7 +125,7 @@ export function getEntryById(
 export function getResponseTypeDisplayName(responseType: ResponseType): string {
   switch (responseType) {
     case ResponseType.AIRTABLE:
-      return 'Airtable';
+      return 'Airtable Lookup';
     case ResponseType.TEXT:
       return 'Text';
     case ResponseType.NUMBER:

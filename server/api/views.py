@@ -42,11 +42,6 @@ engine = create_fk_constraint_engine(SQLITE_DB_PATH)
 airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
 
-# ============#
-# Auth Setup #
-# ============#
-
-
 class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = ["http://localhost:3000"]
     OPENAPI_CLIENT_ID: str = Field(default="", env="OPENAPI_CLIENT_ID")
@@ -140,7 +135,7 @@ def test_auth():
 @app.post(
     "/api/interviews/",
     tags=["interviews"],
-    response_model=Interview,
+    response_model=InterviewRead,
 )
 def create_interview(
     interview: InterviewCreate, session: Session = Depends(get_session)

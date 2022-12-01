@@ -2,10 +2,11 @@ import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Element as ScrollableElement } from 'react-scroll';
-import Form from '../ui/Form';
-import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
-import useAppState from '../../hooks/useAppState';
-import MultiSelect from '../ui/MultiSelect';
+import { MixedCheckbox } from '@reach/checkbox';
+import Form from '../../ui/Form';
+import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
+import LabelWrapper from '../../ui/LabelWrapper';
+import AirtableFieldSelector from './AirtableFieldSelector';
 
 export type EditableEntry =
   | InterviewScreenEntry.T
@@ -31,63 +32,6 @@ function EntryCard(
   { entry, onEntryChange, onEntryDelete }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
-  const [selectedBase, setSelectedBase] = React.useState<string>(
-    entry.responseTypeOptions.selectedBase ?? '',
-  );
-  const [selectedTable, setSelectedTable] = React.useState<string>(
-    entry.responseTypeOptions.selectedTable ?? '',
-  );
-  const [selectedField, setSelectedField] = React.useState<string[]>(
-    entry.responseTypeOptions.selectedFields ?? [],
-  );
-  const { airtableSettings: hardCodedSettings } = useAppState();
-  const { bases } = hardCodedSettings;
-  const [availableTables, setAvailableTables] = React.useState<
-    ReadonlyArray<{
-      displayValue: string;
-      value: string;
-    }>
-  >([]);
-  const [availableFields, setAvailableFields] = React.useState<
-    ReadonlyArray<{
-      displayValue: string;
-      value: string;
-    }>
-  >([]);
-
-  React.useEffect(() => {
-    if (bases && selectedBase) {
-      const output = bases
-        .find(b => b.name === selectedBase)
-        ?.tables.map(t => ({
-          displayValue: t.name,
-          value: t.key,
-        }));
-      if (output) {
-        setAvailableTables(output);
-      }
-    } else {
-      setAvailableTables([]);
-    }
-  }, [bases, selectedBase]);
-
-  React.useEffect(() => {
-    if (bases && selectedBase && selectedTable) {
-      const output = bases
-        .find(b => b.name === selectedBase)
-        ?.tables.find(b => b.key === selectedTable)
-        ?.fields.map(f => ({
-          displayValue: f.fieldName,
-          value: f.fieldName,
-        }));
-      if (output) {
-        setAvailableFields(output);
-      }
-    } else {
-      setAvailableFields([]);
-    }
-  }, [bases, selectedBase, selectedTable]);
-
   const entryId = 'id' in entry ? entry.id : entry.tempId;
 
   return (
@@ -159,61 +103,51 @@ function EntryCard(
           />
           {entry.responseType ===
             InterviewScreenEntry.ResponseType.AIRTABLE && (
+            <AirtableFieldSelector
+              fieldSelectorLabel="Fields to search by"
+              airtableConfig={entry.responseTypeOptions}
+              onAirtableConfigurationChange={(
+                newConfig: InterviewScreenEntry.ResponseTypeOptions,
+              ) => {
+                onEntryChange(entry, {
+                  ...entry,
+                  responseTypeOptions: newConfig,
+                });
+              }}
+            />
+          )}
+          {entry.responseType !==
+            InterviewScreenEntry.ResponseType.AIRTABLE && (
             <>
-              <Form.Dropdown
-                label="Airtable base"
-                name="airtableBase"
-                value={selectedBase}
-                onChange={(newVal: string) => {
-                  setSelectedBase(newVal);
-                  onEntryChange(entry, {
-                    ...entry,
-                    responseTypeOptions: {
-                      ...entry.responseTypeOptions,
-                      selectedBase: newVal,
-                    },
-                  });
-                }}
-                options={bases.map(b => ({
-                  displayValue: b.name,
-                  value: b.name,
-                }))}
-              />
-              {selectedBase && (
-                <Form.Dropdown
-                  label="Airtable table"
-                  name="airtableTable"
-                  placeholder="Airtable table"
-                  value={selectedTable}
-                  onChange={(newVal: string) => {
-                    setSelectedTable(newVal);
+              <LabelWrapper
+                inline
+                labelAfter
+                label="Write the response of this question back to Airtable"
+              >
+                <MixedCheckbox
+                  checked={!!entry.writebackOptions}
+                  onChange={event => {
+                    const isChecked = event.currentTarget.checked;
                     onEntryChange(entry, {
                       ...entry,
-                      responseTypeOptions: {
-                        ...entry.responseTypeOptions,
-                        selectedTable: newVal,
-                      },
+                      writebackOptions: isChecked
+                        ? InterviewScreenEntry.createDefaultAirtableOptions()
+                        : undefined,
                     });
                   }}
-                  options={availableTables}
                 />
-              )}
-              {selectedBase && selectedTable && (
-                <MultiSelect
-                  ariaLabel="Airtable field"
-                  onChange={(newVals: string[]) => {
-                    setSelectedField(newVals);
+              </LabelWrapper>
+              {entry.writebackOptions && (
+                <AirtableFieldSelector
+                  useSingleField
+                  fieldSelectorLabel="Field to write to"
+                  airtableConfig={entry.writebackOptions}
+                  onAirtableConfigurationChange={newConfig => {
                     onEntryChange(entry, {
                       ...entry,
-                      responseTypeOptions: {
-                        ...entry.responseTypeOptions,
-                        selectedFields: newVals,
-                      },
+                      writebackOptions: newConfig,
                     });
                   }}
-                  options={availableFields}
-                  placeholder="Airtable field"
-                  selectedValues={selectedField}
                 />
               )}
             </>
