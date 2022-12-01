@@ -57,6 +57,7 @@ export function create(values: {
     published: false,
     vanityUrl: '',
     notes: '',
+    published: false,
   };
 }
 

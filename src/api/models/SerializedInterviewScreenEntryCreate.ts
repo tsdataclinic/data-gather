@@ -16,6 +16,7 @@ export type SerializedInterviewScreenEntryCreate = {
   responseType: ResponseType;
   responseTypeOptions: any;
   screenId: string;
+  writebackOptions?: any;
   text: string;
   id?: string;
 };

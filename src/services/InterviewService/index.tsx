@@ -4,6 +4,7 @@ import * as InterviewScreen from '../../models/InterviewScreen';
 import BackendInterviewService from './BackendInterviewService';
 import LocalInterviewService from './LocalInterviewService';
 import { InterviewServiceAPI } from './InterviewServiceAPI';
+import useCurrentUser from '../../auth/useCurrentUser';
 
 export class InterviewServiceImpl implements InterviewServiceAPI {
   localStore: LocalInterviewService;
@@ -16,6 +17,10 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
   constructor() {
     this.localStore = new LocalInterviewService();
     this.backendStore = new BackendInterviewService();
+  }
+
+  setAuthenticationStatus(isAuthenticated: boolean): void {
+    this.isAuthenticated = isAuthenticated;
   }
 
   getStore(): InterviewServiceAPI {
@@ -79,10 +84,29 @@ const InterviewServiceContext = React.createContext<
   InterviewServiceImpl | undefined
 >(undefined);
 
+type InterviewServiceProviderProps = {
+  children: React.ReactNode;
+  client: InterviewServiceImpl;
+};
+
+function InterviewServiceProvider({
+  client,
+  children,
+}: InterviewServiceProviderProps): JSX.Element {
+  const { isAuthenticated } = useCurrentUser();
+  client.setAuthenticationStatus(isAuthenticated);
+
+  return (
+    <InterviewServiceContext.Provider value={client}>
+      {children}
+    </InterviewServiceContext.Provider>
+  );
+}
+
 const InterviewService = {
   API: InterviewServiceImpl,
   Context: InterviewServiceContext,
-  Provider: InterviewServiceContext.Provider,
+  Provider: InterviewServiceProvider,
 };
 
 export default InterviewService;

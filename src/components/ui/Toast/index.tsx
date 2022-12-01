@@ -7,7 +7,7 @@ import styled, { keyframes } from 'styled-components';
 
 type ToastProps = {
   children: React.ReactNode;
-  intent: 'success' | 'danger';
+  intent: 'success' | 'error';
   title: string;
 };
 
@@ -54,7 +54,7 @@ const StyledViewport = styled(RadixToast.Viewport)`
   z-index: 9999;
 `;
 
-const StyledToast = styled(RadixToast.Root)<{ intent: 'success' | 'danger' }>`
+const StyledToast = styled(RadixToast.Root)<{ intent: 'success' | 'error' }>`
   align-items: center;
   background-color: white;
   border-radius: 6px;
@@ -157,7 +157,7 @@ function Toaster(
       },
       notifyError: (title, children: React.ReactNode) => {
         setToasts(prevToasts =>
-          prevToasts.concat({ title, children, intent: 'danger' }),
+          prevToasts.concat({ title, children, intent: 'error' }),
         );
       },
     }),

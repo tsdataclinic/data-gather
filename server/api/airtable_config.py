@@ -1,4 +1,4 @@
-import os
+from server.env import get_env
 
-AIRTABLE_API_KEY = os.environ.get('AIRTABLE_API_KEY')
-AIRTABLE_BASE_ID = os.environ.get('AIRTABLE_BASE_ID')
+AIRTABLE_API_KEY = get_env("AIRTABLE_API_KEY")
+AIRTABLE_BASE_ID = get_env("AIRTABLE_BASE_ID")
