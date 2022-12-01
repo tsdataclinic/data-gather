@@ -2,7 +2,6 @@ import {
   Interview as Engine,
   Moderator,
   ResponseConsumer,
-  ResponseData,
 } from '@dataclinic/interview';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -12,7 +11,15 @@ import useInterviewScreens from '../../hooks/useInterviewScreens';
 import InterviewRunnerScreen from './InterviewRunnerScreen';
 import useInterviewConditionalActions from '../../hooks/useInterviewConditionalActions';
 import * as InterviewScreen from '../../models/InterviewScreen';
+import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import ConfigurableScript from '../../script/ConfigurableScript';
+
+type ResponseData = {
+  [responseKey: string]: {
+    entry: InterviewScreenEntry.T;
+    response: string;
+  };
+};
 
 /**
  * Runs an interview based on the ID of the interview in the URL params.
@@ -85,10 +92,10 @@ export default function InterviewRunnerView(): JSX.Element | null {
           </div>
           <h2 className="mb-2 text-xl">Responses:</h2>
           <dl>
-            {Object.entries(responseData).map(([key, value]) => (
+            {Object.values(responseData).map(response => (
               <>
-                <dt className="font-bold">{key}:</dt>
-                <dd className="mb-2 pl-8">{value}</dd>
+                <dt className="font-bold">{response.entry.prompt}:</dt>
+                <dd className="mb-2 pl-8">{response.response}</dd>
               </>
             ))}
           </dl>
@@ -98,7 +105,7 @@ export default function InterviewRunnerView(): JSX.Element | null {
           {currentScreen && currentScreen && entries && responseConsumer && (
             <InterviewRunnerScreen
               screen={currentScreen}
-              entries={entries}
+              entries={entries.get(currentScreen.id) ?? []}
               responseData={responseData}
               responseConsumer={responseConsumer}
             />
