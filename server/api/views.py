@@ -5,7 +5,7 @@ from typing import Optional, Sequence, TypeVar, Union
 from fastapi import Body, Depends, FastAPI, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
-from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
+from fastapi_azure_auth import B2CMultiTenantAuthorizationCodeBearer
 from pydantic import AnyHttpUrl, BaseSettings, Field
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import Session, SQLModel, select
@@ -115,12 +115,15 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
+azure_scheme = B2CMultiTenantAuthorizationCodeBearer(
     app_client_id=settings.APP_CLIENT_ID,
-    tenant_id=settings.TENANT_ID,
     scopes={
-        "https://twosigmadataclinic.onmicrosoft.com/scout-dev-api/Scout.API": "scout_api",
+        "https://twosigmadataclinic.onmicrosoft.com/scout-dev-api/Scout.API": "testtt",
     },
+    openid_config_url="https://twosigmadataclinic.b2clogin.com/twosigmadataclinic.onmicrosoft.com/B2C_1_scout_signup_signin/v2.0/.well-known/openid-configuration",
+    openapi_authorization_url="https://twosigmadataclinic.b2clogin.com/twosigmadataclinic.onmicrosoft.com/B2C_1_scout_signup_signin/v2.0/.well-known/authorize",
+    openapi_token_url="https://twosigmadataclinic.b2clogin.com/B2C_1_scout_signup_signin/oauth2/v2.0/token",
+    validate_iss=False,
 )
 
 
