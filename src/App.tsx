@@ -17,7 +17,7 @@ export default function App(): JSX.Element {
   return (
     <AuthProvider>
       <QueryClientProvider client={QUERY_CLIENT}>
-        <InterviewService.Provider value={INTERVIEW_API_CLIENT}>
+        <InterviewService.Provider client={INTERVIEW_API_CLIENT}>
           <AppState.Provider value={globalState}>
             <AppDispatch.Provider value={dispatch}>
               <div className="flex h-screen flex-col bg-gray-50 text-slate-900">

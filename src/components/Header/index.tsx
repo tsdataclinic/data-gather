@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import useDataClinicAuth from '../../auth/useDataClinicAuth';
 import useCurrentUser from '../../auth/useCurrentUser';
 import Button from '../ui/Button';
-import getAuthToken from '../../auth/getAuthToken';
 
 export default function Header(): JSX.Element {
   const { login, logout } = useDataClinicAuth();
@@ -30,24 +29,6 @@ export default function Header(): JSX.Element {
       >
         {isAuthenticated ? 'Sign out' : 'Sign in'}
         <FontAwesomeIcon className="ml-2" size="lg" icon={faUser} />
-      </Button>
-      <Button
-        onClick={async () => {
-          const token = await getAuthToken();
-          fetch('/auth', {
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          })
-            .then(response => response.json())
-            .then(value => {
-              console.log(value);
-            });
-        }}
-      >
-        test auth
       </Button>
     </header>
   );
