@@ -1,11 +1,13 @@
 import logging
 import uuid
-from typing import Optional, Sequence, TypeVar
+from typing import Optional, Sequence, TypeVar, Union
 
-from fastapi import Body, Depends, FastAPI, HTTPException, Request
+from fastapi import Body, Depends, FastAPI, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
+from fastapi_azure_auth import B2CMultiTenantAuthorizationCodeBearer
+from pydantic import AnyHttpUrl, BaseSettings, Field
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import Session, SQLModel, select
 
@@ -16,18 +18,41 @@ from server.engine import create_fk_constraint_engine
 from server.init_db import SQLITE_DB_PATH
 from server.models.common import OrderedModel
 from server.models.conditional_action import ConditionalAction
-from server.models.interview import (Interview, InterviewCreate, InterviewRead,
-                                     InterviewReadWithScreens, InterviewUpdate,
-                                     ValidationError)
-from server.models.interview_screen import (InterviewScreen,
-                                            InterviewScreenCreate,
-                                            InterviewScreenRead,
-                                            InterviewScreenReadWithChildren,
-                                            InterviewScreenUpdate)
+from server.models.interview import (
+    Interview,
+    InterviewCreate,
+    InterviewRead,
+    InterviewReadWithScreens,
+    InterviewUpdate,
+    ValidationError,
+)
+from server.models.interview_screen import (
+    InterviewScreen,
+    InterviewScreenCreate,
+    InterviewScreenRead,
+    InterviewScreenReadWithChildren,
+    InterviewScreenUpdate,
+)
 from server.models.interview_screen_entry import InterviewScreenEntry
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+engine = create_fk_constraint_engine(SQLITE_DB_PATH)
+airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
+
+
+class Settings(BaseSettings):
+    BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = ["http://localhost:3000"]
+    OPENAPI_CLIENT_ID: str = Field(default="", env="OPENAPI_CLIENT_ID")
+    APP_CLIENT_ID: str = Field(default="", env="REACT_APP_AZURE_APP_CLIENT_ID")
+    AZURE_DOMAIN_NAME: str = Field(default="", env="AZURE_DOMAIN_NAME")
+    AZURE_POLICY_AUTH_NAME: str = Field(default="", env="AZURE_POLICY_AUTH_NAME")
+
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = True
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -37,30 +62,43 @@ def custom_generate_unique_id(route: APIRoute) -> str:
     """
     if len(route.tags) > 0:
         return f"{route.tags[0]}-{route.name}"
-    else:
-        return f"{route.name}"
+    return f"{route.name}"
 
 
 TAG_METADATA = [{"name": "airtable", "description": "Endpoints for querying Airtable"}]
 
+settings = Settings()
+
 app = FastAPI(
     title="Interview App API",
-    generate_unique_id_function=custom_generate_unique_id,
     openapi_tags=TAG_METADATA,
+    generate_unique_id_function=custom_generate_unique_id,
+    swagger_ui_oauth2_redirect_url="/oauth2-redirect",
+    swagger_ui_init_oauth={
+        "usePkceWithAuthorizationCodeGrant": True,
+        "clientId": settings.OPENAPI_CLIENT_ID,
+    },
 )
+
 
 app.add_middleware(
     CORSMiddleware,
-    # allow access from create-react-app
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
-
-engine = create_fk_constraint_engine(SQLITE_DB_PATH)
+azure_scheme = B2CMultiTenantAuthorizationCodeBearer(
+    app_client_id=settings.APP_CLIENT_ID,
+    scopes={
+        f"https://{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/scout-dev-api/Scout.API": "API Scope",
+    },
+    openid_config_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/v2.0/.well-known/openid-configuration",
+    openapi_authorization_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/oauth2/v2.0/authorize",
+    openapi_token_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/oauth2/v2.0/token",
+    validate_iss=False,
+)
 
 
 def get_session():
@@ -68,7 +106,7 @@ def get_session():
         yield session
 
 
-@app.get("/")
+@app.get("/hello")
 def hello_api():
     return {"message": "Hello World"}
 
@@ -83,9 +121,20 @@ async def validation_exception_handler(request: Request, exc: ValidationError):
     )
 
 
+@app.on_event("startup")
+async def load_config() -> None:
+    """Load OpenID config on startup."""
+    await azure_scheme.openid_config.load_config()
+
+
+@app.get("/auth", dependencies=[Security(azure_scheme)])
+def test_auth():
+    return {"message": "auth success!"}
+
+
 @app.post(
     "/api/interviews/",
-    tags=["Interviews"],
+    tags=["interviews"],
     response_model=InterviewRead,
 )
 def create_interview(
@@ -98,14 +147,14 @@ def create_interview(
     except IntegrityError as e:
         raise HTTPException(status_code=400, detail=str(e.orig))
     except ValidationError as e:
-        raise HTTPException(status_code=400, detail="Invalid interview received")
+        raise HTTPException(status_code=400, detail="Error validating interview")
     return db_interview
 
 
 @app.get(
     "/api/interviews/{interview_id}",
     response_model=InterviewReadWithScreens,
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def get_interview(
     interview_id: str, session: Session = Depends(get_session)
@@ -119,7 +168,7 @@ def get_interview(
 @app.put(
     "/api/interviews/{interview_id}",
     response_model=InterviewRead,
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def update_interview(
     interview_id: str,
@@ -144,15 +193,14 @@ def update_interview(
     except IntegrityError as e:
         raise HTTPException(status_code=400, detail=str(e.orig))
     except ValidationError as e:
-        raise HTTPException(status_code=400, detail="Invalid interview received")
-
+        raise HTTPException(status_code=400, detail="Error validating interview")
     return db_interview
 
 
 @app.post(
     "/api/interviews/{interview_id}/starting_state",
     response_model=InterviewReadWithScreens,
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def update_interview_starting_state(
     *,
@@ -196,7 +244,7 @@ def update_interview_starting_state(
 @app.get(
     "/api/interviews/",
     response_model=list[InterviewRead],
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def get_interviews(session: Session = Depends(get_session)) -> list[Interview]:
     interviews = session.exec(select(Interview).limit(100)).all()
@@ -318,7 +366,10 @@ def update_interview_screen(
 
 
 def _update_model_diff(existing_model: SQLModel, new_model: SQLModel):
-    """Update a model returned from the DB with any changes in the new model"""
+    """
+    Update a model returned from the DB with any changes in the new
+    model.
+    """
     for key in new_model.dict().keys():
         new_val = getattr(new_model, key)
         old_val = getattr(existing_model, key)
@@ -378,7 +429,10 @@ def _update_db_screen_relationships(
 
 
 def _validate_sequential_order(request_models: Sequence[OrderedModel]):
-    """Validate that the provided ordered models are in sequential order starting at 1"""
+    """
+    Validate that the provided ordered models are in sequential order
+    starting at 1
+    """
     sorted_models = sorted([i.order for i in request_models])
     exc = HTTPException(
         status_code=400,
