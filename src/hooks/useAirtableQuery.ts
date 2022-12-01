@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { ResponseTypeOptions } from '../models/InterviewScreenEntry';
-import getEnvConfig, { EnvVar } from '../util/getEnvConfig';
 
 /**
  * Hook to access Airtable Records API
@@ -25,13 +24,15 @@ export default function useAirtableQuery(
     queryFn: async () => {
       // fetch all based on Base and Table
       if (queryString) {
-        // TODO - enable searching on multiple fields, not just first one
-        const airtableQueryURL = encodeURI(
-          `${getEnvConfig(EnvVar.APIBaseURL) ?? '//'}/airtable-records/${
-            queryOptions.selectedTable
-          }?${queryOptions.selectedFields[0]}=${queryString}`,
+        const { selectedFields, selectedTable } = queryOptions;
+        const searchParams = new URLSearchParams();
+        selectedFields.forEach(field => {
+          searchParams.append(field, queryString);
+        });
+
+        const res = await fetch(
+          `/airtable-records/${selectedTable}?${searchParams.toString()}`,
         );
-        const res = await fetch(airtableQueryURL);
         return res.json();
       }
       return [];
