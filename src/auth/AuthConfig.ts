@@ -6,20 +6,18 @@ const AuthConfig: {
   azure: {
     client: {
       auth: {
-        clientId: process.env.REACT_APP_SCOUT_AZURE_APP_CLIENT_ID || '',
-        authority: process.env.REACT_APP_SCOUT_AZURE_FULL_AUTHORITY_URL || '',
-        knownAuthorities: (
-          process.env.REACT_APP_SCOUT_AZURE_AUTHORITIES || ''
-        ).split(';'),
+        clientId: process.env.REACT_APP_AZURE_APP_CLIENT_ID || '',
+        authority: process.env.REACT_APP_AZURE_FULL_AUTHORITY_URL || '',
+        knownAuthorities: (process.env.REACT_APP_AZURE_AUTHORITIES || '').split(
+          ';',
+        ),
         redirectUri:
-          process.env.REACT_APP_SCOUT_CLIENT_URI || 'http://localhost:3000',
+          process.env.REACT_APP_CLIENT_URI || 'http://localhost:3000',
       },
     },
 
     api: {
-      b2cScopes: (process.env.REACT_APP_SCOUT_AZURE_B2C_SCOPES || '').split(
-        ';',
-      ),
+      b2cScopes: (process.env.REACT_APP_AZURE_B2C_SCOPES || '').split(';'),
     },
 
     loginRequest: {
