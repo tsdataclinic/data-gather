@@ -41,7 +41,7 @@ If at any point you update the backend SQLModel types or the routes in the `serv
 source venv/bin/activate
 ```
 
-2. Set the `AIRTABLE_API_KEY` and `AIRTABLE_BASE_ID` environment variables.
+2. Set the `AIRTABLE_API_KEY` and `AIRTABLE_BASE_ID` environment variables in a `.env` or `.env.local` file. Follow the template given in `.env.development.local.sample`
 
 3. Start the API server
 

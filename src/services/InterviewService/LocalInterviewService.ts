@@ -67,6 +67,7 @@ export default class LocalInterviewService
         const screens = await this.interviewScreens
           .where({ interviewId })
           .toArray();
+        screens.sort((scr1, scr2) => scr1.order - scr2.order);
         return Interview.deserialize({ ...interview, screens });
       }
       throw new Error(`Could not find an interview with id '${interviewId}'`);
@@ -132,7 +133,7 @@ export default class LocalInterviewService
         .where({ interviewId: screen.interviewId })
         .toArray();
       const sortedScreens = otherScreens.sort(
-        (scr1, scr2) => scr2.order - scr1.order,
+        (scr1, scr2) => scr1.order - scr2.order,
       );
       const lastScreen = sortedScreens[sortedScreens.length - 1];
       const serializedScreen: InterviewScreen.SerializedT = {

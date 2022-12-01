@@ -1,10 +1,10 @@
-import { useCallback } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import useInterviewStore from '../../../hooks/useInterviewStore';
 import * as Interview from '../../../models/Interview';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import Form from '../../ui/Form';
 import Modal from '../../ui/Modal';
+import useInterviewMutation, {
+  type InterviewServiceAPI,
+} from '../../../hooks/useInterviewMutation';
 
 type Props = {
   interview: Interview.T;
@@ -20,29 +20,23 @@ export default function NewScreenModal({
   isOpen,
   onDismiss,
 }: Props): JSX.Element {
-  const interviewStore = useInterviewStore();
-  const queryClient = useQueryClient();
-  const createScreenFn = useMutation({
-    mutationFn: interviewStore.InterviewScreenAPI.createInterviewScreen,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['interviewScreens', interview.id],
-      });
-      onDismiss();
-    },
+  const createScreen = useInterviewMutation({
+    mutation: (screen: InterviewScreen.CreateT, api: InterviewServiceAPI) =>
+      api.InterviewScreenAPI.createInterviewScreen(screen),
+    invalidateQuery: ['interviewScreens', interview.id],
   });
 
-  const onSubmit = useCallback(
-    (vals: Map<string, string>) => {
-      createScreenFn.mutate(
-        InterviewScreen.create({
-          title: vals.get('name') ?? '',
-          interviewId: interview.id,
-        }),
-      );
-    },
-    [createScreenFn, interview],
-  );
+  const onSubmit = (vals: Map<string, string>): void => {
+    createScreen(
+      InterviewScreen.create({
+        title: vals.get('name') ?? '',
+        interviewId: interview.id,
+      }),
+      {
+        onSuccess: () => onDismiss(),
+      },
+    );
+  };
 
   return (
     <Modal title="New stage" isOpen={isOpen} onDismiss={onDismiss}>

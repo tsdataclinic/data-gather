@@ -30,6 +30,8 @@
     "@types/react-dom": "^18.0.6",
     "@types/react-scroll": "^1.8.4",
     "@types/styled-components": "^5.1.25",
+    "ag-grid-community": "^28.2.1",
+    "ag-grid-react": "^28.2.1",
     "classnames": "^2.3.1",
     "dexie": "^3.2.2",
     "dexie-react-hooks": "^1.1.1",

@@ -14,6 +14,7 @@ FAKE_INTERVIEW = models.interview.Interview(
     description="Super important interview",
     name="Interview McInterviewFace",
     notes="some note",
+    published=False,
 )
 
 

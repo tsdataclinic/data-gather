@@ -2,48 +2,67 @@ import { faWrench } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as React from 'react';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
-import useInterviewStore from '../../hooks/useInterviewStore';
 import * as Interview from '../../models/Interview';
 import LabelWrapper from '../ui/LabelWrapper';
 import TextArea from '../ui/TextArea';
 import MultiSelect from '../ui/MultiSelect';
 import Button from '../ui/Button';
 import { useToast } from '../ui/Toast';
+import useInterviewMutation, {
+  type InterviewServiceAPI,
+} from '../../hooks/useInterviewMutation';
 
 type Props = {
   interview: Interview.WithScreensT;
 };
 
+async function saveUpdatedScreen(
+  data: {
+    interview: Interview.WithScreensT;
+    startingState: readonly string[];
+  },
+  api: InterviewServiceAPI,
+): Promise<void> {
+  await Promise.all([
+    api.InterviewAPI.updateInterview(data.interview.id, data.interview),
+    api.InterviewAPI.updateInterviewStartingState(
+      data.interview.id,
+      data.startingState,
+    ),
+  ]);
+}
+
 function ConfigureCard({ interview }: Props): JSX.Element {
   const toaster = useToast();
-  const interviewStore = useInterviewStore();
   const screens = useInterviewScreens(interview.id);
   const [startingState, setStartingState] = React.useState<readonly string[]>(
     () => Interview.getStartingScreens(interview).map(screen => screen.id),
   );
 
   const [displayedNotes, setDisplayedNotes] = React.useState(interview.notes);
+  const updateScreen = useInterviewMutation({
+    mutation: saveUpdatedScreen,
+    invalidateQuery: ['interview', interview.id],
+  });
 
-  const onSaveClick = async (): Promise<void> => {
-    try {
-      await Promise.all([
-        interviewStore.InterviewAPI.updateInterview(interview.id, {
-          ...interview,
-          notes: displayedNotes,
-        }),
-        interviewStore.InterviewAPI.updateInterviewStartingState(
-          interview.id,
-          startingState,
-        ),
-      ]);
-      toaster.notifySuccess('Saved!', `Successfully saved changes`);
-    } catch (error) {
-      console.error(error);
-      toaster.notifyError(
-        'Error!',
-        `There was a server error when saving your changes`,
-      );
-    }
+  const onSaveClick = (): void => {
+    updateScreen(
+      {
+        startingState,
+        interview: { ...interview, notes: displayedNotes },
+      },
+      {
+        onSuccess: () =>
+          toaster.notifySuccess('Saved!', `Successfully saved changes`),
+        onError: error => {
+          toaster.notifyError(
+            'Error!',
+            `There was a server error when saving your changes`,
+          );
+          console.error(error);
+        },
+      },
+    );
   };
 
   if (!screens) {
