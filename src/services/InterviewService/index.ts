@@ -11,7 +11,7 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
   backendStore: BackendInterviewService;
 
   // TODO: don't hardcode this
-  isAuthenticated = false;
+  isAuthenticated = true;
 
   constructor() {
     this.localStore = new LocalInterviewService();
@@ -31,6 +31,11 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
 
     getInterview: (interviewId: string): Promise<Interview.WithScreensT> =>
       this.getStore().InterviewAPI.getInterview(interviewId),
+
+    getInterviewByVanityUrl: (
+      vanityUrl: string,
+    ): Promise<Interview.WithScreensT> =>
+      this.getStore().InterviewAPI.getInterviewByVanityUrl(vanityUrl),
 
     updateInterview: (
       interviewId: string,

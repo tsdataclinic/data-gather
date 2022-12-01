@@ -14,6 +14,8 @@ interface Interview {
   readonly id: string;
   readonly name: string;
   readonly notes: string;
+  readonly published: boolean;
+  readonly vanityUrl?: string;
 }
 
 /**

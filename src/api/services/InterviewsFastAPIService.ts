@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { SerializedInterview } from '../models/SerializedInterview';
 import type { SerializedInterviewCreate } from '../models/SerializedInterviewCreate';
 import type { SerializedInterviewRead } from '../models/SerializedInterviewRead';
 import type { SerializedInterviewReadWithScreens } from '../models/SerializedInterviewReadWithScreens';
@@ -28,12 +29,12 @@ export class InterviewsFastAPIService {
   /**
    * Create Interview
    * @param requestBody
-   * @returns SerializedInterviewRead Successful Response
+   * @returns SerializedInterview Successful Response
    * @throws ApiError
    */
   public createInterview(
     requestBody: SerializedInterviewCreate,
-  ): CancelablePromise<SerializedInterviewRead> {
+  ): CancelablePromise<SerializedInterview> {
     return this.httpRequest.request({
       method: 'POST',
       url: '/api/interviews/',
@@ -85,6 +86,28 @@ export class InterviewsFastAPIService {
       },
       body: requestBody,
       mediaType: 'application/json',
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Get Interview By Vanity Url
+   * Get a published Interview by it's vanity url
+   * @param vanityUrl
+   * @returns SerializedInterviewReadWithScreens Successful Response
+   * @throws ApiError
+   */
+  public getInterviewByVanityUrl(
+    vanityUrl: string,
+  ): CancelablePromise<SerializedInterviewReadWithScreens> {
+    return this.httpRequest.request({
+      method: 'GET',
+      url: '/api/interviews/vanity-urls/{vanity_url}',
+      path: {
+        'vanity_url': vanityUrl,
+      },
       errors: {
         422: `Validation Error`,
       },

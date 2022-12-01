@@ -15,6 +15,7 @@ export type { HTTPValidationError } from './models/HTTPValidationError';
 export { ResponseType } from './models/ResponseType';
 export type { SerializedConditionalActionCreate } from './models/SerializedConditionalActionCreate';
 export type { SerializedConditionalActionRead } from './models/SerializedConditionalActionRead';
+export type { SerializedInterview } from './models/SerializedInterview';
 export type { SerializedInterviewCreate } from './models/SerializedInterviewCreate';
 export type { SerializedInterviewRead } from './models/SerializedInterviewRead';
 export type { SerializedInterviewReadWithScreens } from './models/SerializedInterviewReadWithScreens';

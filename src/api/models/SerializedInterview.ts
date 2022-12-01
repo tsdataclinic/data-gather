@@ -3,10 +3,9 @@
 /* eslint-disable */
 
 /**
- * The Interview model used when creating a new model.
- * `id` and `created_date` are optional because these are set by the database.
+ * The Interview model as a database table.
  */
-export type SerializedInterviewCreate = {
+export type SerializedInterview = {
   description: string;
   name: string;
   notes: string;

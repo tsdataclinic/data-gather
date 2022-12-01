@@ -16,7 +16,7 @@ type Props = {
   interview: Interview.WithScreensT;
 };
 
-async function saveUpdatedScreen(
+async function saveUpdatedInterview(
   data: {
     interview: Interview.WithScreensT;
     startingState: readonly string[];
@@ -38,10 +38,12 @@ function ConfigureCard({ interview }: Props): JSX.Element {
   const [startingState, setStartingState] = React.useState<readonly string[]>(
     () => Interview.getStartingScreens(interview).map(screen => screen.id),
   );
+  const [publish, setPublish] = React.useState(() => interview.published);
+  const [vanityUrl, setVanityUrl] = React.useState(() => interview.vanityUrl);
 
   const [displayedNotes, setDisplayedNotes] = React.useState(interview.notes);
   const updateScreen = useInterviewMutation({
-    mutation: saveUpdatedScreen,
+    mutation: saveUpdatedInterview,
     invalidateQuery: ['interview', interview.id],
   });
 
@@ -49,7 +51,12 @@ function ConfigureCard({ interview }: Props): JSX.Element {
     updateScreen(
       {
         startingState,
-        interview: { ...interview, notes: displayedNotes },
+        interview: {
+          ...interview,
+          notes: displayedNotes,
+          published: publish,
+          vanityUrl,
+        },
       },
       {
         onSuccess: () =>
@@ -113,6 +120,27 @@ function ConfigureCard({ interview }: Props): JSX.Element {
                 options={getOptions()}
               />
             </div>
+            <br />
+            <div>
+              <input
+                type="checkbox"
+                id="publish"
+                onChange={e => setPublish(e.target.checked)}
+                checked={publish}
+              />
+              <label htmlFor="publish">Publish interview</label>
+            </div>
+            {publish && (
+              <div>
+                <input
+                  type="text"
+                  id="vanityUrl"
+                  onChange={e => setVanityUrl(e.target.value)}
+                  value={vanityUrl}
+                />
+                <label htmlFor="vanityUrl">Vanity Url</label>
+              </div>
+            )}
           </span>
           <Button intent="primary" onClick={onSaveClick}>
             Save

@@ -59,7 +59,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     # allow access from create-react-app
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -94,7 +94,7 @@ async def validation_exception_handler(request: Request, exc: ValidationError):
     tags=["Interviews"],
     response_model=Interview,
 )
-def create_interview(interview: Interview, session: Session = Depends(get_session)) -> str:
+def create_interview(interview: InterviewCreate, session: Session = Depends(get_session)) -> str:
     session.add(interview)
     try:
         session.commit()
@@ -114,13 +114,30 @@ def get_interview(interview_id: str, session: Session = Depends(get_session)) ->
         raise HTTPException(status_code=404, detail="Interview not found")
     return interview
 
+@app.get(
+    "/api/interviews/vanity-urls/{vanity_url}",
+    response_model=InterviewReadWithScreens,
+    tags=["Interviews"],
+)
+def get_interview_by_vanity_url(vanity_url: str, session: Session = Depends(get_session)) -> Interview:
+    """Get a published Interview by it's vanity url"""
+    try:
+        interview = session.exec(
+            select(Interview).where(Interview.vanity_url == vanity_url).where(Interview.published == 1)        
+        ).one()
+        print(select(Interview).where(Interview.vanity_url == vanity_url).where(Interview.published == 1))
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail=f"Interview not found with {vanity_url} vanity url")
+  
+    return interview
+
 
 @app.put(
     "/api/interviews/{interview_id}",
     response_model=InterviewRead,
     tags=["Interviews"],
 )
-def update_interview(interview_id: str, interview: Interview, session: Session = Depends(get_session)) -> Interview:
+def update_interview(interview_id: str, interview: InterviewUpdate, session: Session = Depends(get_session)) -> Interview:
     try:
         db_interview = session.exec(
             select(Interview).where(Interview.id == interview_id)
