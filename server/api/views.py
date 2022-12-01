@@ -18,14 +18,21 @@ from server.engine import create_fk_constraint_engine
 from server.init_db import SQLITE_DB_PATH
 from server.models.common import OrderedModel
 from server.models.conditional_action import ConditionalAction
-from server.models.interview import (Interview, InterviewCreate, InterviewRead,
-                                     InterviewReadWithScreens, InterviewUpdate,
-                                     ValidationError)
-from server.models.interview_screen import (InterviewScreen,
-                                            InterviewScreenCreate,
-                                            InterviewScreenRead,
-                                            InterviewScreenReadWithChildren,
-                                            InterviewScreenUpdate)
+from server.models.interview import (
+    Interview,
+    InterviewCreate,
+    InterviewRead,
+    InterviewReadWithScreens,
+    InterviewUpdate,
+    ValidationError,
+)
+from server.models.interview_screen import (
+    InterviewScreen,
+    InterviewScreenCreate,
+    InterviewScreenRead,
+    InterviewScreenReadWithChildren,
+    InterviewScreenUpdate,
+)
 from server.models.interview_screen_entry import InterviewScreenEntry
 
 LOG = logging.getLogger(__name__)
@@ -41,17 +48,11 @@ airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
 
 class Settings(BaseSettings):
-    SECRET_KEY: str = Field("my super secret key", env="SECRET_KEY")
-    BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = ["http://localhost:8000"]
-    OPENAPI_CLIENT_ID: str = Field(
-        default="95d99eed-62db-4ca0-b0d6-f58649e90e09", env="OPENAPI_CLIENT_ID"
-    )
-    APP_CLIENT_ID: str = Field(
-        default="f2f390f7-1ace-4333-b7b9-9cf97a3d1318", env="APP_CLIENT_ID"
-    )
-    TENANT_ID: str = Field(
-        default="c17c2295-f643-459e-ae89-8e0b2078951e", env="TENANT_ID"
-    )
+    BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = ["http://localhost:3000"]
+    OPENAPI_CLIENT_ID: str = Field(default="", env="OPENAPI_CLIENT_ID")
+    APP_CLIENT_ID: str = Field(default="", env="REACT_APP_AZURE_APP_CLIENT_ID")
+    AZURE_DOMAIN_NAME: str = Field(default="", env="AZURE_DOMAIN_NAME")
+    AZURE_POLICY_AUTH_NAME: str = Field(default="", env="AZURE_POLICY_AUTH_NAME")
 
     class Config:
         env_file = ".env"
@@ -87,31 +88,20 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    # allow access from create-react-app
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
 azure_scheme = B2CMultiTenantAuthorizationCodeBearer(
     app_client_id=settings.APP_CLIENT_ID,
     scopes={
-        "https://twosigmadataclinic.onmicrosoft.com/scout-dev-api/Scout.API": "testtt",
+        f"https://{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/scout-dev-api/Scout.API": "API Scope",
     },
-    openid_config_url="https://twosigmadataclinic.b2clogin.com/twosigmadataclinic.onmicrosoft.com/B2C_1_scout_signup_signin/v2.0/.well-known/openid-configuration",
-    openapi_authorization_url="https://twosigmadataclinic.b2clogin.com/twosigmadataclinic.onmicrosoft.com/B2C_1_scout_signup_signin/v2.0/.well-known/authorize",
-    openapi_token_url="https://twosigmadataclinic.b2clogin.com/B2C_1_scout_signup_signin/oauth2/v2.0/token",
+    openid_config_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/v2.0/.well-known/openid-configuration",
+    openapi_authorization_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/oauth2/v2.0/authorize",
+    openapi_token_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/oauth2/v2.0/token",
     validate_iss=False,
 )
 
