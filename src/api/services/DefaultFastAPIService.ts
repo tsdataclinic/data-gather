@@ -16,7 +16,19 @@ export class DefaultFastAPIService {
   public helloApi(): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'GET',
-      url: '/',
+      url: '/hello',
+    });
+  }
+
+  /**
+   * Test Auth
+   * @returns any Successful Response
+   * @throws ApiError
+   */
+  public testAuth(): CancelablePromise<any> {
+    return this.httpRequest.request({
+      method: 'GET',
+      url: '/auth',
     });
   }
 

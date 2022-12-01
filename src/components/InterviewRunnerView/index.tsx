@@ -1,10 +1,11 @@
+import * as React from 'react';
 import {
   Interview as Engine,
   Moderator,
   ResponseConsumer,
 } from '@dataclinic/interview';
-import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
 import useInterview from '../../hooks/useInterview';
 import useInterviewScreenEntries from '../../hooks/useInterviewScreenEntries';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
@@ -13,6 +14,7 @@ import useInterviewConditionalActions from '../../hooks/useInterviewConditionalA
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import ConfigurableScript from '../../script/ConfigurableScript';
+import { FastAPIService } from '../../api/FastAPIService';
 
 type ResponseData = {
   [responseKey: string]: {
@@ -20,6 +22,8 @@ type ResponseData = {
     response: string;
   };
 };
+
+const api = new FastAPIService();
 
 /**
  * Runs an interview based on the ID of the interview in the URL params.
@@ -29,18 +33,30 @@ export default function InterviewRunnerView(): JSX.Element | null {
   const interview = useInterview(interviewId);
   const screens = useInterviewScreens(interviewId);
   const actions = useInterviewConditionalActions(interviewId);
-  const [currentScreen, setCurrentScreen] = useState<
+  const [currentScreen, setCurrentScreen] = React.useState<
     InterviewScreen.T | undefined
   >(undefined);
-  const [responseConsumer, setResponseConsumer] = useState<
+  const [responseConsumer, setResponseConsumer] = React.useState<
     ResponseConsumer | undefined
   >(undefined);
-  const [responseData, setResponseData] = useState<ResponseData>({});
-  const [complete, setComplete] = useState<boolean>(false);
+  const [responseData, setResponseData] = React.useState<ResponseData>({});
+  const [complete, setComplete] = React.useState<boolean>(false);
   const entries = useInterviewScreenEntries(interviewId);
+  const airtableMutation = useMutation({
+    mutationFn: (data: {
+      fields: { [fieldName: string]: string };
+      recordId: string;
+      tableId: string;
+    }) =>
+      api.airtable.updateAirtableRecord(
+        data.tableId,
+        data.recordId,
+        data.fields,
+      ),
+  });
 
   // Construct and run an interview on component load.
-  useEffect(() => {
+  React.useEffect(() => {
     if (!interview || !screens || !actions) {
       return;
     }
@@ -82,6 +98,46 @@ export default function InterviewRunnerView(): JSX.Element | null {
       setComplete(true);
     });
   }, [interview, screens, actions]);
+
+  // on interview complete
+  React.useEffect(() => {
+    if (complete) {
+      // write back any necessary airtable data.
+      // first, find if any entry specified a writeback
+      const writebacks = Object.values(responseData).filter(
+        response => !!response.entry.writebackOptions,
+      );
+
+      // next, find if any entry specified an airtable record
+      const airtableRecordResponseKey = Object.values(responseData).find(
+        response =>
+          response.entry.responseType ===
+          InterviewScreenEntry.ResponseType.AIRTABLE,
+      )?.entry.responseKey;
+
+      // from the entry that collected the airtable lookup, now get the
+      // selected record id from the responseData
+      const airtableRecordId = airtableRecordResponseKey
+        ? responseData[airtableRecordResponseKey].response
+        : undefined;
+      if (airtableRecordId) {
+        writebacks.forEach(writeback => {
+          const valueToWrite = writeback.response;
+          const fieldName = writeback.entry.writebackOptions?.selectedFields[0];
+          const tableId = writeback.entry.writebackOptions?.selectedTable;
+          if (fieldName && tableId) {
+            airtableMutation.mutate({
+              tableId,
+              recordId: airtableRecordId,
+              fields: {
+                [fieldName]: valueToWrite,
+              },
+            });
+          }
+        });
+      }
+    }
+  }, [complete, airtableMutation, responseData]);
 
   return (
     <div>

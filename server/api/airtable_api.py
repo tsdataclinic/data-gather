@@ -108,7 +108,8 @@ class AirtableAPI:
         logger.debug(
             f"Fetching records in {table_name}" + (f"with {query = }" if query else "")
         )
-        return self.api.all(self.base_id, table_name, formula=match(query))
+        results = self.api.all(self.base_id, table_name, formula=match(query))
+        return results
 
     @airtable_errors_wrapped
     def create_record(self, table_name: str, record: Record) -> Record:
@@ -148,4 +149,3 @@ class AirtableAPI:
                 typecast=True,
             ),
         )
-

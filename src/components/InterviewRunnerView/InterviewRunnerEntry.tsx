@@ -38,15 +38,24 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
   const [columnDefs, setColumnDefs] =
     React.useState<Array<Record<string, string>>>();
 
+  // when new airtable response data comes in, reset the table headers
+  // and data
   React.useEffect(() => {
     if (!responseData || responseData.length < 1) return;
-    // TODO - get superset of all fields returned
-    setColumnDefs(
-      Object.keys(responseData[0].fields).map(f => ({
-        field: f,
-      })),
-    );
+    // collect superset of all fields from all results
+    const allFields: string[] = [];
+    const seenFields: Set<string> = new Set();
+    responseData.forEach((row: { fields: Record<string, string> }) => {
+      const fieldNames: string[] = Object.keys(row.fields);
+      fieldNames.forEach(fieldName => {
+        if (!seenFields.has(fieldName)) {
+          seenFields.add(fieldName);
+          allFields.push(fieldName);
+        }
+      });
+    });
 
+    setColumnDefs(allFields.map(f => ({ field: f })));
     setRowData(
       responseData.map((d: any) => ({
         id: d.id,
