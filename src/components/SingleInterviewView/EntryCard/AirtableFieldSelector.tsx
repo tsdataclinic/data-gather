@@ -6,15 +6,19 @@ import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import useAppState from '../../../hooks/useAppState';
 
 type Props = {
-  airtableConfig: InterviewScreenEntry.ResponseTypeOptions;
+  airtableConfig: InterviewScreenEntry.AirtableOptions;
+  fieldSelectorLabel: string;
   onAirtableConfigurationChange: (
-    newConfig: InterviewScreenEntry.ResponseTypeOptions,
+    newConfig: InterviewScreenEntry.AirtableOptions,
   ) => void;
+  useSingleField?: boolean;
 };
 
 export default function AirtableFieldSelector({
   airtableConfig,
   onAirtableConfigurationChange,
+  fieldSelectorLabel,
+  useSingleField = false,
 }: Props): JSX.Element {
   const { airtableSettings: hardCodedSettings } = useAppState();
   const { bases } = hardCodedSettings;
@@ -52,6 +56,45 @@ export default function AirtableFieldSelector({
     return [];
   }, [bases, selectedBase, selectedTable]);
 
+  const renderFieldSelector = (): JSX.Element | null => {
+    if (selectedBase && selectedTable) {
+      if (useSingleField) {
+        return (
+          <Form.Dropdown
+            label={fieldSelectorLabel}
+            placeholder="Airtable field"
+            name="airtableField"
+            value={selectedFields[0]}
+            onChange={(field: string) => {
+              onAirtableConfigurationChange({
+                ...airtableConfig,
+                selectedFields: [field],
+              });
+            }}
+            options={availableFields}
+          />
+        );
+      }
+      return (
+        <LabelWrapper label={fieldSelectorLabel}>
+          <MultiSelect
+            ariaLabel="Airtable field"
+            onChange={(newVals: string[]) => {
+              onAirtableConfigurationChange({
+                ...airtableConfig,
+                selectedFields: newVals,
+              });
+            }}
+            options={availableFields}
+            placeholder="Airtable field"
+            selectedValues={selectedFields}
+          />
+        </LabelWrapper>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="flex space-x-4">
       <Form.Dropdown
@@ -84,22 +127,7 @@ export default function AirtableFieldSelector({
           options={availableTables}
         />
       )}
-      {selectedBase && selectedTable && (
-        <LabelWrapper label="Fields to search by">
-          <MultiSelect
-            ariaLabel="Airtable field"
-            onChange={(newVals: string[]) => {
-              onAirtableConfigurationChange({
-                ...airtableConfig,
-                selectedFields: newVals,
-              });
-            }}
-            options={availableFields}
-            placeholder="Airtable field"
-            selectedValues={selectedFields}
-          />
-        </LabelWrapper>
-      )}
+      {renderFieldSelector()}
     </div>
   );
 }

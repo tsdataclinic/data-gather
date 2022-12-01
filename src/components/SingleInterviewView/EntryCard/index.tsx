@@ -33,7 +33,6 @@ function EntryCard(
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
   const entryId = 'id' in entry ? entry.id : entry.tempId;
-  const [writeResponseBack, setWriteResponseBack] = React.useState(false);
 
   return (
     <ScrollableElement
@@ -105,6 +104,7 @@ function EntryCard(
           {entry.responseType ===
             InterviewScreenEntry.ResponseType.AIRTABLE && (
             <AirtableFieldSelector
+              fieldSelectorLabel="Fields to search by"
               airtableConfig={entry.responseTypeOptions}
               onAirtableConfigurationChange={(
                 newConfig: InterviewScreenEntry.ResponseTypeOptions,
@@ -116,21 +116,41 @@ function EntryCard(
               }}
             />
           )}
-          <LabelWrapper
-            inline
-            labelAfter
-            label="Write the response of this question back to Airtable"
-          >
-            <MixedCheckbox
-              checked={writeResponseBack}
-              onChange={() => setWriteResponseBack(prev => !prev)}
-            />
-          </LabelWrapper>
-          {writeResponseBack && (
-            <AirtableFieldSelector
-              airtableConfig={entry.responseTypeOptions}
-              onAirtableConfigurationChange={() => undefined}
-            />
+          {entry.responseType !==
+            InterviewScreenEntry.ResponseType.AIRTABLE && (
+            <>
+              <LabelWrapper
+                inline
+                labelAfter
+                label="Write the response of this question back to Airtable"
+              >
+                <MixedCheckbox
+                  checked={!!entry.writebackOptions}
+                  onChange={event => {
+                    const isChecked = event.currentTarget.checked;
+                    onEntryChange(entry, {
+                      ...entry,
+                      writebackOptions: isChecked
+                        ? InterviewScreenEntry.createDefaultAirtableOptions()
+                        : undefined,
+                    });
+                  }}
+                />
+              </LabelWrapper>
+              {entry.writebackOptions && (
+                <AirtableFieldSelector
+                  useSingleField
+                  fieldSelectorLabel="Field to write to"
+                  airtableConfig={entry.writebackOptions}
+                  onAirtableConfigurationChange={newConfig => {
+                    onEntryChange(entry, {
+                      ...entry,
+                      writebackOptions: newConfig,
+                    });
+                  }}
+                />
+              )}
+            </>
           )}
         </Form.Group>
       </Form>

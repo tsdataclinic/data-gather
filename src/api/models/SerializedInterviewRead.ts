@@ -14,6 +14,8 @@ export type SerializedInterviewRead = {
   description: string;
   name: string;
   notes: string;
+  vanityUrl?: string;
+  published: boolean;
   id: string;
   createdDate: string;
 };

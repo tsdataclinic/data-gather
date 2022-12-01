@@ -3,8 +3,8 @@ import uuid
 from typing import Optional, Sequence, TypeVar
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import Session, SQLModel, select
@@ -16,21 +16,14 @@ from server.engine import create_fk_constraint_engine
 from server.init_db import SQLITE_DB_PATH
 from server.models.common import OrderedModel
 from server.models.conditional_action import ConditionalAction
-from server.models.interview import (
-    Interview,
-    InterviewCreate,
-    InterviewRead,
-    InterviewReadWithScreens,
-    InterviewUpdate,
-    ValidationError
-)
-from server.models.interview_screen import (
-    InterviewScreen,
-    InterviewScreenCreate,
-    InterviewScreenRead,
-    InterviewScreenReadWithChildren,
-    InterviewScreenUpdate,
-)
+from server.models.interview import (Interview, InterviewCreate, InterviewRead,
+                                     InterviewReadWithScreens, InterviewUpdate,
+                                     ValidationError)
+from server.models.interview_screen import (InterviewScreen,
+                                            InterviewScreenCreate,
+                                            InterviewScreenRead,
+                                            InterviewScreenReadWithChildren,
+                                            InterviewScreenUpdate)
 from server.models.interview_screen_entry import InterviewScreenEntry
 
 LOG = logging.getLogger(__name__)
@@ -79,6 +72,7 @@ def get_session():
 def hello_api():
     return {"message": "Hello World"}
 
+
 # Because the exception is raised on instantiation from the SQLAlchemy validator
 # we need to globally handle it
 @app.exception_handler(ValidationError)
@@ -90,17 +84,22 @@ async def validation_exception_handler(request: Request, exc: ValidationError):
 
 
 @app.post(
-    "/api/interviews/", 
+    "/api/interviews/",
     tags=["Interviews"],
-    response_model=Interview,
+    response_model=InterviewRead,
 )
-def create_interview(interview: Interview, session: Session = Depends(get_session)) -> str:
-    session.add(interview)
+def create_interview(
+    interview: InterviewCreate, session: Session = Depends(get_session)
+) -> Interview:
+    db_interview = Interview.from_orm(interview)
+    session.add(db_interview)
     try:
         session.commit()
-    except (IntegrityError, ValidationError) as e:
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail=str(e.orig))
-    return interview
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail="Invalid interview received")
+    return db_interview
 
 
 @app.get(
@@ -108,7 +107,9 @@ def create_interview(interview: Interview, session: Session = Depends(get_sessio
     response_model=InterviewReadWithScreens,
     tags=["Interviews"],
 )
-def get_interview(interview_id: str, session: Session = Depends(get_session)) -> Interview:
+def get_interview(
+    interview_id: str, session: Session = Depends(get_session)
+) -> Interview:
     interview = session.get(Interview, interview_id)
     if not interview:
         raise HTTPException(status_code=404, detail="Interview not found")
@@ -120,7 +121,11 @@ def get_interview(interview_id: str, session: Session = Depends(get_session)) ->
     response_model=InterviewRead,
     tags=["Interviews"],
 )
-def update_interview(interview_id: str, interview: Interview, session: Session = Depends(get_session)) -> Interview:
+def update_interview(
+    interview_id: str,
+    interview: InterviewUpdate,
+    session: Session = Depends(get_session),
+) -> Interview:
     try:
         db_interview = session.exec(
             select(Interview).where(Interview.id == interview_id)
@@ -136,8 +141,10 @@ def update_interview(interview_id: str, interview: Interview, session: Session =
 
     try:
         session.commit()
-    except (IntegrityError, ValidationError) as e:
+    except IntegrityError as e:
         raise HTTPException(status_code=400, detail=str(e.orig))
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail="Invalid interview received")
 
     return db_interview
 
