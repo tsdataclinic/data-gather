@@ -6,7 +6,7 @@ from typing import Any, cast
 import requests
 from fastapi import HTTPException
 from pyairtable import Api
-from pyairtable.formulas import match
+from pyairtable.formulas import FIELD, FIND, LOWER, OR, STR_VALUE
 
 # https://pyairtable.readthedocs.io/en/latest/api.html
 
@@ -96,8 +96,9 @@ class AirtableAPI:
     @airtable_errors_wrapped
     def search_records(self, table_name: str, query: PartialRecord) -> list[Record]:
         """
-        Fetch all records from a table on Airtable that match a particular query. If query
-        is empty, all the records in the table are returned.
+        Fetch all records from a table on Airtable that partially match a
+        particular query. If query is empty, all the records in the table are
+        returned.
 
         Arguments:
         - table_name: The name of the table to be queried
@@ -108,7 +109,12 @@ class AirtableAPI:
         logger.debug(
             f"Fetching records in {table_name}" + (f"with {query = }" if query else "")
         )
-        results = self.api.all(self.base_id, table_name, formula=match(query))
+        find_statements = [
+            FIND(LOWER(STR_VALUE(query_val)), LOWER(FIELD(field_name)))
+            for field_name, query_val in query.items()
+        ]
+        find_formula = OR(*find_statements)
+        results = self.api.all(self.base_id, table_name, formula=find_formula)
         return results
 
     @airtable_errors_wrapped
