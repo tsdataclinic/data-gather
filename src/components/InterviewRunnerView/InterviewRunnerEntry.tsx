@@ -1,8 +1,8 @@
+import * as React from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
-import { useEffect, useState } from 'react';
-import Form from '../ui/Form';
 import InputText from '../ui/InputText';
+import Form from '../ui/Form';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import assertUnreachable from '../../util/assertUnreachable';
 import useAirtableQuery from '../../hooks/useAirtableQuery';
@@ -23,6 +23,7 @@ const AIRTABLE_QUERY_DELAY_MS = 500;
  */
 
 export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
+  const airtableHiddenInputRef = React.useRef<HTMLInputElement | null>(null);
   const [airtableQuery, setAirtableQuery] = useDebouncedState<string>(
     '',
     AIRTABLE_QUERY_DELAY_MS,
@@ -33,11 +34,11 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
     entry.responseTypeOptions,
   );
 
-  // const gridRef = useRef();
-  const [rowData, setRowData] = useState();
-  const [columnDefs, setColumnDefs] = useState<Array<Record<string, string>>>();
+  const [rowData, setRowData] = React.useState();
+  const [columnDefs, setColumnDefs] =
+    React.useState<Array<Record<string, string>>>();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!responseData || responseData.length < 1) return;
     // TODO - get superset of all fields returned
     setColumnDefs(
@@ -96,6 +97,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
     case InterviewScreenEntry.ResponseType.AIRTABLE:
       return (
         <div>
+          <strong>{entry.prompt}</strong>
           <LabelWrapper label="Search for record">
             <InputText onChange={(val: string) => setAirtableQuery(val)} />
           </LabelWrapper>
@@ -109,22 +111,26 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           {isSuccess &&
             typeof responseData !== 'string' &&
             responseData.length > 0 && (
-              <>
-                <strong>{entry.prompt}</strong>
-                <div
-                  className="ag-theme-alpine"
-                  style={{ width: '100%', height: 250 }}
-                >
-                  <AgGridReact
-                    // TODO - handle row selection
-                    onRowClicked={e => console.log(e)}
-                    onRowDoubleClicked={e => console.log(e)}
-                    rowSelection="single"
-                    rowData={rowData}
-                    columnDefs={columnDefs}
-                  />
-                </div>
-              </>
+              <div
+                className="ag-theme-alpine"
+                style={{ width: '100%', height: 250 }}
+              >
+                <input
+                  ref={airtableHiddenInputRef}
+                  type="hidden"
+                  name={entry.responseKey}
+                />
+                <AgGridReact
+                  onRowClicked={e => {
+                    if (airtableHiddenInputRef.current) {
+                      airtableHiddenInputRef.current.value = e.data.id;
+                    }
+                  }}
+                  rowSelection="single"
+                  rowData={rowData}
+                  columnDefs={columnDefs}
+                />
+              </div>
             )}
           {isSuccess &&
             typeof responseData !== 'string' &&
