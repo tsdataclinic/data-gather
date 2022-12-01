@@ -92,7 +92,7 @@ async def validation_exception_handler(request: Request, exc: ValidationError):
 @app.post(
     "/api/interviews/", 
     tags=["Interviews"],
-    response_model=Interview,
+    response_model=InterviewRead,
 )
 def create_interview(interview: InterviewCreate, session: Session = Depends(get_session)) -> str:
     session.add(interview)

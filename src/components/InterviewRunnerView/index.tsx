@@ -14,7 +14,12 @@ import useInterviewConditionalActions from '../../hooks/useInterviewConditionalA
 import * as InterviewScreen from '../../models/InterviewScreen';
 import ConfigurableScript from '../../script/ConfigurableScript';
 
-export function InterviewRunnerView({ interviewId }): JSX.Element | null {
+type Props = {
+  interviewId: string;
+};
+
+export function InterviewRunnerView(props: Props): JSX.Element | null {
+  const { interviewId } = props;
   const interview = useInterview(interviewId);
   const screens = useInterviewScreens(interviewId);
   const actions = useInterviewConditionalActions(interviewId);
@@ -110,5 +115,8 @@ export function InterviewRunnerView({ interviewId }): JSX.Element | null {
  */
 export function InterviewRunnerViewRoute(): JSX.Element | null {
   const { interviewId } = useParams();
-  return <InterviewRunnerView interviewId={interviewId} />;
+  if (interviewId) {
+    return <InterviewRunnerView interviewId={interviewId} />;
+  }
+  return null;
 }

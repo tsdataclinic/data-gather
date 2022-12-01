@@ -73,6 +73,27 @@ export default class LocalInterviewService
       throw new Error(`Could not find an interview with id '${interviewId}'`);
     },
 
+    getInterviewByVanityUrl: async (
+      vanityUrl: string,
+    ): Promise<Interview.WithScreensT> => {
+      const serializedInterviews = await this.interviews.toArray();
+      const interview = serializedInterviews.filter(
+        i => i.vanityUrl === vanityUrl,
+      );
+      if (interview) {
+        // get screens for this interview
+        const interviewId = interview[0].id;
+        const screens = await this.interviewScreens
+          .where({ interviewId })
+          .toArray();
+        screens.sort((scr1, scr2) => scr1.order - scr2.order);
+        return Interview.deserialize({ ...interview[0] });
+      }
+      throw new Error(
+        `Could not find an interview with vanity url '${vanityUrl}'`,
+      );
+    },
+
     updateInterview: async (
       interviewId: string,
       interview: Interview.UpdateT,

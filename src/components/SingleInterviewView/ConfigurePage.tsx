@@ -128,17 +128,24 @@ function ConfigureCard({ interview }: Props): JSX.Element {
                 onChange={e => setPublish(e.target.checked)}
                 checked={publish}
               />
-              <label htmlFor="publish">Publish interview</label>
+              <label htmlFor="publish" style={{ paddingLeft: '10px' }}>
+                Publish interview
+              </label>
             </div>
+            <br />
             {publish && (
               <div>
                 <input
                   type="text"
                   id="vanityUrl"
+                  className="border border-gray-200 bg-white p-4"
+                  style={{ height: '5px' }}
                   onChange={e => setVanityUrl(e.target.value)}
                   value={vanityUrl}
                 />
-                <label htmlFor="vanityUrl">Vanity Url</label>
+                <label htmlFor="vanityUrl" style={{ paddingLeft: '10px' }}>
+                  Vanity Url
+                </label>
               </div>
             )}
           </span>

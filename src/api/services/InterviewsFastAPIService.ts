@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { SerializedInterview } from '../models/SerializedInterview';
 import type { SerializedInterviewCreate } from '../models/SerializedInterviewCreate';
 import type { SerializedInterviewRead } from '../models/SerializedInterviewRead';
 import type { SerializedInterviewReadWithScreens } from '../models/SerializedInterviewReadWithScreens';
@@ -29,12 +28,12 @@ export class InterviewsFastAPIService {
   /**
    * Create Interview
    * @param requestBody
-   * @returns SerializedInterview Successful Response
+   * @returns SerializedInterviewRead Successful Response
    * @throws ApiError
    */
   public createInterview(
     requestBody: SerializedInterviewCreate,
-  ): CancelablePromise<SerializedInterview> {
+  ): CancelablePromise<SerializedInterviewRead> {
     return this.httpRequest.request({
       method: 'POST',
       url: '/api/interviews/',

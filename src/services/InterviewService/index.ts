@@ -11,7 +11,7 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
   backendStore: BackendInterviewService;
 
   // TODO: don't hardcode this
-  isAuthenticated = true;
+  isAuthenticated = false;
 
   constructor() {
     this.localStore = new LocalInterviewService();
