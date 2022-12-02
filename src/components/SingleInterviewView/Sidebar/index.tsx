@@ -8,6 +8,7 @@ import Button from '../../ui/Button';
 import NewScreenModal from './NewScreenModal';
 import ScreenLink from './ScreenLink';
 import { useToast } from '../../ui/Toast';
+import ConfigureLink from './ConfigureLink';
 
 type Props = {
   interview: Interview.WithScreensT;
@@ -53,9 +54,8 @@ export default function Sidebar({
           </NavLink>
 
           {/* Configure */}
-          <ScreenLink
-            screen="configure"
-            onScreenSelect={setSelectedScreen}
+          <ConfigureLink
+            onSelect={() => setSelectedScreen('configure')}
             isSelected={selectedScreen === 'configure'}
           />
 
