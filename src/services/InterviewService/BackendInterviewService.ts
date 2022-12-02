@@ -66,6 +66,9 @@ export default class BackendInterviewService implements InterviewServiceAPI {
       return InterviewScreen.deserialize(serializedScreen);
     },
 
+    deleteInterviewScreen: async (screenId: string): Promise<void> =>
+      this.api.interviewScreens.deleteInterviewScreen(screenId),
+
     getInterviewScreen: async (
       screenId: string,
     ): Promise<InterviewScreen.WithChildrenT> => {

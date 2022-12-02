@@ -63,6 +63,27 @@ export class InterviewScreensFastAPIService {
   }
 
   /**
+   * Delete Interview Screen
+   * @param screenId
+   * @returns any Successful Response
+   * @throws ApiError
+   */
+  public deleteInterviewScreen(
+    screenId: string,
+  ): CancelablePromise<any> {
+    return this.httpRequest.request({
+      method: 'DELETE',
+      url: '/api/interview_screens/{screen_id}',
+      path: {
+        'screen_id': screenId,
+      },
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
    * Create Interview Screen
    * @param requestBody
    * @returns SerializedInterviewScreenRead Successful Response

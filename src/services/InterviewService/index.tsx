@@ -59,6 +59,9 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     ): Promise<InterviewScreen.T> =>
       this.getStore().InterviewScreenAPI.createInterviewScreen(screen),
 
+    deleteInterviewScreen: (screenId: string): Promise<void> =>
+      this.getStore().InterviewScreenAPI.deleteInterviewScreen(screenId),
+
     getInterviewScreen: (
       screenId: string,
     ): Promise<InterviewScreen.WithChildrenT> =>

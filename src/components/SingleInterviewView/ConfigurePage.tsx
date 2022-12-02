@@ -98,22 +98,14 @@ function ConfigureCard({ interview }: Props): JSX.Element {
             <TextArea onChange={setDisplayedNotes} value={displayedNotes} />
           </LabelWrapper>
 
-          <span>
-            <div
-              className="mt-5"
-              style={{
-                display: 'flex',
-              }}
-            >
-              <div className="w-40">Starting State</div>
-              <MultiSelect
-                onChange={setStartingState}
-                placeholder="Add a stage"
-                selectedValues={startingState}
-                options={getOptions()}
-              />
-            </div>
-          </span>
+          <LabelWrapper inline label="Starting State" labelTextClassName="w-40">
+            <MultiSelect
+              onChange={setStartingState}
+              placeholder="Add a stage"
+              selectedValues={startingState}
+              options={getOptions()}
+            />
+          </LabelWrapper>
           <Button intent="primary" onClick={onSaveClick}>
             Save
           </Button>

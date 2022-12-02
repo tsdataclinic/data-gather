@@ -20,6 +20,7 @@ export interface InterviewServiceAPI {
     createInterviewScreen(
       screen: InterviewScreen.CreateT,
     ): Promise<InterviewScreen.T>;
+    deleteInterviewScreen(screenId: string): Promise<void>;
     getInterviewScreen(
       screenId: string,
     ): Promise<InterviewScreen.WithChildrenT>;

@@ -146,6 +146,18 @@ export default class LocalInterviewService
       return InterviewScreen.deserialize(serializedScreen);
     },
 
+    deleteInterviewScreen: async (screenId: string): Promise<void> => {
+      const screen = await this.InterviewScreenAPI.getInterviewScreen(screenId);
+      const { entries, actions } = screen;
+
+      // delete the related actions and entries
+      this.conditionalActions.bulkDelete(actions.map(action => action.id));
+      this.interviewScreenEntries.bulkDelete(entries.map(entry => entry.id));
+
+      // now delete the screen
+      this.interviewScreens.delete(screen.id);
+    },
+
     getInterviewScreen: async (
       screenId: string,
     ): Promise<InterviewScreen.WithChildrenT> => {
