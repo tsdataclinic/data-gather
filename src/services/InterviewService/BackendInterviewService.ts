@@ -6,7 +6,7 @@ import { FastAPIService } from '../../api/FastAPIService';
 export default class BackendInterviewService implements InterviewServiceAPI {
   private api = new FastAPIService();
 
-  InterviewAPI = {
+  interviewAPI = {
     createInterview: async (
       interview: Interview.CreateT,
     ): Promise<Interview.T> => {
@@ -55,7 +55,7 @@ export default class BackendInterviewService implements InterviewServiceAPI {
     },
   };
 
-  InterviewScreenAPI = {
+  interviewScreenAPI = {
     createInterviewScreen: async (
       screen: InterviewScreen.CreateT,
     ): Promise<InterviewScreen.T> => {

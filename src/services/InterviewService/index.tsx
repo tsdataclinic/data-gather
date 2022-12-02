@@ -27,51 +27,51 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     return this.isAuthenticated ? this.backendStore : this.localStore;
   }
 
-  InterviewAPI = {
+  interviewAPI = {
     createInterview: (interview: Interview.CreateT): Promise<Interview.T> =>
-      this.getStore().InterviewAPI.createInterview(interview),
+      this.getStore().interviewAPI.createInterview(interview),
 
     getAllInterviews: (): Promise<Interview.T[]> =>
-      this.getStore().InterviewAPI.getAllInterviews(),
+      this.getStore().interviewAPI.getAllInterviews(),
 
     getInterview: (interviewId: string): Promise<Interview.WithScreensT> =>
-      this.getStore().InterviewAPI.getInterview(interviewId),
+      this.getStore().interviewAPI.getInterview(interviewId),
 
     updateInterview: (
       interviewId: string,
       interview: Interview.UpdateT,
     ): Promise<Interview.T> =>
-      this.getStore().InterviewAPI.updateInterview(interviewId, interview),
+      this.getStore().interviewAPI.updateInterview(interviewId, interview),
 
     updateInterviewStartingState: (
       interviewId: string,
       startingScreenIds: readonly string[],
     ): Promise<Interview.WithScreensT> =>
-      this.getStore().InterviewAPI.updateInterviewStartingState(
+      this.getStore().interviewAPI.updateInterviewStartingState(
         interviewId,
         startingScreenIds,
       ),
   };
 
-  InterviewScreenAPI = {
+  interviewScreenAPI = {
     createInterviewScreen: (
       screen: InterviewScreen.CreateT,
     ): Promise<InterviewScreen.T> =>
-      this.getStore().InterviewScreenAPI.createInterviewScreen(screen),
+      this.getStore().interviewScreenAPI.createInterviewScreen(screen),
 
     deleteInterviewScreen: (screenId: string): Promise<void> =>
-      this.getStore().InterviewScreenAPI.deleteInterviewScreen(screenId),
+      this.getStore().interviewScreenAPI.deleteInterviewScreen(screenId),
 
     getInterviewScreen: (
       screenId: string,
     ): Promise<InterviewScreen.WithChildrenT> =>
-      this.getStore().InterviewScreenAPI.getInterviewScreen(screenId),
+      this.getStore().interviewScreenAPI.getInterviewScreen(screenId),
 
     updateInterviewScreen: (
       screenId: string,
       screen: InterviewScreen.UpdateT,
     ): Promise<InterviewScreen.WithChildrenT> =>
-      this.getStore().InterviewScreenAPI.updateInterviewScreen(
+      this.getStore().interviewScreenAPI.updateInterviewScreen(
         screenId,
         screen,
       ),

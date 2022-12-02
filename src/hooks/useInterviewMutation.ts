@@ -3,7 +3,7 @@ import {
   useQueryClient,
   type UseMutateFunction,
 } from '@tanstack/react-query';
-import useInterviewStore from './useInterviewStore';
+import useInterviewService from './useInterviewService';
 import type { InterviewServiceAPI } from '../services/InterviewService/InterviewServiceAPI';
 
 /**
@@ -38,7 +38,7 @@ export default function useInterviewMutation<
   invalidateQuery?: unknown[];
   mutation: (data: TVariables, api: InterviewServiceAPI) => Promise<TResponse>;
 }): UseMutateFunction<TResponse, unknown, TVariables> {
-  const api = useInterviewStore();
+  const api = useInterviewService();
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (data: TVariables) => options.mutation(data, api),

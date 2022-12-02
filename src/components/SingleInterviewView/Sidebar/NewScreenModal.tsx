@@ -22,7 +22,7 @@ export default function NewScreenModal({
 }: Props): JSX.Element {
   const createScreen = useInterviewMutation({
     mutation: (screen: InterviewScreen.CreateT, api: InterviewServiceAPI) =>
-      api.InterviewScreenAPI.createInterviewScreen(screen),
+      api.interviewScreenAPI.createInterviewScreen(screen),
     invalidateQuery: ['interviewScreens', interview.id],
   });
 

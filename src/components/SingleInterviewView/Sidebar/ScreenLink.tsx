@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { useState, useEffect } from 'react';
 import { NavLink, useMatch } from 'react-router-dom';
 import { Link as ScrollLink } from 'react-scroll';
-import useInterviewStore from '../../../hooks/useInterviewStore';
+import useInterviewService from '../../../hooks/useInterviewService';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import { actionTypeToDisplayString } from '../../../models/ConditionalAction';
 
@@ -23,7 +23,7 @@ export default function ScreenLink({
   const [selectedEntry, setSelectedEntry] = useState<string | undefined>(
     undefined,
   );
-  const interviewStore = useInterviewStore();
+  const interviewService = useInterviewService();
   const [fullScreen, setFullScreen] = useState<
     InterviewScreen.WithChildrenT | undefined
   >(undefined);
@@ -32,12 +32,12 @@ export default function ScreenLink({
     // TODO: replace this with a useQuery hook instead
     async function fetchAndSetFullScreen(screenId: string): Promise<void> {
       const screenWithChildren =
-        await interviewStore.InterviewScreenAPI.getInterviewScreen(screenId);
+        await interviewService.interviewScreenAPI.getInterviewScreen(screenId);
       setFullScreen(screenWithChildren);
     }
 
     fetchAndSetFullScreen(screen.id);
-  }, [interviewStore, screen]);
+  }, [interviewService, screen]);
 
   const screenMenuItemClass = classNames(
     'flex text-slate-600 flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full hover:text-blue-700 transition-colors duration-200',

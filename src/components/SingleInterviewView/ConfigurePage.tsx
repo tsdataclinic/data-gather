@@ -24,8 +24,8 @@ async function saveUpdatedScreen(
   api: InterviewServiceAPI,
 ): Promise<void> {
   await Promise.all([
-    api.InterviewAPI.updateInterview(data.interview.id, data.interview),
-    api.InterviewAPI.updateInterviewStartingState(
+    api.interviewAPI.updateInterview(data.interview.id, data.interview),
+    api.interviewAPI.updateInterviewStartingState(
       data.interview.id,
       data.startingState,
     ),

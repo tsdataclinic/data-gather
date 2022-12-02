@@ -32,7 +32,7 @@ export default function ScreenToolbar({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const deleteInterview = useInterviewMutation({
     mutation: (screenId: string, api: InterviewServiceAPI) =>
-      api.InterviewScreenAPI.deleteInterviewScreen(screenId),
+      api.interviewScreenAPI.deleteInterviewScreen(screenId),
   });
   const navigate = useNavigate();
 

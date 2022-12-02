@@ -38,7 +38,7 @@ export default class LocalInterviewService
     });
   }
 
-  InterviewAPI = {
+  interviewAPI = {
     createInterview: async (
       interview: Interview.CreateT,
     ): Promise<Interview.T> => {
@@ -125,7 +125,7 @@ export default class LocalInterviewService
     },
   };
 
-  InterviewScreenAPI = {
+  interviewScreenAPI = {
     createInterviewScreen: async (
       screen: InterviewScreen.CreateT,
     ): Promise<InterviewScreen.T> => {
@@ -147,7 +147,7 @@ export default class LocalInterviewService
     },
 
     deleteInterviewScreen: async (screenId: string): Promise<void> => {
-      const screen = await this.InterviewScreenAPI.getInterviewScreen(screenId);
+      const screen = await this.interviewScreenAPI.getInterviewScreen(screenId);
       const { entries, actions } = screen;
 
       // delete the related actions and entries
