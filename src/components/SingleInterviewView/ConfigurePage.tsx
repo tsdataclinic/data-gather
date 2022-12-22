@@ -1,5 +1,6 @@
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { MixedCheckbox } from '@reach/checkbox';
 import * as React from 'react';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
 import * as Interview from '../../models/Interview';
@@ -7,6 +8,7 @@ import LabelWrapper from '../ui/LabelWrapper';
 import TextArea from '../ui/TextArea';
 import MultiSelect from '../ui/MultiSelect';
 import Button from '../ui/Button';
+import InputText from '../ui/InputText';
 import { useToast } from '../ui/Toast';
 import useInterviewMutation, {
   type InterviewServiceAPI,
@@ -104,56 +106,38 @@ function ConfigureCard({ interview }: Props): JSX.Element {
           >
             <TextArea onChange={setDisplayedNotes} value={displayedNotes} />
           </LabelWrapper>
-          <span>
-            <div
-              className="mt-5"
-              style={{
-                display: 'flex',
-              }}
-            >
-              <div className="w-40">Starting State</div>
-              <LabelWrapper
-                inline
-                label="Starting State"
-                labelTextClassName="w-40"
-              >
-                <MultiSelect
-                  onChange={setStartingState}
-                  placeholder="Add a stage"
-                  selectedValues={startingState}
-                  options={getOptions()}
-                />
-              </LabelWrapper>
-            </div>
-            <br />
-            <div>
-              <input
-                type="checkbox"
-                id="publish"
-                onChange={e => setPublish(e.target.checked)}
-                checked={publish}
+
+          <LabelWrapper inline label="Starting State" labelTextClassName="w-40">
+            <MultiSelect
+              onChange={setStartingState}
+              placeholder="Add a stage"
+              selectedValues={startingState}
+              options={getOptions()}
+            />
+          </LabelWrapper>
+
+          <LabelWrapper
+            inline
+            label="Publish interview"
+            labelTextClassName="w-40"
+            inlineContainerStyles={{ verticalAlign: 'text-top' }}
+          >
+            <MixedCheckbox
+              onChange={e => setPublish(e.target.checked)}
+              checked={publish}
+            />
+          </LabelWrapper>
+
+          {publish && (
+            <LabelWrapper inline label="Vanity Url" labelTextClassName="w-40">
+              <InputText
+                required
+                onChange={e => setVanityUrl(e)}
+                value={vanityUrl}
               />
-              <label htmlFor="publish" style={{ paddingLeft: '10px' }}>
-                Publish interview
-              </label>
-            </div>
-            <br />
-            {publish && (
-              <div>
-                <input
-                  type="text"
-                  id="vanityUrl"
-                  className="border border-gray-200 bg-white p-4"
-                  style={{ height: '5px' }}
-                  onChange={e => setVanityUrl(e.target.value)}
-                  value={vanityUrl}
-                />
-                <label htmlFor="vanityUrl" style={{ paddingLeft: '10px' }}>
-                  Vanity Url
-                </label>
-              </div>
-            )}
-          </span>
+            </LabelWrapper>
+          )}
+
           <Button intent="primary" onClick={onSaveClick}>
             Save
           </Button>

@@ -40,7 +40,7 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     getInterviewByVanityUrl: (
       vanityUrl: string,
     ): Promise<Interview.WithScreensT> =>
-      this.getStore().InterviewAPI.getInterviewByVanityUrl(vanityUrl),
+      this.getStore().interviewAPI.getInterviewByVanityUrl(vanityUrl),
 
     updateInterview: (
       interviewId: string,

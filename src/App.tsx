@@ -34,7 +34,7 @@ export default function App(): JSX.Element {
                     element={<SingleInterviewView />}
                   />
                   <Route
-                    path="/interview/vanity/:vanityUrl*"
+                    path="/published/:vanityUrl/*"
                     element={<PublishInterviewView />}
                   />
                 </Routes>

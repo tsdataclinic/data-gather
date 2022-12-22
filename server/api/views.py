@@ -97,13 +97,7 @@ azure_scheme = B2CMultiTenantAuthorizationCodeBearer(
     validate_iss=False,
 )
 
-
-def get_session():
-    with Session(engine) as session:
-        yield session
-
 engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-
 
 def get_session():
     with Session(engine) as session:
@@ -178,7 +172,7 @@ def get_interview(
     return interview
 
 @app.get(
-    "/api/interviews/vanity-urls/{vanity_url}",
+    "/api/interviews/by-vanity-url/{vanity_url}",
     response_model=InterviewReadWithScreens,
     tags=["interviews"],
 )
@@ -186,9 +180,8 @@ def get_interview_by_vanity_url(vanity_url: str, session: Session = Depends(get_
     """Get a published Interview by it's vanity url"""
     try:
         interview = session.exec(
-            select(Interview).where(Interview.vanity_url == vanity_url).where(Interview.published == 1)        
+            select(Interview).where(Interview.vanity_url == vanity_url).where(Interview.published)        
         ).one()
-        print(select(Interview).where(Interview.vanity_url == vanity_url).where(Interview.published == 1))
     except NoResultFound:
         raise HTTPException(status_code=404, detail=f"Interview not found with {vanity_url} vanity url")
   

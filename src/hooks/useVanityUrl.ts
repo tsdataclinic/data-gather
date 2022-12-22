@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import * as Interview from '../models/Interview';
-import useInterviewStore from './useInterviewStore';
+import useInterviewService from './useInterviewService';
 
 /**
  * Fetch an interview given an vanity url.
@@ -13,14 +13,14 @@ import useInterviewStore from './useInterviewStore';
 export default function useVanityUrl(
   vanityUrl: string | undefined,
 ): Interview.WithScreensT | undefined {
-  const interviewStore = useInterviewStore();
+  const interviewService = useInterviewService();
 
   // load interview from backend
   const { data: interviewFromStorage } = useQuery({
     queryKey: ['vanityUrl', vanityUrl],
     queryFn: () =>
       vanityUrl
-        ? interviewStore.InterviewAPI.getInterviewByVanityUrl(vanityUrl)
+        ? interviewService.interviewAPI.getInterviewByVanityUrl(vanityUrl)
         : undefined,
   });
 
