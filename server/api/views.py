@@ -167,7 +167,7 @@ def create_interview(
 @app.get(
     "/api/interviews/{interview_id}",
     response_model=InterviewReadWithScreens,
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def get_interview(
     interview_id: str, session: Session = Depends(get_session)
@@ -180,7 +180,7 @@ def get_interview(
 @app.get(
     "/api/interviews/vanity-urls/{vanity_url}",
     response_model=InterviewReadWithScreens,
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def get_interview_by_vanity_url(vanity_url: str, session: Session = Depends(get_session)) -> Interview:
     """Get a published Interview by it's vanity url"""
@@ -198,7 +198,7 @@ def get_interview_by_vanity_url(vanity_url: str, session: Session = Depends(get_
 @app.put(
     "/api/interviews/{interview_id}",
     response_model=InterviewRead,
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def update_interview(
     interview_id: str,
@@ -230,7 +230,7 @@ def update_interview(
 @app.post(
     "/api/interviews/{interview_id}/starting_state",
     response_model=InterviewReadWithScreens,
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def update_interview_starting_state(
     *,
@@ -274,7 +274,7 @@ def update_interview_starting_state(
 @app.get(
     "/api/interviews/",
     response_model=list[InterviewRead],
-    tags=["Interviews"],
+    tags=["interviews"],
 )
 def get_interviews(session: Session = Depends(get_session)) -> list[Interview]:
     interviews = session.exec(select(Interview).limit(100)).all()
