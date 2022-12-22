@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import * as InterviewScreen from '../models/InterviewScreen';
 import useAppDispatch from './useAppDispatch';
-import useInterviewStore from './useInterviewStore';
+import useInterviewService from './useInterviewService';
 
 /**
  * Fetch all interview screens linked to a given interview.
@@ -16,7 +16,7 @@ export default function useInterviewScreens(
   interviewId: string | undefined,
 ): InterviewScreen.WithChildrenT[] | undefined {
   const dispatch = useAppDispatch();
-  const interviewStore = useInterviewStore();
+  const interviewService = useInterviewService();
 
   // load interview screens from backend
   const { data: screensFromStorage } = useQuery({
@@ -26,12 +26,12 @@ export default function useInterviewScreens(
       if (interviewId === undefined) {
         return undefined;
       }
-      const interview = await interviewStore.InterviewAPI.getInterview(
+      const interview = await interviewService.interviewAPI.getInterview(
         interviewId,
       );
       return Promise.all(
         interview.screens.map(screen =>
-          interviewStore.InterviewScreenAPI.getInterviewScreen(screen.id),
+          interviewService.interviewScreenAPI.getInterviewScreen(screen.id),
         ),
       );
     },

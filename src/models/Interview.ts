@@ -45,6 +45,15 @@ export function getRunUrl(interview: Interview): string {
 }
 
 /**
+ * Returns a URL for the configure page of an interview.
+ */
+export function getConfigurePageURL(interviewOrId: Interview | string): string {
+  const interviewId =
+    typeof interviewOrId === 'string' ? interviewOrId : interviewOrId.id;
+  return `/interview/${interviewId}/configure`;
+}
+
+/**
  * Create a new empty interview
  */
 export function create(values: {

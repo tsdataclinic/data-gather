@@ -1,5 +1,4 @@
 export enum EnvVar {
-  APIBaseURL = 'REACT_APP_INTERVIEW_APP_API_BASE_URL',
   AirtableConfigJSON = 'REACT_APP_AIRTABLE_CONFIG_JSON',
 }
 /**

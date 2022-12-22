@@ -3,13 +3,13 @@ import { useState } from 'react';
 import Button from '../ui/Button';
 import InterviewCard from './InterviewCard';
 import NewInterviewModal from './NewInterviewModal';
-import useInterviewStore from '../../hooks/useInterviewStore';
+import useInterviewService from '../../hooks/useInterviewService';
 
 export default function AllInterviewsView(): JSX.Element {
-  const interviewStore = useInterviewStore();
+  const interviewService = useInterviewService();
   const { data: allInterviews = [], isError } = useQuery({
     queryKey: ['allInterviews'],
-    queryFn: interviewStore.InterviewAPI.getAllInterviews,
+    queryFn: interviewService.interviewAPI.getAllInterviews,
   });
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

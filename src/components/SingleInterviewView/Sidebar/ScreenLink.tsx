@@ -1,22 +1,17 @@
-import {
-  faGear,
-  faLocationArrow,
-  faPenToSquare,
-  faQuestion,
-} from '@fortawesome/free-solid-svg-icons';
+import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
 import { useState, useEffect } from 'react';
 import { NavLink, useMatch } from 'react-router-dom';
 import { Link as ScrollLink } from 'react-scroll';
-import useInterviewStore from '../../../hooks/useInterviewStore';
+import useInterviewService from '../../../hooks/useInterviewService';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import { actionTypeToDisplayString } from '../../../models/ConditionalAction';
 
 type Props = {
   isSelected: boolean;
   onScreenSelect: (screenId: string) => void;
-  screen: InterviewScreen.T | 'configure';
+  screen: InterviewScreen.T;
 };
 
 export default function ScreenLink({
@@ -24,11 +19,11 @@ export default function ScreenLink({
   onScreenSelect,
   screen,
 }: Props): JSX.Element {
-  const screenPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
+  const interviewPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
   const [selectedEntry, setSelectedEntry] = useState<string | undefined>(
     undefined,
   );
-  const interviewStore = useInterviewStore();
+  const interviewService = useInterviewService();
   const [fullScreen, setFullScreen] = useState<
     InterviewScreen.WithChildrenT | undefined
   >(undefined);
@@ -37,16 +32,12 @@ export default function ScreenLink({
     // TODO: replace this with a useQuery hook instead
     async function fetchAndSetFullScreen(screenId: string): Promise<void> {
       const screenWithChildren =
-        await interviewStore.InterviewScreenAPI.getInterviewScreen(screenId);
+        await interviewService.interviewScreenAPI.getInterviewScreen(screenId);
       setFullScreen(screenWithChildren);
     }
 
-    if (screen !== 'configure') {
-      fetchAndSetFullScreen(screen.id);
-    } else {
-      setFullScreen(undefined);
-    }
-  }, [interviewStore, screen]);
+    fetchAndSetFullScreen(screen.id);
+  }, [interviewService, screen]);
 
   const screenMenuItemClass = classNames(
     'flex text-slate-600 flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full hover:text-blue-700 transition-colors duration-200',
@@ -61,30 +52,21 @@ export default function ScreenLink({
       { 'bg-blue-100': selectedEntry === id },
     );
 
-  if (screen === 'configure') {
-    return (
-      <NavLink
-        className={screenMenuItemClass}
-        to={`${screenPath}/configure`}
-        onClick={() => onScreenSelect('configure')}
-      >
-        <FontAwesomeIcon size="1x" icon={faGear} />
-        Configure
-      </NavLink>
-    );
-  }
-
   return (
     <div className="w-full" key={screen.id}>
       <NavLink
         className={screenMenuItemClass}
-        to={`${screenPath}/screen/${screen.id}`}
+        to={`${interviewPath}/screen/${screen.id}`}
         onClick={() => {
           onScreenSelect(screen.id);
           setSelectedEntry(undefined);
         }}
       >
-        <FontAwesomeIcon size="1x" icon={faPenToSquare} />
+        <FontAwesomeIcon
+          size="1x"
+          className="pr-2.5"
+          icon={IconType.faPenToSquare}
+        />
         {screen.title}
       </NavLink>
 
@@ -99,7 +81,7 @@ export default function ScreenLink({
             containerId="scrollContainer"
             onClick={() => setSelectedEntry('HEADER')}
           >
-            <FontAwesomeIcon size="1x" icon={faGear} />
+            <FontAwesomeIcon size="1x" icon={IconType.faGear} />
             Header
           </ScrollLink>
 
@@ -114,7 +96,7 @@ export default function ScreenLink({
               containerId="scrollContainer"
               onClick={() => setSelectedEntry(entry.id)}
             >
-              <FontAwesomeIcon size="1x" icon={faQuestion} />
+              <FontAwesomeIcon size="1x" icon={IconType.faQuestion} />
               {entry.name}
             </ScrollLink>
           ))}
@@ -130,7 +112,7 @@ export default function ScreenLink({
               containerId="scrollContainer"
               onClick={() => setSelectedEntry('ACTION')}
             >
-              <FontAwesomeIcon size="1x" icon={faLocationArrow} />
+              <FontAwesomeIcon size="1x" icon={IconType.faLocationArrow} />
               Action: {actionTypeToDisplayString(action.actionConfig.type)}
             </ScrollLink>
           ))}

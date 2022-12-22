@@ -20,7 +20,7 @@ export default function NewInterviewModal({
 }: Props): JSX.Element {
   const createInterview = useInterviewMutation({
     mutation: (interview: Interview.CreateT, api: InterviewServiceAPI) =>
-      api.InterviewAPI.createInterview(interview),
+      api.interviewAPI.createInterview(interview),
     invalidateQuery: ['allInterviews'],
   });
 

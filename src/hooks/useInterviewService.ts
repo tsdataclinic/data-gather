@@ -3,12 +3,12 @@ import { useContext } from 'react';
 import InterviewService from '../services/InterviewService';
 import type { InterviewServiceAPI } from '../services/InterviewService/InterviewServiceAPI';
 
-export default function useInterviewStore(): InterviewServiceAPI {
-  const interviewStoreClient = useContext(InterviewService.Context);
+export default function useInterviewService(): InterviewServiceAPI {
+  const interviewService = useContext(InterviewService.Context);
   invariant(
-    interviewStoreClient,
+    interviewService,
     'Could not find an instance of InterviewStoreAPI.',
   );
 
-  return interviewStoreClient;
+  return interviewService;
 }

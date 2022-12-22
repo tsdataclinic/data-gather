@@ -24,8 +24,8 @@ async function saveUpdatedInterview(
   api: InterviewServiceAPI,
 ): Promise<void> {
   await Promise.all([
-    api.InterviewAPI.updateInterview(data.interview.id, data.interview),
-    api.InterviewAPI.updateInterviewStartingState(
+    api.interviewAPI.updateInterview(data.interview.id, data.interview),
+    api.interviewAPI.updateInterviewStartingState(
       data.interview.id,
       data.startingState,
     ),
@@ -104,7 +104,6 @@ function ConfigureCard({ interview }: Props): JSX.Element {
           >
             <TextArea onChange={setDisplayedNotes} value={displayedNotes} />
           </LabelWrapper>
-
           <span>
             <div
               className="mt-5"
@@ -113,12 +112,18 @@ function ConfigureCard({ interview }: Props): JSX.Element {
               }}
             >
               <div className="w-40">Starting State</div>
-              <MultiSelect
-                onChange={setStartingState}
-                placeholder="Add a stage"
-                selectedValues={startingState}
-                options={getOptions()}
-              />
+              <LabelWrapper
+                inline
+                label="Starting State"
+                labelTextClassName="w-40"
+              >
+                <MultiSelect
+                  onChange={setStartingState}
+                  placeholder="Add a stage"
+                  selectedValues={startingState}
+                  options={getOptions()}
+                />
+              </LabelWrapper>
             </div>
             <br />
             <div>

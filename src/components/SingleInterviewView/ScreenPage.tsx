@@ -5,7 +5,7 @@ import * as Interview from '../../models/Interview';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import ActionCard, { type EditableAction } from './ActionCard';
 import EntryCard, { type EditableEntry } from './EntryCard';
-import useInterviewStore from '../../hooks/useInterviewStore';
+import useInterviewService from '../../hooks/useInterviewService';
 import HeaderCard from './HeaderCard';
 import ScreenToolbar from './ScreenToolbar';
 import ScrollArea from '../ui/ScrollArea';
@@ -32,7 +32,7 @@ function ScreenCard({
   interview,
 }: Props): JSX.Element {
   const toaster = useToast();
-  const interviewStore = useInterviewStore();
+  const interviewService = useInterviewService();
   const dispatch = useAppDispatch();
 
   const [isNewEntryModelOpen, setIsNewEntryModalOpen] =
@@ -137,7 +137,7 @@ function ScreenCard({
 
     if (allFormsValid) {
       const updatedScreen =
-        await interviewStore.InterviewScreenAPI.updateInterviewScreen(
+        await interviewService.interviewScreenAPI.updateInterviewScreen(
           screen.id,
           { ...screen, actions: allActions, entries: allEntries },
         );
@@ -148,7 +148,7 @@ function ScreenCard({
       });
       toaster.notifySuccess('Saved!', `Successfully saved ${screen.title}`);
     }
-  }, [allActions, screen, interviewStore, allEntries, dispatch, toaster]);
+  }, [allActions, screen, interviewService, allEntries, dispatch, toaster]);
 
   function formRefSetter(formKey: string): React.RefCallback<HTMLFormElement> {
     return (formElt: HTMLFormElement) => {

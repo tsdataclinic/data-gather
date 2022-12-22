@@ -2,7 +2,7 @@ import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
 
 export interface InterviewServiceAPI {
-  InterviewAPI: {
+  interviewAPI: {
     createInterview(interview: Interview.CreateT): Promise<Interview.T>;
     getAllInterviews(): Promise<Interview.T[]>;
     getInterview(interviewId: string): Promise<Interview.WithScreensT>;
@@ -17,10 +17,11 @@ export interface InterviewServiceAPI {
     ): Promise<Interview.WithScreensT>;
   };
 
-  InterviewScreenAPI: {
+  interviewScreenAPI: {
     createInterviewScreen(
       screen: InterviewScreen.CreateT,
     ): Promise<InterviewScreen.T>;
+    deleteInterviewScreen(screenId: string): Promise<void>;
     getInterviewScreen(
       screenId: string,
     ): Promise<InterviewScreen.WithChildrenT>;

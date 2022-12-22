@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import * as Interview from '../models/Interview';
 import useAppDispatch from './useAppDispatch';
 import useAppState from './useAppState';
-import useInterviewStore from './useInterviewStore';
+import useInterviewService from './useInterviewService';
 
 /**
  * Fetch an interview given an interview id.
@@ -17,14 +17,14 @@ export default function useInterview(
   id: string | undefined,
 ): Interview.WithScreensT | undefined {
   const dispatch = useAppDispatch();
-  const interviewStore = useInterviewStore();
+  const interviewService = useInterviewService();
   const { loadedInterviews } = useAppState();
 
   // load interview from backend
   const { data: interviewFromStorage } = useQuery({
     queryKey: ['interview', id],
     queryFn: () =>
-      id ? interviewStore.InterviewAPI.getInterview(id) : undefined,
+      id ? interviewService.interviewAPI.getInterview(id) : undefined,
   });
 
   // if the interviewFromStorage has changed then we should update it in

@@ -332,6 +332,35 @@ def create_interview_screen(
     return db_screen
 
 
+@app.delete(
+    "/api/interview_screens/{screen_id}",
+    response_model=None,
+    tags=["interviewScreens"],
+)
+def delete_interview_screen(
+    *,
+    session: Session = Depends(get_session),
+    screen_id: str,
+) -> None:
+    db_screen = session.get(InterviewScreen, screen_id)
+    if not db_screen:
+        raise HTTPException(status_code=404, detail="Screen not found")
+
+    # delete the related entries
+    for db_entry in db_screen.entries:
+        session.delete(db_entry)
+
+    # delete the related actions
+    for db_action in db_screen.actions:
+        session.delete(db_action)
+
+    session.delete(db_screen)
+    try:
+        session.commit()
+    except IntegrityError as e:
+        raise HTTPException(status_code=400, detail=str(e.orig))
+
+
 @app.put(
     "/api/interview_screens/{screen_id}",
     response_model=InterviewScreenReadWithChildren,
