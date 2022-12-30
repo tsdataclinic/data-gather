@@ -1,9 +1,13 @@
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
+import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 
 export interface InterviewServiceAPI {
   interviewAPI: {
     createInterview(interview: Interview.CreateT): Promise<Interview.T>;
+    getAllEntries(
+      interviewId: string,
+    ): Promise<InterviewScreenEntry.WithScreenT[]>;
     getAllInterviews(): Promise<Interview.T[]>;
     getInterview(interviewId: string): Promise<Interview.WithScreensT>;
     getInterviewByVanityUrl(vanityUrl: string): Promise<Interview.WithScreensT>;

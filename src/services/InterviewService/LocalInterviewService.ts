@@ -53,6 +53,26 @@ export default class LocalInterviewService
       return Interview.deserialize(serializedInterview);
     },
 
+    getAllEntries: async (
+      interviewId: string,
+    ): Promise<InterviewScreenEntry.WithScreenT[]> => {
+      const { screens } = await this.interviewAPI.getInterview(interviewId);
+
+      const promises = screens.map(async screen => {
+        const serializedEntries = await this.interviewScreenEntries
+          .where({ screenId: screen.id })
+          .toArray();
+        const entries = serializedEntries.map(InterviewScreenEntry.deserialize);
+        return entries.map(entry => ({
+          ...entry,
+          screen,
+        }));
+      });
+
+      const entries = await Promise.all(promises);
+      return entries.flat();
+    },
+
     getAllInterviews: async (): Promise<Interview.T[]> => {
       const serializedInterviews = await this.interviews.toArray();
       return serializedInterviews.map(Interview.deserialize);
@@ -63,7 +83,7 @@ export default class LocalInterviewService
     ): Promise<Interview.WithScreensT> => {
       const interview = await this.interviews.get(interviewId);
       if (interview) {
-        const screens = await this.interviewAPI.getScreensofInterview(
+        const screens = await this.interviewAPI.getScreensOfInterview(
           interviewId,
         );
         return Interview.deserialize({ ...interview, screens });
@@ -77,7 +97,7 @@ export default class LocalInterviewService
       const interview = await this.interviews.where({ vanityUrl }).toArray();
       if (interview) {
         const interviewId = interview[0].id;
-        const screens = await this.interviewAPI.getScreensofInterview(
+        const screens = await this.interviewAPI.getScreensOfInterview(
           interviewId,
         );
         return Interview.deserialize({ ...interview[0], screens });
@@ -107,7 +127,7 @@ export default class LocalInterviewService
     ): Promise<Interview.WithScreensT> => {
       const serializedInterview = await this.interviews.get(interviewId);
       if (serializedInterview) {
-        const screens = await this.interviewAPI.getScreensofInterview(
+        const screens = await this.interviewAPI.getScreensOfInterview(
           interviewId,
         );
 
@@ -137,7 +157,7 @@ export default class LocalInterviewService
       throw new Error(`Could not find an interview with id '${interviewId}'`);
     },
 
-    getScreensofInterview: async (
+    getScreensOfInterview: async (
       interviewId: string,
     ): Promise<InterviewScreen.SerializedT[]> => {
       // get screens for this interview

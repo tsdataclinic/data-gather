@@ -3,6 +3,8 @@ import assertUnreachable from '../util/assertUnreachable';
 import { SerializedInterviewScreenEntryRead } from '../api/models/SerializedInterviewScreenEntryRead';
 import { SerializedInterviewScreenEntryCreate } from '../api/models/SerializedInterviewScreenEntryCreate';
 import { ResponseType } from '../api/models/ResponseType';
+import type * as InterviewScreen from './InterviewScreen';
+import { SerializedInterviewScreenEntryReadWithScreen } from '../api/models/SerializedInterviewScreenEntryReadWithScreen';
 
 export type AirtableOptions = {
   selectedBase: string;
@@ -54,6 +56,10 @@ interface InterviewScreenEntry {
   readonly writebackOptions?: AirtableOptions;
 }
 
+interface InterviewScreenEntryWithScreen extends InterviewScreenEntry {
+  readonly screen: InterviewScreen.T;
+}
+
 type InterviewScreenEntryCreate = Omit<InterviewScreenEntry, 'id'> & {
   /**
    * A temp id used only for identification purposes in the frontend (e.g.
@@ -84,6 +90,12 @@ export function createDefaultAirtableOptions(): AirtableOptions {
 export function deserialize(
   rawObj: SerializedInterviewScreenEntryRead,
 ): InterviewScreenEntry {
+  return rawObj;
+}
+
+export function deserializeWithScreen(
+  rawObj: SerializedInterviewScreenEntryReadWithScreen,
+): InterviewScreenEntryWithScreen {
   return rawObj;
 }
 
@@ -159,5 +171,6 @@ export function responseTypeStringToEnum(
 
 export { ResponseType };
 export type { InterviewScreenEntry as T };
+export type { InterviewScreenEntryWithScreen as WithScreenT };
 export type { InterviewScreenEntryCreate as CreateT };
 export type { SerializedInterviewScreenEntryRead as SerializedT };

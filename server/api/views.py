@@ -18,16 +18,25 @@ from server.engine import create_fk_constraint_engine
 from server.init_db import SQLITE_DB_PATH
 from server.models.common import OrderedModel
 from server.models.conditional_action import ConditionalAction
-from server.models.interview import (Interview, InterviewCreate, InterviewRead,
-                                     InterviewReadWithScreens, InterviewUpdate,
-                                     ValidationError)
-from server.models.interview_screen import (InterviewScreen,
-                                            InterviewScreenCreate,
-                                            InterviewScreenRead,
-                                            InterviewScreenReadWithChildren,
-                                            InterviewScreenUpdate)
+from server.models.interview import (
+    Interview,
+    InterviewCreate,
+    InterviewRead,
+    InterviewReadWithScreens,
+    InterviewUpdate,
+    ValidationError,
+)
+from server.models.interview_screen import (
+    InterviewScreen,
+    InterviewScreenCreate,
+    InterviewScreenRead,
+    InterviewScreenReadWithChildren,
+    InterviewScreenUpdate,
+)
 from server.models.interview_screen_entry import (
-    InterviewScreenEntry, InterviewScreenEntryReadWithScreen)
+    InterviewScreenEntry,
+    InterviewScreenEntryReadWithScreen,
+)
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -189,13 +198,10 @@ def get_interview_by_vanity_url(
 def get_interview_entries(
     interview_id: str, session: Session = Depends(get_session)
 ) -> list[InterviewScreenEntry]:
-    screens = session.exec(
-        select(InterviewScreen).where(InterviewScreen.interview_id == interview_id)
-    ).all()
+    interview = get_interview(interview_id=interview_id, session=session)
     entries: list[InterviewScreenEntry] = []
-    for screen in screens:
-        for entry in screen.entries:
-            entries.append(entry)
+    for screen in interview.screens:
+        entries.extend(screen.entries)
     return entries
 
 

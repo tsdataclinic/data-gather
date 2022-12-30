@@ -1,5 +1,6 @@
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
+import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import { InterviewServiceAPI } from './InterviewServiceAPI';
 import { FastAPIService } from '../../api/FastAPIService';
 
@@ -13,8 +14,16 @@ export default class BackendInterviewService implements InterviewServiceAPI {
       const serializedInterview = await this.api.interviews.createInterview(
         interview,
       );
-
       return Interview.deserialize(serializedInterview);
+    },
+
+    getAllEntries: async (
+      interviewId: string,
+    ): Promise<InterviewScreenEntry.WithScreenT[]> => {
+      const serializedEntries = await this.api.interviews.getInterviewEntries(
+        interviewId,
+      );
+      return serializedEntries.map(InterviewScreenEntry.deserializeWithScreen);
     },
 
     getAllInterviews: async (): Promise<Interview.T[]> => {
