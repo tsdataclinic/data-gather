@@ -34,7 +34,7 @@ export default class LocalInterviewService
       conditionalActions: '++id, screenId',
       interviewScreenEntries: '++id, screenId',
       interviewScreens: '++id, interviewId',
-      interviews: '++id',
+      interviews: '++id, vanityUrl',
     });
   }
 
@@ -63,14 +63,28 @@ export default class LocalInterviewService
     ): Promise<Interview.WithScreensT> => {
       const interview = await this.interviews.get(interviewId);
       if (interview) {
-        // get screens for this interview
-        const screens = await this.interviewScreens
-          .where({ interviewId })
-          .toArray();
-        screens.sort((scr1, scr2) => scr1.order - scr2.order);
+        const screens = await this.interviewAPI.getScreensofInterview(
+          interviewId,
+        );
         return Interview.deserialize({ ...interview, screens });
       }
       throw new Error(`Could not find an interview with id '${interviewId}'`);
+    },
+
+    getInterviewByVanityUrl: async (
+      vanityUrl: string,
+    ): Promise<Interview.WithScreensT> => {
+      const interview = await this.interviews.where({ vanityUrl }).toArray();
+      if (interview) {
+        const interviewId = interview[0].id;
+        const screens = await this.interviewAPI.getScreensofInterview(
+          interviewId,
+        );
+        return Interview.deserialize({ ...interview[0], screens });
+      }
+      throw new Error(
+        `Could not find an interview with vanity url '${vanityUrl}'`,
+      );
     },
 
     updateInterview: async (
@@ -93,10 +107,9 @@ export default class LocalInterviewService
     ): Promise<Interview.WithScreensT> => {
       const serializedInterview = await this.interviews.get(interviewId);
       if (serializedInterview) {
-        // get screens for this interview
-        const screens = await this.interviewScreens
-          .where({ interviewId })
-          .toArray();
+        const screens = await this.interviewAPI.getScreensofInterview(
+          interviewId,
+        );
 
         // map each starting screen id to its index
         const startingScreenToIdx: Record<string, number> = {};
@@ -122,6 +135,17 @@ export default class LocalInterviewService
         });
       }
       throw new Error(`Could not find an interview with id '${interviewId}'`);
+    },
+
+    getScreensofInterview: async (
+      interviewId: string,
+    ): Promise<InterviewScreen.SerializedT[]> => {
+      // get screens for this interview
+      const screens = await this.interviewScreens
+        .where({ interviewId })
+        .toArray();
+      screens.sort((scr1, scr2) => scr1.order - scr2.order);
+      return screens;
     },
   };
 

@@ -2,7 +2,8 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { Routes, Route } from 'react-router-dom';
 import AllInterviewsView from './components/AllInterviewsView';
 import Header from './components/Header';
-import InterviewRunnerView from './components/InterviewRunnerView';
+import { InterviewRunnerViewRoute } from './components/InterviewRunnerView';
+import PublishInterviewView from './components/PublishedinterviewView';
 import SingleInterviewView from './components/SingleInterviewView';
 import InterviewService from './services/InterviewService';
 import { AppState, AppDispatch, useAppReducer } from './store/appState';
@@ -26,11 +27,15 @@ export default function App(): JSX.Element {
                   <Route path="/" element={<AllInterviewsView />} />
                   <Route
                     path="/interview/:interviewId/run"
-                    element={<InterviewRunnerView />}
+                    element={<InterviewRunnerViewRoute />}
                   />
                   <Route
                     path="/interview/:interviewId/*"
                     element={<SingleInterviewView />}
+                  />
+                  <Route
+                    path="/published/:vanityUrl/*"
+                    element={<PublishInterviewView />}
                   />
                 </Routes>
               </div>

@@ -6,6 +6,7 @@ export interface InterviewServiceAPI {
     createInterview(interview: Interview.CreateT): Promise<Interview.T>;
     getAllInterviews(): Promise<Interview.T[]>;
     getInterview(interviewId: string): Promise<Interview.WithScreensT>;
+    getInterviewByVanityUrl(vanityUrl: string): Promise<Interview.WithScreensT>;
     updateInterview(
       interviewId: string,
       interview: Interview.UpdateT,

@@ -37,6 +37,11 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     getInterview: (interviewId: string): Promise<Interview.WithScreensT> =>
       this.getStore().interviewAPI.getInterview(interviewId),
 
+    getInterviewByVanityUrl: (
+      vanityUrl: string,
+    ): Promise<Interview.WithScreensT> =>
+      this.getStore().interviewAPI.getInterviewByVanityUrl(vanityUrl),
+
     updateInterview: (
       interviewId: string,
       interview: Interview.UpdateT,

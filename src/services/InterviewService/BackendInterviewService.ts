@@ -31,6 +31,14 @@ export default class BackendInterviewService implements InterviewServiceAPI {
       return Interview.deserialize(serializedInterview);
     },
 
+    getInterviewByVanityUrl: async (
+      vanityUrl: string,
+    ): Promise<Interview.WithScreensT> => {
+      const serializedInterview =
+        await this.api.interviews.getInterviewByVanityUrl(vanityUrl);
+      return Interview.deserialize(serializedInterview);
+    },
+
     updateInterview: async (
       interviewId: string,
       interview: Interview.UpdateT,

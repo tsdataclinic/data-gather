@@ -38,9 +38,6 @@ from server.models.interview_screen_entry import InterviewScreenEntry
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-engine = create_fk_constraint_engine(SQLITE_DB_PATH)
-airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
-
 
 class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = ["http://localhost:3000"]
@@ -100,6 +97,7 @@ azure_scheme = B2CMultiTenantAuthorizationCodeBearer(
     validate_iss=False,
 )
 
+engine = create_fk_constraint_engine(SQLITE_DB_PATH)
 
 def get_session():
     with Session(engine) as session:
@@ -109,6 +107,15 @@ def get_session():
 @app.get("/hello")
 def hello_api():
     return {"message": "Hello World"}
+
+# Because the exception is raised on instantiation from the SQLAlchemy validator
+# we need to globally handle it
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: Request, exc: ValidationError):
+    return JSONResponse(
+        status_code=400,
+        content={"message": str(exc)},
+    )
 
 
 # Because the exception is raised on instantiation from the SQLAlchemy validator
@@ -162,6 +169,22 @@ def get_interview(
     interview = session.get(Interview, interview_id)
     if not interview:
         raise HTTPException(status_code=404, detail="Interview not found")
+    return interview
+
+@app.get(
+    "/api/interviews/by-vanity-url/{vanity_url}",
+    response_model=InterviewReadWithScreens,
+    tags=["interviews"],
+)
+def get_interview_by_vanity_url(vanity_url: str, session: Session = Depends(get_session)) -> Interview:
+    """Get a published Interview by it's vanity url"""
+    try:
+        interview = session.exec(
+            select(Interview).where(Interview.vanity_url == vanity_url).where(Interview.published)        
+        ).one()
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail=f"Interview not found with {vanity_url} vanity url")
+  
     return interview
 
 

@@ -1,5 +1,6 @@
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { MixedCheckbox } from '@reach/checkbox';
 import * as React from 'react';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
 import * as Interview from '../../models/Interview';
@@ -7,6 +8,7 @@ import LabelWrapper from '../ui/LabelWrapper';
 import TextArea from '../ui/TextArea';
 import MultiSelect from '../ui/MultiSelect';
 import Button from '../ui/Button';
+import InputText from '../ui/InputText';
 import { useToast } from '../ui/Toast';
 import useInterviewMutation, {
   type InterviewServiceAPI,
@@ -16,7 +18,7 @@ type Props = {
   interview: Interview.WithScreensT;
 };
 
-async function saveUpdatedScreen(
+async function saveUpdatedInterview(
   data: {
     interview: Interview.WithScreensT;
     startingState: readonly string[];
@@ -38,10 +40,12 @@ function ConfigureCard({ interview }: Props): JSX.Element {
   const [startingState, setStartingState] = React.useState<readonly string[]>(
     () => Interview.getStartingScreens(interview).map(screen => screen.id),
   );
+  const [publish, setPublish] = React.useState(() => interview.published);
+  const [vanityUrl, setVanityUrl] = React.useState(() => interview.vanityUrl);
 
   const [displayedNotes, setDisplayedNotes] = React.useState(interview.notes);
   const updateScreen = useInterviewMutation({
-    mutation: saveUpdatedScreen,
+    mutation: saveUpdatedInterview,
     invalidateQuery: ['interview', interview.id],
   });
 
@@ -49,7 +53,12 @@ function ConfigureCard({ interview }: Props): JSX.Element {
     updateScreen(
       {
         startingState,
-        interview: { ...interview, notes: displayedNotes },
+        interview: {
+          ...interview,
+          notes: displayedNotes,
+          published: publish,
+          vanityUrl,
+        },
       },
       {
         onSuccess: () =>
@@ -106,6 +115,29 @@ function ConfigureCard({ interview }: Props): JSX.Element {
               options={getOptions()}
             />
           </LabelWrapper>
+
+          <LabelWrapper
+            inline
+            label="Publish interview"
+            labelTextClassName="w-40"
+            inlineContainerStyles={{ verticalAlign: 'text-top' }}
+          >
+            <MixedCheckbox
+              onChange={e => setPublish(e.target.checked)}
+              checked={publish}
+            />
+          </LabelWrapper>
+
+          {publish && (
+            <LabelWrapper inline label="Vanity Url" labelTextClassName="w-40">
+              <InputText
+                required
+                onChange={e => setVanityUrl(e)}
+                value={vanityUrl}
+              />
+            </LabelWrapper>
+          )}
+
           <Button intent="primary" onClick={onSaveClick}>
             Save
           </Button>

@@ -63,8 +63,8 @@ export function create(values: {
   return {
     description: values.description,
     name: values.name,
-    notes: '',
     published: false,
+    notes: '',
   };
 }
 

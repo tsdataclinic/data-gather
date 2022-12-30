@@ -25,11 +25,12 @@ type ResponseData = {
 
 const api = new FastAPIService();
 
-/**
- * Runs an interview based on the ID of the interview in the URL params.
- */
-export default function InterviewRunnerView(): JSX.Element | null {
-  const { interviewId } = useParams();
+type Props = {
+  interviewId: string;
+};
+
+export function InterviewRunnerView(props: Props): JSX.Element | null {
+  const { interviewId } = props;
   const interview = useInterview(interviewId);
   const screens = useInterviewScreens(interviewId);
   const actions = useInterviewConditionalActions(interviewId);
@@ -170,4 +171,15 @@ export default function InterviewRunnerView(): JSX.Element | null {
       )}
     </div>
   );
+}
+
+/**
+ * Runs an interview based on the ID of the interview in the URL params.
+ */
+export function InterviewRunnerViewRoute(): JSX.Element | null {
+  const { interviewId } = useParams();
+  if (interviewId) {
+    return <InterviewRunnerView interviewId={interviewId} />;
+  }
+  return null;
 }

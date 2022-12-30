@@ -92,6 +92,28 @@ export class InterviewsFastAPIService {
   }
 
   /**
+   * Get Interview By Vanity Url
+   * Get a published Interview by it's vanity url
+   * @param vanityUrl
+   * @returns SerializedInterviewReadWithScreens Successful Response
+   * @throws ApiError
+   */
+  public getInterviewByVanityUrl(
+    vanityUrl: string,
+  ): CancelablePromise<SerializedInterviewReadWithScreens> {
+    return this.httpRequest.request({
+      method: 'GET',
+      url: '/api/interviews/vanity-urls/{vanity_url}',
+      path: {
+        'vanity_url': vanityUrl,
+      },
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
    * Update Interview Starting State
    * @param interviewId
    * @param requestBody
