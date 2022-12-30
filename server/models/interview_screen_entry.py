@@ -64,6 +64,12 @@ class InterviewScreenEntryRead(InterviewScreenEntryBase):
     id: uuid.UUID
 
 
+class InterviewScreenEntryReadWithScreen(InterviewScreenEntryRead):
+    """InterviewScreenEntry with a back pointer to the Screen it belongs to."""
+
+    screen: "InterviewScreen"
+
+
 # Handle circular imports
 from server.models.interview_screen import InterviewScreen
 

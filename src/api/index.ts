@@ -18,9 +18,11 @@ export type { SerializedConditionalActionRead } from './models/SerializedConditi
 export type { SerializedInterviewCreate } from './models/SerializedInterviewCreate';
 export type { SerializedInterviewRead } from './models/SerializedInterviewRead';
 export type { SerializedInterviewReadWithScreens } from './models/SerializedInterviewReadWithScreens';
+export type { SerializedInterviewScreen } from './models/SerializedInterviewScreen';
 export type { SerializedInterviewScreenCreate } from './models/SerializedInterviewScreenCreate';
 export type { SerializedInterviewScreenEntryCreate } from './models/SerializedInterviewScreenEntryCreate';
 export type { SerializedInterviewScreenEntryRead } from './models/SerializedInterviewScreenEntryRead';
+export type { SerializedInterviewScreenEntryReadWithScreen } from './models/SerializedInterviewScreenEntryReadWithScreen';
 export type { SerializedInterviewScreenRead } from './models/SerializedInterviewScreenRead';
 export type { SerializedInterviewScreenReadWithChildren } from './models/SerializedInterviewScreenReadWithChildren';
 export type { SerializedInterviewScreenUpdate } from './models/SerializedInterviewScreenUpdate';

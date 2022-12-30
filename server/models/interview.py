@@ -4,8 +4,8 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlmodel import Field, Relationship, UniqueConstraint
 from sqlalchemy.orm import validates
+from sqlmodel import Field, Relationship, UniqueConstraint
 
 from server.models_util import APIModel, update_module_forward_refs
 
