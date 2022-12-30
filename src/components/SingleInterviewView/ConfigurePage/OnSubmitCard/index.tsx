@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
+import { useQuery } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { v4 as uuidv4 } from 'uuid';
 import * as Interview from '../../../../models/Interview';
@@ -14,6 +15,7 @@ import {
   OnSubmitAction,
 } from './types';
 import EditRowActionBlock from './EditRowActionBlock';
+import useInterviewService from '../../../../hooks/useInterviewService';
 
 type Props = {
   interview: Interview.WithScreensT;
@@ -25,9 +27,14 @@ const ACTION_TYPE_OPTIONS = ON_SUBMIT_ACTION_TYPES.map(actionType => ({
 }));
 
 export default function OnSubmitCard({ interview }: Props): JSX.Element {
+  const interviewService = useInterviewService();
+  const { data: entries } = useQuery({
+    queryKey: ['interview', interview.id, 'entries'],
+    queryFn: () => interviewService.interviewAPI.getAllEntries(interview.id),
+  });
   const [actions, setActions] = React.useState<readonly OnSubmitAction[]>([]);
 
-  const onAddClick = (): void => {
+  const onAddClick = React.useCallback((): void => {
     setActions(prevActions =>
       prevActions.concat({
         id: uuidv4(),
@@ -36,12 +43,18 @@ export default function OnSubmitCard({ interview }: Props): JSX.Element {
         columnMappings: new Map(),
       }),
     );
-  };
+  }, []);
 
   const renderActionBlock = (action: OnSubmitAction): JSX.Element => {
     switch (action.type) {
       case OnSubmitActionType.EDIT_ROW:
-        return <EditRowActionBlock action={action} interview={interview} />;
+        return (
+          <EditRowActionBlock
+            action={action}
+            interview={interview}
+            entries={entries ?? []}
+          />
+        );
       case OnSubmitActionType.INSERT_ROW:
         return <div>Insert action</div>;
       default:

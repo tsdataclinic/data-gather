@@ -7,25 +7,25 @@ import LabelWrapper from '../../../ui/LabelWrapper';
 
 type Props = {
   action: EditRowAction;
+  entries: readonly InterviewScreenEntry.WithScreenT[];
   interview: Interview.WithScreensT;
 };
-
-const interviewEntries: readonly InterviewScreenEntry.T[] = [];
 
 export default function EditRowActionBlock({
   action,
   interview,
+  entries,
 }: Props): JSX.Element {
-  console.log(action, interview);
   const entryOptions = React.useMemo(
     () =>
-      interviewEntries.map(entry => ({
-        displayValue: entry.name,
+      entries.map(entry => ({
         value: entry.id,
+        displayValue: `${entry.screen.title} - ${entry.name}`,
       })),
-    [],
+    [entries],
   );
 
+  console.log(action, interview);
   return (
     <div className="space-y-4">
       <LabelWrapper label="What row would you like to edit?">
