@@ -5,6 +5,7 @@ import Dropdown from '../../../ui/Dropdown';
 import LabelWrapper from '../../../ui/LabelWrapper';
 import ColumnToQuestionMapBlock from './ColumnToQuestionMapBlock';
 import useAppState from '../../../../hooks/useAppState';
+import type { EntryId } from './types';
 
 type Props = {
   action: EditRowAction;
@@ -44,6 +45,15 @@ export default function EditRowActionBlock({
     });
   };
 
+  const onColumnMappingChange = (
+    columnMappings: ReadonlyMap<string, EntryId | undefined>,
+  ): void => {
+    onActionChange({
+      ...action,
+      columnMappings,
+    });
+  };
+
   return (
     <div className="space-y-4">
       <LabelWrapper label="What row would you like to edit?">
@@ -59,6 +69,8 @@ export default function EditRowActionBlock({
             airtableSettings={airtableSettings}
             entries={entries}
             entryToWrite={selectedEntry}
+            columnMappings={action.columnMappings}
+            onColumnMappingChange={onColumnMappingChange}
           />
         </>
       )}

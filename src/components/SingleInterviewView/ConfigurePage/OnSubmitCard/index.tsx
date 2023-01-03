@@ -13,7 +13,8 @@ import {
   actionTypeToDisplayName,
   OnSubmitActionType,
   OnSubmitAction,
- EditRowAction } from './types';
+  EditRowAction,
+} from './types';
 import EditRowActionBlock from './EditRowActionBlock';
 import useInterviewService from '../../../../hooks/useInterviewService';
 
