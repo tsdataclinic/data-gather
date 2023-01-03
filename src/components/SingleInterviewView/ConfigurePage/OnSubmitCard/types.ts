@@ -17,7 +17,7 @@ export type EditRowAction = {
 export type InsertRowAction = {
   columnMappings: ReadonlyMap<string, EntryId | undefined>;
   id: string;
-  tableTarget: string;
+  tableTarget?: string;
   type: OnSubmitActionType.INSERT_ROW;
 };
 
