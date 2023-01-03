@@ -7,6 +7,9 @@ export enum OnSubmitActionType {
 }
 
 export type EntryId = string;
+
+// TODO: these should exist in the main Interview type instead. They are being
+// held here for now until we have an official schema defined.
 export type EditRowAction = {
   columnMappings: ReadonlyMap<string, EntryId | undefined>;
   id: string;
