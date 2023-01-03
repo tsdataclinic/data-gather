@@ -7,7 +7,7 @@ import { SerializedInterviewScreenReadWithChildren } from '../api/models/Seriali
 import { Override } from '../util/types';
 
 /**
- * A group of entries, corresponding to a particular state in the interview.
+ * A stage of an interview. It consists of entries and conditional actions.
  *
  * This is the serialized type as it is used on the frontend.
  */

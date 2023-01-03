@@ -8,6 +8,7 @@ import * as Select from '@radix-ui/react-select';
 
 export const StyledTriggerButton = styled(Select.Trigger)`
   all: unset;
+  background: white;
   border-radius: 4px;
 
   // create a border using box-shadow. We aren't using border because a border

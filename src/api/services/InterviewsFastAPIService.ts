@@ -4,6 +4,7 @@
 import type { SerializedInterviewCreate } from '../models/SerializedInterviewCreate';
 import type { SerializedInterviewRead } from '../models/SerializedInterviewRead';
 import type { SerializedInterviewReadWithScreens } from '../models/SerializedInterviewReadWithScreens';
+import type { SerializedInterviewScreenEntryReadWithScreen } from '../models/SerializedInterviewScreenEntryReadWithScreen';
 import type { SerializedInterviewUpdate } from '../models/SerializedInterviewUpdate';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -103,9 +104,30 @@ export class InterviewsFastAPIService {
   ): CancelablePromise<SerializedInterviewReadWithScreens> {
     return this.httpRequest.request({
       method: 'GET',
-      url: '/api/interviews/vanity-urls/{vanity_url}',
+      url: '/api/interviews/by-vanity-url/{vanity_url}',
       path: {
         'vanity_url': vanityUrl,
+      },
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Get Interview Entries
+   * @param interviewId
+   * @returns SerializedInterviewScreenEntryReadWithScreen Successful Response
+   * @throws ApiError
+   */
+  public getInterviewEntries(
+    interviewId: string,
+  ): CancelablePromise<Array<SerializedInterviewScreenEntryReadWithScreen>> {
+    return this.httpRequest.request({
+      method: 'GET',
+      url: '/api/interviews/{interview_id}/entries',
+      path: {
+        'interview_id': interviewId,
       },
       errors: {
         422: `Validation Error`,

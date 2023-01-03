@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
+import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import BackendInterviewService from './BackendInterviewService';
 import LocalInterviewService from './LocalInterviewService';
 import { InterviewServiceAPI } from './InterviewServiceAPI';
@@ -33,6 +34,11 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
 
     getAllInterviews: (): Promise<Interview.T[]> =>
       this.getStore().interviewAPI.getAllInterviews(),
+
+    getAllEntries: (
+      interviewId: string,
+    ): Promise<InterviewScreenEntry.WithScreenT[]> =>
+      this.getStore().interviewAPI.getAllEntries(interviewId),
 
     getInterview: (interviewId: string): Promise<Interview.WithScreensT> =>
       this.getStore().interviewAPI.getInterview(interviewId),

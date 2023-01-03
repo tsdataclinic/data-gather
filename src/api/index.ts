@@ -21,6 +21,7 @@ export type { SerializedInterviewReadWithScreens } from './models/SerializedInte
 export type { SerializedInterviewScreenCreate } from './models/SerializedInterviewScreenCreate';
 export type { SerializedInterviewScreenEntryCreate } from './models/SerializedInterviewScreenEntryCreate';
 export type { SerializedInterviewScreenEntryRead } from './models/SerializedInterviewScreenEntryRead';
+export type { SerializedInterviewScreenEntryReadWithScreen } from './models/SerializedInterviewScreenEntryReadWithScreen';
 export type { SerializedInterviewScreenRead } from './models/SerializedInterviewScreenRead';
 export type { SerializedInterviewScreenReadWithChildren } from './models/SerializedInterviewScreenReadWithChildren';
 export type { SerializedInterviewScreenUpdate } from './models/SerializedInterviewScreenUpdate';
