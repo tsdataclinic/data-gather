@@ -13,7 +13,7 @@ import {
   actionTypeToDisplayName,
   OnSubmitActionType,
   OnSubmitAction,
-} from './types';
+ EditRowAction } from './types';
 import EditRowActionBlock from './EditRowActionBlock';
 import useInterviewService from '../../../../hooks/useInterviewService';
 
@@ -32,6 +32,9 @@ export default function OnSubmitCard({ interview }: Props): JSX.Element {
     queryKey: ['interview', interview.id, 'entries'],
     queryFn: () => interviewService.interviewAPI.getAllEntries(interview.id),
   });
+
+  // TODO: eventually this should be stored in the interview itself and loaded
+  // from the backend
   const [actions, setActions] = React.useState<readonly OnSubmitAction[]>([]);
 
   const onAddClick = React.useCallback((): void => {
@@ -45,14 +48,22 @@ export default function OnSubmitCard({ interview }: Props): JSX.Element {
     );
   }, []);
 
+  const onEditActionChange = (newAction: EditRowAction): void => {
+    setActions(prevActions =>
+      prevActions.map(action =>
+        newAction.id === action.id ? newAction : action,
+      ),
+    );
+  };
+
   const renderActionBlock = (action: OnSubmitAction): JSX.Element => {
     switch (action.type) {
       case OnSubmitActionType.EDIT_ROW:
         return (
           <EditRowActionBlock
             action={action}
-            interview={interview}
             entries={entries ?? []}
+            onActionChange={onEditActionChange}
           />
         );
       case OnSubmitActionType.INSERT_ROW:

@@ -6,24 +6,24 @@ import * as InterviewScreenEntry from '../models/InterviewScreenEntry';
 import assertUnreachable from '../util/assertUnreachable';
 import getEnvConfig, { EnvVar } from '../util/getEnvConfig';
 
-export type AppGlobalState = {
-  airtableSettings: {
-    apiKey: string;
-    bases: ReadonlyArray<{
+export type AirtableSettings = {
+  apiKey: string;
+  bases: ReadonlyArray<{
+    key: string;
+    name: string;
+    tables: ReadonlyArray<{
+      fields: ReadonlyArray<{
+        fieldID: string;
+        fieldName: string;
+      }>;
       key: string;
       name: string;
-      tables: [
-        {
-          fields: Array<{
-            fieldID: string;
-            fieldName: string;
-          }>;
-          key: string;
-          name: string;
-        },
-      ];
     }>;
-  };
+  }>;
+};
+
+export type AppGlobalState = {
+  airtableSettings: AirtableSettings;
   /**
    * A map of all interview conditional actions we have loaded so far.
    * Maps action id to ConditionalAction object.
