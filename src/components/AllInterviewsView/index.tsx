@@ -33,7 +33,7 @@ export default function AllInterviewsView(): JSX.Element {
         <p>You do not have any interviews.</p>
       ) : null}
 
-      <div className="space-x-4">
+      <div className="grid grid-cols-4 gap-4">
         {allInterviews?.map(interview => (
           <InterviewCard key={interview.id} interview={interview} />
         ))}

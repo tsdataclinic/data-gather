@@ -12,7 +12,7 @@ export default function InterviewCard({ interview }: Props): JSX.Element {
   return (
     <Card
       key={interview.id}
-      className="w-1/4 transition-all duration-300 hover:border-gray-400"
+      className="transition-all duration-300 hover:border-gray-400"
       linkTo={`/interview/${interview.id}`}
       shadow="xl"
     >
