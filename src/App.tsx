@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import AllInterviewsView from './components/AllInterviewsView';
 import Header from './components/Header';
 import { InterviewRunnerViewRoute } from './components/InterviewRunnerView';
-import PublishInterviewView from './components/PublishedinterviewView';
+import PublishInterviewView from './components/PublishedInterviewView';
 import SingleInterviewView from './components/SingleInterviewView';
 import InterviewService from './services/InterviewService';
 import { AppState, AppDispatch, useAppReducer } from './store/appState';

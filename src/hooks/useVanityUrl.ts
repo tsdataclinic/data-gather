@@ -16,7 +16,7 @@ export default function useVanityUrl(
   const interviewService = useInterviewService();
 
   // load interview from backend
-  const { data: interviewFromStorage } = useQuery({
+  const { data: interview } = useQuery({
     queryKey: ['vanityUrl', vanityUrl],
     queryFn: () =>
       vanityUrl
@@ -24,5 +24,5 @@ export default function useVanityUrl(
         : undefined,
   });
 
-  return interviewFromStorage;
+  return interview;
 }

@@ -125,7 +125,7 @@ function ConfigureCard({ interview }: Props): JSX.Element {
         </LabelWrapper>
 
         {publish && (
-          <LabelWrapper inline label="Vanity Url" labelTextClassName="w-40">
+          <LabelWrapper inline label="Vanity URL" labelTextClassName="w-40">
             <InputText
               required
               onChange={e => setVanityUrl(e)}

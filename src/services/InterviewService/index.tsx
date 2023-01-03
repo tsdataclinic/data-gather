@@ -46,7 +46,8 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     getInterviewByVanityUrl: (
       vanityUrl: string,
     ): Promise<Interview.WithScreensT> =>
-      this.getStore().interviewAPI.getInterviewByVanityUrl(vanityUrl),
+      // loading by vanity URL should always use the real backend
+      this.backendStore.interviewAPI.getInterviewByVanityUrl(vanityUrl),
 
     updateInterview: (
       interviewId: string,
