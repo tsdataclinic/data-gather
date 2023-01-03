@@ -4,12 +4,12 @@ import Dropdown from '../../../ui/Dropdown';
 import LabelWrapper from '../../../ui/LabelWrapper';
 import ColumnToQuestionMapBlock from './ColumnToQuestionMapBlock';
 import useAppState from '../../../../hooks/useAppState';
-import type { EditRowAction, EntryId } from './types';
+import type { InsertRowAction, EntryId } from './types';
 
 type Props = {
-  action: EditRowAction;
+  action: InsertRowAction;
   entries: readonly InterviewScreenEntry.WithScreenT[];
-  onActionChange: (newAction: EditRowAction) => void;
+  onActionChange: (newAction: InsertRowAction) => void;
 };
 
 export default function EditRowActionBlock({
@@ -23,30 +23,22 @@ export default function EditRowActionBlock({
     [airtableSettings],
   );
 
-  const selectedTable = React.useMemo(() => {
-    const selectedEntry = entries.find(entry => entry.id === action.rowTarget);
-    return allTables.find(
-      table => table.key === selectedEntry?.responseTypeOptions.selectedTable,
-    );
-  }, [entries, allTables, action.rowTarget]);
-
-  const entryOptions = React.useMemo(
-    () =>
-      entries
-        // only show entries that are configured for Airtable lookups
-        .filter(
-          entry =>
-            entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE,
-        )
-        .map(entry => ({
-          value: entry.id,
-          displayValue: `${entry.screen.title} - ${entry.name}`,
-        })),
-    [entries],
+  const selectedTable = React.useMemo(
+    () => allTables.find(table => table.key === action.tableTarget),
+    [allTables, action.tableTarget],
   );
 
-  const onChangeRowTarget = (entryId: string): void => {
-    onActionChange({ ...action, rowTarget: entryId });
+  const tableOptions = React.useMemo(
+    () =>
+      allTables.map(table => ({
+        value: table.key,
+        displayValue: table.name,
+      })),
+    [allTables],
+  );
+
+  const onChangeTableTarget = (tableId: string): void => {
+    onActionChange({ ...action, tableTarget: tableId });
   };
 
   const onColumnMappingChange = (
@@ -57,19 +49,12 @@ export default function EditRowActionBlock({
 
   return (
     <div className="space-y-4">
-      <LabelWrapper label="What row would you like to edit?">
-        <Dropdown
-          options={entryOptions}
-          onChange={onChangeRowTarget}
-          value={action.rowTarget}
-        />
+      <LabelWrapper label="Airtable table">
+        <Dropdown options={tableOptions} onChange={onChangeTableTarget} />
       </LabelWrapper>
       {selectedTable && (
         <>
-          <p>
-            Map each column you want to edit to the question that should be
-            used.
-          </p>
+          <p>Map each column to the question response that should be used.</p>
           <ColumnToQuestionMapBlock
             entries={entries}
             airtableTable={selectedTable}

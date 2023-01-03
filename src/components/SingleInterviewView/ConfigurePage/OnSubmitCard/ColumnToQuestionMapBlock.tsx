@@ -1,14 +1,13 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
-import { AirtableSettings } from '../../../../store/appReducer';
+import { AirtableTableConfig } from '../../../../store/appReducer';
 import Dropdown from '../../../ui/Dropdown';
 import type { EntryId } from './types';
 
 type Props = {
-  airtableSettings: AirtableSettings;
+  airtableTable: AirtableTableConfig;
   columnMappings: ReadonlyMap<string, EntryId | undefined>;
   entries: readonly InterviewScreenEntry.WithScreenT[];
-  entryToWrite: InterviewScreenEntry.WithScreenT;
   onColumnMappingChange: (
     newMappings: ReadonlyMap<string, EntryId | undefined>,
   ) => void;
@@ -17,18 +16,11 @@ type Props = {
 const DO_NOT_UPDATE_FLAG = '__DO_NOT_UPDATE__';
 
 export default function ColumnToQuestionMapBlock({
-  airtableSettings,
+  airtableTable,
   entries,
-  entryToWrite,
   columnMappings,
   onColumnMappingChange,
 }: Props): JSX.Element {
-  const { selectedTable, selectedBase } = entryToWrite.responseTypeOptions;
-
-  const table = airtableSettings.bases
-    .find(base => base.name === selectedBase)
-    ?.tables.find(tblObj => tblObj.key === selectedTable);
-
   const entryOptions = React.useMemo(
     () =>
       [
@@ -53,8 +45,8 @@ export default function ColumnToQuestionMapBlock({
     onColumnMappingChange(newMappings);
   };
 
-  const tableName = table?.name ?? 'Table not found';
-  const fields = table?.fields ?? [];
+  const tableName = airtableTable?.name ?? 'Table not found';
+  const fields = airtableTable?.fields ?? [];
 
   return (
     <div className="space-y-4">

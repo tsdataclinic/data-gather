@@ -6,19 +6,21 @@ import * as InterviewScreenEntry from '../models/InterviewScreenEntry';
 import assertUnreachable from '../util/assertUnreachable';
 import getEnvConfig, { EnvVar } from '../util/getEnvConfig';
 
+export type AirtableTableConfig = {
+  fields: ReadonlyArray<{
+    fieldID: string;
+    fieldName: string;
+  }>;
+  key: string;
+  name: string;
+};
+
 export type AirtableSettings = {
   apiKey: string;
   bases: ReadonlyArray<{
     key: string;
     name: string;
-    tables: ReadonlyArray<{
-      fields: ReadonlyArray<{
-        fieldID: string;
-        fieldName: string;
-      }>;
-      key: string;
-      name: string;
-    }>;
+    tables: readonly AirtableTableConfig[];
   }>;
 };
 
