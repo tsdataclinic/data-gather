@@ -2,7 +2,6 @@ import logging
 import uuid
 from typing import Optional, Sequence, TypeVar, Union
 
-import fastapi_azure_auth
 from fastapi import Body, Depends, FastAPI, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -39,7 +38,7 @@ from server.models.interview_screen_entry import (
     InterviewScreenEntry,
     InterviewScreenEntryReadWithScreen,
 )
-from server.models.user import User
+from server.models.user import User, UserRead
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -159,6 +158,16 @@ async def load_config() -> None:
 @app.get("/auth", dependencies=[Security(azure_scheme)])
 def test_auth():
     return {"message": "auth success!"}
+
+
+@app.get(
+    "/user/self",
+    dependencies=[Security(azure_scheme)],
+    response_model=UserRead,
+    tags=["users"],
+)
+def get_self_user(user: User = Depends(get_current_user)) -> User:
+    return user
 
 
 @app.post(
@@ -316,7 +325,9 @@ def update_interview_starting_state(
 def get_interviews(
     user: User = Depends(get_current_user), session: Session = Depends(get_session)
 ) -> list[Interview]:
-    interviews = session.exec(select(Interview).limit(100)).all()
+    interviews = session.exec(
+        select(Interview).where(Interview.owner_id == user.id).limit(100)
+    ).all()
     return interviews
 
 

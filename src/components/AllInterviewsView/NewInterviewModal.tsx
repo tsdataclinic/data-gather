@@ -5,6 +5,7 @@ import * as Interview from '../../models/Interview';
 import useInterviewMutation, {
   type InterviewServiceAPI,
 } from '../../hooks/useInterviewMutation';
+import useCurrentUser from '../../auth/useCurrentUser';
 
 type Props = {
   isOpen: boolean;
@@ -23,20 +24,24 @@ export default function NewInterviewModal({
       api.interviewAPI.createInterview(interview),
     invalidateQuery: ['allInterviews'],
   });
+  const { user } = useCurrentUser();
 
   const onSubmit = useCallback(
     async (vals: Map<string, string>): Promise<void> => {
-      createInterview(
-        Interview.create({
-          name: vals.get('name') ?? '',
-          description: vals.get('description') ?? '',
-        }),
-        {
-          onSuccess: () => onDismiss(),
-        },
-      );
+      if (user) {
+        createInterview(
+          Interview.create({
+            ownerId: user.id,
+            name: vals.get('name') ?? '',
+            description: vals.get('description') ?? '',
+          }),
+          {
+            onSuccess: () => onDismiss(),
+          },
+        );
+      }
     },
-    [createInterview, onDismiss],
+    [createInterview, onDismiss, user],
   );
 
   return (

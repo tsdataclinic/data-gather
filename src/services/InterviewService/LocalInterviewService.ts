@@ -1,5 +1,7 @@
 import Dexie, { Table } from 'dexie';
+import { DateTime } from 'luxon';
 import { v4 as uuidv4 } from 'uuid';
+import * as User from '../../models/User';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
@@ -37,6 +39,24 @@ export default class LocalInterviewService
       interviews: '++id, vanityUrl',
     });
   }
+
+  userAPI = {
+    /**
+     * If fetching the current user from the browser, just return a User object
+     * with some default values.
+     *
+     * TODO: implement the notion of a 'User' in the browser storage by
+     * creating some session id.
+     */
+    getCurrentUser: async (): Promise<User.T> => ({
+      createdDate: DateTime.now(),
+      email: 'unauthenticated',
+      familyName: '',
+      givenName: '',
+      id: 'unauthenticated',
+      identityProvider: 'unauthenticated',
+    }),
+  };
 
   interviewAPI = {
     createInterview: async (

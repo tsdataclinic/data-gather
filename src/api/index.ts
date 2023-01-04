@@ -26,9 +26,11 @@ export type { SerializedInterviewScreenRead } from './models/SerializedInterview
 export type { SerializedInterviewScreenReadWithChildren } from './models/SerializedInterviewScreenReadWithChildren';
 export type { SerializedInterviewScreenUpdate } from './models/SerializedInterviewScreenUpdate';
 export type { SerializedInterviewUpdate } from './models/SerializedInterviewUpdate';
+export type { SerializedUserRead } from './models/SerializedUserRead';
 export type { ValidationError } from './models/ValidationError';
 
 export { AirtableFastAPIService } from './services/AirtableFastAPIService';
 export { DefaultFastAPIService } from './services/DefaultFastAPIService';
 export { InterviewsFastAPIService } from './services/InterviewsFastAPIService';
 export { InterviewScreensFastAPIService } from './services/InterviewScreensFastAPIService';
+export { UsersFastAPIService } from './services/UsersFastAPIService';
