@@ -1,5 +1,4 @@
 import logging
-import uuid
 from datetime import datetime
 
 from sqlalchemy_utils import create_database, database_exists
@@ -12,7 +11,7 @@ from .engine import SQLITE_DB_PATH, create_fk_constraint_engine
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-fake_user_id = uuid.uuid4()
+fake_user_id = "__fake_user_id__"
 FAKE_USER = models.user.User(
     id=fake_user_id,
     email="fake_user@test.com",

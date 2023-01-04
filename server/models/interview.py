@@ -20,7 +20,7 @@ class InterviewBase(APIModel):
     notes: str
     vanity_url: Optional[str]
     published: bool
-    owner_id: uuid.UUID = Field(foreign_key="user.id")
+    owner_id: str = Field(foreign_key="user.id")
 
 
 class Interview(InterviewBase, table=True):

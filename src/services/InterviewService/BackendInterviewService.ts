@@ -3,9 +3,12 @@ import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import { InterviewServiceAPI } from './InterviewServiceAPI';
 import { FastAPIService } from '../../api/FastAPIService';
+import getAuthToken from '../../auth/getAuthToken';
 
 export default class BackendInterviewService implements InterviewServiceAPI {
-  private api = new FastAPIService();
+  private api = new FastAPIService({
+    TOKEN: async () => (await getAuthToken()) ?? 'not_found',
+  });
 
   interviewAPI = {
     createInterview: async (
