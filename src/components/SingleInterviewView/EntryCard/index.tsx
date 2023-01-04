@@ -7,6 +7,7 @@ import Form from '../../ui/Form';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import LabelWrapper from '../../ui/LabelWrapper';
 import AirtableFieldSelector from './AirtableFieldSelector';
+import EditableName from './EditableName';
 
 export type EditableEntry =
   | InterviewScreenEntry.T
@@ -34,6 +35,10 @@ function EntryCard(
 ): JSX.Element {
   const entryId = 'id' in entry ? entry.id : entry.tempId;
 
+  const onNameChange = (newName: string): void => {
+    onEntryChange(entry, { ...entry, name: newName });
+  };
+
   return (
     <ScrollableElement
       name={entryId}
@@ -48,14 +53,10 @@ function EntryCard(
           onClick={() => onEntryDelete(entry)}
         />
       </div>
-      <div className="flex w-1/6 flex-row">
-        <FontAwesomeIcon
-          className="h-6 w-6 pr-4"
-          icon={IconType.faCircleQuestion}
-        />
-        {entry.name}
+      <div className="flex w-1/6">
+        <EditableName onNameChange={onNameChange} name={entry.name} />
       </div>
-      <Form ref={forwardedRef} className="w-full pr-12">
+      <Form ref={forwardedRef} className="w-full pl-6 pr-12">
         <Form.Group label="Prompt">
           <Form.Input
             label="Text"

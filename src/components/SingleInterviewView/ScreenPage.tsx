@@ -9,7 +9,6 @@ import useInterviewService from '../../hooks/useInterviewService';
 import HeaderCard from './HeaderCard';
 import ScreenToolbar from './ScreenToolbar';
 import ScrollArea from '../ui/ScrollArea';
-import NewEntryModal from './NewEntryModal';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { useToast } from '../ui/Toast';
 
@@ -25,7 +24,7 @@ type Props = {
  * are only tracked internally. These changes are not bubbled up to the rest
  * of the app until "Save" is clicked.
  */
-function ScreenCard({
+export default function ScreenCard({
   defaultEntries,
   defaultActions,
   defaultScreen,
@@ -34,9 +33,6 @@ function ScreenCard({
   const toaster = useToast();
   const interviewService = useInterviewService();
   const dispatch = useAppDispatch();
-
-  const [isNewEntryModelOpen, setIsNewEntryModalOpen] =
-    React.useState<boolean>(false);
 
   // track the screen internally so we can modify it without persisting until
   // 'save' is clicked
@@ -66,6 +62,26 @@ function ScreenCard({
         }),
       ),
     );
+
+  const onNewEntryClick = (): void => {
+    setAllEntries(prevEntries =>
+      prevEntries.concat(
+        InterviewScreenEntry.create({
+          name: `Entry ${prevEntries.length + 1}`,
+          order: prevEntries.length + 1,
+          prompt: '',
+          text: '',
+          screenId: screen.id,
+          responseType: InterviewScreenEntry.ResponseType.TEXT,
+          responseTypeOptions: {
+            selectedBase: '',
+            selectedTable: '',
+            selectedFields: [],
+          },
+        }),
+      ),
+    );
+  };
 
   const onActionChange = React.useCallback(
     (actionToReplace: EditableAction, newAction: EditableAction) => {
@@ -99,33 +115,6 @@ function ScreenCard({
     },
     [],
   );
-
-  const onNewEntryClick = React.useCallback(() => {
-    setIsNewEntryModalOpen(true);
-  }, []);
-
-  const onNewEntrySubmit = async (vals: Map<string, string>): Promise<void> => {
-    setAllEntries(prevEntries =>
-      prevEntries.concat(
-        InterviewScreenEntry.create({
-          name: vals.get('name') ?? '',
-          prompt: vals.get('prompt') ?? '',
-          responseType: InterviewScreenEntry.responseTypeStringToEnum(
-            vals.get('responseType'),
-          ),
-          screenId: screen.id,
-          text: vals.get('text') ?? '',
-          order: prevEntries.length + 1,
-          responseTypeOptions: {
-            selectedBase: '',
-            selectedTable: '',
-            selectedFields: [],
-          },
-        }),
-      ),
-    );
-    setIsNewEntryModalOpen(false);
-  };
 
   const onSaveClick = React.useCallback(async () => {
     const actionsForms = Array.from(allFormRefs.current.entries());
@@ -195,14 +184,6 @@ function ScreenCard({
           ))}
         </div>
       </ScrollArea>
-
-      <NewEntryModal
-        isOpen={isNewEntryModelOpen}
-        onDismiss={() => setIsNewEntryModalOpen(false)}
-        onSubmit={onNewEntrySubmit}
-      />
     </>
   );
 }
-
-export default ScreenCard;
