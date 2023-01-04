@@ -13,6 +13,7 @@ export type SerializedInterviewReadWithScreens = {
   notes: string;
   vanityUrl?: string;
   published: boolean;
+  ownerId: string;
   id: string;
   createdDate: string;
   screens?: Array<SerializedInterviewScreenRead>;

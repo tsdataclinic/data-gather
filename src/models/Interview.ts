@@ -14,6 +14,7 @@ interface Interview {
   readonly id: string;
   readonly name: string;
   readonly notes: string;
+  readonly ownerId: string;
   readonly published: boolean;
   readonly vanityUrl?: string;
 }
@@ -61,6 +62,8 @@ export function create(values: {
   name: string;
 }): InterviewCreate {
   return {
+    // TODO: populate the actual current user id
+    ownerId: 'FAKE_ID',
     description: values.description,
     name: values.name,
     published: false,

@@ -1,5 +1,3 @@
-# from __future__ import annotations  # this is important to have at the top
-
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -22,6 +20,7 @@ class InterviewBase(APIModel):
     notes: str
     vanity_url: Optional[str]
     published: bool
+    owner_id: uuid.UUID = Field(foreign_key="user.id")
 
 
 class Interview(InterviewBase, table=True):
@@ -38,6 +37,7 @@ class Interview(InterviewBase, table=True):
 
     # relationships
     screens: list["InterviewScreen"] = Relationship(back_populates="interview")
+    owner: "User" = Relationship(back_populates="interviews")
 
     @validates("published")
     def validate_publish(self, key, published):
@@ -81,5 +81,6 @@ class InterviewUpdate(InterviewRead):
 
 # Handle circular imports
 from server.models.interview_screen import InterviewScreen, InterviewScreenRead
+from server.models.user import User
 
 update_module_forward_refs(__name__)

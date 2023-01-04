@@ -12,6 +12,7 @@ export type SerializedInterviewCreate = {
   notes: string;
   vanityUrl?: string;
   published: boolean;
+  ownerId: string;
   id?: string;
   createdDate?: string;
 };

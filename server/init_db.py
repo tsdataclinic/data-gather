@@ -1,4 +1,6 @@
 import logging
+import uuid
+from datetime import datetime
 
 from sqlalchemy_utils import create_database, database_exists
 from sqlmodel import Session, SQLModel
@@ -10,11 +12,23 @@ from .engine import SQLITE_DB_PATH, create_fk_constraint_engine
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+fake_user_id = uuid.uuid4()
+FAKE_USER = models.user.User(
+    id=fake_user_id,
+    email="fake_user@test.com",
+    identity_provider="FAKE",
+    family_name="McTestface",
+    given_name="Test",
+    created_date=datetime.now(),
+)
+
 FAKE_INTERVIEW = models.interview.Interview(
     description="Super important interview",
     name="Interview McInterviewFace",
     notes="some note",
     published=False,
+    vanity_url=None,
+    owner_id=fake_user_id,
 )
 
 
@@ -105,6 +119,7 @@ def generate_fake_entries(
                 text="sometext",
                 screen_id=screen1.id,
                 response_type_options=default_response_type_options,
+                writeback_options=None,
             ),
             models.interview_screen_entry.InterviewScreenEntry(
                 name="Second Entry",
@@ -115,6 +130,7 @@ def generate_fake_entries(
                 response_type=models.interview_screen_entry.ResponseType.NUMBER,
                 text="sometext",
                 response_type_options=default_response_type_options,
+                writeback_options=None,
             ),
         ]
 
@@ -129,6 +145,7 @@ def generate_fake_entries(
                 response_type=models.interview_screen_entry.ResponseType.BOOLEAN,
                 text="sometext",
                 response_type_options=default_response_type_options,
+                writeback_options=None,
             ),
         ]
 
@@ -155,6 +172,7 @@ def populate_dev_db(file_path: str = SQLITE_DB_PATH):
     with Session(autocommit=False, autoflush=False, bind=engine) as session:
         screens = interview.screens
 
+        session.add(FAKE_USER)
         session.add(interview)
 
         # commit changes and refresh so we pull in ID's assigned to interview
