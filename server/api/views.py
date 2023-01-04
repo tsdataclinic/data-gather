@@ -2,11 +2,13 @@ import logging
 import uuid
 from typing import Optional, Sequence, TypeVar, Union
 
+import fastapi_azure_auth
 from fastapi import Body, Depends, FastAPI, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from fastapi_azure_auth import B2CMultiTenantAuthorizationCodeBearer
+from fastapi_azure_auth.user import User as AzureUser
 from pydantic import AnyHttpUrl, BaseSettings, Field
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import Session, SQLModel, select
@@ -37,6 +39,7 @@ from server.models.interview_screen_entry import (
     InterviewScreenEntry,
     InterviewScreenEntryReadWithScreen,
 )
+from server.models.user import User
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -106,6 +109,30 @@ engine = create_fk_constraint_engine(SQLITE_DB_PATH)
 def get_session():
     with Session(engine) as session:
         yield session
+
+
+def get_current_user(
+    azure_user: AzureUser = Depends(azure_scheme),
+    session: Session = Depends(get_session),
+) -> User:
+    # check if the azure user exists in our database already
+    user_id: str = azure_user.claims.get("oid", "")
+    db_user = session.get(User, user_id)
+    if db_user:
+        return db_user
+
+    # user doesn't exist yet, so create the user
+    token = azure_user.claims
+    new_user = User(
+        id=user_id,
+        email=token.get("emails", ["no_email"])[0],
+        identity_provider=token.get("idp", "local"),
+        family_name=token.get("family_name", ""),
+        given_name=token.get("given_name", ""),
+    )
+    session.add(new_user)
+    session.commit()
+    return new_user
 
 
 @app.get("/hello")
@@ -286,7 +313,9 @@ def update_interview_starting_state(
     response_model=list[InterviewRead],
     tags=["interviews"],
 )
-def get_interviews(session: Session = Depends(get_session)) -> list[Interview]:
+def get_interviews(
+    user: User = Depends(get_current_user), session: Session = Depends(get_session)
+) -> list[Interview]:
     interviews = session.exec(select(Interview).limit(100)).all()
     return interviews
 

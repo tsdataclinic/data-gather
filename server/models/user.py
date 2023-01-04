@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 from typing import Optional
 
@@ -11,9 +10,7 @@ class User(APIModel, table=True):
     """The User model as a database table."""
 
     __tablename__: str = "user"
-    id: Optional[uuid.UUID] = Field(
-        default_factory=uuid.uuid4, primary_key=True, nullable=False
-    )
+    id: Optional[str] = Field(primary_key=True, nullable=False)
     email: str
     identity_provider: str
     family_name: str
