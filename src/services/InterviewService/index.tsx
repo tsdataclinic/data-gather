@@ -1,11 +1,12 @@
 import * as React from 'react';
+import * as User from '../../models/User';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import BackendInterviewService from './BackendInterviewService';
 import LocalInterviewService from './LocalInterviewService';
 import { InterviewServiceAPI } from './InterviewServiceAPI';
-import useCurrentUser from '../../auth/useCurrentUser';
+import useIsAuthenticated from '../../auth/useIsAuthenticated';
 
 export class InterviewServiceImpl implements InterviewServiceAPI {
   localStore: LocalInterviewService;
@@ -27,6 +28,11 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
   getStore(): InterviewServiceAPI {
     return this.isAuthenticated ? this.backendStore : this.localStore;
   }
+
+  userAPI = {
+    getCurrentUser: (): Promise<User.T> =>
+      this.getStore().userAPI.getCurrentUser(),
+  };
 
   interviewAPI = {
     createInterview: (interview: Interview.CreateT): Promise<Interview.T> =>
@@ -103,7 +109,7 @@ function InterviewServiceProvider({
   client,
   children,
 }: InterviewServiceProviderProps): JSX.Element {
-  const { isAuthenticated } = useCurrentUser();
+  const isAuthenticated = useIsAuthenticated();
   client.setAuthenticationStatus(isAuthenticated);
 
   return (

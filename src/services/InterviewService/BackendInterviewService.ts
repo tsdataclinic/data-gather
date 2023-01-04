@@ -1,3 +1,4 @@
+import * as User from '../../models/User';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
@@ -9,6 +10,13 @@ export default class BackendInterviewService implements InterviewServiceAPI {
   private api = new FastAPIService({
     TOKEN: async () => (await getAuthToken()) ?? 'not_found',
   });
+
+  userAPI = {
+    getCurrentUser: async (): Promise<User.T> => {
+      const serializedUser = await this.api.users.getSelfUser();
+      return User.deserialize(serializedUser);
+    },
+  };
 
   interviewAPI = {
     createInterview: async (

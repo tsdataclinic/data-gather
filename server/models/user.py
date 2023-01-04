@@ -6,6 +6,18 @@ from sqlmodel import Field, Relationship
 from server.models_util import APIModel, update_module_forward_refs
 
 
+class UserBase(APIModel):
+    """The base User model"""
+
+    email: str
+    identity_provider: str
+    family_name: str
+    given_name: str
+    created_date: Optional[datetime] = Field(
+        default_factory=datetime.utcnow, nullable=False
+    )
+
+
 class User(APIModel, table=True):
     """The User model as a database table."""
 
@@ -21,6 +33,11 @@ class User(APIModel, table=True):
 
     # relationships
     interviews: list["Interview"] = Relationship(back_populates="owner")
+
+
+class UserRead(UserBase):
+    id: str
+    created_date: datetime
 
 
 # Handle circular imports

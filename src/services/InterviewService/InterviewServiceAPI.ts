@@ -1,3 +1,4 @@
+import * as User from '../../models/User';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
@@ -33,5 +34,9 @@ export interface InterviewServiceAPI {
       screenId: string,
       screen: InterviewScreen.UpdateT,
     ): Promise<InterviewScreen.WithChildrenT>;
+  };
+
+  userAPI: {
+    getCurrentUser(): Promise<User.T>;
   };
 }

@@ -60,10 +60,10 @@ export function getConfigurePageURL(interviewOrId: Interview | string): string {
 export function create(values: {
   description: string;
   name: string;
+  ownerId: string;
 }): InterviewCreate {
   return {
-    // TODO: populate the actual current user id
-    ownerId: 'FAKE_ID',
+    ownerId: values.ownerId,
     description: values.description,
     name: values.name,
     published: false,
