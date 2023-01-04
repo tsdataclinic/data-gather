@@ -48,7 +48,7 @@ export type AppGlobalState = {
    * A map of all interviews that have been loaded so far
    * Maps interview id to Interview object.
    */
-  loadedInterviews: ReadonlyMap<string, Interview.WithScreensT>;
+  loadedInterviews: ReadonlyMap<string, Interview.WithScreensAndActions>;
   // settings: {
   //   airtableAPISettings: AirtableAPISetting.T;
   // };
@@ -73,7 +73,7 @@ export type AppAction =
     }
   /** Update a single interview */
   | {
-      interview: Interview.WithScreensT;
+      interview: Interview.WithScreensAndActions;
       type: 'INTERVIEW_UPDATE';
     }
   /** Update a bunch of interview screen entries */

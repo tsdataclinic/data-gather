@@ -12,7 +12,7 @@ import useInterviewService from './useInterviewService';
  */
 export default function useVanityUrl(
   vanityUrl: string | undefined,
-): Interview.WithScreensT | undefined {
+): Interview.WithScreensAndActions | undefined {
   const interviewService = useInterviewService();
 
   // load interview from backend

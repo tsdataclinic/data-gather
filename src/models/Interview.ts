@@ -1,9 +1,10 @@
 import { DateTime } from 'luxon';
 import * as InterviewScreen from './InterviewScreen';
+import * as SubmissionAction from './SubmissionAction';
 import { SerializedInterviewRead } from '../api/models/SerializedInterviewRead';
 import { SerializedInterviewCreate } from '../api/models/SerializedInterviewCreate';
 import { SerializedInterviewUpdate } from '../api/models/SerializedInterviewUpdate';
-import { SerializedInterviewReadWithScreens } from '../api/models/SerializedInterviewReadWithScreens';
+import { SerializedInterviewReadWithScreensAndActions } from '../api/models/SerializedInterviewReadWithScreensAndActions';
 
 /**
  * All the metadata data for an interview.
@@ -22,8 +23,9 @@ interface Interview {
 /**
  * Interview model with its associated screens loaded.
  */
-interface InterviewWithScreens extends Interview {
-  readonly screens: InterviewScreen.T[];
+interface InterviewWithScreensAndActions extends Interview {
+  readonly screens: readonly InterviewScreen.T[];
+  readonly submissionActions: readonly SubmissionAction.T[];
 }
 
 /**
@@ -72,7 +74,7 @@ export function create(values: {
 }
 
 export function getStartingScreens(
-  interview: InterviewWithScreens,
+  interview: InterviewWithScreensAndActions,
 ): InterviewScreen.T[] {
   const startingScreens = interview.screens.filter(
     screen =>
@@ -96,12 +98,14 @@ export function updateNotes(interview: Interview, notes: string): Interview {
  * Deserialize a SerializedInterviewRead model from the backend.
  */
 export function deserialize(
-  rawObj: SerializedInterviewReadWithScreens,
-): InterviewWithScreens;
+  rawObj: SerializedInterviewReadWithScreensAndActions,
+): InterviewWithScreensAndActions;
 export function deserialize(rawObj: SerializedInterviewRead): Interview;
 export function deserialize(
-  rawObj: SerializedInterviewRead | SerializedInterviewReadWithScreens,
-): Interview | InterviewWithScreens {
+  rawObj:
+    | SerializedInterviewRead
+    | SerializedInterviewReadWithScreensAndActions,
+): Interview | InterviewWithScreensAndActions {
   const datetime = DateTime.fromISO(rawObj.createdDate);
 
   if ('screens' in rawObj) {
@@ -109,6 +113,9 @@ export function deserialize(
       ...rawObj,
       createdDate: datetime,
       screens: rawObj.screens?.map(InterviewScreen.deserialize),
+      submissionActions: rawObj.submissionActions?.map(
+        SubmissionAction.deserialize,
+      ),
     };
   }
 
@@ -138,7 +145,7 @@ export function serialize(
 }
 
 export type { Interview as T };
-export type { InterviewWithScreens as WithScreensT };
+export type { InterviewWithScreensAndActions as WithScreensAndActions };
 export type { InterviewCreate as CreateT };
 export type { InterviewUpdate as UpdateT };
 export type { SerializedInterviewRead as SerializedT };

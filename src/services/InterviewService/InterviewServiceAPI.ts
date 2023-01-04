@@ -10,8 +10,10 @@ export interface InterviewServiceAPI {
       interviewId: string,
     ): Promise<InterviewScreenEntry.WithScreenT[]>;
     getAllInterviews(): Promise<Interview.T[]>;
-    getInterview(interviewId: string): Promise<Interview.WithScreensT>;
-    getInterviewByVanityUrl(vanityUrl: string): Promise<Interview.WithScreensT>;
+    getInterview(interviewId: string): Promise<Interview.WithScreensAndActions>;
+    getInterviewByVanityUrl(
+      vanityUrl: string,
+    ): Promise<Interview.WithScreensAndActions>;
     updateInterview(
       interviewId: string,
       interview: Interview.UpdateT,
@@ -19,7 +21,7 @@ export interface InterviewServiceAPI {
     updateInterviewStartingState(
       interviewId: string,
       startingScreenIds: readonly string[],
-    ): Promise<Interview.WithScreensT>;
+    ): Promise<Interview.WithScreensAndActions>;
   };
 
   interviewScreenAPI: {

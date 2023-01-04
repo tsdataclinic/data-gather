@@ -3,11 +3,12 @@
 /* eslint-disable */
 
 import type { SerializedInterviewScreenRead } from './SerializedInterviewScreenRead';
+import type { SerializedSubmissionActionRead } from './SerializedSubmissionActionRead';
 
 /**
  * The InterviewRead model including nested screens.
  */
-export type SerializedInterviewReadWithScreens = {
+export type SerializedInterviewReadWithScreensAndActions = {
   description: string;
   name: string;
   notes: string;
@@ -17,5 +18,6 @@ export type SerializedInterviewReadWithScreens = {
   id: string;
   createdDate: string;
   screens?: Array<SerializedInterviewScreenRead>;
+  submissionActions?: Array<SerializedSubmissionActionRead>;
 };
 

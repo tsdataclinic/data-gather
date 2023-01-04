@@ -7,7 +7,7 @@ import * as ConditionalAction from '../models/ConditionalAction';
 class ConfigurableScript implements Script<InterviewScreen.T> {
   // eslint-disable-next-line
   constructor(
-    private interview: Interview.WithScreensT,
+    private interview: Interview.WithScreensAndActions,
     private actions: ReadonlyMap<string, ConditionalAction.T[]>,
     private screens: ReadonlyMap<string, InterviewScreen.WithChildrenT>,
   ) {}

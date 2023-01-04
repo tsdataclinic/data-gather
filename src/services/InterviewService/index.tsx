@@ -46,12 +46,14 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     ): Promise<InterviewScreenEntry.WithScreenT[]> =>
       this.getStore().interviewAPI.getAllEntries(interviewId),
 
-    getInterview: (interviewId: string): Promise<Interview.WithScreensT> =>
+    getInterview: (
+      interviewId: string,
+    ): Promise<Interview.WithScreensAndActions> =>
       this.getStore().interviewAPI.getInterview(interviewId),
 
     getInterviewByVanityUrl: (
       vanityUrl: string,
-    ): Promise<Interview.WithScreensT> =>
+    ): Promise<Interview.WithScreensAndActions> =>
       // loading by vanity URL should always use the real backend
       this.backendStore.interviewAPI.getInterviewByVanityUrl(vanityUrl),
 
@@ -64,7 +66,7 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     updateInterviewStartingState: (
       interviewId: string,
       startingScreenIds: readonly string[],
-    ): Promise<Interview.WithScreensT> =>
+    ): Promise<Interview.WithScreensAndActions> =>
       this.getStore().interviewAPI.updateInterviewStartingState(
         interviewId,
         startingScreenIds,

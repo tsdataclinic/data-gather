@@ -17,11 +17,13 @@ export type ResponseTypeOptions = AirtableOptions;
 export const RESPONSE_TYPES: readonly ResponseType[] =
   Object.values(ResponseType);
 
+export type Id = string;
+
 /**
  * Represents a single question asked to the interview subject
  */
 interface InterviewScreenEntry {
-  readonly id: string;
+  readonly id: Id;
 
   /**  The name to display on the sidebar */
   readonly name: string;

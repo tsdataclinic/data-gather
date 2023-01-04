@@ -21,7 +21,7 @@ import InsertRowActionBlock from './InsertRowActionBlock';
 import useInterviewService from '../../../../hooks/useInterviewService';
 
 type Props = {
-  interview: Interview.WithScreensT;
+  interview: Interview.WithScreensAndActions;
 };
 
 const ACTION_TYPE_OPTIONS = ON_SUBMIT_ACTION_TYPES.map(actionType => ({

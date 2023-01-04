@@ -4,7 +4,7 @@ import OnSubmitCard from './OnSubmitCard';
 import ScrollArea from '../../ui/ScrollArea';
 
 type Props = {
-  interview: Interview.WithScreensT;
+  interview: Interview.WithScreensAndActions;
 };
 
 export default function ConfigurePage({ interview }: Props): JSX.Element {
