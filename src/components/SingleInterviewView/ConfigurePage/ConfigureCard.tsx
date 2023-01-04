@@ -15,12 +15,12 @@ import useInterviewMutation, {
 } from '../../../hooks/useInterviewMutation';
 
 type Props = {
-  interview: Interview.WithScreensT;
+  interview: Interview.WithScreensAndActions;
 };
 
 async function saveUpdatedInterview(
   data: {
-    interview: Interview.WithScreensT;
+    interview: Interview.WithScreensAndActions;
     startingState: readonly string[];
   },
   api: InterviewServiceAPI,

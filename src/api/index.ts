@@ -17,7 +17,7 @@ export type { SerializedConditionalActionCreate } from './models/SerializedCondi
 export type { SerializedConditionalActionRead } from './models/SerializedConditionalActionRead';
 export type { SerializedInterviewCreate } from './models/SerializedInterviewCreate';
 export type { SerializedInterviewRead } from './models/SerializedInterviewRead';
-export type { SerializedInterviewReadWithScreens } from './models/SerializedInterviewReadWithScreens';
+export type { SerializedInterviewReadWithScreensAndActions } from './models/SerializedInterviewReadWithScreensAndActions';
 export type { SerializedInterviewScreenCreate } from './models/SerializedInterviewScreenCreate';
 export type { SerializedInterviewScreenEntryCreate } from './models/SerializedInterviewScreenEntryCreate';
 export type { SerializedInterviewScreenEntryRead } from './models/SerializedInterviewScreenEntryRead';
@@ -26,7 +26,9 @@ export type { SerializedInterviewScreenRead } from './models/SerializedInterview
 export type { SerializedInterviewScreenReadWithChildren } from './models/SerializedInterviewScreenReadWithChildren';
 export type { SerializedInterviewScreenUpdate } from './models/SerializedInterviewScreenUpdate';
 export type { SerializedInterviewUpdate } from './models/SerializedInterviewUpdate';
+export type { SerializedSubmissionActionRead } from './models/SerializedSubmissionActionRead';
 export type { SerializedUserRead } from './models/SerializedUserRead';
+export { SubmissionActionType } from './models/SubmissionActionType';
 export type { ValidationError } from './models/ValidationError';
 
 export { AirtableFastAPIService } from './services/AirtableFastAPIService';

@@ -15,7 +15,7 @@ import useInterviewService from './useInterviewService';
  */
 export default function useInterview(
   id: string | undefined,
-): Interview.WithScreensT | undefined {
+): Interview.WithScreensAndActions | undefined {
   const dispatch = useAppDispatch();
   const interviewService = useInterviewService();
   const { loadedInterviews } = useAppState();

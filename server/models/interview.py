@@ -37,6 +37,9 @@ class Interview(InterviewBase, table=True):
 
     # relationships
     screens: list["InterviewScreen"] = Relationship(back_populates="interview")
+    submission_actions: list["SubmissionAction"] = Relationship(
+        back_populates="interview"
+    )
     owner: "User" = Relationship(back_populates="interviews")
 
     @validates("published")
@@ -67,10 +70,11 @@ class InterviewRead(InterviewBase):
     created_date: datetime
 
 
-class InterviewReadWithScreens(InterviewRead):
+class InterviewReadWithScreensAndActions(InterviewRead):
     """The InterviewRead model including nested screens."""
 
     screens: list["InterviewScreenRead"] = []
+    submission_actions: list["SubmissionActionRead"] = []
 
 
 class InterviewUpdate(InterviewRead):
@@ -81,6 +85,7 @@ class InterviewUpdate(InterviewRead):
 
 # Handle circular imports
 from server.models.interview_screen import InterviewScreen, InterviewScreenRead
+from server.models.submission_action import SubmissionAction, SubmissionActionRead
 from server.models.user import User
 
 update_module_forward_refs(__name__)

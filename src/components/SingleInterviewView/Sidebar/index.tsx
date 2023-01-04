@@ -11,7 +11,7 @@ import { useToast } from '../../ui/Toast';
 import ConfigureLink from './ConfigureLink';
 
 type Props = {
-  interview: Interview.WithScreensT;
+  interview: Interview.WithScreensAndActions;
   screens: InterviewScreen.T[] | undefined;
 };
 

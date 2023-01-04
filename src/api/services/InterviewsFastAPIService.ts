@@ -3,7 +3,7 @@
 /* eslint-disable */
 import type { SerializedInterviewCreate } from '../models/SerializedInterviewCreate';
 import type { SerializedInterviewRead } from '../models/SerializedInterviewRead';
-import type { SerializedInterviewReadWithScreens } from '../models/SerializedInterviewReadWithScreens';
+import type { SerializedInterviewReadWithScreensAndActions } from '../models/SerializedInterviewReadWithScreensAndActions';
 import type { SerializedInterviewScreenEntryReadWithScreen } from '../models/SerializedInterviewScreenEntryReadWithScreen';
 import type { SerializedInterviewUpdate } from '../models/SerializedInterviewUpdate';
 
@@ -49,12 +49,12 @@ export class InterviewsFastAPIService {
   /**
    * Get Interview
    * @param interviewId
-   * @returns SerializedInterviewReadWithScreens Successful Response
+   * @returns SerializedInterviewReadWithScreensAndActions Successful Response
    * @throws ApiError
    */
   public getInterview(
     interviewId: string,
-  ): CancelablePromise<SerializedInterviewReadWithScreens> {
+  ): CancelablePromise<SerializedInterviewReadWithScreensAndActions> {
     return this.httpRequest.request({
       method: 'GET',
       url: '/api/interviews/{interview_id}',
@@ -96,12 +96,12 @@ export class InterviewsFastAPIService {
    * Get Interview By Vanity Url
    * Get a published Interview by it's vanity url
    * @param vanityUrl
-   * @returns SerializedInterviewReadWithScreens Successful Response
+   * @returns SerializedInterviewReadWithScreensAndActions Successful Response
    * @throws ApiError
    */
   public getInterviewByVanityUrl(
     vanityUrl: string,
-  ): CancelablePromise<SerializedInterviewReadWithScreens> {
+  ): CancelablePromise<SerializedInterviewReadWithScreensAndActions> {
     return this.httpRequest.request({
       method: 'GET',
       url: '/api/interviews/by-vanity-url/{vanity_url}',
@@ -139,13 +139,13 @@ export class InterviewsFastAPIService {
    * Update Interview Starting State
    * @param interviewId
    * @param requestBody
-   * @returns SerializedInterviewReadWithScreens Successful Response
+   * @returns SerializedInterviewReadWithScreensAndActions Successful Response
    * @throws ApiError
    */
   public updateInterviewStartingState(
     interviewId: string,
     requestBody: Array<string>,
-  ): CancelablePromise<SerializedInterviewReadWithScreens> {
+  ): CancelablePromise<SerializedInterviewReadWithScreensAndActions> {
     return this.httpRequest.request({
       method: 'POST',
       url: '/api/interviews/{interview_id}/starting_state',

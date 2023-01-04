@@ -2,6 +2,7 @@ import Dexie, { Table } from 'dexie';
 import { DateTime } from 'luxon';
 import { v4 as uuidv4 } from 'uuid';
 import * as User from '../../models/User';
+import * as SubmissionAction from '../../models/SubmissionAction';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
@@ -22,6 +23,8 @@ export default class LocalInterviewService
 {
   private conditionalActions!: Table<ConditionalAction.SerializedT>;
 
+  private submissionActions!: Table<SubmissionAction.SerializedT>;
+
   private interviews!: Table<Interview.SerializedT>;
 
   private interviewScreens!: Table<InterviewScreen.SerializedT>;
@@ -34,6 +37,7 @@ export default class LocalInterviewService
     // id is our primary key
     this.version(1).stores({
       conditionalActions: '++id, screenId',
+      submissionActions: '++id, interviewId',
       interviewScreenEntries: '++id, screenId',
       interviewScreens: '++id, interviewId',
       interviews: '++id, vanityUrl',
@@ -100,13 +104,23 @@ export default class LocalInterviewService
 
     getInterview: async (
       interviewId: string,
-    ): Promise<Interview.WithScreensT> => {
+    ): Promise<Interview.WithScreensAndActions> => {
       const interview = await this.interviews.get(interviewId);
       if (interview) {
+        // get screens
         const screens = await this.interviewAPI.getScreensOfInterview(
           interviewId,
         );
-        return Interview.deserialize({ ...interview, screens });
+
+        // get submission actions
+        const submissionActions =
+          await this.interviewAPI.getSubmissionActionsOfInterview(interviewId);
+
+        return Interview.deserialize({
+          ...interview,
+          screens,
+          submissionActions,
+        });
       }
       throw new Error(`Could not find an interview with id '${interviewId}'`);
     },
@@ -134,7 +148,7 @@ export default class LocalInterviewService
     updateInterviewStartingState: async (
       interviewId: string,
       startingScreenIds: readonly string[],
-    ): Promise<Interview.WithScreensT> => {
+    ): Promise<Interview.WithScreensAndActions> => {
       const serializedInterview = await this.interviews.get(interviewId);
       if (serializedInterview) {
         const screens = await this.interviewAPI.getScreensOfInterview(
@@ -176,6 +190,17 @@ export default class LocalInterviewService
         .toArray();
       screens.sort((scr1, scr2) => scr1.order - scr2.order);
       return screens;
+    },
+
+    getSubmissionActionsOfInterview: async (
+      interviewId: string,
+    ): Promise<SubmissionAction.SerializedT[]> => {
+      // get submission actions for this interview
+      const actions = await this.submissionActions
+        .where({ interviewId })
+        .toArray();
+      actions.sort((act1, act2) => act1.order - act2.order);
+      return actions;
     },
   };
 
