@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { faLocationArrow } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { MixedCheckbox } from '@reach/checkbox';
@@ -31,13 +32,15 @@ type Props = {
     actionToReplace: EditableAction,
     newAction: EditableAction,
   ) => void;
+  onActionDelete: (actionToDelete: EditableAction) => void;
 };
 
 function ActionCard(
-  { action, onActionChange, interview }: Props,
+  { action, interview, onActionChange, onActionDelete }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
   // TODO: when interview is a nested model we won't need these sub-queries
+  const actionId = 'id' in action ? action.id : action.tempId;
   const interviewScreens = useInterviewScreens(interview.id);
   const screenEntriesMap = useInterviewScreenEntries(interview.id);
 
@@ -148,12 +151,20 @@ function ActionCard(
 
   return (
     <ScrollableElement
-      name="ACTION"
-      className="grid w-full grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg"
+      name={actionId}
+      className="relative grid w-full grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg"
     >
       <div className="space-x-3">
         <FontAwesomeIcon size="1x" icon={faLocationArrow} />
         <span>Action</span>
+      </div>
+      <div className="absolute top-0 right-0 pr-4 pt-4">
+        <FontAwesomeIcon
+          aria-label="Delete"
+          className="h-5 w-5 cursor-pointer text-slate-400 transition-colors duration-200 hover:text-red-500"
+          icon={IconType.faX}
+          onClick={() => onActionDelete(action)}
+        />
       </div>
 
       {
