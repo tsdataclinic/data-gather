@@ -109,6 +109,12 @@ export default function ScreenCard({
     );
   }, []);
 
+  const onActionDelete = React.useCallback((actionToDelete: EditableAction) => {
+    setAllActions(prevActions =>
+      prevActions.filter(action => action !== actionToDelete),
+    );
+  }, []);
+
   const onScreenChange = React.useCallback(
     (newScreen: InterviewScreen.WithChildrenT) => {
       setScreen(newScreen);
@@ -178,8 +184,9 @@ export default function ScreenCard({
               key={'id' in action ? action.id : action.tempId}
               ref={formRefSetter('id' in action ? action.id : action.tempId)}
               action={action}
-              onActionChange={onActionChange}
               interview={interview}
+              onActionChange={onActionChange}
+              onActionDelete={onActionDelete}
             />
           ))}
         </div>
