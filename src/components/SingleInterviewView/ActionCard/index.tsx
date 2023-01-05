@@ -1,8 +1,13 @@
+import 'primereact/resources/themes/lara-light-indigo/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+
 import * as React from 'react';
 import { faLocationArrow } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { MixedCheckbox } from '@reach/checkbox';
 import { Element as ScrollableElement } from 'react-scroll';
+import { Calendar } from 'primereact/calendar';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
 import Dropdown from '../../ui/Dropdown';
@@ -43,8 +48,8 @@ function ConditionalOperatorRow({
   allResponseKeyColumnOptions,
   onConditionalOperatorChange,
   onConditionalValueChange,
+  conditionalValueType,
 }: any): JSX.Element {
-  console.log('<CondRow> action', action);
   return (
     <div className="flex items-center space-x-4">
       <p className="w-20">Condition</p>
@@ -54,6 +59,7 @@ function ConditionalOperatorRow({
         value={action.responseKey}
         options={allResponseKeyOptions}
       />
+      {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
       {allResponseKeyColumnOptions.length > 0 && (
         <Dropdown
           onChange={onResponseKeyColumnChange}
@@ -70,11 +76,20 @@ function ConditionalOperatorRow({
         options={OPERATOR_OPTIONS}
       />
 
-      <InputText
-        placeholder="value"
-        onChange={onConditionalValueChange}
-        value={action.value ?? ''}
-      />
+      {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
+      {conditionalValueType === 'date' ? (
+        <Calendar
+          placeholder="value"
+          onChange={e => onConditionalValueChange(e.value)}
+          value={action.value ?? ''}
+        />
+      ) : (
+        <InputText
+          placeholder="value"
+          onChange={onConditionalValueChange}
+          value={action.value ?? ''}
+        />
+      )}
     </div>
   );
 }
@@ -91,6 +106,10 @@ function ActionCard(
     action.conditionalOperator ===
       ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE,
   );
+
+  const [conditionalValueType, setConditionalValueType] = React.useState<
+    'text' | 'date'
+  >(action.value && Date.parse(action.value) ? 'date' : 'text');
 
   const onAlwaysExecuteChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -211,6 +230,14 @@ function ActionCard(
             onChange={onAlwaysExecuteChange}
           />
         </LabelWrapper>
+        <LabelWrapper inline labelAfter label="Compare against a date">
+          <MixedCheckbox
+            onChange={e =>
+              setConditionalValueType(e.target.checked ? 'date' : 'text')
+            }
+            checked={conditionalValueType === 'date'}
+          />
+        </LabelWrapper>
         {!isAlwaysExecuteChecked && (
           <ConditionalOperatorRow
             action={action}
@@ -220,6 +247,7 @@ function ActionCard(
             allResponseKeyColumnOptions={allResponseKeyColumnOptions}
             onConditionalOperatorChange={onConditionalOperatorChange}
             onConditionalValueChange={onConditionalValueChange}
+            conditionalValueType={conditionalValueType}
           />
         )}
         <ActionConfigEditor

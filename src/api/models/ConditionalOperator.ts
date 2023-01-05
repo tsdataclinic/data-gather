@@ -7,7 +7,9 @@
  * ConditionalAction
  */
 export enum ConditionalOperator {
+  AFTER = 'after',
   ALWAYS_EXECUTE = 'ALWAYS_EXECUTE',
+  BEFORE = 'before',
   EQ = 'eq',
   GT = 'gt',
   GTE = 'gte',
