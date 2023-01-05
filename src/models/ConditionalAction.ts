@@ -72,6 +72,11 @@ interface ConditionalAction {
    */
   readonly responseKey?: string;
 
+  /**
+   * For a given responseKey, an optionally associated lookup column.
+   */
+  readonly responseKeyColumn?: string;
+
   /** The screen that this action belongs to */
   readonly screenId: string;
 
@@ -95,6 +100,7 @@ export function create(vals: {
     actionConfig: { payload: [], type: ActionType.PUSH },
     conditionalOperator: ConditionalOperator.ALWAYS_EXECUTE,
     responseKey: undefined,
+    responseKeyColumn: undefined,
     screenId: vals.screenId,
     value: undefined,
     order: vals.order,

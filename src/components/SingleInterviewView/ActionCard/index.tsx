@@ -33,6 +33,52 @@ type Props = {
   ) => void;
 };
 
+// The conditionalOperatorRow doesn't use Form.Input or other Form
+// subcomponents because we need more control over how it renders
+function ConditionalOperatorRow({
+  action,
+  onResponseKeyChange,
+  allResponseKeyOptions,
+  onResponseKeyColumnChange,
+  allResponseKeyColumnOptions,
+  onConditionalOperatorChange,
+  onConditionalValueChange,
+}: any): JSX.Element {
+  console.log('<CondRow> action', action);
+  return (
+    <div className="flex items-center space-x-4">
+      <p className="w-20">Condition</p>
+      <Dropdown
+        onChange={onResponseKeyChange}
+        placeholder="Response variable"
+        value={action.responseKey}
+        options={allResponseKeyOptions}
+      />
+      {allResponseKeyColumnOptions.length > 0 && (
+        <Dropdown
+          onChange={onResponseKeyColumnChange}
+          placeholder="Response column variable"
+          value={action.responseKeyColumn}
+          options={allResponseKeyColumnOptions}
+        />
+      )}
+
+      <Dropdown
+        onChange={onConditionalOperatorChange}
+        placeholder="Operator"
+        value={action.conditionalOperator}
+        options={OPERATOR_OPTIONS}
+      />
+
+      <InputText
+        placeholder="value"
+        onChange={onConditionalValueChange}
+        value={action.value ?? ''}
+      />
+    </div>
+  );
+}
+
 function ActionCard(
   { action, onActionChange, interview }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
@@ -87,6 +133,16 @@ function ActionCard(
     [action, onActionChange],
   );
 
+  const onResponseKeyColumnChange = React.useCallback(
+    (newResponseKeyColumn: string) => {
+      onActionChange(action, {
+        ...action,
+        responseKeyColumn: newResponseKeyColumn,
+      });
+    },
+    [action, onActionChange],
+  );
+
   const onConditionalValueChange = React.useCallback(
     (newValue: string) => {
       onActionChange(action, {
@@ -119,32 +175,21 @@ function ActionCard(
         })
       : [];
 
-  // The conditionalOperatorRow doesn't use Form.Input or other Form
-  // subcomponents because we need more control over how it renders
-  const conditionalOperatorRow = isAlwaysExecuteChecked ? null : (
-    <div className="flex items-center space-x-4">
-      <p className="w-20">Condition</p>
-      <Dropdown
-        onChange={onResponseKeyChange}
-        placeholder="Response variable"
-        value={action.responseKey}
-        options={allResponseKeyOptions}
-      />
-
-      <Dropdown
-        onChange={onConditionalOperatorChange}
-        placeholder="Operator"
-        value={action.conditionalOperator}
-        options={OPERATOR_OPTIONS}
-      />
-
-      <InputText
-        placeholder="value"
-        onChange={onConditionalValueChange}
-        value={action.value ?? ''}
-      />
-    </div>
-  );
+  // TODO: have to connect <ActionCard> to `entry` for responseKeyColumns to change before 'Save' is clicked
+  const allResponseKeyColumnOptions =
+    interviewScreens && screenEntriesMap
+      ? interviewScreens.flatMap(screen => {
+          const entries = screenEntriesMap.get(screen.id) || [];
+          return entries
+            .filter(entry => entry.responseType === 'airtable')
+            .flatMap(entry =>
+              entry.responseTypeOptions.selectedFields.map(field => ({
+                displayValue: `${entry.responseTypeOptions.selectedBase} - ${field}`,
+                value: field,
+              })),
+            );
+        })
+      : [];
 
   return (
     <ScrollableElement
@@ -166,7 +211,17 @@ function ActionCard(
             onChange={onAlwaysExecuteChange}
           />
         </LabelWrapper>
-        {conditionalOperatorRow}
+        {!isAlwaysExecuteChecked && (
+          <ConditionalOperatorRow
+            action={action}
+            onResponseKeyChange={onResponseKeyChange}
+            allResponseKeyOptions={allResponseKeyOptions}
+            onResponseKeyColumnChange={onResponseKeyColumnChange}
+            allResponseKeyColumnOptions={allResponseKeyColumnOptions}
+            onConditionalOperatorChange={onConditionalOperatorChange}
+            onConditionalValueChange={onConditionalValueChange}
+          />
+        )}
         <ActionConfigEditor
           action={action}
           onActionConfigChange={onActionConfigChange}
