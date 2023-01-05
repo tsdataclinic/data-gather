@@ -67,7 +67,7 @@ export default function ScreenCard({
     setAllEntries(prevEntries =>
       prevEntries.concat(
         InterviewScreenEntry.create({
-          name: `Entry ${prevEntries.length + 1}`,
+          name: `Question ${prevEntries.length + 1}`,
           order: prevEntries.length + 1,
           prompt: '',
           text: '',
