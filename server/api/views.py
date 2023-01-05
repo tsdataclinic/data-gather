@@ -18,31 +18,23 @@ from server.engine import create_fk_constraint_engine
 from server.init_db import SQLITE_DB_PATH
 from server.models.common import OrderedModel
 from server.models.conditional_action import ConditionalAction
-from server.models.interview import (
-    Interview,
-    InterviewCreate,
-    InterviewRead,
-    InterviewReadWithScreensAndActions,
-    InterviewUpdate,
-    ValidationError,
-)
-from server.models.interview_screen import (
-    InterviewScreen,
-    InterviewScreenCreate,
-    InterviewScreenRead,
-    InterviewScreenReadWithChildren,
-    InterviewScreenUpdate,
-)
+from server.models.interview import (Interview, InterviewCreate, InterviewRead,
+                                     InterviewReadWithScreensAndActions,
+                                     InterviewUpdate, ValidationError)
+from server.models.interview_screen import (InterviewScreen,
+                                            InterviewScreenCreate,
+                                            InterviewScreenRead,
+                                            InterviewScreenReadWithChildren,
+                                            InterviewScreenUpdate)
 from server.models.interview_screen_entry import (
-    InterviewScreenEntry,
-    InterviewScreenEntryReadWithScreen,
-)
+    InterviewScreenEntry, InterviewScreenEntryReadWithScreen)
 from server.models.submission_action import SubmissionAction
 from server.models.user import User, UserRead
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
 class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = ["http://localhost:3000"]
