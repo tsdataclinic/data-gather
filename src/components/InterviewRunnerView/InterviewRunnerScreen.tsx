@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useCallback } from 'react';
-import { ResponseConsumer, ResponseData } from '@dataclinic/interview';
+import { ResponseConsumer } from '@dataclinic/interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import Form from '../ui/Form';
@@ -9,7 +9,6 @@ import InterviewRunnerEntry from './InterviewRunnerEntry';
 type Props = {
   entries: InterviewScreenEntry.T[];
   responseConsumer: ResponseConsumer;
-  responseData: ResponseData;
   screen: InterviewScreen.T;
 };
 
