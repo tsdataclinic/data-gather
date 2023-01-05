@@ -49,13 +49,6 @@ interface InterviewScreenEntry {
 
   /** Additional flavor text associated with the question */
   readonly text: string;
-
-  /**
-   * The configuration object for how this response should get written
-   * back to a data store. If empty, then the response to this Entry
-   * does not get written back anywhere.
-   */
-  readonly writebackOptions?: AirtableOptions;
 }
 
 interface InterviewScreenEntryWithScreen extends InterviewScreenEntry {

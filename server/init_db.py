@@ -118,7 +118,6 @@ def generate_fake_entries(
                 text="sometext",
                 screen_id=screen1.id,
                 response_type_options=default_response_type_options,
-                writeback_options=None,
             ),
             models.interview_screen_entry.InterviewScreenEntry(
                 name="Second Entry",
@@ -129,7 +128,6 @@ def generate_fake_entries(
                 response_type=models.interview_screen_entry.ResponseType.NUMBER,
                 text="sometext",
                 response_type_options=default_response_type_options,
-                writeback_options=None,
             ),
         ]
 
@@ -144,7 +142,6 @@ def generate_fake_entries(
                 response_type=models.interview_screen_entry.ResponseType.BOOLEAN,
                 text="sometext",
                 response_type_options=default_response_type_options,
-                writeback_options=None,
             ),
         ]
 

@@ -18,7 +18,6 @@ export type SerializedInterviewScreenEntryRead = {
   responseType: ResponseType;
   responseTypeOptions: any;
   screenId: string;
-  writebackOptions?: any;
   text: string;
   id: string;
 };
