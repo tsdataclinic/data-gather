@@ -49,48 +49,61 @@ function ConditionalOperatorRow({
   allResponseKeyColumnOptions,
   onConditionalOperatorChange,
   onConditionalValueChange,
-  conditionalValueType,
 }: any): JSX.Element {
+  const [conditionalValueType, setConditionalValueType] = React.useState<
+    'text' | 'date'
+  >(action.value && Date.parse(action.value) ? 'date' : 'text');
+
   return (
-    <div className="flex items-center space-x-4">
-      <p className="w-20">Condition</p>
-      <Dropdown
-        onChange={onResponseKeyChange}
-        placeholder="Response variable"
-        value={action.responseKey}
-        options={allResponseKeyOptions}
-      />
-      {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
-      {allResponseKeyColumnOptions.length > 0 && (
+    <div className="space-y-4">
+      <LabelWrapper inline labelAfter label="Compare against a date">
+        <MixedCheckbox
+          onChange={e =>
+            setConditionalValueType(e.target.checked ? 'date' : 'text')
+          }
+          checked={conditionalValueType === 'date'}
+        />
+      </LabelWrapper>
+      <div className="flex items-center space-x-4">
+        <p className="w-20">Condition</p>
         <Dropdown
-          onChange={onResponseKeyColumnChange}
-          placeholder="Response column variable"
-          value={action.responseKeyColumn}
-          options={allResponseKeyColumnOptions}
+          onChange={onResponseKeyChange}
+          placeholder="Response variable"
+          value={action.responseKey}
+          options={allResponseKeyOptions}
         />
-      )}
+        {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
+        {allResponseKeyColumnOptions.length > 0 && (
+          <Dropdown
+            onChange={onResponseKeyColumnChange}
+            placeholder="Response column variable"
+            value={action.responseKeyColumn}
+            options={allResponseKeyColumnOptions}
+          />
+        )}
 
-      <Dropdown
-        onChange={onConditionalOperatorChange}
-        placeholder="Operator"
-        value={action.conditionalOperator}
-        options={OPERATOR_OPTIONS}
-      />
+        <Dropdown
+          onChange={onConditionalOperatorChange}
+          placeholder="Operator"
+          value={action.conditionalOperator}
+          options={OPERATOR_OPTIONS}
+        />
 
-      {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
-      {conditionalValueType === 'date' ? (
-        <Calendar
-          placeholder="value"
-          onChange={e => onConditionalValueChange(e.value)}
-          value={action.value ?? ''}
-        />
-      ) : (
-        <InputText
-          placeholder="value"
-          onChange={onConditionalValueChange}
-          value={action.value ?? ''}
-        />
-      )}
+        {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
+        {conditionalValueType === 'date' ? (
+          <Calendar
+            placeholder="value"
+            onChange={e => onConditionalValueChange(e.value)}
+            value={action.value ?? ''}
+          />
+        ) : (
+          <InputText
+            placeholder="value"
+            onChange={onConditionalValueChange}
+            value={action.value ?? ''}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -108,10 +121,6 @@ function ActionCard(
     action.conditionalOperator ===
       ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE,
   );
-
-  const [conditionalValueType, setConditionalValueType] = React.useState<
-    'text' | 'date'
-  >(action.value && Date.parse(action.value) ? 'date' : 'text');
 
   const onAlwaysExecuteChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -240,14 +249,6 @@ function ActionCard(
             onChange={onAlwaysExecuteChange}
           />
         </LabelWrapper>
-        <LabelWrapper inline labelAfter label="Compare against a date">
-          <MixedCheckbox
-            onChange={e =>
-              setConditionalValueType(e.target.checked ? 'date' : 'text')
-            }
-            checked={conditionalValueType === 'date'}
-          />
-        </LabelWrapper>
         {!isAlwaysExecuteChecked && (
           <ConditionalOperatorRow
             action={action}
@@ -257,7 +258,6 @@ function ActionCard(
             allResponseKeyColumnOptions={allResponseKeyColumnOptions}
             onConditionalOperatorChange={onConditionalOperatorChange}
             onConditionalValueChange={onConditionalValueChange}
-            conditionalValueType={conditionalValueType}
           />
         )}
         <ActionConfigEditor
