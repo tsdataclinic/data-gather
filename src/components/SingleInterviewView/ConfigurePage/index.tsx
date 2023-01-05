@@ -45,7 +45,6 @@ export default function ConfigurePage({
   );
 
   const onSaveClick = (): void => {
-    console.log('interview', interview);
     updateScreen(
       { startingState, interview },
       {
