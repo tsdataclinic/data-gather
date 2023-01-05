@@ -2,77 +2,65 @@ import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { useQuery } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { v4 as uuidv4 } from 'uuid';
 import * as Interview from '../../../../models/Interview';
+import * as SubmissionAction from '../../../../models/SubmissionAction';
 import Button from '../../../ui/Button';
 import Dropdown from '../../../ui/Dropdown';
 import LabelWrapper from '../../../ui/LabelWrapper';
 import assertUnreachable from '../../../../util/assertUnreachable';
-import {
-  ON_SUBMIT_ACTION_TYPES,
-  actionTypeToDisplayName,
-  OnSubmitActionType,
-  OnSubmitAction,
-  EditRowAction,
-  InsertRowAction,
-} from './types';
 import EditRowActionBlock from './EditRowActionBlock';
 import InsertRowActionBlock from './InsertRowActionBlock';
 import useInterviewService from '../../../../hooks/useInterviewService';
+import type { EditableAction } from './types';
 
 type Props = {
-  interview: Interview.WithScreensAndActions;
+  interview: Interview.UpdateT;
+  onInterviewChange: (interview: Interview.UpdateT) => void;
 };
 
-const ACTION_TYPE_OPTIONS = ON_SUBMIT_ACTION_TYPES.map(actionType => ({
-  displayValue: actionTypeToDisplayName(actionType),
+const ACTION_TYPE_OPTIONS = SubmissionAction.ACTION_TYPES.map(actionType => ({
+  displayValue: SubmissionAction.actionTypeToDisplayName(actionType),
   value: actionType,
 }));
 
-function createDefaultEditRowAction(): EditRowAction {
-  return {
-    id: uuidv4(),
-    type: OnSubmitActionType.EDIT_ROW,
-    rowTarget: undefined,
-    columnMappings: new Map(),
-  };
-}
-
-function createDefaultInsertRowAction(): InsertRowAction {
-  return {
-    id: uuidv4(),
-    type: OnSubmitActionType.INSERT_ROW,
-    tableTarget: undefined,
-    columnMappings: new Map(),
-  };
-}
-
-export default function OnSubmitCard({ interview }: Props): JSX.Element {
+export default function OnSubmitCard({
+  interview,
+  onInterviewChange,
+}: Props): JSX.Element {
   const interviewService = useInterviewService();
   const { data: entries } = useQuery({
     queryKey: ['interview', interview.id, 'entries'],
     queryFn: () => interviewService.interviewAPI.getAllEntries(interview.id),
   });
 
-  // TODO: eventually this should be stored in the interview itself and loaded
-  // from the backend
-  const [actions, setActions] = React.useState<readonly OnSubmitAction[]>([]);
-
-  const onAddClick = React.useCallback((): void => {
-    setActions(prevActions => prevActions.concat(createDefaultEditRowAction()));
-  }, []);
-
-  const onActionChange = (newAction: OnSubmitAction): void => {
-    setActions(prevActions =>
-      prevActions.map(action =>
-        newAction.id === action.id ? newAction : action,
+  const onAddClick = (): void => {
+    onInterviewChange({
+      ...interview,
+      submissionActions: interview.submissionActions.concat(
+        SubmissionAction.create({
+          interviewId: interview.id,
+          order: interview.submissionActions.length + 1,
+          type: SubmissionAction.ActionType.EDIT_ROW,
+        }),
       ),
-    );
+    });
   };
 
-  const renderActionBlock = (action: OnSubmitAction): JSX.Element => {
+  const onActionChange = (
+    actionToReplace: EditableAction,
+    newAction: EditableAction,
+  ): void => {
+    onInterviewChange({
+      ...interview,
+      submissionActions: interview.submissionActions.map(action =>
+        action === actionToReplace ? newAction : action,
+      ),
+    });
+  };
+
+  const renderActionBlock = (action: EditableAction): JSX.Element => {
     switch (action.type) {
-      case OnSubmitActionType.EDIT_ROW:
+      case SubmissionAction.ActionType.EDIT_ROW:
         return (
           <EditRowActionBlock
             action={action}
@@ -80,7 +68,7 @@ export default function OnSubmitCard({ interview }: Props): JSX.Element {
             onActionChange={onActionChange}
           />
         );
-      case OnSubmitActionType.INSERT_ROW:
+      case SubmissionAction.ActionType.INSERT_ROW:
         return (
           <InsertRowActionBlock
             action={action}
@@ -89,7 +77,7 @@ export default function OnSubmitCard({ interview }: Props): JSX.Element {
           />
         );
       default:
-        return assertUnreachable(action);
+        return assertUnreachable(action.type);
     }
   };
 
@@ -100,9 +88,9 @@ export default function OnSubmitCard({ interview }: Props): JSX.Element {
         <h2>On submission</h2>
       </div>
       <div className="col-span-3 space-y-4">
-        {actions.map(action => (
+        {interview.submissionActions.map(action => (
           <div
-            key={action.id}
+            key={'id' in action ? action.id : action.tempId}
             className="space-y-4 rounded border border-gray-300 bg-gray-50 p-4 text-slate-800"
           >
             <LabelWrapper label="Action type">
@@ -110,12 +98,15 @@ export default function OnSubmitCard({ interview }: Props): JSX.Element {
                 value={action.type}
                 options={ACTION_TYPE_OPTIONS}
                 onChange={actionType => {
-                  const defaultAction =
-                    actionType === OnSubmitActionType.EDIT_ROW
-                      ? createDefaultEditRowAction()
-                      : createDefaultInsertRowAction();
                   // reuse the same id so that we edit the existing action
-                  onActionChange({ ...defaultAction, id: action.id });
+                  onActionChange(
+                    action,
+                    SubmissionAction.create({
+                      type: actionType,
+                      order: action.order,
+                      interviewId: action.interviewId,
+                    }),
+                  );
                 }}
               />
             </LabelWrapper>

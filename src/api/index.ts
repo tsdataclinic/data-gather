@@ -26,6 +26,7 @@ export type { SerializedInterviewScreenRead } from './models/SerializedInterview
 export type { SerializedInterviewScreenReadWithChildren } from './models/SerializedInterviewScreenReadWithChildren';
 export type { SerializedInterviewScreenUpdate } from './models/SerializedInterviewScreenUpdate';
 export type { SerializedInterviewUpdate } from './models/SerializedInterviewUpdate';
+export type { SerializedSubmissionActionCreate } from './models/SerializedSubmissionActionCreate';
 export type { SerializedSubmissionActionRead } from './models/SerializedSubmissionActionRead';
 export type { SerializedUserRead } from './models/SerializedUserRead';
 export { SubmissionActionType } from './models/SubmissionActionType';

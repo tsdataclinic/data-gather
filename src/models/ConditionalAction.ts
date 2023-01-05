@@ -69,6 +69,8 @@ interface ConditionalAction {
 
   /**
    * The key within the response data which maps to the datum being compared.
+   * While the `id` is fixed and not exposed to the user, this `responseKey` is
+   * exposed to the user and can be changed.
    */
   readonly responseKey?: string;
 
