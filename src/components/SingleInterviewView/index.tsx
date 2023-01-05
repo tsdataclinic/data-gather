@@ -26,7 +26,7 @@ export default function SingleInterviewView(): JSX.Element {
         <Routes>
           <Route
             path="configure"
-            element={<ConfigurePage interview={interview} />}
+            element={<ConfigurePage defaultInterview={interview} />}
           />
           {screens?.map(screen => {
             // we track the length of `actions` and `entries` as a cheap

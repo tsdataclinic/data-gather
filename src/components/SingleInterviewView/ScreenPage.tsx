@@ -131,6 +131,8 @@ export default function ScreenCard({
     });
 
     if (allFormsValid) {
+      console.log(allEntries);
+
       const updatedScreen =
         await interviewService.interviewScreenAPI.updateInterviewScreen(
           screen.id,

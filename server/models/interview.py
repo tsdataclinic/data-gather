@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 from sqlalchemy.orm import validates
 from sqlmodel import Field, Relationship, UniqueConstraint
@@ -78,14 +78,20 @@ class InterviewReadWithScreensAndActions(InterviewRead):
 
 
 class InterviewUpdate(InterviewRead):
-    """The Interview model used on update requests."""
+    """The Interview model used on update requests. This model allows updating
+    the nested submissionActions.
+    """
 
-    pass
+    submission_actions: list[Union["SubmissionActionRead", "SubmissionActionCreate"]]
 
 
 # Handle circular imports
 from server.models.interview_screen import InterviewScreen, InterviewScreenRead
-from server.models.submission_action import SubmissionAction, SubmissionActionRead
+from server.models.submission_action import (
+    SubmissionAction,
+    SubmissionActionCreate,
+    SubmissionActionRead,
+)
 from server.models.user import User
 
 update_module_forward_refs(__name__)

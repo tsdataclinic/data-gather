@@ -137,8 +137,35 @@ export default class LocalInterviewService
     ): Promise<Interview.T> => {
       const interviewExists = !!(await this.interviews.get(interviewId));
       if (interviewExists) {
-        await this.interviews.put(Interview.serialize(interview));
-        return interview;
+        const { submissionActions, ...serializedInterview } =
+          Interview.serialize(interview);
+        await this.interviews.put(serializedInterview);
+
+        // delete existing submission actions
+        const oldActions = await this.submissionActions
+          .where({ interviewId })
+          .toArray();
+        await this.submissionActions.bulkDelete(
+          oldActions.map(action => action.id),
+        );
+
+        // make sure all actions have an id if they don't
+        const actionsToSet: SubmissionAction.SerializedT[] =
+          submissionActions.map(action => ({
+            ...action,
+            id: action.id ?? uuidv4(),
+          }));
+
+        // set them all into the db
+        await this.submissionActions.bulkPut(actionsToSet);
+
+        // now return the deserialized model
+        const fullModel = {
+          ...serializedInterview,
+          actions: actionsToSet,
+        };
+
+        return Interview.deserialize(fullModel);
       }
       throw new Error(
         `Cannot update interview. Interview with id '${interviewId}' does not exist`,

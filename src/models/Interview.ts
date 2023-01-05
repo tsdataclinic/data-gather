@@ -35,9 +35,18 @@ interface InterviewWithScreensAndActions extends Interview {
 type InterviewCreate = Omit<Interview, 'id' | 'createdDate'>;
 
 /**
- * The Interview model used during an update request.
+ * The Interview model used during an update request. This model allows
+ * updating nested actions but screens are not included in this model.
  */
-type InterviewUpdate = Interview;
+type InterviewUpdate = Interview & {
+  /**
+   * Allow the `submissionActions` to include either fully specified actions
+   * or the "Create" variants which still don't have an assigned id.
+   */
+  readonly submissionActions: ReadonlyArray<
+    SubmissionAction.T | SubmissionAction.CreateT
+  >;
+};
 
 /**
  * Returns a URL which can be used to execute a given interview.
@@ -138,6 +147,9 @@ export function serialize(
   if ('createdDate' in interview) {
     return {
       ...interview,
+      submissionActions: interview.submissionActions.map(
+        SubmissionAction.serialize,
+      ),
       createdDate: interview.createdDate?.toISO(),
     };
   }
