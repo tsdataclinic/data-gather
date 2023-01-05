@@ -46,7 +46,7 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
     React.useState<ResponseData>({});
   const [complete, setComplete] = React.useState<boolean>(false);
   const entries = useInterviewScreenEntries(interviewId);
-  const { mutate: airtableUpdate } = useMutation({
+  const { mutate: airtableUpdateRecord } = useMutation({
     mutationFn: (data: {
       fields: { [fieldName: string]: string };
       recordId: string;
@@ -57,6 +57,13 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
         data.recordId,
         data.fields,
       ),
+  });
+
+  const { mutate: airtableCreateRecord } = useMutation({
+    mutationFn: (data: {
+      fields: { [fieldName: string]: string };
+      tableId: string;
+    }) => api.airtable.createAirtableRecord(data.tableId, data.fields),
   });
 
   const onInterviewComplete = React.useCallback(
@@ -99,7 +106,7 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
                   }
                 });
 
-                airtableUpdate({
+                airtableUpdateRecord({
                   tableId,
                   fields,
                   recordId: airtableRecordId,
@@ -107,15 +114,39 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
               }
               break;
             }
-            case SubmissionAction.ActionType.INSERT_ROW:
+
+            case SubmissionAction.ActionType.INSERT_ROW: {
+              const tableTarget = submissionAction.target;
+
+              // collect all field values
+              const fields: { [fieldId: string]: string } = {};
+              submissionAction.fieldMappings.forEach((entryId, fieldId) => {
+                if (entryId !== undefined) {
+                  const entry = allEntries.get(entryId);
+                  if (entry) {
+                    const responseVal =
+                      responseData[entry.responseKey].response;
+                    // ignore empty values
+                    if (responseVal !== '') {
+                      fields[fieldId] = responseVal;
+                    }
+                  }
+                }
+              });
+
+              airtableCreateRecord({
+                fields,
+                tableId: tableTarget,
+              });
               break;
+            }
             default:
               assertUnreachable(submissionAction.type);
           }
         });
       }
     },
-    [interview, airtableUpdate],
+    [interview, airtableUpdateRecord, airtableCreateRecord],
   );
 
   // Construct and run an interview on component load.
