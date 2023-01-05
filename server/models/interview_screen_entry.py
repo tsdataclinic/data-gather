@@ -30,7 +30,6 @@ class InterviewScreenEntryBase(OrderedModel):
     response_type: ResponseType
     response_type_options: dict = Field(sa_column=Column(JSON))
     screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
-    writeback_options: Optional[dict] = Field(sa_column=Column(JSON))
     text: str
 
 
