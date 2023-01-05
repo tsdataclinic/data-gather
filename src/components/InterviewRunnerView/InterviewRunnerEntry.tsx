@@ -64,6 +64,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
     );
   }, [responseData]);
 
+  // TODO: whether or not something is required should be configurable
   switch (entry.responseType) {
     case InterviewScreenEntry.ResponseType.TEXT:
       return (
@@ -71,6 +72,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           key={entry.id}
           name={entry.responseKey}
           label={entry.prompt}
+          required={false}
         />
       );
     case InterviewScreenEntry.ResponseType.BOOLEAN:
@@ -79,6 +81,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           type="radio"
           name={entry.responseKey}
           label={entry.prompt}
+          required={false}
           options={[
             { value: 'Yes', displayValue: 'Yes' },
             { value: 'No', displayValue: 'No' },
@@ -91,6 +94,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           type="number"
           key={entry.id}
           name={entry.responseKey}
+          required={false}
           label={entry.prompt}
         />
       );
@@ -100,6 +104,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           type="email"
           key={entry.id}
           name={entry.responseKey}
+          required={false}
           label={entry.prompt}
         />
       );

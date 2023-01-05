@@ -43,6 +43,8 @@ from server.models.user import User, UserRead
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
+
 
 class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = ["http://localhost:3000"]
@@ -251,6 +253,7 @@ def update_interview(
     interview: InterviewUpdate,
     session: Session = Depends(get_session),
 ) -> Interview:
+    print("updating interview")
     try:
         db_interview = session.exec(
             select(Interview).where(Interview.id == interview_id)
@@ -261,7 +264,7 @@ def update_interview(
         )
 
     # update the nested submission actions
-    _validate_sequential_order(db_interview.submission_actions)
+    _validate_sequential_order(interview.submission_actions)
     actions_to_set, actions_to_delete = _diff_model_lists(
         db_interview.submission_actions,
         [SubmissionAction.from_orm(action) for action in interview.submission_actions],
@@ -270,8 +273,8 @@ def update_interview(
     # set the updated actions
     db_interview.submission_actions = actions_to_set
 
-    # now update the db_interview
-    _update_model_diff(db_interview, interview)
+    # now update the top-level db_interview
+    _update_model_diff(db_interview, interview.copy(exclude={"submission_actions"}))
     session.add(db_interview)
 
     # delete the necessary actions
