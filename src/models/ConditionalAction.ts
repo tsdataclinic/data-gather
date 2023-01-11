@@ -249,7 +249,40 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
   switch (operator) {
     case ConditionalOperator.ALWAYS_EXECUTE:
       return 'Always execute';
+    case ConditionalOperator.AFTER:
+      return 'After';
+    case ConditionalOperator.BEFORE:
+      return 'Before';
+    case ConditionalOperator.EQ:
+      return '=';
+    case ConditionalOperator.GT:
+      return '>';
+    case ConditionalOperator.GTE:
+      return '≥';
+    case ConditionalOperator.LT:
+      return '<';
+    case ConditionalOperator.LTE:
+      return '≤';
     default:
+      assertUnreachable(operator, { throwError: false });
+      return operator;
+  }
+}
+
+export function isTimeOperator(operator: ConditionalOperator): boolean {
+  switch (operator) {
+    case ConditionalOperator.AFTER:
+    case ConditionalOperator.BEFORE:
+      return true;
+    case ConditionalOperator.ALWAYS_EXECUTE:
+    case ConditionalOperator.EQ:
+    case ConditionalOperator.GT:
+    case ConditionalOperator.GTE:
+    case ConditionalOperator.LT:
+    case ConditionalOperator.LTE:
+      return false;
+    default:
+      assertUnreachable(operator, { throwError: false });
       return operator;
   }
 }

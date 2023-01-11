@@ -1,13 +1,11 @@
 import * as React from 'react';
 import { Calendar } from 'primereact/calendar';
-import { MixedCheckbox } from '@reach/checkbox';
 import { DateTime } from 'luxon';
 import Dropdown from '../../ui/Dropdown';
 import InputText from '../../ui/InputText';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import type { EditableAction } from '../types';
-import LabelWrapper from '../../ui/LabelWrapper';
 
 type Props = {
   action: EditableAction;
@@ -31,10 +29,6 @@ export default function ConditionalOperatorRow({
   allEntries,
   onConditionalOperationChange,
 }: Props): JSX.Element {
-  const [conditionalValueType, setConditionalValueType] = React.useState<
-    'text' | 'date'
-  >(action.value && Date.parse(action.value) ? 'date' : 'text');
-
   const selectedEntry = React.useMemo(
     () => allEntries.find(entry => entry.responseKey === action.responseKey),
     [allEntries, action],
@@ -103,14 +97,6 @@ export default function ConditionalOperatorRow({
 
   return (
     <div className="space-y-4">
-      <LabelWrapper inline labelAfter label="Compare against a date">
-        <MixedCheckbox
-          onChange={e =>
-            setConditionalValueType(e.target.checked ? 'date' : 'text')
-          }
-          checked={conditionalValueType === 'date'}
-        />
-      </LabelWrapper>
       <div className="flex items-center space-x-4">
         <p className="w-20">Condition</p>
         <Dropdown
@@ -123,7 +109,7 @@ export default function ConditionalOperatorRow({
         {allResponseKeyFieldOptions && allResponseKeyFieldOptions.length > 0 ? (
           <Dropdown
             onChange={onResponseKeyFieldChange}
-            placeholder="Response column variable"
+            placeholder="Column name"
             value={action.responseKeyField}
             options={allResponseKeyFieldOptions}
           />
@@ -137,7 +123,7 @@ export default function ConditionalOperatorRow({
         />
 
         {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
-        {conditionalValueType === 'date' ? (
+        {ConditionalAction.isTimeOperator(action.conditionalOperator) ? (
           <Calendar
             placeholder="value"
             onChange={e => {
