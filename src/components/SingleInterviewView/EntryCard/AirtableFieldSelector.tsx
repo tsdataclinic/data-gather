@@ -122,6 +122,7 @@ export default function AirtableFieldSelector({
             onAirtableConfigurationChange({
               ...airtableConfig,
               selectedTable: newVal,
+              selectedFields: [],
             });
           }}
           options={availableTables}

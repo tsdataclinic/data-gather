@@ -3,5 +3,6 @@ from . import (
     interview,
     interview_screen,
     interview_screen_entry,
+    submission_action,
     user,
 )

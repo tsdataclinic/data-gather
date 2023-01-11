@@ -1,15 +1,21 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
+import * as SubmissionAction from '../../../../models/SubmissionAction';
 import { AirtableTableConfig } from '../../../../store/appReducer';
 import Dropdown from '../../../ui/Dropdown';
-import type { EntryId } from './types';
 
 type Props = {
   airtableTable: AirtableTableConfig;
-  columnMappings: ReadonlyMap<string, EntryId | undefined>;
   entries: readonly InterviewScreenEntry.WithScreenT[];
-  onColumnMappingChange: (
-    newMappings: ReadonlyMap<string, EntryId | undefined>,
+  fieldMappings: ReadonlyMap<
+    SubmissionAction.FieldId,
+    InterviewScreenEntry.Id | undefined
+  >;
+  onFieldMappingChange: (
+    newMappings: ReadonlyMap<
+      SubmissionAction.FieldId,
+      InterviewScreenEntry.Id | undefined
+    >,
   ) => void;
 };
 
@@ -18,8 +24,8 @@ const DO_NOT_UPDATE_FLAG = '__DO_NOT_UPDATE__';
 export default function ColumnToQuestionMapBlock({
   airtableTable,
   entries,
-  columnMappings,
-  onColumnMappingChange,
+  fieldMappings,
+  onFieldMappingChange,
 }: Props): JSX.Element {
   const entryOptions = React.useMemo(
     () =>
@@ -37,12 +43,15 @@ export default function ColumnToQuestionMapBlock({
     [entries],
   );
 
-  const onMappingChange = (fieldId: string, entryId: string): void => {
-    const newMappings = new Map([...columnMappings.entries()]).set(
+  const onMappingChange = (
+    fieldId: SubmissionAction.FieldId,
+    entryId: string,
+  ): void => {
+    const newMappings = new Map([...fieldMappings.entries()]).set(
       fieldId,
       entryId === DO_NOT_UPDATE_FLAG ? undefined : entryId,
     );
-    onColumnMappingChange(newMappings);
+    onFieldMappingChange(newMappings);
   };
 
   const tableName = airtableTable?.name ?? 'Table not found';
@@ -55,12 +64,12 @@ export default function ColumnToQuestionMapBlock({
         <div>Column</div>
         <div className="col-span-3">Question</div>
         {fields.map(field => {
-          const { fieldID, fieldName } = field;
-          const entryId = columnMappings.get(fieldID);
+          const fieldID = field.fieldID as SubmissionAction.FieldId;
+          const entryId = fieldMappings.get(fieldID);
 
           return (
             <React.Fragment key={fieldID}>
-              <div>{fieldName}</div>
+              <div>{field.fieldName}</div>
               <div className="col-span-3">
                 <Dropdown
                   options={entryOptions}

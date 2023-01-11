@@ -1,3 +1,4 @@
+import * as User from '../../models/User';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
@@ -9,6 +10,13 @@ export default class BackendInterviewService implements InterviewServiceAPI {
   private api = new FastAPIService({
     TOKEN: async () => (await getAuthToken()) ?? 'not_found',
   });
+
+  userAPI = {
+    getCurrentUser: async (): Promise<User.T> => {
+      const serializedUser = await this.api.users.getSelfUser();
+      return User.deserialize(serializedUser);
+    },
+  };
 
   interviewAPI = {
     createInterview: async (
@@ -36,7 +44,7 @@ export default class BackendInterviewService implements InterviewServiceAPI {
 
     getInterview: async (
       interviewId: string,
-    ): Promise<Interview.WithScreensT> => {
+    ): Promise<Interview.WithScreensAndActions> => {
       const serializedInterview = await this.api.interviews.getInterview(
         interviewId,
       );
@@ -45,7 +53,7 @@ export default class BackendInterviewService implements InterviewServiceAPI {
 
     getInterviewByVanityUrl: async (
       vanityUrl: string,
-    ): Promise<Interview.WithScreensT> => {
+    ): Promise<Interview.WithScreensAndActions> => {
       const serializedInterview =
         await this.api.interviews.getInterviewByVanityUrl(vanityUrl);
       return Interview.deserialize(serializedInterview);
@@ -65,7 +73,7 @@ export default class BackendInterviewService implements InterviewServiceAPI {
     updateInterviewStartingState: async (
       interviewId: string,
       startingScreenIds: readonly string[],
-    ): Promise<Interview.WithScreensT> => {
+    ): Promise<Interview.WithScreensAndActions> => {
       const serializedInterview =
         await this.api.interviews.updateInterviewStartingState(
           interviewId,

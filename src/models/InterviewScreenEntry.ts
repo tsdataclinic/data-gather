@@ -17,11 +17,13 @@ export type ResponseTypeOptions = AirtableOptions;
 export const RESPONSE_TYPES: readonly ResponseType[] =
   Object.values(ResponseType);
 
+export type Id = string;
+
 /**
  * Represents a single question asked to the interview subject
  */
 interface InterviewScreenEntry {
-  readonly id: string;
+  readonly id: Id;
 
   /**  The name to display on the sidebar */
   readonly name: string;
@@ -47,13 +49,6 @@ interface InterviewScreenEntry {
 
   /** Additional flavor text associated with the question */
   readonly text: string;
-
-  /**
-   * The configuration object for how this response should get written
-   * back to a data store. If empty, then the response to this Entry
-   * does not get written back anywhere.
-   */
-  readonly writebackOptions?: AirtableOptions;
 }
 
 interface InterviewScreenEntryWithScreen extends InterviewScreenEntry {

@@ -1,8 +1,6 @@
 import logging
-import uuid
 from typing import Optional, Sequence, TypeVar, Union
 
-import fastapi_azure_auth
 from fastapi import Body, Depends, FastAPI, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -24,7 +22,7 @@ from server.models.interview import (
     Interview,
     InterviewCreate,
     InterviewRead,
-    InterviewReadWithScreens,
+    InterviewReadWithScreensAndActions,
     InterviewUpdate,
     ValidationError,
 )
@@ -39,10 +37,13 @@ from server.models.interview_screen_entry import (
     InterviewScreenEntry,
     InterviewScreenEntryReadWithScreen,
 )
-from server.models.user import User
+from server.models.submission_action import SubmissionAction
+from server.models.user import User, UserRead
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
 
 class Settings(BaseSettings):
@@ -161,6 +162,16 @@ def test_auth():
     return {"message": "auth success!"}
 
 
+@app.get(
+    "/user/self",
+    dependencies=[Security(azure_scheme)],
+    response_model=UserRead,
+    tags=["users"],
+)
+def get_self_user(user: User = Depends(get_current_user)) -> User:
+    return user
+
+
 @app.post(
     "/api/interviews/",
     tags=["interviews"],
@@ -182,7 +193,7 @@ def create_interview(
 
 @app.get(
     "/api/interviews/{interview_id}",
-    response_model=InterviewReadWithScreens,
+    response_model=InterviewReadWithScreensAndActions,
     tags=["interviews"],
 )
 def get_interview(
@@ -196,7 +207,7 @@ def get_interview(
 
 @app.get(
     "/api/interviews/by-vanity-url/{vanity_url}",
-    response_model=InterviewReadWithScreens,
+    response_model=InterviewReadWithScreensAndActions,
     tags=["interviews"],
 )
 def get_interview_by_vanity_url(
@@ -242,6 +253,7 @@ def update_interview(
     interview: InterviewUpdate,
     session: Session = Depends(get_session),
 ) -> Interview:
+    print("updating interview")
     try:
         db_interview = session.exec(
             select(Interview).where(Interview.id == interview_id)
@@ -251,9 +263,23 @@ def update_interview(
             status_code=404, detail=f"Interview with id {interview_id} not found"
         )
 
-    # now update the db_interview
-    _update_model_diff(db_interview, interview)
+    # update the nested submission actions
+    _validate_sequential_order(interview.submission_actions)
+    actions_to_set, actions_to_delete = _diff_model_lists(
+        db_interview.submission_actions,
+        [SubmissionAction.from_orm(action) for action in interview.submission_actions],
+    )
+
+    # set the updated actions
+    db_interview.submission_actions = actions_to_set
+
+    # now update the top-level db_interview
+    _update_model_diff(db_interview, interview.copy(exclude={"submission_actions"}))
     session.add(db_interview)
+
+    # delete the necessary actions
+    for action in actions_to_delete:
+        session.delete(action)
 
     try:
         session.commit()
@@ -266,7 +292,7 @@ def update_interview(
 
 @app.post(
     "/api/interviews/{interview_id}/starting_state",
-    response_model=InterviewReadWithScreens,
+    response_model=InterviewReadWithScreensAndActions,
     tags=["interviews"],
 )
 def update_interview_starting_state(
@@ -316,7 +342,9 @@ def update_interview_starting_state(
 def get_interviews(
     user: User = Depends(get_current_user), session: Session = Depends(get_session)
 ) -> list[Interview]:
-    interviews = session.exec(select(Interview).limit(100)).all()
+    interviews = session.exec(
+        select(Interview).where(Interview.owner_id == user.id).limit(100)
+    ).all()
     return interviews
 
 
@@ -433,11 +461,11 @@ def update_interview_screen(
     _validate_sequential_order(screen.entries)
 
     # update the InterviewScreen relationships (actions and entries)
-    actions_to_set, actions_to_delete = _update_db_screen_relationships(
+    actions_to_set, actions_to_delete = _diff_model_lists(
         db_screen.actions,
         [ConditionalAction.from_orm(action) for action in screen.actions],
     )
-    entries_to_set, entries_to_delete = _update_db_screen_relationships(
+    entries_to_set, entries_to_delete = _diff_model_lists(
         db_screen.entries,
         [InterviewScreenEntry.from_orm(entry) for entry in screen.entries],
     )
@@ -448,6 +476,8 @@ def update_interview_screen(
 
     # now apply all changes to the session
     session.add(db_screen)
+
+    # delete the necessary actions and entries
     for model in actions_to_delete + entries_to_delete:
         session.delete(model)
 
@@ -476,53 +506,55 @@ def _update_model_diff(existing_model: SQLModel, new_model: SQLModel):
     return existing_model
 
 
-TScreenChild = TypeVar("TScreenChild", ConditionalAction, InterviewScreenEntry)
+TInterviewChild = TypeVar(
+    "TInterviewChild", ConditionalAction, InterviewScreenEntry, SubmissionAction
+)
 
 
-def _update_db_screen_relationships(
-    db_models: list[TScreenChild],
-    request_models: list[TScreenChild],
-) -> tuple[list[TScreenChild], list[TScreenChild]]:
+def _diff_model_lists(
+    db_models: list[TInterviewChild],
+    request_models: list[TInterviewChild],
+) -> tuple[list[TInterviewChild], list[TInterviewChild]]:
     """
-    Given two list of models, diff them to come up with the list of
-    the list of models to set in the db (which includes the models to
-    update and the models to add) and the list of models to delete.
+    Given two list of models, diff them to come up with the list of models to
+    set in the db (which includes the models to update and the models to add)
+    and the list of models to delete.
+
+    The model types must have an `id` member for this to work since that is
+    the field this function uses to compare them.
 
     Args:
-        db_models: The existing list of ConditionalAction or
-            InterviewScreenEntry models from the db
-        request_models: The list of ConditionalAction or InterviewScreenEntry
-            models to update or create
+        db_models: The existing list of models in the db
+        request_models: The list of models coming in from a request which we
+            wish to write.
 
     Returns:
         A tuple of: list of models to set and list of models to delete
     """
     # create map of id to request_model (i.e. the models not in the db)
-    request_models_dict: dict[Optional[uuid.UUID], SQLModel] = {
-        model.id: model for model in request_models
-    }
-    db_model_ids = set(db_model.id for db_model in db_models)
+    db_models_dict = {model.id: model for model in db_models}
+    request_model_ids = set(req_model.id for req_model in request_models)
 
-    models_to_set = []
+    # figure out which models are new and which ones have to be updated
+    models_to_create = []
+    models_to_update = []
+    for request_model in request_models:
+        if request_model.id is None:
+            models_to_create.append(request_model)
+        else:
+            db_model = db_models_dict.get(request_model.id, None)
+            if db_model:
+                # if the model already exists in the database, then we update the
+                # db_model with the request_model data
+                models_to_update.append(_update_model_diff(db_model, request_model))
+
+    # figure out which models need to be deleted from the database
     models_to_delete = []
     for db_model in db_models:
-        request_model = request_models_dict.get(db_model.id)
-
-        if request_model:
-            # if the db_model id matched one of our request models, then we
-            # update the db_model with the request_model data
-            models_to_set.append(_update_model_diff(db_model, request_model))
-        else:
-            # otherwise, delete the db model because it should no longer
-            # exist (it wasn't in our request_models_dict)
+        if db_model.id not in request_model_ids:
             models_to_delete.append(db_model)
 
-    # all models in request_models_dict that *aren't* in the db should now
-    # get added as is
-    for id, request_model in request_models_dict.items():
-        if id not in db_model_ids:
-            models_to_set.append(request_model)
-
+    models_to_set = models_to_create + models_to_update
     return (models_to_set, models_to_delete)
 
 

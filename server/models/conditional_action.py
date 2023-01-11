@@ -12,7 +12,9 @@ class ConditionalOperator(str, enum.Enum):
     """The different types of conditional operator that can be used for a
     ConditionalAction"""
 
+    AFTER = "after"
     ALWAYS_EXECUTE = "ALWAYS_EXECUTE"
+    BEFORE = "before"
     EQUALS = "eq"
     GREATER_THAN = "gt"
     GREATER_THAN_OR_EQUAL = "gte"
@@ -36,7 +38,6 @@ class ConditionalActionBase(OrderedModel):
     action_payload: str
     action_type: ActionType
     conditional_operator: ConditionalOperator
-    order: int
     response_key: Optional[str]
     screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
     value: Optional[str]

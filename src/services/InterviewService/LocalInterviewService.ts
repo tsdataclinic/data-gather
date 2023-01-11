@@ -1,5 +1,8 @@
 import Dexie, { Table } from 'dexie';
+import { DateTime } from 'luxon';
 import { v4 as uuidv4 } from 'uuid';
+import * as User from '../../models/User';
+import * as SubmissionAction from '../../models/SubmissionAction';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
@@ -20,6 +23,8 @@ export default class LocalInterviewService
 {
   private conditionalActions!: Table<ConditionalAction.SerializedT>;
 
+  private submissionActions!: Table<SubmissionAction.SerializedT>;
+
   private interviews!: Table<Interview.SerializedT>;
 
   private interviewScreens!: Table<InterviewScreen.SerializedT>;
@@ -32,11 +37,30 @@ export default class LocalInterviewService
     // id is our primary key
     this.version(1).stores({
       conditionalActions: '++id, screenId',
+      submissionActions: '++id, interviewId',
       interviewScreenEntries: '++id, screenId',
       interviewScreens: '++id, interviewId',
       interviews: '++id, vanityUrl',
     });
   }
+
+  userAPI = {
+    /**
+     * If fetching the current user from the browser, just return a User object
+     * with some default values.
+     *
+     * TODO: implement the notion of a 'User' in the browser storage by
+     * creating some session id.
+     */
+    getCurrentUser: async (): Promise<User.T> => ({
+      createdDate: DateTime.now(),
+      email: 'unauthenticated',
+      familyName: '',
+      givenName: '',
+      id: 'unauthenticated',
+      identityProvider: 'unauthenticated',
+    }),
+  };
 
   interviewAPI = {
     createInterview: async (
@@ -80,13 +104,23 @@ export default class LocalInterviewService
 
     getInterview: async (
       interviewId: string,
-    ): Promise<Interview.WithScreensT> => {
+    ): Promise<Interview.WithScreensAndActions> => {
       const interview = await this.interviews.get(interviewId);
       if (interview) {
+        // get screens
         const screens = await this.interviewAPI.getScreensOfInterview(
           interviewId,
         );
-        return Interview.deserialize({ ...interview, screens });
+
+        // get submission actions
+        const submissionActions =
+          await this.interviewAPI.getSubmissionActionsOfInterview(interviewId);
+
+        return Interview.deserialize({
+          ...interview,
+          screens,
+          submissionActions,
+        });
       }
       throw new Error(`Could not find an interview with id '${interviewId}'`);
     },
@@ -103,8 +137,35 @@ export default class LocalInterviewService
     ): Promise<Interview.T> => {
       const interviewExists = !!(await this.interviews.get(interviewId));
       if (interviewExists) {
-        await this.interviews.put(Interview.serialize(interview));
-        return interview;
+        const { submissionActions, ...serializedInterview } =
+          Interview.serialize(interview);
+        await this.interviews.put(serializedInterview);
+
+        // delete existing submission actions
+        const oldActions = await this.submissionActions
+          .where({ interviewId })
+          .toArray();
+        await this.submissionActions.bulkDelete(
+          oldActions.map(action => action.id),
+        );
+
+        // make sure all actions have an id if they don't
+        const actionsToSet: SubmissionAction.SerializedT[] =
+          submissionActions.map(action => ({
+            ...action,
+            id: action.id ?? uuidv4(),
+          }));
+
+        // set them all into the db
+        await this.submissionActions.bulkPut(actionsToSet);
+
+        // now return the deserialized model
+        const fullModel = {
+          ...serializedInterview,
+          actions: actionsToSet,
+        };
+
+        return Interview.deserialize(fullModel);
       }
       throw new Error(
         `Cannot update interview. Interview with id '${interviewId}' does not exist`,
@@ -114,7 +175,7 @@ export default class LocalInterviewService
     updateInterviewStartingState: async (
       interviewId: string,
       startingScreenIds: readonly string[],
-    ): Promise<Interview.WithScreensT> => {
+    ): Promise<Interview.WithScreensAndActions> => {
       const serializedInterview = await this.interviews.get(interviewId);
       if (serializedInterview) {
         const screens = await this.interviewAPI.getScreensOfInterview(
@@ -156,6 +217,17 @@ export default class LocalInterviewService
         .toArray();
       screens.sort((scr1, scr2) => scr1.order - scr2.order);
       return screens;
+    },
+
+    getSubmissionActionsOfInterview: async (
+      interviewId: string,
+    ): Promise<SubmissionAction.SerializedT[]> => {
+      // get submission actions for this interview
+      const actions = await this.submissionActions
+        .where({ interviewId })
+        .toArray();
+      actions.sort((act1, act2) => act1.order - act2.order);
+      return actions;
     },
   };
 

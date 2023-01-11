@@ -1,15 +1,19 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
+import * as SubmissionAction from '../../../../models/SubmissionAction';
 import Dropdown from '../../../ui/Dropdown';
 import LabelWrapper from '../../../ui/LabelWrapper';
-import ColumnToQuestionMapBlock from './ColumnToQuestionMapBlock';
+import FieldToQuestionBlock from './FieldToQuestionBlock';
 import useAppState from '../../../../hooks/useAppState';
-import type { InsertRowAction, EntryId } from './types';
+import type { EditableAction } from './types';
 
 type Props = {
-  action: InsertRowAction;
+  action: EditableAction;
   entries: readonly InterviewScreenEntry.WithScreenT[];
-  onActionChange: (newAction: InsertRowAction) => void;
+  onActionChange: (
+    actionToReplace: EditableAction,
+    newAction: EditableAction,
+  ) => void;
 };
 
 export default function EditRowActionBlock({
@@ -24,8 +28,8 @@ export default function EditRowActionBlock({
   );
 
   const selectedTable = React.useMemo(
-    () => allTables.find(table => table.key === action.tableTarget),
-    [allTables, action.tableTarget],
+    () => allTables.find(table => table.key === action.target),
+    [allTables, action.target],
   );
 
   const tableOptions = React.useMemo(
@@ -38,28 +42,35 @@ export default function EditRowActionBlock({
   );
 
   const onChangeTableTarget = (tableId: string): void => {
-    onActionChange({ ...action, tableTarget: tableId });
+    onActionChange(action, { ...action, target: tableId });
   };
 
-  const onColumnMappingChange = (
-    columnMappings: ReadonlyMap<string, EntryId | undefined>,
+  const onFieldMappingChange = (
+    fieldMappings: ReadonlyMap<
+      SubmissionAction.FieldId,
+      InterviewScreenEntry.Id | undefined
+    >,
   ): void => {
-    onActionChange({ ...action, columnMappings });
+    onActionChange(action, { ...action, fieldMappings });
   };
 
   return (
     <div className="space-y-4">
       <LabelWrapper label="Airtable table">
-        <Dropdown options={tableOptions} onChange={onChangeTableTarget} />
+        <Dropdown
+          value={action.target}
+          options={tableOptions}
+          onChange={onChangeTableTarget}
+        />
       </LabelWrapper>
       {selectedTable && (
         <>
           <p>Map each column to the question response that should be used.</p>
-          <ColumnToQuestionMapBlock
+          <FieldToQuestionBlock
             entries={entries}
             airtableTable={selectedTable}
-            columnMappings={action.columnMappings}
-            onColumnMappingChange={onColumnMappingChange}
+            fieldMappings={action.fieldMappings}
+            onFieldMappingChange={onFieldMappingChange}
           />
         </>
       )}

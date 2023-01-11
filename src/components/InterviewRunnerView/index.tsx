@@ -13,8 +13,10 @@ import InterviewRunnerScreen from './InterviewRunnerScreen';
 import useInterviewConditionalActions from '../../hooks/useInterviewConditionalActions';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
+import * as SubmissionAction from '../../models/SubmissionAction';
 import ConfigurableScript from '../../script/ConfigurableScript';
 import { FastAPIService } from '../../api/FastAPIService';
+import assertUnreachable from '../../util/assertUnreachable';
 
 type ResponseData = {
   [responseKey: string]: {
@@ -40,10 +42,11 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
   const [responseConsumer, setResponseConsumer] = React.useState<
     ResponseConsumer | undefined
   >(undefined);
-  const [responseData, setResponseData] = React.useState<ResponseData>({});
+  const [finalResponseData, setFinalResponseData] =
+    React.useState<ResponseData>({});
   const [complete, setComplete] = React.useState<boolean>(false);
   const entries = useInterviewScreenEntries(interviewId);
-  const airtableMutation = useMutation({
+  const { mutate: airtableUpdateRecord } = useMutation({
     mutationFn: (data: {
       fields: { [fieldName: string]: string };
       recordId: string;
@@ -55,6 +58,96 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
         data.fields,
       ),
   });
+
+  const { mutate: airtableCreateRecord } = useMutation({
+    mutationFn: (data: {
+      fields: { [fieldName: string]: string };
+      tableId: string;
+    }) => api.airtable.createAirtableRecord(data.tableId, data.fields),
+  });
+
+  const onInterviewComplete = React.useCallback(
+    (responseData: ResponseData): void => {
+      setFinalResponseData(responseData);
+      if (interview) {
+        const allEntries: Map<InterviewScreenEntry.Id, InterviewScreenEntry.T> =
+          Object.keys(responseData).reduce(
+            (map, responseKey) =>
+              map.set(
+                responseData[responseKey].entry.id,
+                responseData[responseKey].entry,
+              ),
+            new Map(),
+          );
+
+        // handle all on-submit actions
+        interview.submissionActions.forEach(submissionAction => {
+          switch (submissionAction.type) {
+            case SubmissionAction.ActionType.EDIT_ROW: {
+              const entryTarget = allEntries.get(submissionAction.target);
+              if (entryTarget) {
+                const { responseKey } = entryTarget;
+                const tableId = entryTarget.responseTypeOptions.selectedTable;
+                const airtableRecordId = responseData[responseKey].response;
+
+                // get all fields mapped to their values from other entries
+                const fields: { [fieldId: string]: string } = {};
+                submissionAction.fieldMappings.forEach((entryId, fieldId) => {
+                  if (entryId !== undefined) {
+                    const entry = allEntries.get(entryId);
+                    if (entry) {
+                      const responseVal =
+                        responseData[entry.responseKey].response;
+                      // ignore empty values
+                      if (responseVal !== '') {
+                        fields[fieldId] = responseVal;
+                      }
+                    }
+                  }
+                });
+
+                airtableUpdateRecord({
+                  tableId,
+                  fields,
+                  recordId: airtableRecordId,
+                });
+              }
+              break;
+            }
+
+            case SubmissionAction.ActionType.INSERT_ROW: {
+              const tableTarget = submissionAction.target;
+
+              // collect all field values
+              const fields: { [fieldId: string]: string } = {};
+              submissionAction.fieldMappings.forEach((entryId, fieldId) => {
+                if (entryId !== undefined) {
+                  const entry = allEntries.get(entryId);
+                  if (entry) {
+                    const responseVal =
+                      responseData[entry.responseKey].response;
+                    // ignore empty values
+                    if (responseVal !== '') {
+                      fields[fieldId] = responseVal;
+                    }
+                  }
+                }
+              });
+
+              airtableCreateRecord({
+                fields,
+                tableId: tableTarget,
+              });
+              break;
+            }
+            default:
+              assertUnreachable(submissionAction.type);
+          }
+        });
+      }
+    },
+    [interview, airtableUpdateRecord, airtableCreateRecord],
+  );
 
   // Construct and run an interview on component load.
   React.useEffect(() => {
@@ -68,7 +161,6 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
     screens.forEach(screen => indexedScreens.set(screen.id, screen));
 
     // Create a script from the interview definition
-    // TODO: Also include actions in the script creation
     const script: ConfigurableScript = new ConfigurableScript(
       interview,
       actions,
@@ -78,14 +170,9 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
     // Moderator, when prompted to ask, will set state on this component so that it will
     // display the correct screen.
     const moderator: Moderator<InterviewScreen.T> = {
-      ask(
-        consumer: ResponseConsumer,
-        screen: InterviewScreen.T,
-        data: ResponseData,
-      ) {
+      ask(consumer: ResponseConsumer, screen: InterviewScreen.T) {
         setResponseConsumer(consumer);
         setCurrentScreen(screen);
-        setResponseData(data);
       },
     };
 
@@ -95,50 +182,10 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
       moderator,
     );
     engine.run((result: ResponseData) => {
-      setResponseData(result);
       setComplete(true);
+      onInterviewComplete(result);
     });
-  }, [interview, screens, actions]);
-
-  // on interview complete
-  React.useEffect(() => {
-    if (complete) {
-      // write back any necessary airtable data.
-      // first, find if any entry specified a writeback
-      const writebacks = Object.values(responseData).filter(
-        response => !!response.entry.writebackOptions,
-      );
-
-      // next, find if any entry specified an airtable record
-      const airtableRecordResponseKey = Object.values(responseData).find(
-        response =>
-          response.entry.responseType ===
-          InterviewScreenEntry.ResponseType.AIRTABLE,
-      )?.entry.responseKey;
-
-      // from the entry that collected the airtable lookup, now get the
-      // selected record id from the responseData
-      const airtableRecordId = airtableRecordResponseKey
-        ? responseData[airtableRecordResponseKey].response
-        : undefined;
-      if (airtableRecordId) {
-        writebacks.forEach(writeback => {
-          const valueToWrite = writeback.response;
-          const fieldName = writeback.entry.writebackOptions?.selectedFields[0];
-          const tableId = writeback.entry.writebackOptions?.selectedTable;
-          if (fieldName && tableId) {
-            airtableMutation.mutate({
-              tableId,
-              recordId: airtableRecordId,
-              fields: {
-                [fieldName]: valueToWrite,
-              },
-            });
-          }
-        });
-      }
-    }
-  }, [complete, airtableMutation, responseData]);
+  }, [interview, screens, actions, onInterviewComplete]);
 
   return (
     <div>
@@ -149,7 +196,7 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
           </div>
           <h2 className="mb-2 text-xl">Responses:</h2>
           <dl>
-            {Object.values(responseData).map(response => (
+            {Object.values(finalResponseData).map(response => (
               <>
                 <dt className="font-bold">{response.entry.prompt}:</dt>
                 <dd className="mb-2 pl-8">{response.response}</dd>
@@ -163,7 +210,6 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
             <InterviewRunnerScreen
               screen={currentScreen}
               entries={entries.get(currentScreen.id) ?? []}
-              responseData={responseData}
               responseConsumer={responseConsumer}
             />
           )}

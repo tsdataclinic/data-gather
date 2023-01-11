@@ -2,10 +2,8 @@ import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Element as ScrollableElement } from 'react-scroll';
-import { MixedCheckbox } from '@reach/checkbox';
 import Form from '../../ui/Form';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import LabelWrapper from '../../ui/LabelWrapper';
 import AirtableFieldSelector from './AirtableFieldSelector';
 import EditableName from './EditableName';
 
@@ -116,42 +114,6 @@ function EntryCard(
                 });
               }}
             />
-          )}
-          {entry.responseType !==
-            InterviewScreenEntry.ResponseType.AIRTABLE && (
-            <>
-              <LabelWrapper
-                inline
-                labelAfter
-                label="Write the response of this question back to Airtable"
-              >
-                <MixedCheckbox
-                  checked={!!entry.writebackOptions}
-                  onChange={event => {
-                    const isChecked = event.currentTarget.checked;
-                    onEntryChange(entry, {
-                      ...entry,
-                      writebackOptions: isChecked
-                        ? InterviewScreenEntry.createDefaultAirtableOptions()
-                        : undefined,
-                    });
-                  }}
-                />
-              </LabelWrapper>
-              {entry.writebackOptions && (
-                <AirtableFieldSelector
-                  useSingleField
-                  fieldSelectorLabel="Field to write to"
-                  airtableConfig={entry.writebackOptions}
-                  onAirtableConfigurationChange={newConfig => {
-                    onEntryChange(entry, {
-                      ...entry,
-                      writebackOptions: newConfig,
-                    });
-                  }}
-                />
-              )}
-            </>
           )}
         </Form.Group>
       </Form>

@@ -1,11 +1,12 @@
 import * as React from 'react';
+import * as User from '../../models/User';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import BackendInterviewService from './BackendInterviewService';
 import LocalInterviewService from './LocalInterviewService';
 import { InterviewServiceAPI } from './InterviewServiceAPI';
-import useCurrentUser from '../../auth/useCurrentUser';
+import useIsAuthenticated from '../../auth/useIsAuthenticated';
 
 export class InterviewServiceImpl implements InterviewServiceAPI {
   localStore: LocalInterviewService;
@@ -28,6 +29,11 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     return this.isAuthenticated ? this.backendStore : this.localStore;
   }
 
+  userAPI = {
+    getCurrentUser: (): Promise<User.T> =>
+      this.getStore().userAPI.getCurrentUser(),
+  };
+
   interviewAPI = {
     createInterview: (interview: Interview.CreateT): Promise<Interview.T> =>
       this.getStore().interviewAPI.createInterview(interview),
@@ -40,12 +46,14 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     ): Promise<InterviewScreenEntry.WithScreenT[]> =>
       this.getStore().interviewAPI.getAllEntries(interviewId),
 
-    getInterview: (interviewId: string): Promise<Interview.WithScreensT> =>
+    getInterview: (
+      interviewId: string,
+    ): Promise<Interview.WithScreensAndActions> =>
       this.getStore().interviewAPI.getInterview(interviewId),
 
     getInterviewByVanityUrl: (
       vanityUrl: string,
-    ): Promise<Interview.WithScreensT> =>
+    ): Promise<Interview.WithScreensAndActions> =>
       // loading by vanity URL should always use the real backend
       this.backendStore.interviewAPI.getInterviewByVanityUrl(vanityUrl),
 
@@ -58,7 +66,7 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     updateInterviewStartingState: (
       interviewId: string,
       startingScreenIds: readonly string[],
-    ): Promise<Interview.WithScreensT> =>
+    ): Promise<Interview.WithScreensAndActions> =>
       this.getStore().interviewAPI.updateInterviewStartingState(
         interviewId,
         startingScreenIds,
@@ -103,7 +111,7 @@ function InterviewServiceProvider({
   client,
   children,
 }: InterviewServiceProviderProps): JSX.Element {
-  const { isAuthenticated } = useCurrentUser();
+  const isAuthenticated = useIsAuthenticated();
   client.setAuthenticationStatus(isAuthenticated);
 
   return (
