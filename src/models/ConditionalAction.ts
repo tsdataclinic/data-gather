@@ -75,9 +75,11 @@ interface ConditionalAction {
   readonly responseKey?: string;
 
   /**
-   * For a given responseKey, an optionally associated lookup column.
+   * For a given responseKey, an optionally associated lookup field. If the
+   * response associated to the responseKey holds an object, then we take the
+   * `responseKeyField` from that object.
    */
-  readonly responseKeyColumn?: string;
+  readonly responseKeyField?: string;
 
   /** The screen that this action belongs to */
   readonly screenId: string;
@@ -102,7 +104,7 @@ export function create(vals: {
     actionConfig: { payload: [], type: ActionType.PUSH },
     conditionalOperator: ConditionalOperator.ALWAYS_EXECUTE,
     responseKey: undefined,
-    responseKeyColumn: undefined,
+    responseKeyField: undefined,
     screenId: vals.screenId,
     value: undefined,
     order: vals.order,

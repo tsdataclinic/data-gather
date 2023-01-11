@@ -6,10 +6,7 @@ import Form from '../../ui/Form';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import AirtableFieldSelector from './AirtableFieldSelector';
 import EditableName from './EditableName';
-
-export type EditableEntry =
-  | InterviewScreenEntry.T
-  | InterviewScreenEntry.CreateT;
+import type { EditableEntry } from '../types';
 
 type Props = {
   entry: EditableEntry;

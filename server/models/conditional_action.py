@@ -39,6 +39,7 @@ class ConditionalActionBase(OrderedModel):
     action_type: ActionType
     conditional_operator: ConditionalOperator
     response_key: Optional[str]
+    response_key_field: Optional[str]
     screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
     value: Optional[str]
 
