@@ -105,6 +105,7 @@ export default function OnSubmitCard({
             <button
               className="float-right"
               type="button"
+              aria-label="delete"
               onClick={() => onActionRemove(action)}
             >
               <FontAwesomeIcon icon={IconType.faRemove} />
