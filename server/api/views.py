@@ -264,7 +264,7 @@ def update_interview(
         )
 
     # update the nested submission actions
-    _validate_sequential_order(interview.submission_actions)
+    _reset_object_order(interview.submission_actions)
     actions_to_set, actions_to_delete = _diff_model_lists(
         db_interview.submission_actions,
         [SubmissionAction.from_orm(action) for action in interview.submission_actions],
@@ -377,7 +377,7 @@ def create_interview_screen(
     )
 
     if not existing_screens:
-        screen.order = 1
+        screen.order = 0
         db_screen = InterviewScreen.from_orm(screen)
         session.add(db_screen)
     else:
@@ -457,8 +457,8 @@ def update_interview_screen(
     _update_model_diff(db_screen, screen.copy(exclude={"actions", "entries"}))
 
     # validate that actions and entries have valid orders
-    _validate_sequential_order(screen.actions)
-    _validate_sequential_order(screen.entries)
+    _reset_object_order(screen.actions)
+    _reset_object_order(screen.entries)
 
     # update the InterviewScreen relationships (actions and entries)
     actions_to_set, actions_to_delete = _diff_model_lists(
@@ -558,23 +558,12 @@ def _diff_model_lists(
     return (models_to_set, models_to_delete)
 
 
-def _validate_sequential_order(request_models: Sequence[OrderedModel]):
+def _reset_object_order(request_models: Sequence[OrderedModel]):
     """
-    Validate that the provided ordered models are in sequential order
-    starting at 1
+    Resets the order attribute of objects in given iterable to their index value
     """
-    sorted_models = sorted([i.order for i in request_models])
-    exc = HTTPException(
-        status_code=400,
-        detail=f"Invalid order provided for added/updated models {sorted_models}",
-    )
-
-    if len(request_models) > 0:
-        if sorted_models != list(range(min(sorted_models), max(sorted_models) + 1)):
-            raise exc
-
-        if sorted_models[0] != 1:
-            raise exc
+    for index,ordered_model in enumerate(request_models):
+        ordered_model.order = index
 
 
 def _adjust_screen_order(
