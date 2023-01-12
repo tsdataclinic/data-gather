@@ -49,7 +49,7 @@ export default function EditRowActionBlock({
     [entries],
   );
 
-  const onChangeRowTarget = (entryId: string): void => {
+  const onChangeRowTarget = (entryId: string | undefined): void => {
     const newConfig = {
       type: actionConfig.type,
       payload: { ...actionConfig.payload, entryId },
@@ -68,7 +68,7 @@ export default function EditRowActionBlock({
   const onFieldMappingChange = (
     fieldMappings: ReadonlyMap<
       SubmissionAction.FieldId,
-      InterviewScreenEntry.Id | undefined
+      SubmissionAction.EntryResponseLookupConfig
     >,
   ): void => {
     onActionChange(action, { ...action, fieldMappings });
@@ -85,7 +85,7 @@ export default function EditRowActionBlock({
             onChangeEntrySelection={onChangeRowTarget}
             selectedEntryId={actionConfig.payload.entryId}
             onChangeEntryResponseField={onChangeEntryResponseField}
-            entryResponseField={actionConfig.payload.primaryKeyField}
+            responseFieldKey={actionConfig.payload.primaryKeyField}
             responseFieldPlaceholder="Select ID field"
           />
         </LabelWrapper>

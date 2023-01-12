@@ -93,15 +93,15 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
                 // get all fields mapped to their values collected from the
                 // entry responses
                 const fields: { [fieldId: string]: string } = {};
-                submissionAction.fieldMappings.forEach((entryId, fieldId) => {
-                  if (entryId !== undefined) {
+                submissionAction.fieldMappings.forEach(
+                  (entryLookupConfig, fieldId) => {
+                    const { entryId, responseFieldKey } = entryLookupConfig;
                     const entry = allEntries.get(entryId);
                     if (entry) {
-                      // TODO: eventually this should also receive a
-                      // `responseKeyField` in case the response is an object.
                       const responseValue = ConfigurableScript.getResponseValue(
                         responseData,
                         entry.responseKey,
+                        responseFieldKey,
                       );
 
                       // ignore empty values
@@ -109,8 +109,8 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
                         fields[fieldId] = responseValue;
                       }
                     }
-                  }
-                });
+                  },
+                );
 
                 airtableUpdateRecord({
                   tableId,
@@ -128,15 +128,15 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
               // TODO: this is duplicate code from the EDIT_ROW section. We
               // should get a reusable function to collect fieldMappings.
               const fields: { [fieldId: string]: string } = {};
-              submissionAction.fieldMappings.forEach((entryId, fieldId) => {
-                if (entryId !== undefined) {
+              submissionAction.fieldMappings.forEach(
+                (entryLookupConfig, fieldId) => {
+                  const { entryId, responseFieldKey } = entryLookupConfig;
                   const entry = allEntries.get(entryId);
                   if (entry) {
-                    // TODO: eventually this should also receive a
-                    // `responseKeyField` in case the response is an object.
                     const responseValue = ConfigurableScript.getResponseValue(
                       responseData,
                       entry.responseKey,
+                      responseFieldKey,
                     );
 
                     // ignore empty values
@@ -144,8 +144,8 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
                       fields[fieldId] = responseValue;
                     }
                   }
-                }
-              });
+                },
+              );
 
               airtableCreateRecord({
                 fields,

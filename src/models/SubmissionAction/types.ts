@@ -29,15 +29,17 @@ export type InsertRowActionConfig = {
   type: SubmissionActionType.INSERT_ROW;
 };
 
+export type EntryResponseLookupConfig = {
+  entryId: InterviewScreenEntry.Id;
+  responseFieldKey?: string;
+};
+
 /**
  * An action that is executed on interview submission.
  */
 type SubmissionAction = {
   readonly config: EditRowActionConfig | InsertRowActionConfig;
-  readonly fieldMappings: ReadonlyMap<
-    FieldId,
-    InterviewScreenEntry.Id | undefined
-  >;
+  readonly fieldMappings: ReadonlyMap<FieldId, EntryResponseLookupConfig>;
   readonly id: string;
   readonly interviewId: string;
   readonly order: number;

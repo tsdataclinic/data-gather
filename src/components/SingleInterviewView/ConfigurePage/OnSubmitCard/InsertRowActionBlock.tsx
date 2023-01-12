@@ -56,7 +56,7 @@ export default function EditRowActionBlock({
   const onFieldMappingChange = (
     fieldMappings: ReadonlyMap<
       SubmissionAction.FieldId,
-      InterviewScreenEntry.Id | undefined
+      SubmissionAction.EntryResponseLookupConfig
     >,
   ): void => {
     onActionChange(action, { ...action, fieldMappings });
@@ -69,6 +69,7 @@ export default function EditRowActionBlock({
           value={actionConfig.payload.tableTarget}
           options={tableOptions}
           onChange={onChangeTableTarget}
+          placeholder="Select table"
         />
       </LabelWrapper>
       {selectedTable && (

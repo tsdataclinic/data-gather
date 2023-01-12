@@ -25,19 +25,32 @@ class SubmissionActionType(str, enum.Enum):
     INSERT_ROW = "insert_row"
 
 
+class EntryResponseLookupConfig(BaseModel):
+    entryId: str
+    responseFieldKey: Optional[str]
+
+
 class SubmissionActionBase(OrderedModel):
     """The base SubmissionAction model"""
 
     type: SubmissionActionType
     interview_id: uuid.UUID = Field(foreign_key="interview.id")
-    field_mappings: dict[str, Optional[str]] = Field(sa_column=Column(JSON))
+    field_mappings: dict[str, EntryResponseLookupConfig] = Field(sa_column=Column(JSON))
     payload: Union[EditRowPayload, InsertRowPayload] = Field(sa_column=Column(JSON))
 
     @validator("payload")
-    def validate_payload(cls, value: Union[EditRowPayload, InsertRowPayload]):
+    def validate_payload(cls, value: Union[EditRowPayload, InsertRowPayload]) -> dict:
         # hacky use of validator to allow Pydantic models to be stored as JSON
         # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
         return value.dict()
+
+    @validator("field_mappings")
+    def validate_field_mappings(
+        cls, value: dict[str, EntryResponseLookupConfig]
+    ) -> dict:
+        # hacky use of validator to allow Pydantic models to be stored as JSON
+        # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
+        return {key: val.dict() for key, val in value.items()}
 
 
 class SubmissionAction(SubmissionActionBase, table=True):

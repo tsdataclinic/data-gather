@@ -4,27 +4,35 @@ import Dropdown from '../../../ui/Dropdown';
 import useAppState from '../../../../hooks/useAppState';
 
 type Props = {
+  emptyIsAnOption?: boolean;
+  emptyOptionText?: string;
   entries: readonly InterviewScreenEntry.WithScreenT[];
+  onChangeEntryResponseField?: (responseFieldId: string) => void;
+  onChangeEntrySelection: (
+    entryId: InterviewScreenEntry.Id | undefined,
+  ) => void;
   /**
    * If the entry stores an object (e.g. an Airtable lookup returns a full
    * record) we also want to choose what field in that object to use. The
-   * `entryResponseField` is used to index into the response object of the
+   * `responseFieldKey` is used to index into the response object of the
    * entry.
    */
-  entryResponseField?: string;
-  onChangeEntryResponseField: (responseFieldId: string) => void;
-  onChangeEntrySelection: (entryId: string) => void;
+  responseFieldKey?: string;
   responseFieldPlaceholder?: string;
-  selectedEntryId?: string;
+  selectedEntryId?: InterviewScreenEntry.Id | undefined;
 };
+
+const EMPTY_OPTION_ID = '__EMPTY__';
 
 export default function EntryDropdown({
   entries,
   selectedEntryId,
   onChangeEntrySelection,
   onChangeEntryResponseField,
-  entryResponseField,
-  responseFieldPlaceholder,
+  responseFieldKey,
+  responseFieldPlaceholder = 'Select field',
+  emptyIsAnOption = false,
+  emptyOptionText = 'No selection',
 }: Props): JSX.Element {
   const { airtableSettings } = useAppState();
   const { bases } = airtableSettings;
@@ -34,14 +42,23 @@ export default function EntryDropdown({
     [selectedEntryId, entries],
   );
 
-  const entryOptions = React.useMemo(
-    () =>
+  const entryOptions = React.useMemo(() => {
+    const emptyOptionSingleton = emptyIsAnOption
+      ? [
+          {
+            value: EMPTY_OPTION_ID,
+            displayValue: emptyOptionText,
+          },
+        ]
+      : [];
+
+    return emptyOptionSingleton.concat(
       entries.map(entry => ({
         value: entry.id,
         displayValue: `${entry.screen.title} - ${entry.name}`,
       })),
-    [entries],
-  );
+    );
+  }, [entries, emptyIsAnOption, emptyOptionText]);
 
   const airtableFieldOptions = React.useMemo(() => {
     if (
@@ -69,15 +86,19 @@ export default function EntryDropdown({
         placeholder="Select response"
         options={entryOptions}
         onChange={onChangeEntrySelection}
-        value={selectedEntryId}
+        value={
+          selectedEntryId === undefined && emptyIsAnOption
+            ? EMPTY_OPTION_ID
+            : selectedEntryId
+        }
       />
       {airtableFieldOptions ? (
         <Dropdown
           className="!ml-2"
-          placeholder={responseFieldPlaceholder ?? 'Select field'}
+          placeholder={responseFieldPlaceholder}
           options={airtableFieldOptions}
           onChange={onChangeEntryResponseField}
-          value={entryResponseField}
+          value={responseFieldKey}
         />
       ) : null}
     </>

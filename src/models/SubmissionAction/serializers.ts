@@ -1,8 +1,8 @@
 import invariant from 'invariant';
 import type { SerializedSubmissionActionCreate } from '../../api/models/SerializedSubmissionActionCreate';
 import type { SerializedSubmissionActionRead } from '../../api/models/SerializedSubmissionActionRead';
+import type { SerializedEntryResponseLookupConfig } from '../../api/models/SerializedEntryResponseLookupConfig';
 import * as SubmissionAction from './types';
-import type * as InterviewScreenEntry from '../InterviewScreenEntry';
 import assertUnreachable from '../../util/assertUnreachable';
 
 export function deserialize(
@@ -13,7 +13,7 @@ export function deserialize(
   const fieldMappingsObj = new Map(
     Object.entries(fieldMappings).map(([key, val]) => [
       key as SubmissionAction.FieldId,
-      val as InterviewScreenEntry.Id,
+      val,
     ]),
   );
 
@@ -46,9 +46,10 @@ export function deserialize(
 }
 
 function serializeFieldMappings(
-  fieldMappings: ReadonlyMap<SubmissionAction.FieldId, string | undefined>,
-): Record<string, string> {
-  const fieldMappingsObj: Record<string, string> = {};
+  fieldMappings: SubmissionAction.T['fieldMappings'],
+): Record<string, SerializedEntryResponseLookupConfig> {
+  const fieldMappingsObj: Record<string, SerializedEntryResponseLookupConfig> =
+    {};
   fieldMappings.forEach((value, key) => {
     if (value !== undefined) {
       fieldMappingsObj[key] = value;
@@ -60,9 +61,7 @@ function serializeFieldMappings(
 export function serialize(
   submissionAction: SubmissionAction.T,
 ): SerializedSubmissionActionRead {
-  const fieldMappings: Record<string, string> = serializeFieldMappings(
-    submissionAction.fieldMappings,
-  );
+  const fieldMappings = serializeFieldMappings(submissionAction.fieldMappings);
   const { payload, type } = submissionAction.config;
   return {
     ...submissionAction,

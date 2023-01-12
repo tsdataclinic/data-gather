@@ -2,24 +2,19 @@ import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import { AirtableTableConfig } from '../../../../store/appReducer';
-import Dropdown from '../../../ui/Dropdown';
+import EntryDropdown from './EntryDropdown';
 
 type Props = {
   airtableTable: AirtableTableConfig;
   entries: readonly InterviewScreenEntry.WithScreenT[];
-  fieldMappings: ReadonlyMap<
-    SubmissionAction.FieldId,
-    InterviewScreenEntry.Id | undefined
-  >;
+  fieldMappings: SubmissionAction.T['fieldMappings'];
   onFieldMappingChange: (
     newMappings: ReadonlyMap<
       SubmissionAction.FieldId,
-      InterviewScreenEntry.Id | undefined
+      SubmissionAction.EntryResponseLookupConfig
     >,
   ) => void;
 };
-
-const DO_NOT_UPDATE_FLAG = '__DO_NOT_UPDATE__';
 
 export default function ColumnToQuestionMapBlock({
   airtableTable,
@@ -27,30 +22,16 @@ export default function ColumnToQuestionMapBlock({
   fieldMappings,
   onFieldMappingChange,
 }: Props): JSX.Element {
-  const entryOptions = React.useMemo(
-    () =>
-      [
-        {
-          value: DO_NOT_UPDATE_FLAG,
-          displayValue: 'Do not update',
-        },
-      ].concat(
-        entries.map(entry => ({
-          value: entry.id,
-          displayValue: `${entry.screen.title} - ${entry.name}`,
-        })),
-      ),
-    [entries],
-  );
-
   const onMappingChange = (
     fieldId: SubmissionAction.FieldId,
-    entryId: string,
+    entryLookupConfig: SubmissionAction.EntryResponseLookupConfig | undefined,
   ): void => {
-    const newMappings = new Map([...fieldMappings.entries()]).set(
-      fieldId,
-      entryId === DO_NOT_UPDATE_FLAG ? undefined : entryId,
-    );
+    const newMappings = new Map([...fieldMappings.entries()]);
+    if (entryLookupConfig === undefined) {
+      newMappings.delete(fieldId);
+    } else {
+      newMappings.set(fieldId, entryLookupConfig);
+    }
     onFieldMappingChange(newMappings);
   };
 
@@ -65,16 +46,40 @@ export default function ColumnToQuestionMapBlock({
         <div className="col-span-3">Question</div>
         {fields.map(field => {
           const fieldID = field.fieldID as SubmissionAction.FieldId;
-          const entryId = fieldMappings.get(fieldID);
+          const entryLookupConfig = fieldMappings.get(fieldID);
 
           return (
             <React.Fragment key={fieldID}>
               <div>{field.fieldName}</div>
               <div className="col-span-3">
-                <Dropdown
-                  options={entryOptions}
-                  onChange={newEntryId => onMappingChange(fieldID, newEntryId)}
-                  value={entryId ?? DO_NOT_UPDATE_FLAG}
+                <EntryDropdown
+                  emptyIsAnOption
+                  emptyOptionText="Do not update"
+                  entries={entries}
+                  selectedEntryId={entryLookupConfig?.entryId}
+                  responseFieldKey={entryLookupConfig?.responseFieldKey}
+                  onChangeEntrySelection={newEntryId =>
+                    onMappingChange(
+                      fieldID,
+                      newEntryId
+                        ? {
+                            ...entryLookupConfig,
+                            entryId: newEntryId,
+                          }
+                        : undefined,
+                    )
+                  }
+                  onChangeEntryResponseField={responseFieldKey =>
+                    onMappingChange(
+                      fieldID,
+                      entryLookupConfig
+                        ? {
+                            ...entryLookupConfig,
+                            responseFieldKey,
+                          }
+                        : undefined,
+                    )
+                  }
                 />
               </div>
             </React.Fragment>

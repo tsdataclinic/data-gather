@@ -16,6 +16,7 @@ export { ResponseType } from './models/ResponseType';
 export type { SerializedConditionalActionCreate } from './models/SerializedConditionalActionCreate';
 export type { SerializedConditionalActionRead } from './models/SerializedConditionalActionRead';
 export type { SerializedEditRowPayload } from './models/SerializedEditRowPayload';
+export type { SerializedEntryResponseLookupConfig } from './models/SerializedEntryResponseLookupConfig';
 export type { SerializedInsertRowPayload } from './models/SerializedInsertRowPayload';
 export type { SerializedInterviewCreate } from './models/SerializedInterviewCreate';
 export type { SerializedInterviewRead } from './models/SerializedInterviewRead';

@@ -634,6 +634,7 @@ async def create_airtable_record(table_name: str, record: Record = Body(...)) ->
     """
     Create an airtable record in a table.
     """
+    print(record)
     return airtable_client.create_record(table_name, record)
 
 
