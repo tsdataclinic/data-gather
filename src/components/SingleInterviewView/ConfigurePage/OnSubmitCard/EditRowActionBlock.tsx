@@ -57,7 +57,7 @@ export default function EditRowActionBlock({
     onActionChange(action, { ...action, config: newConfig } as EditableAction);
   };
 
-  const onChangeEntryResponseField = (responseField: string): void => {
+  const onChangeResponseFieldKey = (responseField: string): void => {
     const newConfig = {
       type: actionConfig.type,
       payload: { ...actionConfig.payload, primaryKeyField: responseField },
@@ -84,8 +84,8 @@ export default function EditRowActionBlock({
             entries={entriesWithAirtableLookup}
             onChangeEntrySelection={onChangeRowTarget}
             selectedEntryId={actionConfig.payload.entryId}
-            onChangeEntryResponseField={onChangeEntryResponseField}
-            responseFieldKey={actionConfig.payload.primaryKeyField}
+            onChangeResponseFieldKey={onChangeResponseFieldKey}
+            selectedResponseFieldKey={actionConfig.payload.primaryKeyField}
             responseFieldPlaceholder="Select ID field"
           />
         </LabelWrapper>

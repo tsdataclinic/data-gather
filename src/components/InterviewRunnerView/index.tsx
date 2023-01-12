@@ -25,6 +25,17 @@ type Props = {
   interviewId: string;
 };
 
+function getSpecialValueForSubmission(
+  specialValueType: SubmissionAction.SpecialValueType,
+): string {
+  switch (specialValueType) {
+    case SubmissionAction.SpecialValueType.NOW_DATE:
+      return new Date().toISOString();
+    default:
+      return assertUnreachable(specialValueType);
+  }
+}
+
 export function InterviewRunnerView(props: Props): JSX.Element | null {
   const { interviewId } = props;
   const interview = useInterview(interviewId);
@@ -95,19 +106,26 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
                 const fields: { [fieldId: string]: string } = {};
                 submissionAction.fieldMappings.forEach(
                   (entryLookupConfig, fieldId) => {
-                    const { entryId, responseFieldKey } = entryLookupConfig;
-                    const entry = allEntries.get(entryId);
-                    if (entry) {
-                      const responseValue = ConfigurableScript.getResponseValue(
-                        responseData,
-                        entry.responseKey,
-                        responseFieldKey,
-                      );
-
-                      // ignore empty values
-                      if (responseValue !== '') {
-                        fields[fieldId] = responseValue;
+                    const { entryId, responseFieldKey, specialValueType } =
+                      entryLookupConfig;
+                    let responseValue = '';
+                    if (entryId) {
+                      const entry = allEntries.get(entryId);
+                      if (entry) {
+                        responseValue = ConfigurableScript.getResponseValue(
+                          responseData,
+                          entry.responseKey,
+                          responseFieldKey,
+                        );
                       }
+                    } else if (specialValueType) {
+                      responseValue =
+                        getSpecialValueForSubmission(specialValueType);
+                    }
+
+                    // ignore empty values
+                    if (responseValue !== '') {
+                      fields[fieldId] = responseValue;
                     }
                   },
                 );
@@ -130,19 +148,26 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
               const fields: { [fieldId: string]: string } = {};
               submissionAction.fieldMappings.forEach(
                 (entryLookupConfig, fieldId) => {
-                  const { entryId, responseFieldKey } = entryLookupConfig;
-                  const entry = allEntries.get(entryId);
-                  if (entry) {
-                    const responseValue = ConfigurableScript.getResponseValue(
-                      responseData,
-                      entry.responseKey,
-                      responseFieldKey,
-                    );
-
-                    // ignore empty values
-                    if (responseValue !== '') {
-                      fields[fieldId] = responseValue;
+                  const { entryId, responseFieldKey, specialValueType } =
+                    entryLookupConfig;
+                  let responseValue = '';
+                  if (entryId) {
+                    const entry = allEntries.get(entryId);
+                    if (entry) {
+                      responseValue = ConfigurableScript.getResponseValue(
+                        responseData,
+                        entry.responseKey,
+                        responseFieldKey,
+                      );
                     }
+                  } else if (specialValueType) {
+                    responseValue =
+                      getSpecialValueForSubmission(specialValueType);
+                  }
+
+                  // ignore empty values
+                  if (responseValue !== '') {
+                    fields[fieldId] = responseValue;
                   }
                 },
               );

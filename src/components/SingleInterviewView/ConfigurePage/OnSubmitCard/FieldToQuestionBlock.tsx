@@ -27,7 +27,11 @@ export default function ColumnToQuestionMapBlock({
     entryLookupConfig: SubmissionAction.EntryResponseLookupConfig | undefined,
   ): void => {
     const newMappings = new Map([...fieldMappings.entries()]);
-    if (entryLookupConfig === undefined) {
+    if (
+      entryLookupConfig === undefined ||
+      (entryLookupConfig.entryId === undefined &&
+        entryLookupConfig.specialValueType === undefined)
+    ) {
       newMappings.delete(fieldId);
     } else {
       newMappings.set(fieldId, entryLookupConfig);
@@ -43,7 +47,7 @@ export default function ColumnToQuestionMapBlock({
       <h3 className="font-semibold">Table: {tableName}</h3>
       <div className="grid grid-cols-4 gap-y-4">
         <div>Column</div>
-        <div className="col-span-3">Question</div>
+        <div className="col-span-3">Response</div>
         {fields.map(field => {
           const fieldID = field.fieldID as SubmissionAction.FieldId;
           const entryLookupConfig = fieldMappings.get(fieldID);
@@ -54,10 +58,12 @@ export default function ColumnToQuestionMapBlock({
               <div className="col-span-3">
                 <EntryDropdown
                   emptyIsAnOption
+                  allowSpecialValues
                   emptyOptionText="Do not update"
                   entries={entries}
                   selectedEntryId={entryLookupConfig?.entryId}
-                  responseFieldKey={entryLookupConfig?.responseFieldKey}
+                  selectedResponseFieldKey={entryLookupConfig?.responseFieldKey}
+                  selectedSpecialValueType={entryLookupConfig?.specialValueType}
                   onChangeEntrySelection={newEntryId =>
                     onMappingChange(
                       fieldID,
@@ -65,20 +71,29 @@ export default function ColumnToQuestionMapBlock({
                         ? {
                             ...entryLookupConfig,
                             entryId: newEntryId,
+                            specialValueType: undefined,
                           }
                         : undefined,
                     )
                   }
-                  onChangeEntryResponseField={responseFieldKey =>
+                  onChangeResponseFieldKey={responseFieldKey =>
                     onMappingChange(
                       fieldID,
                       entryLookupConfig
                         ? {
                             ...entryLookupConfig,
                             responseFieldKey,
+                            specialValueType: undefined,
                           }
                         : undefined,
                     )
+                  }
+                  onChangeSpecialValueType={specialValueType =>
+                    onMappingChange(fieldID, {
+                      specialValueType,
+                      entryId: undefined,
+                      responseFieldKey: undefined,
+                    })
                   }
                 />
               </div>

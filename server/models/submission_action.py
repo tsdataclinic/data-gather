@@ -25,9 +25,14 @@ class SubmissionActionType(str, enum.Enum):
     INSERT_ROW = "insert_row"
 
 
+class SpecialValueType(str, enum.Enum):
+    NOW_DATE = "now_date"
+
+
 class EntryResponseLookupConfig(BaseModel):
-    entryId: str
+    entryId: Optional[str]
     responseFieldKey: Optional[str]
+    specialValueType: Optional[SpecialValueType]
 
 
 class SubmissionActionBase(OrderedModel):
@@ -50,7 +55,7 @@ class SubmissionActionBase(OrderedModel):
     ) -> dict:
         # hacky use of validator to allow Pydantic models to be stored as JSON
         # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
-        return {key: val.dict() for key, val in value.items()}
+        return {key: val.dict(exclude_none=True) for key, val in value.items()}
 
 
 class SubmissionAction(SubmissionActionBase, table=True):

@@ -1,5 +1,6 @@
 import { SubmissionActionType } from '../../api/models/SubmissionActionType';
 import { SerializedSubmissionActionRead } from '../../api/models/SerializedSubmissionActionRead';
+import { SpecialValueType } from '../../api/models/SpecialValueType';
 import * as InterviewScreenEntry from '../InterviewScreenEntry';
 
 export type FieldId = string & { __type: 'FieldId' };
@@ -30,8 +31,9 @@ export type InsertRowActionConfig = {
 };
 
 export type EntryResponseLookupConfig = {
-  entryId: InterviewScreenEntry.Id;
+  entryId?: InterviewScreenEntry.Id;
   responseFieldKey?: string;
+  specialValueType?: SpecialValueType;
 };
 
 /**
@@ -69,3 +71,4 @@ export type { SubmissionAction as T };
 export type { SubmissionActionCreate as CreateT };
 export type { SerializedSubmissionActionRead as SerializedT };
 export { SubmissionActionType as ActionType };
+export { SpecialValueType };

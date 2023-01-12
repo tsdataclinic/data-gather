@@ -32,6 +32,7 @@ export type { SerializedInterviewUpdate } from './models/SerializedInterviewUpda
 export type { SerializedSubmissionActionCreate } from './models/SerializedSubmissionActionCreate';
 export type { SerializedSubmissionActionRead } from './models/SerializedSubmissionActionRead';
 export type { SerializedUserRead } from './models/SerializedUserRead';
+export { SpecialValueType } from './models/SpecialValueType';
 export { SubmissionActionType } from './models/SubmissionActionType';
 export type { ValidationError } from './models/ValidationError';
 
