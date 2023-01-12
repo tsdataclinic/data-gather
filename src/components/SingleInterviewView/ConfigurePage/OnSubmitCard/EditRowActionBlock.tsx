@@ -1,14 +1,15 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
-import Dropdown from '../../../ui/Dropdown';
 import LabelWrapper from '../../../ui/LabelWrapper';
 import FieldToQuestionBlock from './FieldToQuestionBlock';
 import useAppState from '../../../../hooks/useAppState';
 import type { EditableAction } from './types';
+import EntryDropdown from './EntryDropdown';
 
 type Props = {
   action: EditableAction;
+  actionConfig: SubmissionAction.WithPartialPayload<SubmissionAction.EditRowActionConfig>;
   entries: readonly InterviewScreenEntry.WithScreenT[];
   onActionChange: (
     actionToReplace: EditableAction,
@@ -18,6 +19,7 @@ type Props = {
 
 export default function EditRowActionBlock({
   action,
+  actionConfig,
   entries,
   onActionChange,
 }: Props): JSX.Element {
@@ -28,29 +30,39 @@ export default function EditRowActionBlock({
   );
 
   const selectedTable = React.useMemo(() => {
-    const selectedEntry = entries.find(entry => entry.id === action.target);
+    const selectedEntry = entries.find(
+      entry => entry.id === actionConfig.payload.entryId,
+    );
     return allTables.find(
       table => table.key === selectedEntry?.responseTypeOptions.selectedTable,
     );
-  }, [entries, allTables, action.target]);
+  }, [entries, allTables, actionConfig]);
 
-  const entryOptions = React.useMemo(
+  const entriesWithAirtableLookup = React.useMemo(
     () =>
       entries
         // only show entries that are configured for Airtable lookups
         .filter(
           entry =>
             entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE,
-        )
-        .map(entry => ({
-          value: entry.id,
-          displayValue: `${entry.screen.title} - ${entry.name}`,
-        })),
+        ),
     [entries],
   );
 
   const onChangeRowTarget = (entryId: string): void => {
-    onActionChange(action, { ...action, target: entryId });
+    const newConfig = {
+      type: actionConfig.type,
+      payload: { ...actionConfig.payload, entryId },
+    };
+    onActionChange(action, { ...action, config: newConfig } as EditableAction);
+  };
+
+  const onChangeEntryResponseField = (responseField: string): void => {
+    const newConfig = {
+      type: actionConfig.type,
+      payload: { ...actionConfig.payload, primaryKeyField: responseField },
+    };
+    onActionChange(action, { ...action, config: newConfig } as EditableAction);
   };
 
   const onFieldMappingChange = (
@@ -64,14 +76,16 @@ export default function EditRowActionBlock({
 
   return (
     <div className="space-y-4">
-      {entryOptions.length === 0 ? (
+      {entriesWithAirtableLookup.length === 0 ? (
         <p>There are no questions configured for Airtable yet.</p>
       ) : (
         <LabelWrapper label="What row would you like to edit?">
-          <Dropdown
-            options={entryOptions}
-            onChange={onChangeRowTarget}
-            value={action.target}
+          <EntryDropdown
+            entries={entriesWithAirtableLookup}
+            onChangeEntrySelection={onChangeRowTarget}
+            selectedEntryId={actionConfig.payload.entryId}
+            onChangeEntryResponseField={onChangeEntryResponseField}
+            responseFieldPlaceholder="Select ID field"
           />
         </LabelWrapper>
       )}

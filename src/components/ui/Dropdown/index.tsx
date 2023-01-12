@@ -81,6 +81,7 @@ const StyledItemIndicator = styled(Select.ItemIndicator)`
 
 type Props<T> = {
   ariaLabel?: string;
+  className?: string;
   defaultValue?: T | undefined;
   disabled?: boolean;
   id?: string;
@@ -101,6 +102,7 @@ type Props<T> = {
 
 export default function Dropdown<T extends string>({
   ariaLabel,
+  className,
   defaultValue,
   placeholder,
   name,
@@ -137,6 +139,7 @@ export default function Dropdown<T extends string>({
     >
       <StyledTriggerButton
         id={id}
+        className={className}
         aria-label={ariaLabelToUse}
         disabled={disabled}
       >

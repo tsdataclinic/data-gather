@@ -1,4 +1,3 @@
-import { ResponseData } from '@dataclinic/interview';
 import invariant from 'invariant';
 import { v4 as uuidv4 } from 'uuid';
 import assertUnreachable from '../util/assertUnreachable';
@@ -7,6 +6,7 @@ import { ActionType } from '../api/models/ActionType';
 import { ConditionalOperator } from '../api/models/ConditionalOperator';
 import { SerializedConditionalActionRead } from '../api/models/SerializedConditionalActionRead';
 import { SerializedConditionalActionCreate } from '../api/models/SerializedConditionalActionCreate';
+import { ResponseData } from '../script/types';
 
 const PUSH_ACTION_DELIMITER = ';';
 
@@ -36,28 +36,27 @@ export const ACTION_TYPES: readonly ActionType[] = Object.values(ActionType);
  */
 interface ConditionalAction {
   /** The action to do if the condition evaluates to true */
-  readonly actionConfig: Readonly<
-    /** Push some entries on to the stack */
+  readonly actionConfig:
     | {
+        /** Push some entries on to the stack */
         payload: readonly string[];
         type: ActionType.PUSH;
       }
-    /**
-     * Skip the next screen and add response data in place of the user
-     */
     | {
+        /**
+         * Skip the next screen and add response data in place of the user
+         */
         payload: Readonly<ResponseData>;
         type: ActionType.SKIP;
       }
-    /**
-     * Add a checkpoint, restore a checkpoint, or declare a milestone to be
-     * passed
-     */
     | {
+        /**
+         * Add a checkpoint, restore a checkpoint, or declare a milestone to be
+         * passed
+         */
         payload: string;
         type: ActionType.CHECKPOINT | ActionType.RESTORE | ActionType.MILESTONE;
-      }
-  >;
+      };
 
   /** Which operation to use for the comparison */
   readonly conditionalOperator: ConditionalOperator;
@@ -93,7 +92,7 @@ type ConditionalActionCreate = Omit<ConditionalAction, 'id'> & {
    * A temp id used only for identification purposes in the frontend (e.g.
    * for React keys)
    */
-  tempId: string;
+  readonly tempId: string;
 };
 
 export function create(vals: {
@@ -110,15 +109,6 @@ export function create(vals: {
     order: vals.order,
     tempId: uuidv4(),
   };
-}
-
-// Helper predicate function to check if something is an object
-function isObject(maybeObj: unknown): maybeObj is Record<string, unknown> {
-  return (
-    typeof maybeObj === 'object' &&
-    maybeObj !== null &&
-    !Array.isArray(maybeObj)
-  );
 }
 
 /**
@@ -175,14 +165,10 @@ export function deserialize(
         },
       };
     case ActionType.SKIP:
-      invariant(
-        isObject(actionPayload),
-        `[ConditionalAction] Deserialization error. 'actionPayload' must be an object.`,
-      );
       return {
         ...condition,
         actionConfig: {
-          payload: actionPayload,
+          payload: JSON.parse(actionPayload),
           type: actionType,
         },
       };

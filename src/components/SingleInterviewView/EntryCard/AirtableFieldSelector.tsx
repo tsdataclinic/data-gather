@@ -20,8 +20,8 @@ export default function AirtableFieldSelector({
   fieldSelectorLabel,
   useSingleField = false,
 }: Props): JSX.Element {
-  const { airtableSettings: hardCodedSettings } = useAppState();
-  const { bases } = hardCodedSettings;
+  const { airtableSettings } = useAppState();
+  const { bases } = airtableSettings;
   const { selectedBase, selectedTable, selectedFields } = airtableConfig;
 
   const availableTables = React.useMemo(() => {

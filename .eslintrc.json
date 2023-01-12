@@ -100,7 +100,7 @@
         "controlComponents": [
           "InputText",
           "InputNumber",
-          "Dropdown",
+          "*Dropdown",
           "MixedCheckbox",
           "MultiSelect",
           "TextArea"

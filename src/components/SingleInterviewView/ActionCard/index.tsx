@@ -41,28 +41,15 @@ function ActionCard(
     [interviewScreens],
   );
 
-  const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] = React.useState(
-    action.conditionalOperator ===
-      ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE,
-  );
-
   const onAlwaysExecuteChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>): void => {
       const isChecked = event.target.checked;
-      setIsAlwaysExecuteChecked(isChecked);
-
-      // if it is now unchecked and the conditionalOperator is ALWAYS_EXECUTE,
-      // then we should change it to a reasonable default (such as EQUALS)
-      if (
-        !isChecked &&
-        action.conditionalOperator ===
-          ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
-      ) {
-        onActionChange(action, {
-          ...action,
-          conditionalOperator: ConditionalAction.ConditionalOperator.EQ,
-        });
-      }
+      onActionChange(action, {
+        ...action,
+        conditionalOperator: isChecked
+          ? ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
+          : ConditionalAction.ConditionalOperator.EQ,
+      });
     },
     [action, onActionChange],
   );
@@ -83,6 +70,10 @@ function ActionCard(
     },
     [action, onActionChange],
   );
+
+  const isAlwaysExecuteChecked =
+    action.conditionalOperator ===
+    ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE;
 
   return (
     <ScrollableElement

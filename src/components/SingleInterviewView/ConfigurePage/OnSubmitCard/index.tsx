@@ -59,13 +59,14 @@ export default function OnSubmitCard({
   };
 
   const renderActionBlock = (action: EditableAction): JSX.Element => {
-    switch (action.type) {
+    switch (action.config.type) {
       case SubmissionAction.ActionType.EDIT_ROW:
         return (
           <EditRowActionBlock
             action={action}
             entries={entries ?? []}
             onActionChange={onActionChange}
+            actionConfig={action.config}
           />
         );
       case SubmissionAction.ActionType.INSERT_ROW:
@@ -73,11 +74,12 @@ export default function OnSubmitCard({
           <InsertRowActionBlock
             action={action}
             entries={entries ?? []}
+            actionConfig={action.config}
             onActionChange={onActionChange}
           />
         );
       default:
-        return assertUnreachable(action.type);
+        return assertUnreachable(action.config);
     }
   };
 
@@ -95,7 +97,7 @@ export default function OnSubmitCard({
           >
             <LabelWrapper label="Action type">
               <Dropdown
-                value={action.type}
+                value={action.config.type}
                 options={ACTION_TYPE_OPTIONS}
                 onChange={actionType => {
                   // reuse the same id so that we edit the existing action

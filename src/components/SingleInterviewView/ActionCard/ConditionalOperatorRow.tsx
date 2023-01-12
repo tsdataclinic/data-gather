@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { Calendar } from 'primereact/calendar';
-import { DateTime } from 'luxon';
 import Dropdown from '../../ui/Dropdown';
 import InputText from '../../ui/InputText';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import type { EditableAction } from '../types';
+import useAppState from '../../../hooks/useAppState';
 
 type Props = {
   action: EditableAction;
@@ -29,6 +29,13 @@ export default function ConditionalOperatorRow({
   allEntries,
   onConditionalOperationChange,
 }: Props): JSX.Element {
+  const { airtableSettings } = useAppState();
+  const { bases } = airtableSettings;
+  const allAirtableTables = React.useMemo(
+    () => bases.flatMap(base => base.tables),
+    [bases],
+  );
+
   const selectedEntry = React.useMemo(
     () => allEntries.find(entry => entry.responseKey === action.responseKey),
     [allEntries, action],
@@ -46,14 +53,16 @@ export default function ConditionalOperatorRow({
 
   // TODO: have to connect <ActionCard> to `entry` for responseKeyColumns to
   // change before 'Save' is clicked
-  const allResponseKeyFieldOptions = React.useMemo(
-    () =>
-      selectedEntry?.responseTypeOptions.selectedFields.map(field => ({
-        displayValue: field,
-        value: field,
-      })),
-    [selectedEntry],
-  );
+  const allResponseKeyFieldOptions = React.useMemo(() => {
+    const airtableTable = allAirtableTables.find(
+      table => table.key === selectedEntry?.responseTypeOptions.selectedTable,
+    );
+
+    return airtableTable?.fields.map(field => ({
+      displayValue: field.fieldName,
+      value: field.fieldName,
+    }));
+  }, [selectedEntry, allAirtableTables]);
 
   const onOperatorChange = React.useCallback(
     (newOperator: ConditionalAction.ConditionalOperator) => {
@@ -125,20 +134,20 @@ export default function ConditionalOperatorRow({
         {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
         {ConditionalAction.isTimeOperator(action.conditionalOperator) ? (
           <Calendar
-            placeholder="value"
+            placeholder="Date"
             onChange={e => {
               if (e.value instanceof Date) {
-                onConditionalValueChange(DateTime.fromJSDate(e.value).toISO());
+                onConditionalValueChange(String(e.value));
               }
               if (typeof e.value === 'string') {
                 onConditionalValueChange(e.value);
               }
             }}
-            value={action.value ?? ''}
+            value={action.value ? new Date(action.value) : ''}
           />
         ) : (
           <InputText
-            placeholder="value"
+            placeholder="Value"
             onChange={onConditionalValueChange}
             value={action.value ?? ''}
           />

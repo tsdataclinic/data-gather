@@ -147,8 +147,10 @@ export function serialize(
   if ('createdDate' in interview) {
     return {
       ...interview,
-      submissionActions: interview.submissionActions.map(
-        SubmissionAction.serialize,
+      submissionActions: interview.submissionActions.map(action =>
+        'tempId' in action
+          ? SubmissionAction.serializeCreate(action)
+          : SubmissionAction.serialize(action),
       ),
       createdDate: interview.createdDate?.toISO(),
     };

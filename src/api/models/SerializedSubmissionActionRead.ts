@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { SerializedEditRowPayload } from './SerializedEditRowPayload';
+import type { SerializedInsertRowPayload } from './SerializedInsertRowPayload';
 import type { SubmissionActionType } from './SubmissionActionType';
 
 /**
@@ -17,7 +19,7 @@ export type SerializedSubmissionActionRead = {
   type: SubmissionActionType;
   interviewId: string;
   fieldMappings: Record<string, string>;
-  target: string;
+  payload: (SerializedEditRowPayload | SerializedInsertRowPayload);
   id: string;
 };
 
