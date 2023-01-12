@@ -137,7 +137,7 @@ export default function ConditionalOperatorRow({
             placeholder="Date"
             onChange={e => {
               if (e.value instanceof Date) {
-                onConditionalValueChange(String(e.value));
+                onConditionalValueChange(e.value.toISOString());
               }
               if (typeof e.value === 'string') {
                 onConditionalValueChange(e.value);

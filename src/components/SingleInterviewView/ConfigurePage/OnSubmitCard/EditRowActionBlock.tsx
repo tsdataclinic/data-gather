@@ -85,6 +85,7 @@ export default function EditRowActionBlock({
             onChangeEntrySelection={onChangeRowTarget}
             selectedEntryId={actionConfig.payload.entryId}
             onChangeEntryResponseField={onChangeEntryResponseField}
+            entryResponseField={actionConfig.payload.primaryKeyField}
             responseFieldPlaceholder="Select ID field"
           />
         </LabelWrapper>

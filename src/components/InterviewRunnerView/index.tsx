@@ -210,7 +210,7 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
           <h2 className="mb-2 text-xl">Responses:</h2>
           <dl>
             {Object.values(finalResponseData).map(response => (
-              <>
+              <React.Fragment key={response.entry.responseKey}>
                 <dt className="font-bold">{response.entry.prompt}:</dt>
                 <dd className="mb-2 pl-8">
                   {ConfigurableScript.getResponseValue(
@@ -218,7 +218,7 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
                     response.entry.responseKey,
                   )}
                 </dd>
-              </>
+              </React.Fragment>
             ))}
           </dl>
         </div>

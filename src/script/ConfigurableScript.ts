@@ -1,10 +1,19 @@
 import invariant from 'invariant';
 import { QuestionRouter, Script } from '@dataclinic/interview';
+import { DateTime } from 'luxon';
 import assertUnreachable from '../util/assertUnreachable';
 import * as Interview from '../models/Interview';
 import * as InterviewScreen from '../models/InterviewScreen';
 import * as ConditionalAction from '../models/ConditionalAction';
 import type { ResponseData } from './types';
+
+function stringToDateTime(dateString: string): DateTime {
+  const date = DateTime.fromISO(dateString);
+  if (!date.isValid) {
+    throw new Error(`The date '${dateString}' failed to parse.`);
+  }
+  return date;
+}
 
 class ConfigurableScript implements Script<InterviewScreen.T> {
   static getResponseValue(
@@ -114,16 +123,20 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
         return responseValue === testValue;
       case ConditionalAction.ConditionalOperator.GT:
         return responseValue > testValue;
-      case ConditionalAction.ConditionalOperator.AFTER:
-        // TODO: do a date comparison
-        return responseValue > testValue;
+      case ConditionalAction.ConditionalOperator.AFTER: {
+        const responseDate = stringToDateTime(responseValue);
+        const testDate = stringToDateTime(testValue);
+        return responseDate > testDate;
+      }
       case ConditionalAction.ConditionalOperator.GTE:
         return responseValue >= testValue;
       case ConditionalAction.ConditionalOperator.LT:
         return responseValue < testValue;
-      case ConditionalAction.ConditionalOperator.BEFORE:
-        // TODO: do a date comparison
-        return responseValue < testValue;
+      case ConditionalAction.ConditionalOperator.BEFORE: {
+        const responseDate = stringToDateTime(responseValue);
+        const testDate = stringToDateTime(testValue);
+        return responseDate < testDate;
+      }
       case ConditionalAction.ConditionalOperator.LTE:
         return responseValue <= testValue;
       default:
