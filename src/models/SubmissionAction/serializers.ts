@@ -25,20 +25,14 @@ export function deserialize(
         'entryId' in payload,
         'Expected an entry id in an Edit Row payload',
       );
-      deserializedConfig = {
-        type,
-        payload,
-      };
+      deserializedConfig = { type, payload };
       break;
     case SubmissionAction.ActionType.INSERT_ROW:
       invariant(
         'tableTarget' in payload,
         'Expected table target in an Insert Row payload',
       );
-      deserializedConfig = {
-        type,
-        payload,
-      };
+      deserializedConfig = { type, payload };
       break;
     default:
       assertUnreachable(type);
