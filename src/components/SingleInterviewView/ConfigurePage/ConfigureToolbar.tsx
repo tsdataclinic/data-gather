@@ -24,7 +24,7 @@ export default function ConfigureToolbar({
         </Toolbar.Button>
         <Toolbar.Button asChild>
           <Button intent="danger" onClick={() => setIsDeleteModalOpen(true)}>
-            Delete
+            Delete Interview
           </Button>
         </Toolbar.Button>
       </Toolbar.Root>
