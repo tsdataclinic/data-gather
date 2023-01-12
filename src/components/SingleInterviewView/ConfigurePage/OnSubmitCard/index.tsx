@@ -58,6 +58,15 @@ export default function OnSubmitCard({
     });
   };
 
+  const onActionRemove = (actionToRemove: EditableAction): void => {
+    onInterviewChange({
+      ...interview,
+      submissionActions: interview.submissionActions.filter(
+        action => action !== actionToRemove,
+      ),
+    });
+  };
+
   const renderActionBlock = (action: EditableAction): JSX.Element => {
     switch (action.config.type) {
       case SubmissionAction.ActionType.EDIT_ROW:
@@ -95,6 +104,14 @@ export default function OnSubmitCard({
             key={'id' in action ? action.id : action.tempId}
             className="space-y-4 rounded border border-gray-300 bg-gray-50 p-4 text-slate-800"
           >
+            <button
+              className="float-right"
+              type="button"
+              aria-label="delete"
+              onClick={() => onActionRemove(action)}
+            >
+              <FontAwesomeIcon icon={IconType.faRemove} />
+            </button>
             <LabelWrapper label="Action type">
               <Dropdown
                 value={action.config.type}
