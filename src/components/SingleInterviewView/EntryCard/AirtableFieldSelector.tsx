@@ -96,7 +96,7 @@ export default function AirtableFieldSelector({
   };
 
   return (
-    <div className="flex space-x-4">
+    <div className="flex space-x-2">
       <Form.Dropdown
         label="Airtable base"
         name="airtableBase"
