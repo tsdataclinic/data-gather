@@ -7,6 +7,7 @@ import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import AirtableFieldSelector from './AirtableFieldSelector';
 import EditableName from './EditableName';
 import type { EditableEntry } from '../types';
+import Button from '../../ui/Button';
 
 type Props = {
   entry: EditableEntry;
@@ -40,14 +41,17 @@ function EntryCard(
       key={entryId}
       className="relative flex w-full flex-row border border-gray-200 bg-white p-10 shadow-lg"
     >
-      <div className="absolute top-0 right-0 pr-4 pt-4">
+      <Button
+        unstyled
+        className="absolute top-4 right-4"
+        onClick={() => onEntryDelete(entry)}
+      >
         <FontAwesomeIcon
           aria-label="Delete"
-          className="h-5 w-5 cursor-pointer text-slate-400 transition-colors duration-200 hover:text-red-500"
+          className="h-5 w-5 text-slate-400 transition-colors duration-200 hover:text-red-500"
           icon={IconType.faX}
-          onClick={() => onEntryDelete(entry)}
         />
-      </div>
+      </Button>
       <div className="flex w-1/6">
         <EditableName onNameChange={onNameChange} name={entry.name} />
       </div>

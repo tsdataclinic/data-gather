@@ -102,17 +102,21 @@ export default function OnSubmitCard({
         {interview.submissionActions.map(action => (
           <div
             key={'id' in action ? action.id : action.tempId}
-            className="space-y-4 rounded border border-gray-300 bg-gray-50 p-4 text-slate-800"
+            className="relative rounded border border-gray-300 bg-gray-50 p-4 text-slate-800"
           >
-            <button
-              className="float-right"
+            <Button
+              unstyled
+              className="absolute top-4 right-4"
               type="button"
-              aria-label="delete"
               onClick={() => onActionRemove(action)}
             >
-              <FontAwesomeIcon icon={IconType.faRemove} />
-            </button>
-            <LabelWrapper label="Action type">
+              <FontAwesomeIcon
+                aria-label="Delete"
+                className="h-5 w-5 text-slate-400 transition-colors duration-200 hover:text-red-500"
+                icon={IconType.faX}
+              />
+            </Button>
+            <LabelWrapper className="mb-4" label="Action type">
               <Dropdown
                 value={action.config.type}
                 options={ACTION_TYPE_OPTIONS}

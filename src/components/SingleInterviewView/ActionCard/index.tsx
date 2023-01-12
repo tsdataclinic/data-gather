@@ -15,6 +15,7 @@ import Form from '../../ui/Form';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
 import type { EditableAction } from '../types';
 import ConditionalOperatorRow from './ConditionalOperatorRow';
+import Button from '../../ui/Button';
 
 type Props = {
   action: EditableAction;
@@ -84,14 +85,17 @@ function ActionCard(
         <FontAwesomeIcon size="1x" icon={faLocationArrow} />
         <span>Action</span>
       </div>
-      <div className="absolute top-0 right-0 pr-4 pt-4">
+      <Button
+        unstyled
+        className="absolute top-4 right-4"
+        onClick={() => onActionDelete(action)}
+      >
         <FontAwesomeIcon
           aria-label="Delete"
-          className="h-5 w-5 cursor-pointer text-slate-400 transition-colors duration-200 hover:text-red-500"
+          className="h-5 w-5 text-slate-400 transition-colors duration-200 hover:text-red-500"
           icon={IconType.faX}
-          onClick={() => onActionDelete(action)}
         />
-      </div>
+      </Button>
 
       {
         // TODO: create a Form.Checkbox control
