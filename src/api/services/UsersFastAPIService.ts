@@ -18,7 +18,7 @@ export class UsersFastAPIService {
   public getSelfUser(): CancelablePromise<SerializedUserRead> {
     return this.httpRequest.request({
       method: 'GET',
-      url: '/user/self',
+      url: '/api/user/self',
     });
   }
 
