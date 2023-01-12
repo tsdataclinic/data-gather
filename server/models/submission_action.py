@@ -1,13 +1,23 @@
 import enum
 import uuid
-from typing import Optional
+from typing import Optional, Union
 
+from pydantic import BaseModel, validator
 from sqlalchemy import Column
 from sqlalchemy.dialects.sqlite import JSON
 from sqlmodel import Field, Relationship
 
 from server.models.common import OrderedModel
 from server.models_util import update_module_forward_refs
+
+
+class EditRowPayload(BaseModel):
+    entryId: str
+    primaryKeyField: str
+
+
+class InsertRowPayload(BaseModel):
+    tableTarget: str
 
 
 class SubmissionActionType(str, enum.Enum):
@@ -21,10 +31,13 @@ class SubmissionActionBase(OrderedModel):
     type: SubmissionActionType
     interview_id: uuid.UUID = Field(foreign_key="interview.id")
     field_mappings: dict[str, Optional[str]] = Field(sa_column=Column(JSON))
+    payload: Union[EditRowPayload, InsertRowPayload] = Field(sa_column=Column(JSON))
 
-    # for an EDIT_ROW type, the `target` is an InterviewEntry id.
-    # for an INSERT_ROW type, the `target` is an airtable table id
-    target: str
+    @validator("payload")
+    def validate_payload(cls, value: Union[EditRowPayload, InsertRowPayload]):
+        # hacky use of validator to allow Pydantic models to be stored as JSON
+        # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
+        return value.dict()
 
 
 class SubmissionAction(SubmissionActionBase, table=True):

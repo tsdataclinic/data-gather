@@ -3,14 +3,15 @@ import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
-import ActionCard, { type EditableAction } from './ActionCard';
-import EntryCard, { type EditableEntry } from './EntryCard';
+import ActionCard from './ActionCard';
+import EntryCard from './EntryCard';
 import useInterviewService from '../../hooks/useInterviewService';
 import HeaderCard from './HeaderCard';
 import ScreenToolbar from './ScreenToolbar';
 import ScrollArea from '../ui/ScrollArea';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { useToast } from '../ui/Toast';
+import type { EditableAction, EditableEntry } from './types';
 
 type Props = {
   defaultActions: readonly ConditionalAction.T[];

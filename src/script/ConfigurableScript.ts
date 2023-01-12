@@ -1,11 +1,64 @@
-import { QuestionRouter, ResponseData, Script } from '@dataclinic/interview';
+import invariant from 'invariant';
+import { QuestionRouter, Script } from '@dataclinic/interview';
+import { DateTime } from 'luxon';
 import assertUnreachable from '../util/assertUnreachable';
 import * as Interview from '../models/Interview';
 import * as InterviewScreen from '../models/InterviewScreen';
 import * as ConditionalAction from '../models/ConditionalAction';
+import type { ResponseData } from './types';
+
+function stringToDateTime(dateString: string): DateTime {
+  const date = DateTime.fromISO(dateString);
+  if (!date.isValid) {
+    throw new Error(`The date '${dateString}' failed to parse.`);
+  }
+  return date;
+}
 
 class ConfigurableScript implements Script<InterviewScreen.T> {
-  // eslint-disable-next-line
+  static getResponseValue(
+    responseData: ResponseData,
+    responseKey: string,
+    responseKeyField?: string,
+  ): string {
+    invariant(
+      responseKey in responseData,
+      `Could not find '${responseKey}' in the response data.`,
+    );
+
+    const { response } = responseData[responseKey];
+    if (typeof response === 'string') {
+      return response;
+    }
+
+    if (responseKeyField) {
+      invariant(
+        responseKeyField in response,
+        `Could not find '${responseKeyField}' in the object held by '${responseKey}'`,
+      );
+
+      return String(response[responseKeyField]);
+    }
+
+    return JSON.stringify(response);
+  }
+
+  static getResponseValueForAction(
+    responseData: ResponseData,
+    action: ConditionalAction.T,
+  ): string | undefined {
+    const { responseKey, responseKeyField } = action;
+    if (!responseKey) {
+      return undefined;
+    }
+
+    return ConfigurableScript.getResponseValue(
+      responseData,
+      responseKey,
+      responseKeyField,
+    );
+  }
+
   constructor(
     private interview: Interview.WithScreensAndActions,
     private actions: ReadonlyMap<string, ConditionalAction.T[]>,
@@ -51,24 +104,39 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
     ) {
       return true;
     }
-    const responseValue = responseData[action.responseKey];
+
+    // get the value we want to test against
     const testValue = action.value;
-    if (!testValue) {
+
+    // get the response value we want to test
+    const responseValue = ConfigurableScript.getResponseValueForAction(
+      responseData,
+      action,
+    );
+
+    if (!testValue || !responseValue) {
       return false;
     }
+
     switch (action.conditionalOperator) {
       case ConditionalAction.ConditionalOperator.EQ:
         return responseValue === testValue;
       case ConditionalAction.ConditionalOperator.GT:
         return responseValue > testValue;
-      case ConditionalAction.ConditionalOperator.AFTER:
-        return responseValue > testValue;
+      case ConditionalAction.ConditionalOperator.AFTER: {
+        const responseDate = stringToDateTime(responseValue);
+        const testDate = stringToDateTime(testValue);
+        return responseDate > testDate;
+      }
       case ConditionalAction.ConditionalOperator.GTE:
         return responseValue >= testValue;
       case ConditionalAction.ConditionalOperator.LT:
         return responseValue < testValue;
-      case ConditionalAction.ConditionalOperator.BEFORE:
-        return responseValue < testValue;
+      case ConditionalAction.ConditionalOperator.BEFORE: {
+        const responseDate = stringToDateTime(responseValue);
+        const testDate = stringToDateTime(testValue);
+        return responseDate < testDate;
+      }
       case ConditionalAction.ConditionalOperator.LTE:
         return responseValue <= testValue;
       default:

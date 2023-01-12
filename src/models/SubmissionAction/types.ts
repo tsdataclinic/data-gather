@@ -4,10 +4,36 @@ import * as InterviewScreenEntry from '../InterviewScreenEntry';
 
 export type FieldId = string & { __type: 'FieldId' };
 
+export type EditRowActionConfig = {
+  /**
+   * Edit a row. The primary key of the row is identified by taking the
+   * response of an entry (which should be an object) and taking the value
+   * inside the `primaryKeyField`
+   * and we use the `responseKeyField`
+   */
+  payload: {
+    entryId: string;
+    primaryKeyField: string;
+  };
+  type: SubmissionActionType.EDIT_ROW;
+};
+
+export type InsertRowActionConfig = {
+  /**
+   * Insert a row. The `tableTarget` represents the table we will insert
+   * into.
+   */
+  payload: {
+    tableTarget: string;
+  };
+  type: SubmissionActionType.INSERT_ROW;
+};
+
 /**
  * An action that is executed on interview submission.
  */
 type SubmissionAction = {
+  readonly config: EditRowActionConfig | InsertRowActionConfig;
   readonly fieldMappings: ReadonlyMap<
     FieldId,
     InterviewScreenEntry.Id | undefined
@@ -15,21 +41,26 @@ type SubmissionAction = {
   readonly id: string;
   readonly interviewId: string;
   readonly order: number;
-  readonly target: string;
-  readonly type: SubmissionActionType;
 };
 
-type SubmissionActionCreate = Omit<SubmissionAction, 'id' | 'target'> & {
-  /**
-   * The `target` is empty at first until a user fills this out.
-   */
-  target?: string;
+export type WithPartialPayload<Config extends SubmissionAction['config']> =
+  // this is a weird trick in TypeScript in order to distribute an expression
+  // over a union but in a way that preserves the ability to narrow the types
+  Config extends unknown
+    ? {
+        payload: Partial<Config['payload']>;
+        type: Config['type'];
+      }
+    : never;
+
+type SubmissionActionCreate = Omit<SubmissionAction, 'id' | 'config'> & {
+  readonly config: WithPartialPayload<SubmissionAction['config']>;
 
   /**
    * A temp id used only for identification purposes in the frontend (e.g.
    * for React keys)
    */
-  tempId: string;
+  readonly tempId: string;
 };
 
 export type { SubmissionAction as T };

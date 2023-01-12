@@ -7,27 +7,14 @@ import { faLocationArrow } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { MixedCheckbox } from '@reach/checkbox';
 import { Element as ScrollableElement } from 'react-scroll';
-import { Calendar } from 'primereact/calendar';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
-import Dropdown from '../../ui/Dropdown';
-import InputText from '../../ui/InputText';
 import LabelWrapper from '../../ui/LabelWrapper';
 import ActionConfigEditor from './ActionConfigEditor';
 import Form from '../../ui/Form';
-import useInterviewScreenEntries from '../../../hooks/useInterviewScreenEntries';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
-
-export type EditableAction = ConditionalAction.T | ConditionalAction.CreateT;
-
-// remove 'ALWAYS_EXECUTE' from being one of the options in the dropdown
-// because this operator is handled separately
-const OPERATOR_OPTIONS = ConditionalAction.CONDITIONAL_OPERATORS.filter(
-  operator => operator !== ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE,
-).map(operator => ({
-  displayValue: ConditionalAction.operatorToDisplayString(operator),
-  value: operator,
-}));
+import type { EditableAction } from '../types';
+import ConditionalOperatorRow from './ConditionalOperatorRow';
 
 type Props = {
   action: EditableAction;
@@ -39,75 +26,6 @@ type Props = {
   onActionDelete: (actionToDelete: EditableAction) => void;
 };
 
-// The conditionalOperatorRow doesn't use Form.Input or other Form
-// subcomponents because we need more control over how it renders
-function ConditionalOperatorRow({
-  action,
-  onResponseKeyChange,
-  allResponseKeyOptions,
-  onResponseKeyColumnChange,
-  allResponseKeyColumnOptions,
-  onConditionalOperatorChange,
-  onConditionalValueChange,
-}: any): JSX.Element {
-  const [conditionalValueType, setConditionalValueType] = React.useState<
-    'text' | 'date'
-  >(action.value && Date.parse(action.value) ? 'date' : 'text');
-
-  return (
-    <div className="space-y-4">
-      <LabelWrapper inline labelAfter label="Compare against a date">
-        <MixedCheckbox
-          onChange={e =>
-            setConditionalValueType(e.target.checked ? 'date' : 'text')
-          }
-          checked={conditionalValueType === 'date'}
-        />
-      </LabelWrapper>
-      <div className="flex items-center space-x-4">
-        <p className="w-20">Condition</p>
-        <Dropdown
-          onChange={onResponseKeyChange}
-          placeholder="Response variable"
-          value={action.responseKey}
-          options={allResponseKeyOptions}
-        />
-        {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
-        {allResponseKeyColumnOptions.length > 0 && (
-          <Dropdown
-            onChange={onResponseKeyColumnChange}
-            placeholder="Response column variable"
-            value={action.responseKeyColumn}
-            options={allResponseKeyColumnOptions}
-          />
-        )}
-
-        <Dropdown
-          onChange={onConditionalOperatorChange}
-          placeholder="Operator"
-          value={action.conditionalOperator}
-          options={OPERATOR_OPTIONS}
-        />
-
-        {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
-        {conditionalValueType === 'date' ? (
-          <Calendar
-            placeholder="value"
-            onChange={e => onConditionalValueChange(e.value)}
-            value={action.value ?? ''}
-          />
-        ) : (
-          <InputText
-            placeholder="value"
-            onChange={onConditionalValueChange}
-            value={action.value ?? ''}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
 function ActionCard(
   { action, interview, onActionChange, onActionDelete }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
@@ -115,70 +33,30 @@ function ActionCard(
   // TODO: when interview is a nested model we won't need these sub-queries
   const actionId = 'id' in action ? action.id : action.tempId;
   const interviewScreens = useInterviewScreens(interview.id);
-  const screenEntriesMap = useInterviewScreenEntries(interview.id);
-
-  const [isAlwaysExecuteChecked, setIsAlwaysExecuteChecked] = React.useState(
-    action.conditionalOperator ===
-      ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE,
+  const allEntries = React.useMemo(
+    () =>
+      interviewScreens?.flatMap(screen =>
+        screen.entries.map(entry => ({ ...entry, screen })),
+      ) ?? [],
+    [interviewScreens],
   );
 
   const onAlwaysExecuteChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>): void => {
       const isChecked = event.target.checked;
-      setIsAlwaysExecuteChecked(isChecked);
-
-      // if it is now unchecked and the conditionalOperator is ALWAYS_EXECUTE,
-      // then we should change it to a reasonable default (such as EQUALS)
-      if (
-        !isChecked &&
-        action.conditionalOperator ===
-          ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
-      ) {
-        onActionChange(action, {
-          ...action,
-          conditionalOperator: ConditionalAction.ConditionalOperator.EQ,
-        });
-      }
-    },
-    [action, onActionChange],
-  );
-
-  const onConditionalOperatorChange = React.useCallback(
-    (newConditionalOperator: ConditionalAction.ConditionalOperator) => {
       onActionChange(action, {
         ...action,
-        conditionalOperator: newConditionalOperator,
+        conditionalOperator: isChecked
+          ? ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
+          : ConditionalAction.ConditionalOperator.EQ,
       });
     },
     [action, onActionChange],
   );
 
-  const onResponseKeyChange = React.useCallback(
-    (newResponseKey: string) => {
-      onActionChange(action, {
-        ...action,
-        responseKey: newResponseKey,
-      });
-    },
-    [action, onActionChange],
-  );
-
-  const onResponseKeyColumnChange = React.useCallback(
-    (newResponseKeyColumn: string) => {
-      onActionChange(action, {
-        ...action,
-        responseKeyColumn: newResponseKeyColumn,
-      });
-    },
-    [action, onActionChange],
-  );
-
-  const onConditionalValueChange = React.useCallback(
-    (newValue: string) => {
-      onActionChange(action, {
-        ...action,
-        value: newValue,
-      });
+  const onConditionalOperationChange = React.useCallback(
+    (newAction: EditableAction) => {
+      onActionChange(action, newAction);
     },
     [action, onActionChange],
   );
@@ -193,33 +71,9 @@ function ActionCard(
     [action, onActionChange],
   );
 
-  // TODO: this is only looking at entries. We also need to look at Skip actions.
-  const allResponseKeyOptions =
-    interviewScreens && screenEntriesMap
-      ? interviewScreens.flatMap(screen => {
-          const entries = screenEntriesMap.get(screen.id) || [];
-          return entries.map(entry => ({
-            displayValue: `${screen.title} - ${entry.name}`,
-            value: entry.responseKey,
-          }));
-        })
-      : [];
-
-  // TODO: have to connect <ActionCard> to `entry` for responseKeyColumns to change before 'Save' is clicked
-  const allResponseKeyColumnOptions =
-    interviewScreens && screenEntriesMap
-      ? interviewScreens.flatMap(screen => {
-          const entries = screenEntriesMap.get(screen.id) || [];
-          return entries
-            .filter(entry => entry.responseType === 'airtable')
-            .flatMap(entry =>
-              entry.responseTypeOptions.selectedFields.map(field => ({
-                displayValue: `${entry.responseTypeOptions.selectedBase} - ${field}`,
-                value: field,
-              })),
-            );
-        })
-      : [];
+  const isAlwaysExecuteChecked =
+    action.conditionalOperator ===
+    ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE;
 
   return (
     <ScrollableElement
@@ -252,12 +106,8 @@ function ActionCard(
         {!isAlwaysExecuteChecked && (
           <ConditionalOperatorRow
             action={action}
-            onResponseKeyChange={onResponseKeyChange}
-            allResponseKeyOptions={allResponseKeyOptions}
-            onResponseKeyColumnChange={onResponseKeyColumnChange}
-            allResponseKeyColumnOptions={allResponseKeyColumnOptions}
-            onConditionalOperatorChange={onConditionalOperatorChange}
-            onConditionalValueChange={onConditionalValueChange}
+            allEntries={allEntries}
+            onConditionalOperationChange={onConditionalOperationChange}
           />
         )}
         <ActionConfigEditor

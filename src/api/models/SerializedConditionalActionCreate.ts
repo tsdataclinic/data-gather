@@ -15,6 +15,7 @@ export type SerializedConditionalActionCreate = {
   actionType: ActionType;
   conditionalOperator: ConditionalOperator;
   responseKey?: string;
+  responseKeyField?: string;
   screenId: string;
   value?: string;
   id?: string;

@@ -16,12 +16,12 @@ type Props = {
 const AIRTABLE_QUERY_DELAY_MS = 500;
 
 /**
- * A single entry in an interview screen in the runner (e.g. a form input, or radio group).
+ * A single entry in an interview screen in the runner (e.g. a form input,
+ * or radio group).
  *
  * @param entry
  * @returns
  */
-
 export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
   const airtableHiddenInputRef = React.useRef<HTMLInputElement | null>(null);
   const [airtableQuery, setAirtableQuery] = useDebouncedState<string>(
@@ -137,7 +137,9 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
                 <AgGridReact
                   onRowClicked={e => {
                     if (airtableHiddenInputRef.current) {
-                      airtableHiddenInputRef.current.value = e.data.id;
+                      airtableHiddenInputRef.current.value = JSON.stringify(
+                        e.data,
+                      );
                     }
                   }}
                   rowSelection="single"

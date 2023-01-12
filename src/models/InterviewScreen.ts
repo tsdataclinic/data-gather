@@ -6,6 +6,8 @@ import { SerializedInterviewScreenUpdate } from '../api/models/SerializedIntervi
 import { SerializedInterviewScreenReadWithChildren } from '../api/models/SerializedInterviewScreenReadWithChildren';
 import { Override } from '../util/types';
 
+export type Id = string;
+
 /**
  * A stage of an interview. It consists of entries and conditional actions.
  *
@@ -19,7 +21,7 @@ interface InterviewScreen {
    * The id of this screen. Undefined when we're creating an interview and
    * don't have an id yet (an id is auto-assigned by the db on creation).
    */
-  readonly id: string;
+  readonly id: Id;
 
   /** The id of the interview that this screen belongs to */
   readonly interviewId: string;
