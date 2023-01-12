@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     APP_CLIENT_ID: str = Field(default="", env="REACT_APP_AZURE_APP_CLIENT_ID")
     AZURE_DOMAIN_NAME: str = Field(default="", env="AZURE_DOMAIN_NAME")
     AZURE_POLICY_AUTH_NAME: str = Field(default="", env="AZURE_POLICY_AUTH_NAME")
+    AZURE_API_SCOPE: str = Field(default="", env="REACT_APP_AZURE_B2C_SCOPES")
 
     class Config:
         env_file = ".env"
@@ -96,7 +97,7 @@ app.add_middleware(
 azure_scheme = B2CMultiTenantAuthorizationCodeBearer(
     app_client_id=settings.APP_CLIENT_ID,
     scopes={
-        f"https://{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/scout-dev-api/Scout.API": "API Scope",
+        f"https://{settings.AZURE_API_SCOPE}": "API Scope",
     },
     openid_config_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/v2.0/.well-known/openid-configuration",
     openapi_authorization_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/oauth2/v2.0/authorize",
@@ -562,7 +563,7 @@ def _reset_object_order(request_models: Sequence[OrderedModel]):
     """
     Resets the order attribute of objects in given iterable to their index value
     """
-    for index,ordered_model in enumerate(request_models):
+    for index, ordered_model in enumerate(request_models):
         ordered_model.order = index
 
 
