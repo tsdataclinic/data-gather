@@ -592,7 +592,7 @@ def _adjust_screen_order(
     return (db_screen, sorted_screens + [db_screen])
 
 
-@app.get("/airtable-records/{table_name}", tags=["airtable"])
+@app.get("/api/airtable-records/{table_name}", tags=["airtable"])
 def get_airtable_records(table_name, request: Request) -> list[Record]:
     """
     Fetch records from an airtable table. Filtering can be performed
@@ -602,7 +602,7 @@ def get_airtable_records(table_name, request: Request) -> list[Record]:
     return airtable_client.search_records(table_name, query)
 
 
-@app.get("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
+@app.get("/api/airtable-records/{table_name}/{record_id}", tags=["airtable"])
 def get_airtable_record(table_name: str, record_id: str) -> Record:
     """
     Fetch record with a particular id from a table in airtable.
@@ -610,7 +610,7 @@ def get_airtable_record(table_name: str, record_id: str) -> Record:
     return airtable_client.fetch_record(table_name, record_id)
 
 
-@app.post("/airtable-records/{table_name}", tags=["airtable"])
+@app.post("/api/airtable-records/{table_name}", tags=["airtable"])
 async def create_airtable_record(table_name: str, record: Record = Body(...)) -> Record:
     """
     Create an airtable record in a table.
@@ -619,7 +619,7 @@ async def create_airtable_record(table_name: str, record: Record = Body(...)) ->
     return airtable_client.create_record(table_name, record)
 
 
-@app.put("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
+@app.put("/api/airtable-records/{table_name}/{record_id}", tags=["airtable"])
 async def update_airtable_record(
     table_name: str, record_id: str, update: PartialRecord = Body(...)
 ) -> Record:

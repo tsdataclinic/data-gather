@@ -21,7 +21,7 @@ export class AirtableFastAPIService {
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'GET',
-      url: '/airtable-records/{table_name}',
+      url: '/api/airtable-records/{table_name}',
       path: {
         'table_name': tableName,
       },
@@ -45,7 +45,7 @@ export class AirtableFastAPIService {
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'POST',
-      url: '/airtable-records/{table_name}',
+      url: '/api/airtable-records/{table_name}',
       path: {
         'table_name': tableName,
       },
@@ -71,7 +71,7 @@ export class AirtableFastAPIService {
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'GET',
-      url: '/airtable-records/{table_name}/{record_id}',
+      url: '/api/airtable-records/{table_name}/{record_id}',
       path: {
         'table_name': tableName,
         'record_id': recordId,
@@ -98,7 +98,7 @@ export class AirtableFastAPIService {
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'PUT',
-      url: '/airtable-records/{table_name}/{record_id}',
+      url: '/api/airtable-records/{table_name}/{record_id}',
       path: {
         'table_name': tableName,
         'record_id': recordId,
