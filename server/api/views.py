@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Sequence, TypeVar, Union
+from typing import Sequence, TypeVar, Union
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
