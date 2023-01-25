@@ -12,6 +12,7 @@ import ScrollArea from '../ui/ScrollArea';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { useToast } from '../ui/Toast';
 import type { EditableAction, EditableEntry } from './types';
+import Button from '../ui/Button';
 
 type Props = {
   defaultActions: readonly ConditionalAction.T[];
@@ -132,8 +133,6 @@ export default function ScreenCard({
     });
 
     if (allFormsValid) {
-      console.log(allEntries);
-
       const updatedScreen =
         await interviewService.interviewScreenAPI.updateInterviewScreen(
           screen.id,
@@ -173,25 +172,46 @@ export default function ScreenCard({
             screen={screen}
             onScreenChange={onScreenChange}
           />
-          {allEntries.map(entry => (
-            <EntryCard
-              key={'id' in entry ? entry.id : entry.tempId}
-              ref={formRefSetter('id' in entry ? entry.id : entry.tempId)}
-              entry={entry}
-              onEntryChange={onEntryChange}
-              onEntryDelete={onEntryDelete}
-            />
-          ))}
-          {allActions.map(action => (
-            <ActionCard
-              key={'id' in action ? action.id : action.tempId}
-              ref={formRefSetter('id' in action ? action.id : action.tempId)}
-              action={action}
-              interview={interview}
-              onActionChange={onActionChange}
-              onActionDelete={onActionDelete}
-            />
-          ))}
+          {allEntries.length === 0 ? (
+            <div className="relative flex w-full flex-col items-center space-y-4 border border-gray-200 bg-white p-10 shadow-lg">
+              <p>No questions have been added yet.</p>
+              <Button intent="primary" onClick={onNewEntryClick}>
+                Add your first question
+              </Button>
+            </div>
+          ) : (
+            allEntries.map(entry => (
+              <EntryCard
+                key={'id' in entry ? entry.id : entry.tempId}
+                ref={formRefSetter('id' in entry ? entry.id : entry.tempId)}
+                entry={entry}
+                onEntryChange={onEntryChange}
+                onEntryDelete={onEntryDelete}
+              />
+            ))
+          )}
+          {allActions.length === 0 ? (
+            <div className="relative flex w-full flex-col items-center space-y-4 border border-gray-200 bg-white p-10 text-center shadow-lg">
+              <p>
+                This stage has no actions to run after the user answers your
+                questions.
+              </p>
+              <Button intent="primary" onClick={onNewActionClick}>
+                Add an action
+              </Button>
+            </div>
+          ) : (
+            allActions.map(action => (
+              <ActionCard
+                key={'id' in action ? action.id : action.tempId}
+                ref={formRefSetter('id' in action ? action.id : action.tempId)}
+                action={action}
+                interview={interview}
+                onActionChange={onActionChange}
+                onActionDelete={onActionDelete}
+              />
+            ))
+          )}
         </div>
       </ScrollArea>
     </>
