@@ -1,5 +1,5 @@
 import logging
-from typing import Sequence, TypeVar, Union
+from typing import Optional, Sequence, TypeVar, Union
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,16 +18,25 @@ from server.engine import create_fk_constraint_engine
 from server.init_db import SQLITE_DB_PATH
 from server.models.common import OrderedModel
 from server.models.conditional_action import ConditionalAction
-from server.models.interview import (Interview, InterviewCreate, InterviewRead,
-                                     InterviewReadWithScreensAndActions,
-                                     InterviewUpdate, ValidationError)
-from server.models.interview_screen import (InterviewScreen,
-                                            InterviewScreenCreate,
-                                            InterviewScreenRead,
-                                            InterviewScreenReadWithChildren,
-                                            InterviewScreenUpdate)
+from server.models.interview import (
+    Interview,
+    InterviewCreate,
+    InterviewRead,
+    InterviewReadWithScreensAndActions,
+    InterviewUpdate,
+    ValidationError,
+)
+from server.models.interview_screen import (
+    InterviewScreen,
+    InterviewScreenCreate,
+    InterviewScreenRead,
+    InterviewScreenReadWithChildren,
+    InterviewScreenUpdate,
+)
 from server.models.interview_screen_entry import (
-    InterviewScreenEntry, InterviewScreenEntryReadWithScreen)
+    InterviewScreenEntry,
+    InterviewScreenEntryReadWithScreen,
+)
 from server.models.submission_action import SubmissionAction
 from server.models.user import User, UserRead
 
@@ -128,6 +137,41 @@ def get_current_user(
     return new_user
 
 
+def commit(
+    session: Session,
+    add_models: list[SQLModel] = [],
+    refresh_models: bool = False,
+    validation_error: Optional[str] = None,
+) -> None:
+    """Commits a session and throws a ValidationError if validation fails.
+
+    Args:
+        session (Session): The session
+        add_models (list[SQLModel], optional): Models to add or update
+        refresh_models (bool, optional): Whether or not to refresh the added
+            models after committing. Defaults to False.
+        validation_error (str, optional): The error string to throw if
+            validation fails.
+    """
+    for model in add_models:
+        session.add(model)
+    try:
+        session.commit()
+    except IntegrityError as e:
+        raise HTTPException(status_code=400, detail=str(e.orig))
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=400,
+            detail="Error during validation"
+            if validation_error is None
+            else "Error validating models",
+        )
+
+    if refresh_models:
+        for model in add_models:
+            session.refresh(model)
+
+
 @app.get("/hello")
 def hello_api():
     return {"message": "Hello World"}
@@ -173,13 +217,32 @@ def create_interview(
     interview: InterviewCreate, session: Session = Depends(get_session)
 ) -> Interview:
     db_interview = Interview.from_orm(interview)
-    session.add(db_interview)
-    try:
-        session.commit()
-    except IntegrityError as e:
-        raise HTTPException(status_code=400, detail=str(e.orig))
-    except ValidationError as e:
-        raise HTTPException(status_code=400, detail="Error validating interview")
+    commit(
+        session,
+        add_models=[db_interview],
+        validation_error="Error validating interview",
+        refresh_models=True,
+    )
+
+    # Now that we committed, the db_interview should have an id
+    if db_interview.id:
+        db_interview.screens = [
+            InterviewScreen(
+                order=1,
+                header_text="",
+                title="Stage 1",
+                is_in_starting_state=True,
+                starting_state_order=1,
+                interview_id=db_interview.id,
+            )
+        ]
+        # commit the interview with the new screen
+        commit(
+            session,
+            add_models=[db_interview],
+            validation_error="Error validating interview",
+            refresh_models=True,
+        )
     return db_interview
 
 

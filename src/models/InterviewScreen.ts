@@ -17,10 +17,7 @@ interface InterviewScreen {
   /** Description text for the page */
   readonly headerText: string;
 
-  /**
-   * The id of this screen. Undefined when we're creating an interview and
-   * don't have an id yet (an id is auto-assigned by the db on creation).
-   */
+  /** The id of this screen. */
   readonly id: Id;
 
   /** The id of the interview that this screen belongs to */
