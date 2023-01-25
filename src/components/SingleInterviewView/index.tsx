@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Route, Routes, useParams } from 'react-router-dom';
+import { Route, Routes, Navigate, useParams } from 'react-router-dom';
 import useInterview from '../../hooks/useInterview';
 import useInterviewConditionalActions from '../../hooks/useInterviewConditionalActions';
 import useInterviewScreenEntries from '../../hooks/useInterviewScreenEntries';
@@ -14,6 +14,13 @@ export default function SingleInterviewView(): JSX.Element {
   const screens = useInterviewScreens(interview?.id);
   const entries = useInterviewScreenEntries(interview?.id);
   const actions = useInterviewConditionalActions(interview?.id);
+
+  const firstScreenId = React.useMemo(() => {
+    if (screens && screens.length >= 1) {
+      return screens[0].id;
+    }
+    return undefined;
+  }, [screens]);
 
   if (interview === undefined) {
     return <p>Could not find interview</p>;
@@ -39,7 +46,7 @@ export default function SingleInterviewView(): JSX.Element {
             return (
               <Route
                 key={screen.id}
-                path={`/screen/${screen.id}`}
+                path={`screen/${screen.id}`}
                 element={
                   <ScreenPage
                     key={screenKey}
@@ -52,6 +59,12 @@ export default function SingleInterviewView(): JSX.Element {
               />
             );
           })}
+          <Route
+            path=""
+            element={
+              firstScreenId ? <Navigate to={`screen/${firstScreenId}`} /> : null
+            }
+          />
         </Routes>
       </div>
     </div>
