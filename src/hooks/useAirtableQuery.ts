@@ -30,8 +30,9 @@ export default function useAirtableQuery(
           searchParams.append(field, queryString);
         });
 
+        // TODO: replace this with a function call using the API service class
         const res = await fetch(
-          `/airtable-records/${selectedTable}?${searchParams.toString()}`,
+          `/api/airtable-records/${selectedTable}?${searchParams.toString()}`,
         );
         return res.json();
       }

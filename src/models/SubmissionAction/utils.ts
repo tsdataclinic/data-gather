@@ -9,15 +9,19 @@ export const ACTION_TYPES: readonly SubmissionAction.ActionType[] =
  * Create a new empty SubmissionAction
  */
 export function create(
-  values: Omit<SubmissionAction.T, 'id' | 'target' | 'fieldMappings'>,
+  values: Omit<SubmissionAction.T, 'id' | 'config' | 'fieldMappings'> & {
+    type: SubmissionAction.ActionType;
+  },
 ): SubmissionAction.CreateT {
   return {
-    type: values.type,
     order: values.order,
     interviewId: values.interviewId,
     fieldMappings: new Map(),
-    target: undefined,
     tempId: uuidv4(),
+    config: {
+      type: values.type,
+      payload: {},
+    },
   };
 }
 

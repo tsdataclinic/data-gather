@@ -45,7 +45,7 @@ export default function LabelWrapper({
     // if an `htmlFor` id is specified then we shouldn't nest the children
     // inside the label
     labelComponent = (
-      <div className={inline ? 'space-x-4' : 'space-y-1'}>
+      <div className={inline ? 'space-x-2' : 'space-y-1'}>
         {labelAfter ? childrenBlock : null}
         <label htmlFor={htmlFor}>
           <div className={spanClassName} style={labelTextStyle}>
@@ -59,7 +59,7 @@ export default function LabelWrapper({
     // if an `htmlFor` id was not specified, then nest the children inside the
     // label so that the browser can associate them
     labelComponent = (
-      <label className={inline ? 'space-x-4' : 'space-y-1'} htmlFor={htmlFor}>
+      <label className={inline ? 'space-x-2' : 'space-y-1'} htmlFor={htmlFor}>
         {labelAfter ? childrenBlock : null}
         <div className={spanClassName} style={labelTextStyle}>
           {label}

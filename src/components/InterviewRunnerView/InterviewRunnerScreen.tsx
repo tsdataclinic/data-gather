@@ -5,6 +5,7 @@ import * as InterviewScreen from '../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import Form from '../ui/Form';
 import InterviewRunnerEntry from './InterviewRunnerEntry';
+import type { ResponseData } from '../../script/types';
 
 type Props = {
   entries: InterviewScreenEntry.T[];
@@ -31,20 +32,17 @@ export default function InterviewRunnerScreen({
       if (!responseConsumer) {
         return;
       }
-      const formResponses: Record<
-        string,
-        {
-          entry: InterviewScreenEntry.T;
-          response: string;
-        }
-      > = {};
+      const formResponses: ResponseData = {};
 
       formData.forEach((value, key) => {
         const entry = entriesMap.get(key);
         if (entry) {
           formResponses[key] = {
             entry,
-            response: value,
+            response:
+              entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
+                ? JSON.parse(value)
+                : value,
           };
         }
       });

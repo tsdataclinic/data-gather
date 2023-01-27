@@ -17,19 +17,24 @@ import * as SubmissionAction from '../../models/SubmissionAction';
 import ConfigurableScript from '../../script/ConfigurableScript';
 import { FastAPIService } from '../../api/FastAPIService';
 import assertUnreachable from '../../util/assertUnreachable';
-
-type ResponseData = {
-  [responseKey: string]: {
-    entry: InterviewScreenEntry.T;
-    response: string;
-  };
-};
+import type { ResponseData } from '../../script/types';
 
 const api = new FastAPIService();
 
 type Props = {
   interviewId: string;
 };
+
+function getSpecialValueForSubmission(
+  specialValueType: SubmissionAction.SpecialValueType,
+): string {
+  switch (specialValueType) {
+    case SubmissionAction.SpecialValueType.NOW_DATE:
+      return new Date().toISOString();
+    default:
+      return assertUnreachable(specialValueType);
+  }
+}
 
 export function InterviewRunnerView(props: Props): JSX.Element | null {
   const { interviewId } = props;
@@ -82,29 +87,48 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
 
         // handle all on-submit actions
         interview.submissionActions.forEach(submissionAction => {
-          switch (submissionAction.type) {
+          const { config: actionConfig } = submissionAction;
+          switch (actionConfig.type) {
             case SubmissionAction.ActionType.EDIT_ROW: {
-              const entryTarget = allEntries.get(submissionAction.target);
-              if (entryTarget) {
-                const { responseKey } = entryTarget;
-                const tableId = entryTarget.responseTypeOptions.selectedTable;
-                const airtableRecordId = responseData[responseKey].response;
+              const actionPayload = actionConfig.payload;
+              const entryTarget = allEntries.get(actionPayload.entryId);
 
-                // get all fields mapped to their values from other entries
+              if (entryTarget) {
+                const tableId = entryTarget.responseTypeOptions.selectedTable;
+                const airtableRecordId = ConfigurableScript.getResponseValue(
+                  responseData,
+                  entryTarget.responseKey,
+                  actionPayload.primaryKeyField,
+                );
+
+                // get all fields mapped to their values collected from the
+                // entry responses
                 const fields: { [fieldId: string]: string } = {};
-                submissionAction.fieldMappings.forEach((entryId, fieldId) => {
-                  if (entryId !== undefined) {
-                    const entry = allEntries.get(entryId);
-                    if (entry) {
-                      const responseVal =
-                        responseData[entry.responseKey].response;
-                      // ignore empty values
-                      if (responseVal !== '') {
-                        fields[fieldId] = responseVal;
+                submissionAction.fieldMappings.forEach(
+                  (entryLookupConfig, fieldId) => {
+                    const { entryId, responseFieldKey, specialValueType } =
+                      entryLookupConfig;
+                    let responseValue = '';
+                    if (entryId) {
+                      const entry = allEntries.get(entryId);
+                      if (entry) {
+                        responseValue = ConfigurableScript.getResponseValue(
+                          responseData,
+                          entry.responseKey,
+                          responseFieldKey,
+                        );
                       }
+                    } else if (specialValueType) {
+                      responseValue =
+                        getSpecialValueForSubmission(specialValueType);
                     }
-                  }
-                });
+
+                    // ignore empty values
+                    if (responseValue !== '') {
+                      fields[fieldId] = responseValue;
+                    }
+                  },
+                );
 
                 airtableUpdateRecord({
                   tableId,
@@ -116,23 +140,37 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
             }
 
             case SubmissionAction.ActionType.INSERT_ROW: {
-              const tableTarget = submissionAction.target;
+              const { tableTarget } = actionConfig.payload;
 
               // collect all field values
+              // TODO: this is duplicate code from the EDIT_ROW section. We
+              // should get a reusable function to collect fieldMappings.
               const fields: { [fieldId: string]: string } = {};
-              submissionAction.fieldMappings.forEach((entryId, fieldId) => {
-                if (entryId !== undefined) {
-                  const entry = allEntries.get(entryId);
-                  if (entry) {
-                    const responseVal =
-                      responseData[entry.responseKey].response;
-                    // ignore empty values
-                    if (responseVal !== '') {
-                      fields[fieldId] = responseVal;
+              submissionAction.fieldMappings.forEach(
+                (entryLookupConfig, fieldId) => {
+                  const { entryId, responseFieldKey, specialValueType } =
+                    entryLookupConfig;
+                  let responseValue = '';
+                  if (entryId) {
+                    const entry = allEntries.get(entryId);
+                    if (entry) {
+                      responseValue = ConfigurableScript.getResponseValue(
+                        responseData,
+                        entry.responseKey,
+                        responseFieldKey,
+                      );
                     }
+                  } else if (specialValueType) {
+                    responseValue =
+                      getSpecialValueForSubmission(specialValueType);
                   }
-                }
-              });
+
+                  // ignore empty values
+                  if (responseValue !== '') {
+                    fields[fieldId] = responseValue;
+                  }
+                },
+              );
 
               airtableCreateRecord({
                 fields,
@@ -141,7 +179,7 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
               break;
             }
             default:
-              assertUnreachable(submissionAction.type);
+              assertUnreachable(actionConfig);
           }
         });
       }
@@ -197,10 +235,15 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
           <h2 className="mb-2 text-xl">Responses:</h2>
           <dl>
             {Object.values(finalResponseData).map(response => (
-              <>
+              <React.Fragment key={response.entry.responseKey}>
                 <dt className="font-bold">{response.entry.prompt}:</dt>
-                <dd className="mb-2 pl-8">{response.response}</dd>
-              </>
+                <dd className="mb-2 pl-8">
+                  {ConfigurableScript.getResponseValue(
+                    finalResponseData,
+                    response.entry.responseKey,
+                  )}
+                </dd>
+              </React.Fragment>
             ))}
           </dl>
         </div>

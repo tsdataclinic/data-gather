@@ -15,6 +15,9 @@ export type { HTTPValidationError } from './models/HTTPValidationError';
 export { ResponseType } from './models/ResponseType';
 export type { SerializedConditionalActionCreate } from './models/SerializedConditionalActionCreate';
 export type { SerializedConditionalActionRead } from './models/SerializedConditionalActionRead';
+export type { SerializedEditRowPayload } from './models/SerializedEditRowPayload';
+export type { SerializedEntryResponseLookupConfig } from './models/SerializedEntryResponseLookupConfig';
+export type { SerializedInsertRowPayload } from './models/SerializedInsertRowPayload';
 export type { SerializedInterviewCreate } from './models/SerializedInterviewCreate';
 export type { SerializedInterviewRead } from './models/SerializedInterviewRead';
 export type { SerializedInterviewReadWithScreensAndActions } from './models/SerializedInterviewReadWithScreensAndActions';
@@ -29,6 +32,7 @@ export type { SerializedInterviewUpdate } from './models/SerializedInterviewUpda
 export type { SerializedSubmissionActionCreate } from './models/SerializedSubmissionActionCreate';
 export type { SerializedSubmissionActionRead } from './models/SerializedSubmissionActionRead';
 export type { SerializedUserRead } from './models/SerializedUserRead';
+export { SpecialValueType } from './models/SpecialValueType';
 export { SubmissionActionType } from './models/SubmissionActionType';
 export type { ValidationError } from './models/ValidationError';
 

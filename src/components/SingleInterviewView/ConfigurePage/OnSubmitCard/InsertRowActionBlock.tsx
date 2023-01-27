@@ -9,6 +9,7 @@ import type { EditableAction } from './types';
 
 type Props = {
   action: EditableAction;
+  actionConfig: SubmissionAction.WithPartialPayload<SubmissionAction.InsertRowActionConfig>;
   entries: readonly InterviewScreenEntry.WithScreenT[];
   onActionChange: (
     actionToReplace: EditableAction,
@@ -18,6 +19,7 @@ type Props = {
 
 export default function EditRowActionBlock({
   action,
+  actionConfig,
   entries,
   onActionChange,
 }: Props): JSX.Element {
@@ -28,8 +30,9 @@ export default function EditRowActionBlock({
   );
 
   const selectedTable = React.useMemo(
-    () => allTables.find(table => table.key === action.target),
-    [allTables, action.target],
+    () =>
+      allTables.find(table => table.key === actionConfig.payload.tableTarget),
+    [allTables, actionConfig],
   );
 
   const tableOptions = React.useMemo(
@@ -42,13 +45,18 @@ export default function EditRowActionBlock({
   );
 
   const onChangeTableTarget = (tableId: string): void => {
-    onActionChange(action, { ...action, target: tableId });
+    const newConfig = {
+      type: actionConfig.type,
+      payload: { tableTarget: tableId },
+    };
+
+    onActionChange(action, { ...action, config: newConfig });
   };
 
   const onFieldMappingChange = (
     fieldMappings: ReadonlyMap<
       SubmissionAction.FieldId,
-      InterviewScreenEntry.Id | undefined
+      SubmissionAction.EntryResponseLookupConfig
     >,
   ): void => {
     onActionChange(action, { ...action, fieldMappings });
@@ -58,9 +66,10 @@ export default function EditRowActionBlock({
     <div className="space-y-4">
       <LabelWrapper label="Airtable table">
         <Dropdown
-          value={action.target}
+          value={actionConfig.payload.tableTarget}
           options={tableOptions}
           onChange={onChangeTableTarget}
+          placeholder="Select table"
         />
       </LabelWrapper>
       {selectedTable && (

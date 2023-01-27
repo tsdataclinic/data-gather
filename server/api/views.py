@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     APP_CLIENT_ID: str = Field(default="", env="REACT_APP_AZURE_APP_CLIENT_ID")
     AZURE_DOMAIN_NAME: str = Field(default="", env="AZURE_DOMAIN_NAME")
     AZURE_POLICY_AUTH_NAME: str = Field(default="", env="AZURE_POLICY_AUTH_NAME")
+    AZURE_API_SCOPE: str = Field(default="", env="REACT_APP_AZURE_B2C_SCOPES")
 
     class Config:
         env_file = ".env"
@@ -96,7 +97,7 @@ app.add_middleware(
 azure_scheme = B2CMultiTenantAuthorizationCodeBearer(
     app_client_id=settings.APP_CLIENT_ID,
     scopes={
-        f"https://{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/scout-dev-api/Scout.API": "API Scope",
+        f"https://{settings.AZURE_API_SCOPE}": "API Scope",
     },
     openid_config_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/v2.0/.well-known/openid-configuration",
     openapi_authorization_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/oauth2/v2.0/authorize",
@@ -136,6 +137,41 @@ def get_current_user(
     return new_user
 
 
+def commit(
+    session: Session,
+    add_models: list[SQLModel] = [],
+    refresh_models: bool = False,
+    validation_error: Optional[str] = None,
+) -> None:
+    """Commits a session and throws a ValidationError if validation fails.
+
+    Args:
+        session (Session): The session
+        add_models (list[SQLModel], optional): Models to add or update
+        refresh_models (bool, optional): Whether or not to refresh the added
+            models after committing. Defaults to False.
+        validation_error (str, optional): The error string to throw if
+            validation fails.
+    """
+    for model in add_models:
+        session.add(model)
+    try:
+        session.commit()
+    except IntegrityError as e:
+        raise HTTPException(status_code=400, detail=str(e.orig))
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=400,
+            detail="Error during validation"
+            if validation_error is None
+            else "Error validating models",
+        )
+
+    if refresh_models:
+        for model in add_models:
+            session.refresh(model)
+
+
 @app.get("/hello")
 def hello_api():
     return {"message": "Hello World"}
@@ -163,7 +199,7 @@ def test_auth():
 
 
 @app.get(
-    "/user/self",
+    "/api/user/self",
     dependencies=[Security(azure_scheme)],
     response_model=UserRead,
     tags=["users"],
@@ -181,13 +217,32 @@ def create_interview(
     interview: InterviewCreate, session: Session = Depends(get_session)
 ) -> Interview:
     db_interview = Interview.from_orm(interview)
-    session.add(db_interview)
-    try:
-        session.commit()
-    except IntegrityError as e:
-        raise HTTPException(status_code=400, detail=str(e.orig))
-    except ValidationError as e:
-        raise HTTPException(status_code=400, detail="Error validating interview")
+    commit(
+        session,
+        add_models=[db_interview],
+        validation_error="Error validating interview",
+        refresh_models=True,
+    )
+
+    # Now that we committed, the db_interview should have an id
+    if db_interview.id:
+        db_interview.screens = [
+            InterviewScreen(
+                order=1,
+                header_text="",
+                title="Stage 1",
+                is_in_starting_state=True,
+                starting_state_order=1,
+                interview_id=db_interview.id,
+            )
+        ]
+        # commit the interview with the new screen
+        commit(
+            session,
+            add_models=[db_interview],
+            validation_error="Error validating interview",
+            refresh_models=True,
+        )
     return db_interview
 
 
@@ -562,7 +617,7 @@ def _reset_object_order(request_models: Sequence[OrderedModel]):
     """
     Resets the order attribute of objects in given iterable to their index value
     """
-    for index,ordered_model in enumerate(request_models):
+    for index, ordered_model in enumerate(request_models):
         ordered_model.order = index
 
 
@@ -600,7 +655,7 @@ def _adjust_screen_order(
     return (db_screen, sorted_screens + [db_screen])
 
 
-@app.get("/airtable-records/{table_name}", tags=["airtable"])
+@app.get("/api/airtable-records/{table_name}", tags=["airtable"])
 def get_airtable_records(table_name, request: Request) -> list[Record]:
     """
     Fetch records from an airtable table. Filtering can be performed
@@ -610,7 +665,7 @@ def get_airtable_records(table_name, request: Request) -> list[Record]:
     return airtable_client.search_records(table_name, query)
 
 
-@app.get("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
+@app.get("/api/airtable-records/{table_name}/{record_id}", tags=["airtable"])
 def get_airtable_record(table_name: str, record_id: str) -> Record:
     """
     Fetch record with a particular id from a table in airtable.
@@ -618,15 +673,16 @@ def get_airtable_record(table_name: str, record_id: str) -> Record:
     return airtable_client.fetch_record(table_name, record_id)
 
 
-@app.post("/airtable-records/{table_name}", tags=["airtable"])
+@app.post("/api/airtable-records/{table_name}", tags=["airtable"])
 async def create_airtable_record(table_name: str, record: Record = Body(...)) -> Record:
     """
     Create an airtable record in a table.
     """
+    print(record)
     return airtable_client.create_record(table_name, record)
 
 
-@app.put("/airtable-records/{table_name}/{record_id}", tags=["airtable"])
+@app.put("/api/airtable-records/{table_name}/{record_id}", tags=["airtable"])
 async def update_airtable_record(
     table_name: str, record_id: str, update: PartialRecord = Body(...)
 ) -> Record:

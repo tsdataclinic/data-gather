@@ -1,7 +1,8 @@
 import enum
 import uuid
-from typing import Optional
+from typing import Optional, Union
 
+from pydantic import BaseModel, validator
 from sqlalchemy import Column
 from sqlalchemy.dialects.sqlite import JSON
 from sqlmodel import Field, Relationship
@@ -10,9 +11,28 @@ from server.models.common import OrderedModel
 from server.models_util import update_module_forward_refs
 
 
+class EditRowPayload(BaseModel):
+    entryId: str
+    primaryKeyField: str
+
+
+class InsertRowPayload(BaseModel):
+    tableTarget: str
+
+
 class SubmissionActionType(str, enum.Enum):
     EDIT_ROW = "edit_row"
     INSERT_ROW = "insert_row"
+
+
+class SpecialValueType(str, enum.Enum):
+    NOW_DATE = "now_date"
+
+
+class EntryResponseLookupConfig(BaseModel):
+    entryId: Optional[str]
+    responseFieldKey: Optional[str]
+    specialValueType: Optional[SpecialValueType]
 
 
 class SubmissionActionBase(OrderedModel):
@@ -20,11 +40,22 @@ class SubmissionActionBase(OrderedModel):
 
     type: SubmissionActionType
     interview_id: uuid.UUID = Field(foreign_key="interview.id")
-    field_mappings: dict[str, Optional[str]] = Field(sa_column=Column(JSON))
+    field_mappings: dict[str, EntryResponseLookupConfig] = Field(sa_column=Column(JSON))
+    payload: Union[EditRowPayload, InsertRowPayload] = Field(sa_column=Column(JSON))
 
-    # for an EDIT_ROW type, the `target` is an InterviewEntry id.
-    # for an INSERT_ROW type, the `target` is an airtable table id
-    target: str
+    @validator("payload")
+    def validate_payload(cls, value: Union[EditRowPayload, InsertRowPayload]) -> dict:
+        # hacky use of validator to allow Pydantic models to be stored as JSON
+        # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
+        return value.dict()
+
+    @validator("field_mappings")
+    def validate_field_mappings(
+        cls, value: dict[str, EntryResponseLookupConfig]
+    ) -> dict:
+        # hacky use of validator to allow Pydantic models to be stored as JSON
+        # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
+        return {key: val.dict(exclude_none=True) for key, val in value.items()}
 
 
 class SubmissionAction(SubmissionActionBase, table=True):
