@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
 import { useState, useEffect } from 'react';
 import { NavLink, useMatch } from 'react-router-dom';
-import { Link as ScrollLink } from 'react-scroll';
+import * as Scroll from 'react-scroll';
 import useInterviewService from '../../../hooks/useInterviewService';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import { actionTypeToDisplayString } from '../../../models/ConditionalAction';
@@ -73,7 +73,8 @@ export default function ScreenLink({
       {isSelected ? (
         <div className="flex w-full flex-col items-center p-0">
           {/* Header */}
-          <ScrollLink
+          <Scroll.Link
+            smooth
             className={entryMenuItemClass('HEADER')}
             activeClass="active"
             to="HEADER"
@@ -83,12 +84,13 @@ export default function ScreenLink({
           >
             <FontAwesomeIcon size="1x" icon={IconType.faGear} />
             Header
-          </ScrollLink>
+          </Scroll.Link>
 
           {/* Entries */}
           {fullScreen?.entries.map(entry => (
-            <ScrollLink
+            <Scroll.Link
               className={entryMenuItemClass(entry.id)}
+              smooth
               key={entry.id}
               activeClass="active"
               to={entry.id}
@@ -98,13 +100,14 @@ export default function ScreenLink({
             >
               <FontAwesomeIcon size="1x" icon={IconType.faQuestion} />
               {entry.name}
-            </ScrollLink>
+            </Scroll.Link>
           ))}
 
           {/* Action */}
           {fullScreen?.actions.map(action => (
-            <ScrollLink
+            <Scroll.Link
               key={action.id}
+              smooth
               className={entryMenuItemClass('ACTION')}
               activeClass="active"
               to="ACTION"
@@ -114,7 +117,7 @@ export default function ScreenLink({
             >
               <FontAwesomeIcon size="1x" icon={IconType.faLocationArrow} />
               Action: {actionTypeToDisplayString(action.actionConfig.type)}
-            </ScrollLink>
+            </Scroll.Link>
           ))}
         </div>
       ) : null}
