@@ -101,7 +101,7 @@ export function create(vals: {
 }): ConditionalActionCreate {
   return {
     actionConfig: { payload: [], type: ActionType.PUSH },
-    conditionalOperator: ConditionalOperator.ALWAYS_EXECUTE,
+    conditionalOperator: ConditionalOperator.EQ,
     responseKey: undefined,
     responseKeyField: undefined,
     screenId: vals.screenId,
