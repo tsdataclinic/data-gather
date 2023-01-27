@@ -182,11 +182,20 @@ export default function ScreenCard({
           ) : (
             allEntries.map(entry => (
               <EntryCard
-                key={'id' in entry ? entry.id : entry.tempId}
-                ref={formRefSetter('id' in entry ? entry.id : entry.tempId)}
+                key={
+                  InterviewScreenEntry.isCreateType(entry)
+                    ? entry.tempId
+                    : entry.id
+                }
+                ref={formRefSetter(
+                  InterviewScreenEntry.isCreateType(entry)
+                    ? entry.tempId
+                    : entry.id,
+                )}
                 entry={entry}
                 onEntryChange={onEntryChange}
                 onEntryDelete={onEntryDelete}
+                scrollOnMount={InterviewScreenEntry.isCreateType(entry)}
               />
             ))
           )}
@@ -203,12 +212,21 @@ export default function ScreenCard({
           ) : (
             allActions.map(action => (
               <ActionCard
-                key={'id' in action ? action.id : action.tempId}
-                ref={formRefSetter('id' in action ? action.id : action.tempId)}
+                key={
+                  ConditionalAction.isCreateType(action)
+                    ? action.tempId
+                    : action.id
+                }
+                ref={formRefSetter(
+                  ConditionalAction.isCreateType(action)
+                    ? action.tempId
+                    : action.id,
+                )}
                 action={action}
                 interview={interview}
                 onActionChange={onActionChange}
                 onActionDelete={onActionDelete}
+                scrollOnMount={ConditionalAction.isCreateType(action)}
               />
             ))
           )}

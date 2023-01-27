@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Element as ScrollableElement } from 'react-scroll';
+import * as Scroll from 'react-scroll';
 import Form from '../../ui/Form';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import AirtableFieldSelector from './AirtableFieldSelector';
@@ -16,6 +16,9 @@ type Props = {
     newEntry: EditableEntry,
   ) => void;
   onEntryDelete: (entryToDelete: EditableEntry) => void;
+
+  /** Should we scroll to this card when it mounts? */
+  scrollOnMount: boolean;
 };
 
 const ENTRY_RESPONSE_TYPE_OPTIONS = InterviewScreenEntry.RESPONSE_TYPES.map(
@@ -26,7 +29,7 @@ const ENTRY_RESPONSE_TYPE_OPTIONS = InterviewScreenEntry.RESPONSE_TYPES.map(
 );
 
 function EntryCard(
-  { entry, onEntryChange, onEntryDelete }: Props,
+  { entry, onEntryChange, onEntryDelete, scrollOnMount }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
   const entryId = 'id' in entry ? entry.id : entry.tempId;
@@ -35,8 +38,18 @@ function EntryCard(
     onEntryChange(entry, { ...entry, name: newName });
   };
 
+  // on mount, scroll to this component
+  React.useEffect(() => {
+    if (scrollOnMount) {
+      Scroll.scroller.scrollTo(entryId, {
+        containerId: 'scrollContainer',
+        smooth: true,
+      });
+    }
+  }, [entryId, scrollOnMount]);
+
   return (
-    <ScrollableElement
+    <Scroll.Element
       name={entryId}
       key={entryId}
       className="relative flex w-full flex-row border border-gray-200 bg-white p-10 shadow-lg"
@@ -118,7 +131,7 @@ function EntryCard(
           )}
         </Form.Group>
       </Form>
-    </ScrollableElement>
+    </Scroll.Element>
   );
 }
 

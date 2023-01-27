@@ -164,6 +164,12 @@ export function responseTypeStringToEnum(
   return responseTypeEnum ?? ResponseType.TEXT;
 }
 
+export function isCreateType(
+  entry: InterviewScreenEntry | InterviewScreenEntryCreate,
+): entry is InterviewScreenEntryCreate {
+  return 'tempId' in entry;
+}
+
 export { ResponseType };
 export type { InterviewScreenEntry as T };
 export type { InterviewScreenEntryWithScreen as WithScreenT };
