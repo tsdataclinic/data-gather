@@ -4,6 +4,7 @@ import type { ReactNode, CSSProperties } from 'react';
 type Props = {
   children: ReactNode;
   className?: string;
+  helperText?: string;
   htmlFor?: string;
   inline?: boolean;
   inlineContainerStyles?: CSSProperties;
@@ -23,6 +24,7 @@ export default function LabelWrapper({
   inline = false,
   inlineContainerStyles,
   label,
+  helperText,
   labelAfter = false,
   labelTextClassName,
   labelTextStyle,
@@ -51,6 +53,13 @@ export default function LabelWrapper({
           <div className={spanClassName} style={labelTextStyle}>
             {label}
           </div>
+          {helperText && (
+            <div className={spanClassName} style={labelTextStyle}>
+              <small>
+                <i>{helperText}</i>
+              </small>
+            </div>
+          )}
         </label>
         {labelAfter ? null : childrenBlock}
       </div>
@@ -63,6 +72,13 @@ export default function LabelWrapper({
         {labelAfter ? childrenBlock : null}
         <div className={spanClassName} style={labelTextStyle}>
           {label}
+          {helperText && (
+            <div className={spanClassName} style={labelTextStyle}>
+              <small>
+                <i>{helperText}</i>
+              </small>
+            </div>
+          )}
         </div>
         {labelAfter ? null : childrenBlock}
       </label>

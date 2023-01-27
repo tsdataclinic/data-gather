@@ -53,12 +53,6 @@ export default function Sidebar({
             <FontAwesomeIcon size="1x" icon={faPlay} /> Run
           </NavLink>
 
-          {/* Configure */}
-          <ConfigureLink
-            onSelect={() => setSelectedScreen('configure')}
-            isSelected={selectedScreen === 'configure'}
-          />
-
           {/* Screens */}
           {screens.map(screen => (
             <ScreenLink
@@ -69,6 +63,12 @@ export default function Sidebar({
             />
           ))}
         </div>
+
+        {/* Configure */}
+        <ConfigureLink
+          onSelect={() => setSelectedScreen('configure')}
+          isSelected={selectedScreen === 'configure'}
+        />
       </div>
 
       <Button
