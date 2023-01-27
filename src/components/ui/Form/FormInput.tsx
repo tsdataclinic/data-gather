@@ -10,6 +10,7 @@ type Props = {
   className?: string;
   defaultValue?: string;
   disabled?: boolean;
+  helperText?: string;
   inputClassName?: string;
   label?: string;
   name: string;
@@ -26,6 +27,7 @@ export default function FormInput({
   disabled = false,
   required = true,
   label,
+  helperText,
   name,
   defaultValue,
   value,
@@ -38,12 +40,20 @@ export default function FormInput({
   // TODO: Refactor these into separate components so that props are more sensible.
   switch (type) {
     case 'radio':
-      return <InputRadioGroup label={label} name={name} options={options} />;
+      return (
+        <InputRadioGroup
+          label={label}
+          helperText={helperText}
+          name={name}
+          options={options}
+        />
+      );
     case 'number':
       return (
         <LabelWrapper
           className={className}
           label={label + (required ? ' *' : '')}
+          helperText={helperText}
         >
           <InputNumber
             required={required}
@@ -60,6 +70,7 @@ export default function FormInput({
         <LabelWrapper
           className={className}
           label={label + (required ? ' *' : '')}
+          helperText={helperText}
         >
           <InputText
             type={type}

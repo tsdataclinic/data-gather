@@ -72,6 +72,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           key={entry.id}
           name={entry.responseKey}
           label={entry.prompt}
+          helperText={entry.text}
           required={false}
         />
       );
@@ -81,6 +82,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           type="radio"
           name={entry.responseKey}
           label={entry.prompt}
+          helperText={entry.text}
           required={false}
           options={[
             { value: 'Yes', displayValue: 'Yes' },
@@ -96,6 +98,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           name={entry.responseKey}
           required={false}
           label={entry.prompt}
+          helperText={entry.text}
         />
       );
     case InterviewScreenEntry.ResponseType.EMAIL:
@@ -106,6 +109,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           name={entry.responseKey}
           required={false}
           label={entry.prompt}
+          helperText={entry.text}
         />
       );
     case InterviewScreenEntry.ResponseType.AIRTABLE:
@@ -160,6 +164,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           key={entry.id}
           name={entry.responseKey}
           label={entry.prompt}
+          helperText={entry.text}
         />
       );
     default:
