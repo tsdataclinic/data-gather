@@ -8,7 +8,7 @@
  */
 export type SerializedInterviewScreenCreate = {
   order?: number;
-  headerText: string;
+  headerText: any;
   title: any;
   isInStartingState: boolean;
   startingStateOrder?: number;

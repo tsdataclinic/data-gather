@@ -229,7 +229,7 @@ def create_interview(
         db_interview.screens = [
             InterviewScreen(
                 order=1,
-                header_text="",
+                header_text={"en": ""},
                 title={"en": "Stage 1"},
                 is_in_starting_state=True,
                 starting_state_order=1,

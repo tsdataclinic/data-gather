@@ -55,9 +55,12 @@ export default function InterviewRunnerScreen({
   return (
     <div className="mx-auto mt-8 w-4/6">
       <div className="mb-8 flex flex-col items-center">
-        {/* multilanguage support rather than hardcoding en */}
+        {/* TODO multilanguage support rather than hardcoding en */}
         <h1 className="text-2xl">{screen.title.en}</h1>
-        {screen.headerText && <h3 className="text-xl">{screen.headerText}</h3>}
+        {/* TODO multilanguage support rather than hardcoding en */}
+        {screen.headerText && (
+          <h3 className="text-xl">{screen.headerText.en}</h3>
+        )}
       </div>
       <Form onSubmit={handleSubmit}>
         {entries.map((entry: InterviewScreenEntry.T) => (

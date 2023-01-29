@@ -10,7 +10,7 @@
  */
 export type SerializedInterviewScreenRead = {
   order: number;
-  headerText: string;
+  headerText: any;
   title: any;
   isInStartingState: boolean;
   startingStateOrder?: number;

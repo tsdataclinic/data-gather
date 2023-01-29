@@ -35,9 +35,9 @@ function HeaderCard(
           label="Header text"
           name="headerText"
           required={false}
-          value={screen.headerText}
+          value={screen.headerText.en} // TODO multilanguage support rather than hardcoding en
           onChange={(newVal: string) => {
-            onScreenChange({ ...screen, headerText: newVal });
+            onScreenChange({ ...screen, headerText: { en: newVal } }); // TODO multilanguage support rather than hardcoding en
           }}
         />
       </Form>
