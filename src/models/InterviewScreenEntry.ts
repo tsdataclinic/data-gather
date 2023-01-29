@@ -31,8 +31,8 @@ interface InterviewScreenEntry {
   /** The index of this entry in the screen */
   readonly order: number;
 
-  /**  The text of the question */
-  readonly prompt: string;
+  /**  A map from language to the text of the question, in that language */
+  readonly prompt: { [language: string]: string };
 
   /** The key associated with the response to the question */
   readonly responseKey: string;

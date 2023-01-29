@@ -73,11 +73,11 @@ function EntryCard(
           <Form.Input
             label="Text"
             name="prompt"
-            value={entry.prompt}
+            value={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
             onChange={(newVal: string) => {
               onEntryChange(entry, {
                 ...entry,
-                prompt: newVal,
+                prompt: { en: newVal }, // TODO UI should support multiple language prompts rather than hardcoding english
               });
             }}
           />

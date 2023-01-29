@@ -11,7 +11,7 @@ import type { ResponseType } from './ResponseType';
 export type SerializedInterviewScreenEntryCreate = {
   order: number;
   name: string;
-  prompt: string;
+  prompt: any;
   responseKey: string;
   responseType: ResponseType;
   responseTypeOptions: any;
