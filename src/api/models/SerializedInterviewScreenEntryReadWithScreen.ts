@@ -16,7 +16,7 @@ export type SerializedInterviewScreenEntryReadWithScreen = {
   responseType: ResponseType;
   responseTypeOptions: any;
   screenId: string;
-  text: string;
+  text: any;
   id: string;
   screen: SerializedInterviewScreenRead;
 };

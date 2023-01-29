@@ -72,7 +72,7 @@ export default function ScreenCard({
           name: `Question ${prevEntries.length + 1}`,
           order: prevEntries.length + 1,
           prompt: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
-          text: '',
+          text: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
           screenId: screen.id,
           responseType: InterviewScreenEntry.ResponseType.TEXT,
           responseTypeOptions: {

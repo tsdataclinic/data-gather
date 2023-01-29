@@ -47,8 +47,8 @@ interface InterviewScreenEntry {
   /** The screen that this entry belongs to */
   readonly screenId: string;
 
-  /** Additional flavor text associated with the question */
-  readonly text: string;
+  /** Map from language to additional flavor text associated with the question, in that language */
+  readonly text: { [language: string]: string };
 }
 
 interface InterviewScreenEntryWithScreen extends InterviewScreenEntry {
