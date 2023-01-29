@@ -33,7 +33,7 @@ function ConfigureCard({
     value: string;
   }> =>
     screens.map(screen => ({
-      displayValue: screen.title,
+      displayValue: screen.title.en, // // TODO multilanguage support rather than hardcoding en
       value: screen.id,
     }));
 

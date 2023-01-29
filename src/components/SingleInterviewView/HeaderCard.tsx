@@ -26,9 +26,9 @@ function HeaderCard(
         <Form.Input
           label="Title"
           name="title"
-          value={screen.title}
+          value={screen.title.en} // TODO multilanguage support rather than hardcoding en
           onChange={(newVal: string) => {
-            onScreenChange({ ...screen, title: newVal });
+            onScreenChange({ ...screen, title: { en: newVal } }); // TODO multilanguage support rather than hardcoding en
           }}
         />
         <Form.Input

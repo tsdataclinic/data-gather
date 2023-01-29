@@ -47,7 +47,7 @@ export default function ActionConfigEditor({
         ? screens
             .map(screen => ({
               value: screen.id,
-              displayValue: screen.title,
+              displayValue: screen.title.en, // TODO multilanguage support rather than hardcoding en
             }))
             .concat({
               // Hardcoding an 'End option' for now just for demoing, but this

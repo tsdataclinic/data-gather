@@ -230,7 +230,7 @@ def create_interview(
             InterviewScreen(
                 order=1,
                 header_text="",
-                title="Stage 1",
+                title={"en": "Stage 1"},
                 is_in_starting_state=True,
                 starting_state_order=1,
                 interview_id=db_interview.id,
@@ -308,7 +308,6 @@ def update_interview(
     interview: InterviewUpdate,
     session: Session = Depends(get_session),
 ) -> Interview:
-    print("updating interview")
     try:
         db_interview = session.exec(
             select(Interview).where(Interview.id == interview_id)

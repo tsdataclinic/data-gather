@@ -1,6 +1,8 @@
 import uuid
 from typing import Optional, Union
 
+from sqlalchemy import Column
+from sqlalchemy.dialects.sqlite import JSON
 from sqlmodel import Field, Relationship
 
 from server.models.common import OrderedModel
@@ -11,7 +13,7 @@ class InterviewScreenBase(OrderedModel):
     """The base InterviewScreen model"""
 
     header_text: str
-    title: str
+    title: Optional[dict] = Field(sa_column=Column(JSON))
     is_in_starting_state: bool
     starting_state_order: Optional[int]
     interview_id: uuid.UUID = Field(foreign_key="interview.id")

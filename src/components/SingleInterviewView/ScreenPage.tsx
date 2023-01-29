@@ -143,7 +143,7 @@ export default function ScreenCard({
         screen: updatedScreen,
         type: 'SCREEN_UPDATE',
       });
-      toaster.notifySuccess('Saved!', `Successfully saved ${screen.title}`);
+      toaster.notifySuccess('Saved!', `Successfully saved ${screen.title.en}`); // TODO multilanguage support rather than hardcoded en
     }
   }, [allActions, screen, interviewService, allEntries, dispatch, toaster]);
 

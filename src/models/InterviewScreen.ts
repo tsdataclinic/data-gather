@@ -45,7 +45,7 @@ interface InterviewScreen {
   readonly startingStateOrder?: number;
 
   /** Title of the page */
-  readonly title: string;
+  readonly title: { [lang: string]: string };
 }
 
 interface InterviewScreenWithChildren extends InterviewScreen {
@@ -93,7 +93,7 @@ export function create(values: {
 }): InterviewScreenCreate {
   return {
     headerText: values.headerText ?? '',
-    title: values.title,
+    title: { en: values.title }, // TODO multilanguage support rather than hardcoding en
     isInStartingState: false,
     interviewId: values.interviewId,
   };
