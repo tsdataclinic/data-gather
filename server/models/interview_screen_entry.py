@@ -25,7 +25,7 @@ class InterviewScreenEntryBase(OrderedModel):
     """The base InterviewScreenEntry model"""
 
     name: str
-    prompt: str
+    prompt: dict = Field(sa_column=Column(JSON))
     response_key: str
     response_type: ResponseType
     response_type_options: dict = Field(sa_column=Column(JSON))
