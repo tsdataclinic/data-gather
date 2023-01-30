@@ -13,16 +13,19 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
 
   backendStore: BackendInterviewService;
 
-  // TODO: don't hardcode this
   isAuthenticated = false;
 
-  constructor() {
+  constructor(
+    options: { isAuthenticated: boolean } = { isAuthenticated: false },
+  ) {
     this.localStore = new LocalInterviewService();
     this.backendStore = new BackendInterviewService();
+    this.isAuthenticated = options.isAuthenticated;
   }
 
-  setAuthenticationStatus(isAuthenticated: boolean): void {
-    this.isAuthenticated = isAuthenticated;
+  // eslint-disable-next-line class-methods-use-this
+  setAuthenticationStatus(isAuthenticated: boolean): InterviewServiceImpl {
+    return new InterviewServiceImpl({ isAuthenticated });
   }
 
   getStore(): InterviewServiceAPI {
@@ -105,17 +108,26 @@ const InterviewServiceContext = React.createContext<
 type InterviewServiceProviderProps = {
   children: React.ReactNode;
   client: InterviewServiceImpl;
+  pretendUserIsAuthenticated?: boolean;
 };
 
 function InterviewServiceProvider({
   client,
   children,
+  pretendUserIsAuthenticated = false,
 }: InterviewServiceProviderProps): JSX.Element {
   const isAuthenticated = useIsAuthenticated();
-  client.setAuthenticationStatus(isAuthenticated);
+
+  const clientWithAuthStatus = React.useMemo(
+    () =>
+      client.setAuthenticationStatus(
+        pretendUserIsAuthenticated ? true : isAuthenticated,
+      ),
+    [isAuthenticated, client, pretendUserIsAuthenticated],
+  );
 
   return (
-    <InterviewServiceContext.Provider value={client}>
+    <InterviewServiceContext.Provider value={clientWithAuthStatus}>
       {children}
     </InterviewServiceContext.Provider>
   );
