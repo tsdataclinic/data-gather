@@ -18,30 +18,50 @@ export default function App(): JSX.Element {
   return (
     <AuthProvider>
       <QueryClientProvider client={QUERY_CLIENT}>
-        <InterviewService.Provider client={INTERVIEW_API_CLIENT}>
-          <AppState.Provider value={globalState}>
-            <AppDispatch.Provider value={dispatch}>
-              <div className="flex h-screen flex-col bg-gray-50 text-slate-900">
-                <Header />
-                <Routes>
-                  <Route path="/" element={<AllInterviewsView />} />
-                  <Route
-                    path="/interview/:interviewId/run"
-                    element={<InterviewRunnerViewRoute />}
-                  />
-                  <Route
-                    path="/interview/:interviewId/*"
-                    element={<SingleInterviewView />}
-                  />
-                  <Route
-                    path="/published/:vanityUrl/*"
-                    element={<PublishInterviewView />}
-                  />
-                </Routes>
-              </div>
-            </AppDispatch.Provider>
-          </AppState.Provider>
-        </InterviewService.Provider>
+        <AppState.Provider value={globalState}>
+          <AppDispatch.Provider value={dispatch}>
+            <div className="flex h-screen flex-col bg-gray-50 text-slate-900">
+              <Header />
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <InterviewService.Provider client={INTERVIEW_API_CLIENT}>
+                      <AllInterviewsView />
+                    </InterviewService.Provider>
+                  }
+                />
+                <Route
+                  path="/interview/:interviewId/run"
+                  element={
+                    <InterviewService.Provider client={INTERVIEW_API_CLIENT}>
+                      <InterviewRunnerViewRoute />
+                    </InterviewService.Provider>
+                  }
+                />
+                <Route
+                  path="/interview/:interviewId/*"
+                  element={
+                    <InterviewService.Provider client={INTERVIEW_API_CLIENT}>
+                      <SingleInterviewView />
+                    </InterviewService.Provider>
+                  }
+                />
+                <Route
+                  path="/published/:vanityUrl/*"
+                  element={
+                    <InterviewService.Provider
+                      pretendUserIsAuthenticated
+                      client={INTERVIEW_API_CLIENT}
+                    >
+                      <PublishInterviewView />
+                    </InterviewService.Provider>
+                  }
+                />
+              </Routes>
+            </div>
+          </AppDispatch.Provider>
+        </AppState.Provider>
       </QueryClientProvider>
     </AuthProvider>
   );
