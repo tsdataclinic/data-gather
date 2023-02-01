@@ -6,6 +6,7 @@ import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 export interface InterviewServiceAPI {
   interviewAPI: {
     createInterview(interview: Interview.CreateT): Promise<Interview.T>;
+    deleteInterview(interviewId: string): Promise<void>;
     getAllEntries(
       interviewId: string,
     ): Promise<InterviewScreenEntry.WithScreenT[]>;

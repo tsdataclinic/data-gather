@@ -28,6 +28,8 @@ export class InterviewsFastAPIService {
 
   /**
    * Create Interview
+   * Create an interview. An interview is created with a default screen to start
+   * with.
    * @param requestBody
    * @returns SerializedInterviewRead Successful Response
    * @throws ApiError
@@ -94,7 +96,7 @@ export class InterviewsFastAPIService {
 
   /**
    * Get Interview By Vanity Url
-   * Get a published Interview by it's vanity url
+   * Get a published Interview by its vanity url
    * @param vanityUrl
    * @returns SerializedInterviewReadWithScreensAndActions Successful Response
    * @throws ApiError
@@ -154,6 +156,29 @@ export class InterviewsFastAPIService {
       },
       body: requestBody,
       mediaType: 'application/json',
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Delete Interview
+   * Delete an interview. Requires authentication.
+   * Deletion is only allowed if the logged in user is the owner of the interview.
+   * @param interviewId
+   * @returns any Successful Response
+   * @throws ApiError
+   */
+  public deleteInterview(
+    interviewId: string,
+  ): CancelablePromise<any> {
+    return this.httpRequest.request({
+      method: 'DELETE',
+      url: '/api/interview/{interview_id}',
+      path: {
+        'interview_id': interviewId,
+      },
       errors: {
         422: `Validation Error`,
       },
