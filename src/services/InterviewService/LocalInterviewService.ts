@@ -77,6 +77,30 @@ export default class LocalInterviewService
       return Interview.deserialize(serializedInterview);
     },
 
+    deleteInterview: async (interviewId: string): Promise<void> => {
+      const interview = await this.interviewAPI.getInterview(interviewId);
+
+      // delete all screens
+      const deleteScreensPromise = Promise.all(
+        interview.screens.map(screen =>
+          this.interviewScreenAPI.deleteInterviewScreen(screen.id),
+        ),
+      );
+
+      // delete the submission actions
+      const deleteSubmissionActionsPromise = this.submissionActions.bulkDelete(
+        interview.submissionActions.map(action => action.id),
+      );
+
+      await Promise.all([
+        deleteScreensPromise,
+        deleteSubmissionActionsPromise,
+
+        // now delete the interview itself
+        this.interviews.delete(interviewId),
+      ]);
+    },
+
     getAllEntries: async (
       interviewId: string,
     ): Promise<InterviewScreenEntry.WithScreenT[]> => {
@@ -257,11 +281,13 @@ export default class LocalInterviewService
       const { entries, actions } = screen;
 
       // delete the related actions and entries
-      this.conditionalActions.bulkDelete(actions.map(action => action.id));
-      this.interviewScreenEntries.bulkDelete(entries.map(entry => entry.id));
+      await Promise.all([
+        this.conditionalActions.bulkDelete(actions.map(action => action.id)),
+        this.interviewScreenEntries.bulkDelete(entries.map(entry => entry.id)),
 
-      // now delete the screen
-      this.interviewScreens.delete(screen.id);
+        // now delete the screen
+        this.interviewScreens.delete(screen.id),
+      ]);
     },
 
     getInterviewScreen: async (

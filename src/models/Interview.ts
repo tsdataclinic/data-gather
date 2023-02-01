@@ -48,6 +48,12 @@ type InterviewUpdate = Interview & {
   >;
 };
 
+export const QueryKeys = {
+  allInterviews: ['allInterviews'],
+};
+
+export const ALL_INTERVIEWS_URL = '/';
+
 /**
  * Returns a URL which can be used to execute a given interview.
  * see: routes in App.tsx

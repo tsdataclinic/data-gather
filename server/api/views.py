@@ -14,29 +14,22 @@ from sqlmodel import Session, SQLModel, select
 from server.api.airtable_api import AirtableAPI, PartialRecord, Record
 from server.api.airtable_config import AIRTABLE_API_KEY, AIRTABLE_BASE_ID
 from server.api.exceptions import InvalidOrder
+from server.api.services.interview_screen_service import InterviewScreenService
+from server.api.services.interview_service import InterviewService
 from server.engine import create_fk_constraint_engine
 from server.init_db import SQLITE_DB_PATH
 from server.models.common import OrderedModel
 from server.models.conditional_action import ConditionalAction
-from server.models.interview import (
-    Interview,
-    InterviewCreate,
-    InterviewRead,
-    InterviewReadWithScreensAndActions,
-    InterviewUpdate,
-    ValidationError,
-)
-from server.models.interview_screen import (
-    InterviewScreen,
-    InterviewScreenCreate,
-    InterviewScreenRead,
-    InterviewScreenReadWithChildren,
-    InterviewScreenUpdate,
-)
+from server.models.interview import (Interview, InterviewCreate, InterviewRead,
+                                     InterviewReadWithScreensAndActions,
+                                     InterviewUpdate, ValidationError)
+from server.models.interview_screen import (InterviewScreen,
+                                            InterviewScreenCreate,
+                                            InterviewScreenRead,
+                                            InterviewScreenReadWithChildren,
+                                            InterviewScreenUpdate)
 from server.models.interview_screen_entry import (
-    InterviewScreenEntry,
-    InterviewScreenEntryReadWithScreen,
-)
+    InterviewScreenEntry, InterviewScreenEntryReadWithScreen)
 from server.models.submission_action import SubmissionAction
 from server.models.user import User, UserRead
 
@@ -137,39 +130,14 @@ def get_current_user(
     return new_user
 
 
-def commit(
-    session: Session,
-    add_models: list[SQLModel] = [],
-    refresh_models: bool = False,
-    validation_error: Optional[str] = None,
-) -> None:
-    """Commits a session and throws a ValidationError if validation fails.
+def get_interview_service(session: Session = Depends(get_session)) -> InterviewService:
+    return InterviewService(db=session)
 
-    Args:
-        session (Session): The session
-        add_models (list[SQLModel], optional): Models to add or update
-        refresh_models (bool, optional): Whether or not to refresh the added
-            models after committing. Defaults to False.
-        validation_error (str, optional): The error string to throw if
-            validation fails.
-    """
-    for model in add_models:
-        session.add(model)
-    try:
-        session.commit()
-    except IntegrityError as e:
-        raise HTTPException(status_code=400, detail=str(e.orig))
-    except ValidationError as e:
-        raise HTTPException(
-            status_code=400,
-            detail="Error during validation"
-            if validation_error is None
-            else "Error validating models",
-        )
 
-    if refresh_models:
-        for model in add_models:
-            session.refresh(model)
+def get_interview_screen_service(
+    session: Session = Depends(get_session),
+) -> InterviewScreenService:
+    return InterviewScreenService(db=session)
 
 
 @app.get("/hello")
@@ -177,10 +145,11 @@ def hello_api():
     return {"message": "Hello World"}
 
 
-# Because the exception is raised on instantiation from the SQLAlchemy validator
-# we need to globally handle it
 @app.exception_handler(ValidationError)
 async def validation_exception_handler(request: Request, exc: ValidationError):
+    """This will globally handle any ValidationError from SQLAlchemy and
+    return a 400 Bad Request response.
+    """
     return JSONResponse(
         status_code=400,
         content={"message": str(exc)},
@@ -214,36 +183,13 @@ def get_self_user(user: User = Depends(get_current_user)) -> User:
     response_model=InterviewRead,
 )
 def create_interview(
-    interview: InterviewCreate, session: Session = Depends(get_session)
+    interview: InterviewCreate,
+    interview_service: InterviewService = Depends(get_interview_service),
 ) -> Interview:
-    db_interview = Interview.from_orm(interview)
-    commit(
-        session,
-        add_models=[db_interview],
-        validation_error="Error validating interview",
-        refresh_models=True,
-    )
-
-    # Now that we committed, the db_interview should have an id
-    if db_interview.id:
-        db_interview.screens = [
-            InterviewScreen(
-                order=1,
-                header_text="",
-                title="Stage 1",
-                is_in_starting_state=True,
-                starting_state_order=1,
-                interview_id=db_interview.id,
-            )
-        ]
-        # commit the interview with the new screen
-        commit(
-            session,
-            add_models=[db_interview],
-            validation_error="Error validating interview",
-            refresh_models=True,
-        )
-    return db_interview
+    """Create an interview. An interview is created with a default screen to start
+    with.
+    """
+    return interview_service.create_interview(interview)
 
 
 @app.get(
@@ -252,12 +198,11 @@ def create_interview(
     tags=["interviews"],
 )
 def get_interview(
-    interview_id: str, session: Session = Depends(get_session)
+    *,
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
 ) -> Interview:
-    interview = session.get(Interview, interview_id)
-    if not interview:
-        raise HTTPException(status_code=404, detail="Interview not found")
-    return interview
+    return interview_service.get_interview_by_id(interview_id)
 
 
 @app.get(
@@ -266,21 +211,12 @@ def get_interview(
     tags=["interviews"],
 )
 def get_interview_by_vanity_url(
-    vanity_url: str, session: Session = Depends(get_session)
+    *,
+    vanity_url: str,
+    interview_service: InterviewService = Depends(get_interview_service),
 ) -> Interview:
-    """Get a published Interview by it's vanity url"""
-    try:
-        interview = session.exec(
-            select(Interview)
-            .where(Interview.vanity_url == vanity_url)
-            .where(Interview.published)
-        ).one()
-    except NoResultFound:
-        raise HTTPException(
-            status_code=404, detail=f"Interview not found with {vanity_url} vanity url"
-        )
-
-    return interview
+    """Get a published Interview by its vanity url"""
+    return interview_service.get_interview_by_vanity_url(vanity_url)
 
 
 @app.get(
@@ -289,9 +225,11 @@ def get_interview_by_vanity_url(
     tags=["interviews"],
 )
 def get_interview_entries(
-    interview_id: str, session: Session = Depends(get_session)
+    *,
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
 ) -> list[InterviewScreenEntry]:
-    interview = get_interview(interview_id=interview_id, session=session)
+    interview = interview_service.get_interview_by_id(interview_id)
     entries: list[InterviewScreenEntry] = []
     for screen in interview.screens:
         entries.extend(screen.entries)
@@ -403,18 +341,39 @@ def get_interviews(
     return interviews
 
 
+@app.delete(
+    "/api/interview/{interview_id}",
+    response_model=None,
+    tags=["interviews"],
+    dependencies=[Security(azure_scheme)],
+)
+def delete_interview(
+    *,
+    user: User = Depends(get_current_user),
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
+) -> None:
+    """Delete an interview. Requires authentication.
+    Deletion is only allowed if the logged in user is the owner of the interview.
+    """
+    db_interview = interview_service.get_interview_by_id(interview_id)
+    if db_interview.owner_id == user.id:
+        interview_service.delete_interview(db_interview)
+
+
 @app.get(
     "/api/interview_screens/{screen_id}",
     response_model=InterviewScreenReadWithChildren,
     tags=["interviewScreens"],
 )
 def get_interview_screen(
-    *, session: Session = Depends(get_session), screen_id: str
+    *,
+    screen_id: str,
+    interview_screen_service: InterviewScreenService = Depends(
+        get_interview_screen_service
+    ),
 ) -> InterviewScreen:
-    screen = session.get(InterviewScreen, screen_id)
-    if not screen:
-        raise HTTPException(status_code=404, detail="InterviewScreen not found")
-    return screen
+    return interview_screen_service.get_interview_screen_by_id(screen_id)
 
 
 @app.post(
@@ -461,26 +420,12 @@ def create_interview_screen(
 )
 def delete_interview_screen(
     *,
-    session: Session = Depends(get_session),
     screen_id: str,
+    interview_screen_service: InterviewScreenService = Depends(
+        get_interview_screen_service
+    ),
 ) -> None:
-    db_screen = session.get(InterviewScreen, screen_id)
-    if not db_screen:
-        raise HTTPException(status_code=404, detail="Screen not found")
-
-    # delete the related entries
-    for db_entry in db_screen.entries:
-        session.delete(db_entry)
-
-    # delete the related actions
-    for db_action in db_screen.actions:
-        session.delete(db_action)
-
-    session.delete(db_screen)
-    try:
-        session.commit()
-    except IntegrityError as e:
-        raise HTTPException(status_code=400, detail=str(e.orig))
+    interview_screen_service.delete_interview_screen_by_id(screen_id)
 
 
 @app.put(

@@ -41,6 +41,9 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
     createInterview: (interview: Interview.CreateT): Promise<Interview.T> =>
       this.getStore().interviewAPI.createInterview(interview),
 
+    deleteInterview: (interviewId: string): Promise<void> =>
+      this.getStore().interviewAPI.deleteInterview(interviewId),
+
     getAllInterviews: (): Promise<Interview.T[]> =>
       this.getStore().interviewAPI.getAllInterviews(),
 
