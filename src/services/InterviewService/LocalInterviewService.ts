@@ -74,6 +74,17 @@ export default class LocalInterviewService
       };
 
       await this.interviews.add(serializedInterview);
+
+      const newScreen = InterviewScreen.create({
+        interviewId: serializedInterview.id,
+        isInStartingState: true,
+        startingStateOrder: 1,
+        title: 'Stage 1',
+      });
+
+      // start the interview with 1 screen by default
+      await this.interviewScreenAPI.createInterviewScreen(newScreen);
+
       return Interview.deserialize(serializedInterview);
     },
 
