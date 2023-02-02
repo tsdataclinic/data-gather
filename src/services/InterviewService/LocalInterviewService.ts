@@ -74,7 +74,42 @@ export default class LocalInterviewService
       };
 
       await this.interviews.add(serializedInterview);
+
+      const newScreen = InterviewScreen.create({
+        interviewId: serializedInterview.id,
+        isInStartingState: true,
+        startingStateOrder: 1,
+        title: 'Stage 1',
+      });
+
+      // start the interview with 1 screen by default
+      await this.interviewScreenAPI.createInterviewScreen(newScreen);
+
       return Interview.deserialize(serializedInterview);
+    },
+
+    deleteInterview: async (interviewId: string): Promise<void> => {
+      const interview = await this.interviewAPI.getInterview(interviewId);
+
+      // delete all screens
+      const deleteScreensPromise = Promise.all(
+        interview.screens.map(screen =>
+          this.interviewScreenAPI.deleteInterviewScreen(screen.id),
+        ),
+      );
+
+      // delete the submission actions
+      const deleteSubmissionActionsPromise = this.submissionActions.bulkDelete(
+        interview.submissionActions.map(action => action.id),
+      );
+
+      await Promise.all([
+        deleteScreensPromise,
+        deleteSubmissionActionsPromise,
+
+        // now delete the interview itself
+        this.interviews.delete(interviewId),
+      ]);
     },
 
     getAllEntries: async (
@@ -257,11 +292,13 @@ export default class LocalInterviewService
       const { entries, actions } = screen;
 
       // delete the related actions and entries
-      this.conditionalActions.bulkDelete(actions.map(action => action.id));
-      this.interviewScreenEntries.bulkDelete(entries.map(entry => entry.id));
+      await Promise.all([
+        this.conditionalActions.bulkDelete(actions.map(action => action.id)),
+        this.interviewScreenEntries.bulkDelete(entries.map(entry => entry.id)),
 
-      // now delete the screen
-      this.interviewScreens.delete(screen.id);
+        // now delete the screen
+        this.interviewScreens.delete(screen.id),
+      ]);
     },
 
     getInterviewScreen: async (

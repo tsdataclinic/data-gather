@@ -316,6 +316,12 @@ export function createDefaultActionConfig(
   }
 }
 
+export function isCreateType(
+  action: ConditionalAction | ConditionalActionCreate,
+): action is ConditionalActionCreate {
+  return 'tempId' in action;
+}
+
 export type { ConditionalAction as T };
 export type { ConditionalActionCreate as CreateT };
 export type { SerializedConditionalActionRead as SerializedT };

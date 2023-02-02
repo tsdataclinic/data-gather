@@ -28,6 +28,10 @@ export default class BackendInterviewService implements InterviewServiceAPI {
       return Interview.deserialize(serializedInterview);
     },
 
+    deleteInterview: async (interviewId: string): Promise<void> => {
+      await this.api.interviews.deleteInterview(interviewId);
+    },
+
     getAllEntries: async (
       interviewId: string,
     ): Promise<InterviewScreenEntry.WithScreenT[]> => {

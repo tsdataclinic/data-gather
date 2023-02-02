@@ -2,6 +2,7 @@ import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import * as React from 'react';
+import * as Scroll from 'react-scroll';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { faLocationArrow } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -27,10 +28,20 @@ type Props = {
     newAction: EditableAction,
   ) => void;
   onActionDelete: (actionToDelete: EditableAction) => void;
+
+  /** Should we scroll to this card when it mounts? */
+  scrollOnMount: boolean;
 };
 
 function ActionCard(
-  { action, interview, onActionChange, onActionDelete, interviewScreen }: Props,
+  {
+    action,
+    interview,
+    onActionChange,
+    onActionDelete,
+    scrollOnMount,
+    interviewScreen,
+  }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
   // TODO: when interview is a nested model we won't need these sub-queries
@@ -77,6 +88,16 @@ function ActionCard(
   const isAlwaysExecuteChecked =
     action.conditionalOperator ===
     ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE;
+
+  // on mount, scroll to this component
+  React.useEffect(() => {
+    if (scrollOnMount) {
+      Scroll.scroller.scrollTo(actionId, {
+        containerId: 'scrollContainer',
+        smooth: true,
+      });
+    }
+  }, [actionId, scrollOnMount]);
 
   return (
     <ScrollableElement
