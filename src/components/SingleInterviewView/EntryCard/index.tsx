@@ -73,11 +73,11 @@ function EntryCard(
           <Form.Input
             label="Text"
             name="prompt"
-            value={entry.prompt}
+            value={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
             onChange={(newVal: string) => {
               onEntryChange(entry, {
                 ...entry,
-                prompt: newVal,
+                prompt: { en: newVal }, // TODO UI should support multiple language prompts rather than hardcoding english
               });
             }}
           />
@@ -85,12 +85,13 @@ function EntryCard(
             label="Helper Text"
             name="text"
             required={false}
-            value={entry.text}
+            value={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
             onChange={(newVal: string) => {
               onEntryChange(entry, {
                 ...entry,
                 // TODO: change this to be named `helperText` instead of just `text`
-                text: newVal,
+                // TODO UI should support multiple language prompts rather than hardcoding english
+                text: { en: newVal },
               });
             }}
           />

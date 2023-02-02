@@ -71,8 +71,8 @@ export default function ScreenCard({
         InterviewScreenEntry.create({
           name: `Question ${prevEntries.length + 1}`,
           order: prevEntries.length + 1,
-          prompt: '',
-          text: '',
+          prompt: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
+          text: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
           screenId: screen.id,
           responseType: InterviewScreenEntry.ResponseType.TEXT,
           responseTypeOptions: {
@@ -143,7 +143,7 @@ export default function ScreenCard({
         screen: updatedScreen,
         type: 'SCREEN_UPDATE',
       });
-      toaster.notifySuccess('Saved!', `Successfully saved ${screen.title}`);
+      toaster.notifySuccess('Saved!', `Successfully saved ${screen.title.en}`); // TODO multilanguage support rather than hardcoded en
     }
   }, [allActions, screen, interviewService, allEntries, dispatch, toaster]);
 

@@ -14,8 +14,8 @@ import type { SerializedInterviewScreenEntryRead } from './SerializedInterviewSc
  */
 export type SerializedInterviewScreenUpdate = {
   order: number;
-  headerText: string;
-  title: string;
+  headerText: any;
+  title: any;
   isInStartingState: boolean;
   startingStateOrder?: number;
   interviewId: string;

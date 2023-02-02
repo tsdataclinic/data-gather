@@ -236,7 +236,8 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
           <dl>
             {Object.values(finalResponseData).map(response => (
               <React.Fragment key={response.entry.responseKey}>
-                <dt className="font-bold">{response.entry.prompt}:</dt>
+                {/* TODO UI should support multiple language prompts rather than hardcoding english */}
+                <dt className="font-bold">{response.entry.prompt.en}:</dt>
                 <dd className="mb-2 pl-8">
                   {ConfigurableScript.getResponseValue(
                     finalResponseData,

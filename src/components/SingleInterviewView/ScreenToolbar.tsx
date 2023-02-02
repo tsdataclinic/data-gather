@@ -38,7 +38,8 @@ export default function ScreenToolbar({
 
   return (
     <div className="z-10 flex w-full bg-white px-8 py-4 shadow">
-      <StyledHeading>{screen.title}</StyledHeading>
+      {/* TODO multilanguage support rather than hardcoding en */}
+      <StyledHeading>{screen.title.en}</StyledHeading>
       <Toolbar.Root className="flex space-x-2">
         <Toolbar.Button asChild>
           <Button onClick={onNewEntryClick}>New Question</Button>

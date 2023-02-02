@@ -11,12 +11,12 @@ import type { SerializedInterviewScreenRead } from './SerializedInterviewScreenR
 export type SerializedInterviewScreenEntryReadWithScreen = {
   order: number;
   name: string;
-  prompt: string;
+  prompt: any;
   responseKey: string;
   responseType: ResponseType;
   responseTypeOptions: any;
   screenId: string;
-  text: string;
+  text: any;
   id: string;
   screen: SerializedInterviewScreenRead;
 };
