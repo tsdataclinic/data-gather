@@ -84,9 +84,9 @@ function ConfigureCard({
           />
         </LabelWrapper>
         {!isAuthenticated && (
-          <span className="italic text-red-600">
+          <em className="text-red-600">
             You can&apos;t publish an interview while signed out!
-          </span>
+          </em>
         )}
 
         {interview.published && (
