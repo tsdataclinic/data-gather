@@ -38,7 +38,7 @@ export default function Header(): JSX.Element {
             You aren&apos;t signed in!
           </span>
           <span className="pl-2 text-sm">
-            Some features of Interview may not work until you&apos;re signed in.
+            Some features of this app may not work until you&apos;re signed in.
             Click the button in the top-right to sign in.
           </span>
         </header>
