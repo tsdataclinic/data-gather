@@ -4,11 +4,12 @@ import Button from '../ui/Button';
 import InterviewCard from './InterviewCard';
 import NewInterviewModal from './NewInterviewModal';
 import useInterviewService from '../../hooks/useInterviewService';
+import * as Interview from '../../models/Interview';
 
 export default function AllInterviewsView(): JSX.Element {
   const interviewService = useInterviewService();
   const { data: allInterviews = [], isError } = useQuery({
-    queryKey: ['allInterviews'],
+    queryKey: Interview.QueryKeys.allInterviews,
     queryFn: interviewService.interviewAPI.getAllInterviews,
   });
 

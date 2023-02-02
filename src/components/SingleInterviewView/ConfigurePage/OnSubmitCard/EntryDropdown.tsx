@@ -51,7 +51,6 @@ export default function EntryDropdown({
   emptyOptionText = 'No selection',
   selectedSpecialValueType,
 }: Props): JSX.Element {
-  console.log('selected entry id', selectedEntryId);
   const [isEmptyValueSelected, setIsEmptyValueSelected] = React.useState(
     selectedEntryId === undefined && selectedSpecialValueType === undefined,
   );

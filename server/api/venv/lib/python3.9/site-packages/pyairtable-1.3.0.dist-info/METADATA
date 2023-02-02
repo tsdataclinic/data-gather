@@ -1,0 +1,48 @@
+Metadata-Version: 2.1
+Name: pyairtable
+Version: 1.3.0
+Summary: Python Client for the Airtable API
+Home-page: https://github.com/gtalarico/pyairtable
+Author: Gui Talarico
+License: The MIT License (MIT)
+Keywords: airtable,api,client,pyairtable
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests (>=2)
+
+# pyAirtable (formerly airtable-python-wrapper)
+
+
+![CI](https://github.com/gtalarico/pyairtable/actions/workflows/test_lint_deploy.yml/badge.svg)
+[![PyPI](https://img.shields.io/pypi/v/pyairtable.svg)](https://pypi.org/project/pyairtable/)
+[![PyPI Downloads - 0.x](https://img.shields.io/pypi/dm/airtable-python-wrapper.svg?label=downloads%200.x)](https://pypi.org/project/airtable-python-wrapper/)
+[![PyPI Downloads - 1.x](https://img.shields.io/pypi/dm/pyairtable.svg?label=downloads%201.x)](https://pypi.org/project/pyairtable/)
+[![Documentation Status](https://readthedocs.org/projects/pyairtable/badge/?version=latest)](http://pyairtable.readthedocs.io/en/latest/?badge=latest)
+[![codecov](https://codecov.io/gh/gtalarico/pyairtable/branch/main/graph/badge.svg?token=askmZgmMoV)](https://codecov.io/gh/gtalarico/pyairtable)
+
+Python Client for the Airtable Api
+
+## Installing
+
+```
+pip install pyairtable
+```
+
+## Documentation
+
+Checkout the docs on [pyairtable.readthedocs.io](http://pyairtable.readthedocs.io/)
+
+
+### Looking for **airtable-python-wrapper**?
+
+airtable-python-wrapper is now **pyAirtable**.
+For the previous version go to https://github.com/gtalarico/airtable-python-wrapper/tree/airtable-python-wrapper

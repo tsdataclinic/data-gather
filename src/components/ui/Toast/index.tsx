@@ -137,48 +137,60 @@ function Toast({ children, title, intent }: ToastProps): JSX.Element {
   );
 }
 
+const ToastManagerContext = React.createContext<ToastAPI | undefined>(
+  undefined,
+);
+
 /**
  * This behaves as a Toast manager. It renders the provider, the viewport,
  * and keeps track of all the toasts that are currently active.
  */
-function Toaster(
-  _: unknown,
+function ToastManagerComp(
+  { children }: { children?: React.ReactNode },
   forwardedRef: React.ForwardedRef<ToastAPI>,
 ): JSX.Element {
   const [toasts, setToasts] = React.useState<ToastProps[]>([]);
 
-  React.useImperativeHandle(
-    forwardedRef,
+  const api = React.useMemo(
     () => ({
-      notifySuccess: (title, children: React.ReactNode) => {
+      notifySuccess: (title: string, content: React.ReactNode) => {
         setToasts(prevToasts =>
-          prevToasts.concat({ title, children, intent: 'success' }),
+          prevToasts.concat({ title, children: content, intent: 'success' }),
         );
       },
-      notifyError: (title, children: React.ReactNode) => {
+      notifyError: (title: string, content: React.ReactNode) => {
         setToasts(prevToasts =>
-          prevToasts.concat({ title, children, intent: 'error' }),
+          prevToasts.concat({ title, children: content, intent: 'error' }),
         );
       },
     }),
     [],
   );
 
+  // We intentionally make the API available via a ref or via context in order
+  // to support multiple ways of using the ToastManager
+  React.useImperativeHandle(forwardedRef, () => api, [api]);
+
+  // TODO: we should keep track of when a toast disappears and remove it
+  // from the array. This is a memory leak - the array will keep growing.
   return (
-    <RadixToast.Provider swipeDirection="right">
-      {toasts.map((toastProps, idx) => (
-        // TODO: we should keep track of when a toast disappears and remove it
-        // from the array. This is a memory leak - the array will keep growing.
-        // Using index as array key is safe in this context
-        // eslint-disable-next-line react/no-array-index-key,react/jsx-props-no-spreading
-        <Toast key={idx} {...toastProps} />
-      ))}
-      <StyledViewport />
-    </RadixToast.Provider>
+    // setting a value of true just to make it super easy to detect that a
+    // ToastManager has been instantiated
+    <ToastManagerContext.Provider value={api}>
+      <RadixToast.Provider swipeDirection="right">
+        {children}
+        {toasts.map((toastProps, idx) => (
+          // Using index as array key is safe in this context
+          // eslint-disable-next-line react/no-array-index-key,react/jsx-props-no-spreading
+          <Toast key={idx} {...toastProps} />
+        ))}
+        <StyledViewport />
+      </RadixToast.Provider>
+    </ToastManagerContext.Provider>
   );
 }
 
-const ToastManager = React.forwardRef(Toaster);
+export const ToastManager = React.forwardRef(ToastManagerComp);
 
 const noop = (): void => undefined;
 const noopAPI: ToastAPI = {
@@ -196,12 +208,16 @@ const noopAPI: ToastAPI = {
  */
 export function useToast(): ToastAPI {
   const toasterRef = React.useRef<null | ToastAPI>(null);
-  const { current: toasterAPI } = toasterRef;
+  const toastAPIInContext = React.useContext(ToastManagerContext);
 
   React.useEffect(() => {
     const { body } = document;
     let container: HTMLDivElement | undefined;
-    if (body) {
+
+    // we only need to insert a ToastManager to the DOM if we couldn't find one
+    // already via context. If we found one in Context then it means that the
+    // App already has a ToastManager instantiated whose API we can use.
+    if (body && !toastAPIInContext) {
       container = document.createElement('div');
       body.appendChild(container);
       ReactDOM.render(<ToastManager ref={toasterRef} />, container);
@@ -212,7 +228,8 @@ export function useToast(): ToastAPI {
         body.removeChild(container);
       }
     };
-  }, []);
+  }, [toastAPIInContext]);
 
-  return toasterAPI ?? noopAPI;
+  const { current: toasterAPIFromRef } = toasterRef;
+  return toastAPIInContext ?? toasterAPIFromRef ?? noopAPI;
 }

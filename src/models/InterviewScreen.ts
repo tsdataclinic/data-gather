@@ -89,12 +89,15 @@ type InterviewScreenUpdate = Override<
 export function create(values: {
   headerText?: string;
   interviewId: string;
+  isInStartingState?: boolean;
+  startingStateOrder?: number;
   title: string;
 }): InterviewScreenCreate {
   return {
     headerText: { en: values.headerText ?? '' }, // TODO multilanguage support rather than hardcoding en
     title: { en: values.title }, // TODO multilanguage support rather than hardcoding en
-    isInStartingState: false,
+    isInStartingState: values.isInStartingState ?? false,
+    startingStateOrder: values.startingStateOrder,
     interviewId: values.interviewId,
   };
 }

@@ -8,7 +8,6 @@ export default function PublishedInterviewView(): JSX.Element | null {
   const interview = useVanityUrl(vanityUrl);
 
   if (interview) {
-    // TODO: make this work while not authenticated
     return <InterviewRunnerView interviewId={interview.id} />;
   }
   return null;
