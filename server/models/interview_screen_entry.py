@@ -25,12 +25,12 @@ class InterviewScreenEntryBase(OrderedModel):
     """The base InterviewScreenEntry model"""
 
     name: str
-    prompt: dict = Field(sa_column=Column(JSON))
+    prompt: dict[str, str] = Field(sa_column=Column(JSON))
     response_key: str
     response_type: ResponseType
     response_type_options: dict = Field(sa_column=Column(JSON))
     screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
-    text: dict = Field(sa_column=Column(JSON))
+    text: dict[str, str] = Field(sa_column=Column(JSON))
 
 
 class InterviewScreenEntry(InterviewScreenEntryBase, table=True):
