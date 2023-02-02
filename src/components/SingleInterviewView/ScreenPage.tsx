@@ -207,6 +207,7 @@ export default function ScreenCard({
                 ref={formRefSetter('id' in action ? action.id : action.tempId)}
                 action={action}
                 interview={interview}
+                interviewScreen={screen}
                 onActionChange={onActionChange}
                 onActionDelete={onActionDelete}
               />
