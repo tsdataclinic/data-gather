@@ -8,6 +8,7 @@ import LabelWrapper from '../../ui/LabelWrapper';
 import TextArea from '../../ui/TextArea';
 import MultiSelect from '../../ui/MultiSelect';
 import InputText from '../../ui/InputText';
+import useIsAuthenticated from '../../../auth/useIsAuthenticated';
 
 type Props = {
   interview: Interview.UpdateT;
@@ -23,6 +24,7 @@ function ConfigureCard({
   onStartingStateChange,
 }: Props): JSX.Element {
   const screens = useInterviewScreens(interview.id);
+  const isAuthenticated = useIsAuthenticated();
 
   if (!screens) {
     return <p>No stages have been created yet!</p>;
@@ -78,8 +80,14 @@ function ConfigureCard({
               onInterviewChange({ ...interview, published: e.target.checked });
             }}
             checked={interview.published}
+            disabled={!isAuthenticated}
           />
         </LabelWrapper>
+        {!isAuthenticated && (
+          <em className="text-red-600">
+            You can&apos;t publish an interview while signed out!
+          </em>
+        )}
 
         {interview.published && (
           <LabelWrapper inline label="Vanity URL" labelTextClassName="w-40">
