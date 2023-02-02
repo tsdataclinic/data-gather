@@ -12,8 +12,8 @@ from server.models_util import update_module_forward_refs
 class InterviewScreenBase(OrderedModel):
     """The base InterviewScreen model"""
 
-    header_text: dict = Field(sa_column=Column(JSON))
-    title: dict = Field(sa_column=Column(JSON))
+    header_text: dict[str, str] = Field(sa_column=Column(JSON))
+    title: dict[str, str] = Field(sa_column=Column(JSON))
     is_in_starting_state: bool
     starting_state_order: Optional[int]
     interview_id: uuid.UUID = Field(foreign_key="interview.id")
