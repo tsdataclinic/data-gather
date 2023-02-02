@@ -283,6 +283,10 @@ export function actionTypeToDisplayString(
   if (actionType === undefined) {
     return '';
   }
+
+  if (actionType === ActionType.PUSH) {
+    return 'Go to stage';
+  }
   // capitalize first letter
   return actionType[0].toUpperCase() + actionType.substring(1);
 }
