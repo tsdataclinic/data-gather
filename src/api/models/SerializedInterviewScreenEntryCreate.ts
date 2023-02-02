@@ -11,12 +11,12 @@ import type { ResponseType } from './ResponseType';
 export type SerializedInterviewScreenEntryCreate = {
   order: number;
   name: string;
-  prompt: any;
+  prompt: Record<string, string>;
   responseKey: string;
   responseType: ResponseType;
   responseTypeOptions: any;
   screenId: string;
-  text: any;
+  text: Record<string, string>;
   id?: string;
 };
 
