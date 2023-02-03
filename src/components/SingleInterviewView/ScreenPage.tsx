@@ -148,10 +148,12 @@ export default function ScreenCard({
   }, [allActions, screen, interviewService, allEntries, dispatch, toaster]);
 
   function formRefSetter(formKey: string): React.RefCallback<HTMLFormElement> {
-    return (formElt: HTMLFormElement) => {
+    return (formElt: HTMLFormElement | null) => {
       if (formElt) {
         allFormRefs.current.set(formKey, formElt);
       } else {
+        // `formElt` is null when the component unmounts, so that's when we
+        // should remove this from the `allFormRefs` map
         allFormRefs.current.delete(formKey);
       }
     };
