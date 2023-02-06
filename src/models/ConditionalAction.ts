@@ -239,6 +239,12 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
       return 'After';
     case ConditionalOperator.BEFORE:
       return 'Before';
+    case ConditionalOperator.AFTER_OR_EQUAL:
+      return 'After or equal';
+    case ConditionalOperator.BEFORE_OR_EQUAL:
+      return 'Before or equal';
+    case ConditionalOperator.EQUALS_DATE:
+      return 'Equals';
     case ConditionalOperator.EQ:
       return '=';
     case ConditionalOperator.GT:
@@ -255,10 +261,13 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
   }
 }
 
-export function isTimeOperator(operator: ConditionalOperator): boolean {
+export function isDateOperator(operator: ConditionalOperator): boolean {
   switch (operator) {
     case ConditionalOperator.AFTER:
+    case ConditionalOperator.AFTER_OR_EQUAL:
     case ConditionalOperator.BEFORE:
+    case ConditionalOperator.BEFORE_OR_EQUAL:
+    case ConditionalOperator.EQUALS_DATE:
       return true;
     case ConditionalOperator.ALWAYS_EXECUTE:
     case ConditionalOperator.EQ:
@@ -266,6 +275,27 @@ export function isTimeOperator(operator: ConditionalOperator): boolean {
     case ConditionalOperator.GTE:
     case ConditionalOperator.LT:
     case ConditionalOperator.LTE:
+      return false;
+    default:
+      assertUnreachable(operator, { throwError: false });
+      return operator;
+  }
+}
+
+export function isNumberOperator(operator: ConditionalOperator): boolean {
+  switch (operator) {
+    case ConditionalOperator.EQ:
+    case ConditionalOperator.GT:
+    case ConditionalOperator.GTE:
+    case ConditionalOperator.LT:
+    case ConditionalOperator.LTE:
+      return true;
+    case ConditionalOperator.AFTER:
+    case ConditionalOperator.AFTER_OR_EQUAL:
+    case ConditionalOperator.BEFORE:
+    case ConditionalOperator.BEFORE_OR_EQUAL:
+    case ConditionalOperator.EQUALS_DATE:
+    case ConditionalOperator.ALWAYS_EXECUTE:
       return false;
     default:
       assertUnreachable(operator, { throwError: false });

@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { Calendar } from 'primereact/calendar';
-import Dropdown from '../../ui/Dropdown';
+import Dropdown, { type DropdownOption } from '../../ui/Dropdown';
 import InputText from '../../ui/InputText';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
+import * as InterviewScreen from '../../../models/InterviewScreen';
 import type { EditableAction } from '../types';
 import useAppState from '../../../hooks/useAppState';
 
@@ -13,14 +14,31 @@ type Props = {
   onConditionalOperationChange: (action: EditableAction) => void;
 };
 
-// remove 'ALWAYS_EXECUTE' from being one of the options in the dropdown
-// because this operator is handled separately
-const OPERATOR_OPTIONS = ConditionalAction.CONDITIONAL_OPERATORS.filter(
-  operator => operator !== ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE,
-).map(operator => ({
-  displayValue: ConditionalAction.operatorToDisplayString(operator),
-  value: operator,
-}));
+function getOperatorDropdownOptions(
+  type: 'date' | 'number',
+): Array<DropdownOption<ConditionalAction.ConditionalOperator>> {
+  const filterFunction =
+    type === 'date'
+      ? ConditionalAction.isDateOperator
+      : ConditionalAction.isNumberOperator;
+  return ConditionalAction.CONDITIONAL_OPERATORS.filter(filterFunction).map(
+    operator => ({
+      displayValue: ConditionalAction.operatorToDisplayString(operator),
+      value: operator,
+    }),
+  );
+}
+
+const OPERATOR_OPTIONS = [
+  {
+    label: 'Date comparisons',
+    options: getOperatorDropdownOptions('date'),
+  },
+  {
+    label: 'Numeric comparisons',
+    options: getOperatorDropdownOptions('number'),
+  },
+];
 
 // The conditionalOperatorRow doesn't use Form.Input or other Form
 // subcomponents because we need more control over how it renders
@@ -45,7 +63,9 @@ export default function ConditionalOperatorRow({
   const allResponseKeyOptions = React.useMemo(
     () =>
       allEntries.map(entry => ({
-        displayValue: `${entry.screen.title} - ${entry.name}`,
+        displayValue: `${InterviewScreen.getTitle(entry.screen)} - ${
+          entry.name
+        }`,
         value: entry.responseKey,
       })),
     [allEntries],
@@ -132,7 +152,7 @@ export default function ConditionalOperatorRow({
         />
 
         {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
-        {ConditionalAction.isTimeOperator(action.conditionalOperator) ? (
+        {ConditionalAction.isDateOperator(action.conditionalOperator) ? (
           <Calendar
             placeholder="Date"
             onChange={e => {

@@ -38,8 +38,7 @@ export default function ScreenToolbar({
 
   return (
     <div className="z-10 flex w-full bg-white px-8 py-4 shadow">
-      {/* TODO multilanguage support rather than hardcoding en */}
-      <StyledHeading>{screen.title.en}</StyledHeading>
+      <StyledHeading>{InterviewScreen.getTitle(screen)}</StyledHeading>
       <Toolbar.Root className="flex space-x-2">
         <Toolbar.Button asChild>
           <Button onClick={onNewEntryClick}>New Question</Button>
@@ -60,7 +59,7 @@ export default function ScreenToolbar({
       </Toolbar.Root>
       {isDeleteModalOpen && (
         <Modal
-          title={`Delete ${screen.title}`}
+          title={`Delete ${InterviewScreen.getTitle(screen)}`}
           isOpen={isDeleteModalOpen}
           onDismiss={() => setIsDeleteModalOpen(false)}
         >

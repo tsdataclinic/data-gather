@@ -45,6 +45,7 @@
       }
     ],
     "@typescript-eslint/no-shadow": "error",
+    "@typescript-eslint/no-inferrable-types": "off",
     "camelcase": "warn",
     "react-hooks/exhaustive-deps": "error",
     "react-hooks/rules-of-hooks": "error",

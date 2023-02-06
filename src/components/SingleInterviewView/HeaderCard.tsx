@@ -26,7 +26,7 @@ function HeaderCard(
         <Form.Input
           label="Title"
           name="title"
-          value={screen.title.en} // TODO multilanguage support rather than hardcoding en
+          value={InterviewScreen.getTitle(screen)}
           onChange={(newVal: string) => {
             onScreenChange({ ...screen, title: { en: newVal } }); // TODO multilanguage support rather than hardcoding en
           }}
