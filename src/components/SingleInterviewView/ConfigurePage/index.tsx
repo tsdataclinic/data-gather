@@ -8,6 +8,7 @@ import { useToast } from '../../ui/Toast';
 import useInterviewMutation, {
   type InterviewServiceAPI,
 } from '../../../hooks/useInterviewMutation';
+import SettingsCard from './SettingsCard';
 
 type Props = {
   defaultInterview: Interview.WithScreensAndActions;
@@ -70,6 +71,10 @@ export default function ConfigurePage({
             interview={interview}
             startingState={startingState}
             onStartingStateChange={setStartingState}
+            onInterviewChange={setInterview}
+          />
+          <SettingsCard
+            interview={interview}
             onInterviewChange={setInterview}
           />
           <OnSubmitCard
