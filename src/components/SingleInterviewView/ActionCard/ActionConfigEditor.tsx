@@ -9,7 +9,18 @@ import useInterviewScreens from '../../../hooks/useInterviewScreens';
 import InputText from '../../ui/InputText';
 import MultiSelect from '../../ui/MultiSelect';
 
-const ACTION_TYPE_OPTIONS = ConditionalAction.ACTION_TYPES.map(actionType => ({
+// TODO: eventually this should be removed because all action types should be
+// fully implemented.
+const UNIMPLEMENTED_ACTION_TYPES = new Set([
+  ConditionalAction.ActionType.CHECKPOINT,
+  ConditionalAction.ActionType.MILESTONE,
+  ConditionalAction.ActionType.RESTORE,
+  ConditionalAction.ActionType.SKIP,
+]);
+
+const ACTION_TYPE_OPTIONS = ConditionalAction.ACTION_TYPES.filter(
+  actionType => !UNIMPLEMENTED_ACTION_TYPES.has(actionType),
+).map(actionType => ({
   displayValue: ConditionalAction.actionTypeToDisplayString(actionType),
   value: actionType,
 }));
