@@ -7,7 +7,6 @@ import LabelWrapper from '../../ui/LabelWrapper';
 import assertUnreachable from '../../../util/assertUnreachable';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
 import InputText from '../../ui/InputText';
-import MultiSelect from '../../ui/MultiSelect';
 
 // TODO: eventually this should be removed because all action types should be
 // fully implemented.
@@ -51,7 +50,6 @@ export default function ActionConfigEditor({
       ConditionalAction.createDefaultActionConfig(newActionType),
     );
   };
-  const actionId = 'id' in action ? action.id : action.tempId;
 
   const screenOptions = React.useMemo(
     () =>
@@ -72,22 +70,16 @@ export default function ActionConfigEditor({
         // TODO: we only allow a single screen to be pushed for now. This needs
         // to be updated once we have a multi-select dropdown component.
         return (
-          <LabelWrapper
-            inline
-            label="Next stage"
-            labelTextClassName="w-20"
-            htmlFor={`${actionId}__push`}
-          >
-            <MultiSelect
-              id={`${actionId}__push`}
-              onChange={(newScreenIds: readonly string[]) =>
+          <LabelWrapper inline label="Next stage" labelTextClassName="w-20">
+            <Dropdown
+              onChange={newScreenId =>
                 onActionConfigChange({
                   type: ConditionalAction.ActionType.PUSH,
-                  payload: newScreenIds,
+                  payload: [newScreenId],
                 })
               }
-              placeholder="Add stage"
-              selectedValues={actionConfig.payload}
+              placeholder="Select a stage"
+              value={actionConfig.payload[0]}
               options={screenOptions}
             />
           </LabelWrapper>
