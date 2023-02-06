@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
+import * as InterviewScreen from '../../../models/InterviewScreen';
 import Dropdown from '../../ui/Dropdown';
 import LabelWrapper from '../../ui/LabelWrapper';
 import assertUnreachable from '../../../util/assertUnreachable';
@@ -47,7 +48,7 @@ export default function ActionConfigEditor({
         ? screens
             .map(screen => ({
               value: screen.id,
-              displayValue: screen.title.en, // TODO multilanguage support rather than hardcoding en
+              displayValue: InterviewScreen.getTitle(screen),
             }))
             .concat({
               // Hardcoding an 'End option' for now just for demoing, but this

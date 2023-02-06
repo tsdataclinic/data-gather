@@ -68,7 +68,7 @@ export default function ScreenLink({
           icon={IconType.faPenToSquare}
         />
         {/* TODO multilanguage support rather than hardcoding en */}
-        {screen.title.en}
+        {InterviewScreen.getTitle(screen)}
       </NavLink>
 
       {isSelected ? (

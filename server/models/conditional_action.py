@@ -12,9 +12,15 @@ class ConditionalOperator(str, enum.Enum):
     """The different types of conditional operator that can be used for a
     ConditionalAction"""
 
+    # date operators
+    AFTER_OR_EQUAL = "after_or_equal"
     AFTER = "after"
-    ALWAYS_EXECUTE = "ALWAYS_EXECUTE"
+    EQUALS_DATE = "equals_date"
     BEFORE = "before"
+    BEFORE_OR_EQUAL = "before_or_equal"
+
+    # numeric operators
+    ALWAYS_EXECUTE = "always_execute"
     EQUALS = "eq"
     GREATER_THAN = "gt"
     GREATER_THAN_OR_EQUAL = "gte"

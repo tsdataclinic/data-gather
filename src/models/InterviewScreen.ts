@@ -158,6 +158,26 @@ export function serialize(
   return screen;
 }
 
+/**
+ * Get this screen's title in a given language.
+ *
+ * TODO: for now we default to english, but eventually this should default
+ * to a user-configured default.
+ */
+export function getTitle(
+  screen: InterviewScreen,
+  // TODO multilanguage support rather than hardcoding en
+  language: string = 'en',
+): string {
+  const { title: titleObj } = screen;
+  if (language in titleObj) {
+    return titleObj[language];
+  }
+
+  // otherwise default to the title in the first language we find
+  return titleObj[Object.keys(titleObj)[0]];
+}
+
 export type { InterviewScreen as T };
 export type { InterviewScreenWithChildren as WithChildrenT };
 export type { InterviewScreenCreate as CreateT };
