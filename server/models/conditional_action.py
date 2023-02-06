@@ -36,12 +36,14 @@ class ActionType(str, enum.Enum):
     PUSH = "push"
     RESTORE = "restore"
     SKIP = "skip"
+    END_INTERVIEW = "end_interview"
 
 
 class ConditionalActionBase(OrderedModel):
     """The base ConditionalAction model"""
 
-    action_payload: str
+    # TODO: change the payload to be an optional JSON blob
+    action_payload: Optional[str]
     action_type: ActionType
     conditional_operator: ConditionalOperator
     response_key: Optional[str]

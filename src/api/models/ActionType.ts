@@ -11,4 +11,5 @@ export enum ActionType {
   PUSH = 'push',
   RESTORE = 'restore',
   SKIP = 'skip',
+  END_INTERVIEW = 'end_interview',
 }

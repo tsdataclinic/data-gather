@@ -169,6 +169,9 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
     router: QuestionRouter<InterviewScreen.T>,
   ): void {
     switch (action.actionConfig.type) {
+      case ConditionalAction.ActionType.END_INTERVIEW:
+        router.complete();
+        break;
       case ConditionalAction.ActionType.PUSH:
         this.pushInReverseOrder(action.actionConfig.payload, router);
         break;

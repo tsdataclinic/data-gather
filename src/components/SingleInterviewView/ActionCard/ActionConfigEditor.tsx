@@ -56,23 +56,18 @@ export default function ActionConfigEditor({
   const screenOptions = React.useMemo(
     () =>
       screens
-        ? screens
-            .map(screen => ({
-              value: screen.id,
-              displayValue: InterviewScreen.getTitle(screen),
-            }))
-            .concat({
-              // Hardcoding an 'End option' for now just for demoing, but this
-              // should be officially supported
-              value: '__END_INTERVIEW__',
-              displayValue: 'END INTERVIEW',
-            })
+        ? screens.map(screen => ({
+            value: screen.id,
+            displayValue: InterviewScreen.getTitle(screen),
+          }))
         : [],
     [screens],
   );
 
   const renderEditor = (): JSX.Element | null => {
     switch (actionConfig.type) {
+      case ConditionalAction.ActionType.END_INTERVIEW:
+        return null;
       case ConditionalAction.ActionType.PUSH:
         // TODO: we only allow a single screen to be pushed for now. This needs
         // to be updated once we have a multi-select dropdown component.

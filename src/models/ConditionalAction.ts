@@ -38,6 +38,10 @@ interface ConditionalAction {
   /** The action to do if the condition evaluates to true */
   readonly actionConfig:
     | {
+        /** End the interview */
+        type: ActionType.END_INTERVIEW;
+      }
+    | {
         /** Push some entries on to the stack */
         payload: readonly string[];
         type: ActionType.PUSH;
@@ -153,9 +157,19 @@ export function validate(
 export function deserialize(
   rawObj: SerializedConditionalActionRead,
 ): ConditionalAction {
-  const { actionPayload, actionType, ...condition } = nullsToUndefined(rawObj);
+  const {
+    actionPayload: payload,
+    actionType,
+    ...condition
+  } = nullsToUndefined(rawObj);
+  const actionPayload = payload ?? '';
 
   switch (actionType) {
+    case ActionType.END_INTERVIEW:
+      return {
+        ...condition,
+        actionConfig: { type: actionType },
+      };
     case ActionType.PUSH:
       return {
         ...condition,
@@ -222,7 +236,10 @@ export function serialize(
   const { actionConfig, ...conditionalAction } = action;
   return {
     ...conditionalAction,
-    actionPayload: serializeActionPayload(actionConfig.payload),
+    actionPayload:
+      'payload' in actionConfig
+        ? serializeActionPayload(actionConfig.payload)
+        : undefined,
     actionType: actionConfig.type,
   };
 }
@@ -314,11 +331,20 @@ export function actionTypeToDisplayString(
     return '';
   }
 
-  if (actionType === ActionType.PUSH) {
-    return 'Go to stage';
+  switch (actionType) {
+    case ActionType.END_INTERVIEW:
+      return 'End interview';
+    case ActionType.PUSH:
+      return 'Go to stage';
+    case ActionType.SKIP:
+    case ActionType.CHECKPOINT:
+    case ActionType.RESTORE:
+    case ActionType.MILESTONE:
+      // capitalize first letter
+      return actionType[0].toUpperCase() + actionType.substring(1);
+    default:
+      return assertUnreachable(actionType);
   }
-  // capitalize first letter
-  return actionType[0].toUpperCase() + actionType.substring(1);
 }
 
 /**
@@ -328,16 +354,12 @@ export function createDefaultActionConfig(
   actionType: ActionType,
 ): ConditionalAction['actionConfig'] {
   switch (actionType) {
+    case ActionType.END_INTERVIEW:
+      return { type: actionType };
     case ActionType.PUSH:
-      return {
-        payload: [],
-        type: actionType,
-      };
+      return { payload: [], type: actionType };
     case ActionType.SKIP:
-      return {
-        payload: {},
-        type: actionType,
-      };
+      return { payload: {}, type: actionType };
     case ActionType.CHECKPOINT:
     case ActionType.RESTORE:
     case ActionType.MILESTONE:
