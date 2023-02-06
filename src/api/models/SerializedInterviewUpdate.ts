@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { SerializedInterviewSettingCreate } from './SerializedInterviewSettingCreate';
+import type { SerializedInterviewSettingRead } from './SerializedInterviewSettingRead';
 import type { SerializedSubmissionActionCreate } from './SerializedSubmissionActionCreate';
 import type { SerializedSubmissionActionRead } from './SerializedSubmissionActionRead';
 
@@ -19,5 +21,6 @@ export type SerializedInterviewUpdate = {
   id: string;
   createdDate: string;
   submissionActions: Array<(SerializedSubmissionActionRead | SerializedSubmissionActionCreate)>;
+  interviewSettings: Array<(SerializedInterviewSettingRead | SerializedInterviewSettingCreate)>;
 };
 
