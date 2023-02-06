@@ -97,12 +97,6 @@ function EntryCard(
           />
         </Form.Group>
         <Form.Group label="Response">
-          <Form.Input
-            disabled
-            label="ID"
-            name="responseKey"
-            defaultValue={entry.responseKey}
-          />
           <Form.Dropdown
             label="Type"
             name="responseType"

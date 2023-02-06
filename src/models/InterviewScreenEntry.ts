@@ -34,7 +34,16 @@ interface InterviewScreenEntry {
   /**  A map from language to the text of the question, in that language */
   readonly prompt: { [language: string]: string };
 
-  /** The key associated with the response to the question */
+  /**
+   * The key associated with the response to the question
+   *
+   * Response keys are unique. For now, response keys are not user-editable.
+   * So in practice a `responseKey` is just another type of id. It's unclear if
+   * we should keep this rather than just use `id` instead. But until a decision
+   * is made on that we will continue to generate a unique `responseKey` and
+   * store the `responseKey` in the response data when an interview response is
+   * submitted.
+   */
   readonly responseKey: string;
 
   /** The data type expected as a response */
