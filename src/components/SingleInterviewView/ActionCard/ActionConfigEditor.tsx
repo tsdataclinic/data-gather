@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
-import * as InterviewScreen from '../../../models/InterviewScreen';
+import * as Screen from '../../../models/InterviewScreen';
 import Dropdown from '../../ui/Dropdown';
 import LabelWrapper from '../../ui/LabelWrapper';
 import assertUnreachable from '../../../util/assertUnreachable';
@@ -29,6 +29,8 @@ type ActionConfig = ConditionalAction.T['actionConfig'];
 type Props = {
   action: ConditionalAction.T | ConditionalAction.CreateT;
   interview: Interview.T;
+  interviewScreen: Screen.T;
+  isAlwaysExecuteChecked: boolean;
   onActionConfigChange: (actionConfig: ActionConfig) => void;
 };
 
@@ -40,6 +42,8 @@ export default function ActionConfigEditor({
   action,
   onActionConfigChange,
   interview,
+  interviewScreen,
+  isAlwaysExecuteChecked,
 }: Props): JSX.Element {
   const { actionConfig } = action;
   const screens = useInterviewScreens(interview.id);
@@ -54,12 +58,16 @@ export default function ActionConfigEditor({
   const screenOptions = React.useMemo(
     () =>
       screens
-        ? screens.map(screen => ({
-            value: screen.id,
-            displayValue: InterviewScreen.getTitle(screen),
-          }))
+        ? screens
+            .filter(screen =>
+              isAlwaysExecuteChecked ? screen.id !== interviewScreen.id : true,
+            )
+            .map(screen => ({
+              value: screen.id,
+              displayValue: Screen.getTitle(screen),
+            }))
         : [],
-    [screens],
+    [screens, interviewScreen, isAlwaysExecuteChecked],
   );
 
   const renderEditor = (): JSX.Element | null => {

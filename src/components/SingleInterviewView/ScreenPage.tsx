@@ -229,6 +229,7 @@ export default function ScreenCard({
                 )}
                 action={action}
                 interview={interview}
+                interviewScreen={screen}
                 onActionChange={onActionChange}
                 onActionDelete={onActionDelete}
                 scrollOnMount={ConditionalAction.isCreateType(action)}
