@@ -9,19 +9,26 @@ import NewScreenModal from './NewScreenModal';
 import ScreenLink from './ScreenLink';
 import { useToast } from '../../ui/Toast';
 import ConfigureLink from './ConfigureLink';
+import { usePrompt } from '../../../hooks/usePrompt';
 
 type Props = {
   interview: Interview.WithScreensAndActions;
   screens: InterviewScreen.T[] | undefined;
+  // setUnsavedChanges: any;
+  unsavedChanges: boolean;
 };
 
 export default function Sidebar({
   interview,
   screens = [],
+  // setUnsavedChanges,
+  unsavedChanges,
 }: Props): JSX.Element {
   const [isNewScreenModalOpen, setIsNewScreenModalOpen] = useState(false);
   const [selectedScreen, setSelectedScreen] = useState<string>();
   const toaster = useToast();
+
+  usePrompt('Fuck you kevin.', unsavedChanges);
 
   return (
     <nav className="relative top-0 z-20 h-full w-1/5 items-stretch bg-white shadow">
@@ -60,6 +67,8 @@ export default function Sidebar({
               screen={screen}
               onScreenSelect={setSelectedScreen}
               isSelected={selectedScreen === screen.id}
+              // setUnsavedChanges={setUnsavedChanges}
+              // unsavedChanges={unsavedChanges}
             />
           ))}
         </div>

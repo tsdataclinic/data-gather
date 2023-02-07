@@ -19,6 +19,8 @@ type Props = {
   defaultEntries: readonly InterviewScreenEntry.T[];
   defaultScreen: InterviewScreen.WithChildrenT;
   interview: Interview.T;
+  setUnsavedChanges: any;
+  unsavedChanges: boolean;
 };
 
 /**
@@ -31,6 +33,8 @@ export default function ScreenCard({
   defaultActions,
   defaultScreen,
   interview,
+  setUnsavedChanges,
+  unsavedChanges,
 }: Props): JSX.Element {
   const toaster = useToast();
   const interviewService = useInterviewService();
@@ -53,7 +57,23 @@ export default function ScreenCard({
   const [allEntries, setAllEntries] =
     React.useState<readonly EditableEntry[]>(defaultEntries);
 
+  const arrEqual = (arr1: readonly any[], arr2: readonly any[]): boolean => {
+    if (arr1.length !== arr2.length) {
+      return false;
+    }
+    return arr1.every((val, index) => val === arr2[index]);
+  };
+
   const allFormRefs = React.useRef(new Map<string, HTMLFormElement>());
+
+  // Any time actions or entries are changed compare to default
+  React.useEffect(() => {
+    setUnsavedChanges(!arrEqual(defaultActions, allActions));
+  }, [defaultActions, allActions, setUnsavedChanges]);
+
+  React.useEffect(() => {
+    setUnsavedChanges(!arrEqual(defaultEntries, allEntries));
+  }, [defaultEntries, allEntries, setUnsavedChanges]);
 
   const onNewActionClick = (): void =>
     setAllActions(prevActions =>
@@ -148,7 +168,16 @@ export default function ScreenCard({
         `Successfully saved ${InterviewScreen.getTitle(screen)}`,
       );
     }
-  }, [allActions, screen, interviewService, allEntries, dispatch, toaster]);
+    setUnsavedChanges(false);
+  }, [
+    allActions,
+    screen,
+    interviewService,
+    allEntries,
+    dispatch,
+    toaster,
+    setUnsavedChanges,
+  ]);
 
   function formRefSetter(formKey: string): React.RefCallback<HTMLFormElement> {
     return (formElt: HTMLFormElement | null) => {
@@ -169,6 +198,7 @@ export default function ScreenCard({
         onSaveClick={onSaveClick}
         onNewEntryClick={onNewEntryClick}
         onNewActionClick={onNewActionClick}
+        unsavedChanges={unsavedChanges}
       />
       <ScrollArea id="scrollContainer" className="w-full overflow-auto">
         <div className="flex flex-col items-center gap-14 p-14">

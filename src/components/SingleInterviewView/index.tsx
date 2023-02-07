@@ -15,6 +15,9 @@ export default function SingleInterviewView(): JSX.Element {
   const entries = useInterviewScreenEntries(interview?.id);
   const actions = useInterviewConditionalActions(interview?.id);
 
+  // Boolean indicating if there are unsaved changes
+  const [unsavedChanges, setUnsavedChanges] = React.useState(false);
+
   const firstScreenId = React.useMemo(() => {
     if (screens && screens.length >= 1) {
       return screens[0].id;
@@ -28,7 +31,12 @@ export default function SingleInterviewView(): JSX.Element {
 
   return (
     <div className="flex h-full w-full flex-1 items-center overflow-y-hidden p-0">
-      <Sidebar interview={interview} screens={screens} />
+      <Sidebar
+        interview={interview}
+        screens={screens}
+        unsavedChanges={unsavedChanges}
+        // setUnsavedChanges={setUnsavedChanges}
+      />
       <div className="flex h-full w-4/5 flex-col items-center bg-gray-100">
         <Routes>
           <Route
@@ -54,6 +62,8 @@ export default function SingleInterviewView(): JSX.Element {
                     defaultEntries={entriesList}
                     defaultActions={actionsList}
                     interview={interview}
+                    unsavedChanges={unsavedChanges}
+                    setUnsavedChanges={setUnsavedChanges}
                   />
                 }
               />

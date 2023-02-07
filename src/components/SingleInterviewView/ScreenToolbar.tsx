@@ -21,6 +21,7 @@ type Props = {
   onNewEntryClick: () => void;
   onSaveClick: () => void;
   screen: InterviewScreen.T;
+  unsavedChanges: boolean;
 };
 
 export default function ScreenToolbar({
@@ -28,6 +29,7 @@ export default function ScreenToolbar({
   onNewEntryClick,
   onNewActionClick,
   onSaveClick,
+  unsavedChanges,
 }: Props): JSX.Element {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const deleteInterview = useInterviewMutation({
@@ -47,7 +49,10 @@ export default function ScreenToolbar({
           <Button onClick={onNewActionClick}>New Action</Button>
         </Toolbar.Button>
         <Toolbar.Button asChild>
-          <Button intent="primary" onClick={onSaveClick}>
+          <Button
+            intent={unsavedChanges ? 'primary' : 'default'}
+            onClick={onSaveClick}
+          >
             Save
           </Button>
         </Toolbar.Button>

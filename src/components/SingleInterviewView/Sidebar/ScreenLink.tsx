@@ -12,13 +12,17 @@ type Props = {
   isSelected: boolean;
   onScreenSelect: (screenId: string) => void;
   screen: InterviewScreen.T;
+  // setUnsavedChanges: any;
+  // unsavedChanges: boolean;
 };
 
 export default function ScreenLink({
   isSelected,
   onScreenSelect,
   screen,
-}: Props): JSX.Element {
+}: // setUnsavedChanges,
+// unsavedChanges,
+Props): JSX.Element {
   const interviewPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
   const [selectedEntry, setSelectedEntry] = useState<string | undefined>(
     undefined,
