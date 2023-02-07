@@ -12,6 +12,7 @@ export type SerializedInterviewScreenEntryCreate = {
   order: number;
   name: string;
   prompt: Record<string, string>;
+  required?: boolean;
   responseKey: string;
   responseType: ResponseType;
   responseTypeOptions: any;

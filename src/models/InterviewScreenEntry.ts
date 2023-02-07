@@ -34,6 +34,9 @@ interface InterviewScreenEntry {
   /**  A map from language to the text of the question, in that language */
   readonly prompt: { [language: string]: string };
 
+  /** A boolean indicating whether the entry must have a response */
+  readonly required?: boolean;
+
   /**
    * The key associated with the response to the question
    *
