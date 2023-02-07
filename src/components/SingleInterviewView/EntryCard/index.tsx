@@ -131,7 +131,7 @@ function EntryCard(
           <LabelWrapper
             inline
             label="Required"
-            infoTooltip="Determines if this question requires a response"
+            infoTooltip="Use this if this question cannot be left empty"
             labelTextClassName="mr-1"
             inlineContainerStyles={{ position: 'relative', top: 1 }}
           >
