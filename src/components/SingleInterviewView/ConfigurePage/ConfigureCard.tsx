@@ -4,6 +4,7 @@ import { MixedCheckbox } from '@reach/checkbox';
 import * as React from 'react';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
 import * as Interview from '../../../models/Interview';
+import * as InterviewScreen from '../../../models/InterviewScreen';
 import LabelWrapper from '../../ui/LabelWrapper';
 import TextArea from '../../ui/TextArea';
 import MultiSelect from '../../ui/MultiSelect';
@@ -35,7 +36,7 @@ function ConfigureCard({
     value: string;
   }> =>
     screens.map(screen => ({
-      displayValue: screen.title,
+      displayValue: InterviewScreen.getTitle(screen),
       value: screen.id,
     }));
 

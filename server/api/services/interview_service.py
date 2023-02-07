@@ -28,8 +28,8 @@ class InterviewService(BaseService):
             db_interview.screens = [
                 InterviewScreen(
                     order=1,
-                    header_text="",
-                    title="Stage 1",
+                    header_text={"en": ""},
+                    title={"en":"Stage 1"},
                     is_in_starting_state=True,
                     starting_state_order=1,
                     interview_id=db_interview.id,

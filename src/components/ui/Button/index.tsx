@@ -6,10 +6,10 @@ type Props = {
   className?: string;
   intent?: 'primary' | 'danger' | 'default';
   onClick?: MouseEventHandler<HTMLButtonElement>;
+  size?: 'medium' | 'small';
   type?: 'button' | 'submit';
 
   unstyled?: boolean;
-
   /**
    * Render the button in different default styles.
    * - `full`: Render the button with 100% width in its container and sharp edges.
@@ -25,6 +25,7 @@ export default function Button({
   variant = 'normal',
   intent = 'default',
   unstyled = false,
+  size = 'medium',
 }: Props): JSX.Element {
   const buttonClassName = classNames(
     className,
@@ -32,7 +33,9 @@ export default function Button({
     unstyled
       ? undefined
       : {
-          'py-2 px-4 transition-colors duration-200': true,
+          'transition-colors duration-200': true,
+          'py-2 px-4': size === 'medium',
+          'py-1 px-2': size === 'small',
           // variant-dependent styles
           rounded: variant === 'normal',
           'w-full rounded-none': variant === 'full',

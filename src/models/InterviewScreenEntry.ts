@@ -31,10 +31,19 @@ interface InterviewScreenEntry {
   /** The index of this entry in the screen */
   readonly order: number;
 
-  /**  The text of the question */
-  readonly prompt: string;
+  /**  A map from language to the text of the question, in that language */
+  readonly prompt: { [language: string]: string };
 
-  /** The key associated with the response to the question */
+  /**
+   * The key associated with the response to the question
+   *
+   * Response keys are unique. For now, response keys are not user-editable.
+   * So in practice a `responseKey` is just another type of id. It's unclear if
+   * we should keep this rather than just use `id` instead. But until a decision
+   * is made on that we will continue to generate a unique `responseKey` and
+   * store the `responseKey` in the response data when an interview response is
+   * submitted.
+   */
   readonly responseKey: string;
 
   /** The data type expected as a response */
@@ -47,8 +56,8 @@ interface InterviewScreenEntry {
   /** The screen that this entry belongs to */
   readonly screenId: string;
 
-  /** Additional flavor text associated with the question */
-  readonly text: string;
+  /** Map from language to additional flavor text associated with the question, in that language */
+  readonly text: { [language: string]: string };
 }
 
 interface InterviewScreenEntryWithScreen extends InterviewScreenEntry {

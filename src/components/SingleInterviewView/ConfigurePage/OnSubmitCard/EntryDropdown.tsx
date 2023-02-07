@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
+import * as InterviewScreen from '../../../../models/InterviewScreen';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import Dropdown from '../../../ui/Dropdown';
 import useAppState from '../../../../hooks/useAppState';
@@ -87,7 +88,9 @@ export default function EntryDropdown({
     return emptyOptionSingleton.concat(specialOptionSingleton).concat(
       entries.map(entry => ({
         value: entry.id,
-        displayValue: `${entry.screen.title} - ${entry.name}`,
+        displayValue: `${InterviewScreen.getTitle(entry.screen)} - ${
+          entry.name
+        }`,
       })),
     );
   }, [entries, allowSpecialValues, emptyIsAnOption, emptyOptionText]);

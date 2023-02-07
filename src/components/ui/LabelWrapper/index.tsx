@@ -1,11 +1,13 @@
 import classNames from 'classnames';
 import type { ReactNode, CSSProperties } from 'react';
+import InfoIcon from '../InfoIcon';
 
 type Props = {
   children: ReactNode;
   className?: string;
   helperText?: string;
   htmlFor?: string;
+  infoTooltip?: string;
   inline?: boolean;
   inlineContainerStyles?: CSSProperties;
   label: string;
@@ -28,6 +30,7 @@ export default function LabelWrapper({
   labelAfter = false,
   labelTextClassName,
   labelTextStyle,
+  infoTooltip,
   htmlFor,
 }: Props): JSX.Element {
   const childrenBlock = inline ? (
@@ -42,6 +45,8 @@ export default function LabelWrapper({
     'inline-block': inline,
   });
 
+  const tooltipIcon = infoTooltip ? <InfoIcon tooltip={infoTooltip} /> : null;
+
   let labelComponent = null;
   if (htmlFor) {
     // if an `htmlFor` id is specified then we shouldn't nest the children
@@ -51,7 +56,7 @@ export default function LabelWrapper({
         {labelAfter ? childrenBlock : null}
         <label htmlFor={htmlFor}>
           <div className={spanClassName} style={labelTextStyle}>
-            {label}
+            {label} {tooltipIcon}
           </div>
           {helperText && (
             <div className={spanClassName} style={labelTextStyle}>
@@ -71,7 +76,7 @@ export default function LabelWrapper({
       <label className={inline ? 'space-x-2' : 'space-y-1'} htmlFor={htmlFor}>
         {labelAfter ? childrenBlock : null}
         <div className={spanClassName} style={labelTextStyle}>
-          {label}
+          {label} {tooltipIcon}
           {helperText && (
             <div className={spanClassName} style={labelTextStyle}>
               <small>

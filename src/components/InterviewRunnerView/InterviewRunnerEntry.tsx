@@ -71,8 +71,8 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
         <Form.Input
           key={entry.id}
           name={entry.responseKey}
-          label={entry.prompt}
-          helperText={entry.text}
+          label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
+          helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
           required={false}
         />
       );
@@ -81,8 +81,8 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
         <Form.Input
           type="radio"
           name={entry.responseKey}
-          label={entry.prompt}
-          helperText={entry.text}
+          label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
+          helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
           required={false}
           options={[
             { value: 'Yes', displayValue: 'Yes' },
@@ -97,8 +97,8 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           key={entry.id}
           name={entry.responseKey}
           required={false}
-          label={entry.prompt}
-          helperText={entry.text}
+          label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
+          helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
         />
       );
     case InterviewScreenEntry.ResponseType.EMAIL:
@@ -108,14 +108,15 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           key={entry.id}
           name={entry.responseKey}
           required={false}
-          label={entry.prompt}
-          helperText={entry.text}
+          label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
+          helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
         />
       );
     case InterviewScreenEntry.ResponseType.AIRTABLE:
       return (
         <div>
-          <strong>{entry.prompt}</strong>
+          {/* TODO UI should support multiple language prompts rather than hardcoding english */}
+          <strong>{entry.prompt.en}</strong>
           <LabelWrapper label="Search for record">
             <InputText onChange={(val: string) => setAirtableQuery(val)} />
           </LabelWrapper>
@@ -163,8 +164,8 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           type="tel"
           key={entry.id}
           name={entry.responseKey}
-          label={entry.prompt}
-          helperText={entry.text}
+          label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
+          helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
         />
       );
     default:

@@ -38,6 +38,10 @@ interface ConditionalAction {
   /** The action to do if the condition evaluates to true */
   readonly actionConfig:
     | {
+        /** End the interview */
+        type: ActionType.END_INTERVIEW;
+      }
+    | {
         /** Push some entries on to the stack */
         payload: readonly string[];
         type: ActionType.PUSH;
@@ -153,9 +157,19 @@ export function validate(
 export function deserialize(
   rawObj: SerializedConditionalActionRead,
 ): ConditionalAction {
-  const { actionPayload, actionType, ...condition } = nullsToUndefined(rawObj);
+  const {
+    actionPayload: payload,
+    actionType,
+    ...condition
+  } = nullsToUndefined(rawObj);
+  const actionPayload = payload ?? '';
 
   switch (actionType) {
+    case ActionType.END_INTERVIEW:
+      return {
+        ...condition,
+        actionConfig: { type: actionType },
+      };
     case ActionType.PUSH:
       return {
         ...condition,
@@ -222,7 +236,10 @@ export function serialize(
   const { actionConfig, ...conditionalAction } = action;
   return {
     ...conditionalAction,
-    actionPayload: serializeActionPayload(actionConfig.payload),
+    actionPayload:
+      'payload' in actionConfig
+        ? serializeActionPayload(actionConfig.payload)
+        : undefined,
     actionType: actionConfig.type,
   };
 }
@@ -239,6 +256,12 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
       return 'After';
     case ConditionalOperator.BEFORE:
       return 'Before';
+    case ConditionalOperator.AFTER_OR_EQUAL:
+      return 'After or equal';
+    case ConditionalOperator.BEFORE_OR_EQUAL:
+      return 'Before or equal';
+    case ConditionalOperator.EQUALS_DATE:
+      return 'Equals';
     case ConditionalOperator.EQ:
       return '=';
     case ConditionalOperator.GT:
@@ -255,10 +278,13 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
   }
 }
 
-export function isTimeOperator(operator: ConditionalOperator): boolean {
+export function isDateOperator(operator: ConditionalOperator): boolean {
   switch (operator) {
     case ConditionalOperator.AFTER:
+    case ConditionalOperator.AFTER_OR_EQUAL:
     case ConditionalOperator.BEFORE:
+    case ConditionalOperator.BEFORE_OR_EQUAL:
+    case ConditionalOperator.EQUALS_DATE:
       return true;
     case ConditionalOperator.ALWAYS_EXECUTE:
     case ConditionalOperator.EQ:
@@ -266,6 +292,27 @@ export function isTimeOperator(operator: ConditionalOperator): boolean {
     case ConditionalOperator.GTE:
     case ConditionalOperator.LT:
     case ConditionalOperator.LTE:
+      return false;
+    default:
+      assertUnreachable(operator, { throwError: false });
+      return operator;
+  }
+}
+
+export function isNumberOperator(operator: ConditionalOperator): boolean {
+  switch (operator) {
+    case ConditionalOperator.EQ:
+    case ConditionalOperator.GT:
+    case ConditionalOperator.GTE:
+    case ConditionalOperator.LT:
+    case ConditionalOperator.LTE:
+      return true;
+    case ConditionalOperator.AFTER:
+    case ConditionalOperator.AFTER_OR_EQUAL:
+    case ConditionalOperator.BEFORE:
+    case ConditionalOperator.BEFORE_OR_EQUAL:
+    case ConditionalOperator.EQUALS_DATE:
+    case ConditionalOperator.ALWAYS_EXECUTE:
       return false;
     default:
       assertUnreachable(operator, { throwError: false });
@@ -283,8 +330,21 @@ export function actionTypeToDisplayString(
   if (actionType === undefined) {
     return '';
   }
-  // capitalize first letter
-  return actionType[0].toUpperCase() + actionType.substring(1);
+
+  switch (actionType) {
+    case ActionType.END_INTERVIEW:
+      return 'End interview';
+    case ActionType.PUSH:
+      return 'Go to stage';
+    case ActionType.SKIP:
+    case ActionType.CHECKPOINT:
+    case ActionType.RESTORE:
+    case ActionType.MILESTONE:
+      // capitalize first letter
+      return actionType[0].toUpperCase() + actionType.substring(1);
+    default:
+      return assertUnreachable(actionType);
+  }
 }
 
 /**
@@ -294,16 +354,12 @@ export function createDefaultActionConfig(
   actionType: ActionType,
 ): ConditionalAction['actionConfig'] {
   switch (actionType) {
+    case ActionType.END_INTERVIEW:
+      return { type: actionType };
     case ActionType.PUSH:
-      return {
-        payload: [],
-        type: actionType,
-      };
+      return { payload: [], type: actionType };
     case ActionType.SKIP:
-      return {
-        payload: {},
-        type: actionType,
-      };
+      return { payload: {}, type: actionType };
     case ActionType.CHECKPOINT:
     case ActionType.RESTORE:
     case ActionType.MILESTONE:

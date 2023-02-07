@@ -246,7 +246,6 @@ def update_interview(
     interview: InterviewUpdate,
     session: Session = Depends(get_session),
 ) -> Interview:
-    print("updating interview")
     try:
         db_interview = session.exec(
             select(Interview).where(Interview.id == interview_id)

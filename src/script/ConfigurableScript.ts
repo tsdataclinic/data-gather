@@ -123,26 +123,45 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
         return responseValue === testValue;
       case ConditionalAction.ConditionalOperator.GT:
         return responseValue > testValue;
-      case ConditionalAction.ConditionalOperator.AFTER: {
-        const responseDate = stringToDateTime(responseValue);
-        const testDate = stringToDateTime(testValue);
-        return responseDate > testDate;
-      }
       case ConditionalAction.ConditionalOperator.GTE:
         return responseValue >= testValue;
       case ConditionalAction.ConditionalOperator.LT:
         return responseValue < testValue;
-      case ConditionalAction.ConditionalOperator.BEFORE: {
-        const responseDate = stringToDateTime(responseValue);
-        const testDate = stringToDateTime(testValue);
-        return responseDate < testDate;
-      }
       case ConditionalAction.ConditionalOperator.LTE:
         return responseValue <= testValue;
+
+      // process datetime operators
+      case ConditionalAction.ConditionalOperator.AFTER:
+      case ConditionalAction.ConditionalOperator.AFTER_OR_EQUAL:
+      case ConditionalAction.ConditionalOperator.BEFORE:
+      case ConditionalAction.ConditionalOperator.BEFORE_OR_EQUAL:
+      case ConditionalAction.ConditionalOperator.EQUALS_DATE: {
+        const responseDate = stringToDateTime(responseValue);
+        const testDate = stringToDateTime(testValue);
+
+        switch (action.conditionalOperator) {
+          case ConditionalAction.ConditionalOperator.AFTER:
+            return responseDate > testDate;
+          case ConditionalAction.ConditionalOperator.AFTER_OR_EQUAL:
+            return responseDate >= testDate;
+          case ConditionalAction.ConditionalOperator.BEFORE:
+            return responseDate < testDate;
+          case ConditionalAction.ConditionalOperator.BEFORE_OR_EQUAL:
+            return responseDate <= testDate;
+          case ConditionalAction.ConditionalOperator.EQUALS_DATE:
+            // we will count two dates as equal if they occur on the same day
+            return responseDate.startOf('day').equals(testDate.startOf('day'));
+          default:
+            assertUnreachable(action.conditionalOperator, {
+              throwError: false,
+            });
+            return false;
+        }
+      }
       default:
         assertUnreachable(action.conditionalOperator, { throwError: false });
+        return false;
     }
-    return false;
   }
 
   private executeAction(
@@ -150,6 +169,9 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
     router: QuestionRouter<InterviewScreen.T>,
   ): void {
     switch (action.actionConfig.type) {
+      case ConditionalAction.ActionType.END_INTERVIEW:
+        router.complete();
+        break;
       case ConditionalAction.ActionType.PUSH:
         this.pushInReverseOrder(action.actionConfig.payload, router);
         break;

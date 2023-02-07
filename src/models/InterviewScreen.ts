@@ -14,8 +14,8 @@ export type Id = string;
  * This is the serialized type as it is used on the frontend.
  */
 interface InterviewScreen {
-  /** Description text for the page */
-  readonly headerText: string;
+  /** Map from language to description text for the page, in that language */
+  readonly headerText: { [lang: string]: string };
 
   /** The id of this screen. */
   readonly id: Id;
@@ -44,8 +44,8 @@ interface InterviewScreen {
    */
   readonly startingStateOrder?: number;
 
-  /** Title of the page */
-  readonly title: string;
+  /** Map from language to title of the page in that language */
+  readonly title: { [lang: string]: string };
 }
 
 interface InterviewScreenWithChildren extends InterviewScreen {
@@ -94,8 +94,8 @@ export function create(values: {
   title: string;
 }): InterviewScreenCreate {
   return {
-    headerText: values.headerText ?? '',
-    title: values.title,
+    headerText: { en: values.headerText ?? '' }, // TODO multilanguage support rather than hardcoding en
+    title: { en: values.title }, // TODO multilanguage support rather than hardcoding en
     isInStartingState: values.isInStartingState ?? false,
     startingStateOrder: values.startingStateOrder,
     interviewId: values.interviewId,
@@ -156,6 +156,26 @@ export function serialize(
     };
   }
   return screen;
+}
+
+/**
+ * Get this screen's title in a given language.
+ *
+ * TODO: for now we default to english, but eventually this should default
+ * to a user-configured default.
+ */
+export function getTitle(
+  screen: InterviewScreen,
+  // TODO multilanguage support rather than hardcoding en
+  language: string = 'en',
+): string {
+  const { title: titleObj } = screen;
+  if (language in titleObj) {
+    return titleObj[language];
+  }
+
+  // otherwise default to the title in the first language we find
+  return titleObj[Object.keys(titleObj)[0]];
 }
 
 export type { InterviewScreen as T };

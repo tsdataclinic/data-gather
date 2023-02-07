@@ -26,18 +26,18 @@ function HeaderCard(
         <Form.Input
           label="Title"
           name="title"
-          value={screen.title}
+          value={InterviewScreen.getTitle(screen)}
           onChange={(newVal: string) => {
-            onScreenChange({ ...screen, title: newVal });
+            onScreenChange({ ...screen, title: { en: newVal } }); // TODO multilanguage support rather than hardcoding en
           }}
         />
         <Form.Input
           label="Header text"
           name="headerText"
           required={false}
-          value={screen.headerText}
+          value={screen.headerText.en} // TODO multilanguage support rather than hardcoding en
           onChange={(newVal: string) => {
-            onScreenChange({ ...screen, headerText: newVal });
+            onScreenChange({ ...screen, headerText: { en: newVal } }); // TODO multilanguage support rather than hardcoding en
           }}
         />
       </Form>

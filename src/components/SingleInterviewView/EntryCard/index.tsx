@@ -73,35 +73,32 @@ function EntryCard(
           <Form.Input
             label="Text"
             name="prompt"
-            value={entry.prompt}
+            infoTooltip="This is the main prompt the user will see"
+            value={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
             onChange={(newVal: string) => {
               onEntryChange(entry, {
                 ...entry,
-                prompt: newVal,
+                prompt: { en: newVal }, // TODO UI should support multiple language prompts rather than hardcoding english
               });
             }}
           />
           <Form.Input
             label="Helper Text"
             name="text"
+            infoTooltip="This is more text that will be displayed if you want to give more details about the question."
             required={false}
-            value={entry.text}
+            value={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
             onChange={(newVal: string) => {
               onEntryChange(entry, {
                 ...entry,
                 // TODO: change this to be named `helperText` instead of just `text`
-                text: newVal,
+                // TODO UI should support multiple language prompts rather than hardcoding english
+                text: { en: newVal },
               });
             }}
           />
         </Form.Group>
         <Form.Group label="Response">
-          <Form.Input
-            disabled
-            label="ID"
-            name="responseKey"
-            defaultValue={entry.responseKey}
-          />
           <Form.Dropdown
             label="Type"
             name="responseType"

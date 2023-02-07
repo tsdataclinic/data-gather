@@ -71,8 +71,8 @@ export default function ScreenCard({
         InterviewScreenEntry.create({
           name: `Question ${prevEntries.length + 1}`,
           order: prevEntries.length + 1,
-          prompt: '',
-          text: '',
+          prompt: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
+          text: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
           screenId: screen.id,
           responseType: InterviewScreenEntry.ResponseType.TEXT,
           responseTypeOptions: {
@@ -143,15 +143,20 @@ export default function ScreenCard({
         screen: updatedScreen,
         type: 'SCREEN_UPDATE',
       });
-      toaster.notifySuccess('Saved!', `Successfully saved ${screen.title}`);
+      toaster.notifySuccess(
+        'Saved!',
+        `Successfully saved ${InterviewScreen.getTitle(screen)}`,
+      );
     }
   }, [allActions, screen, interviewService, allEntries, dispatch, toaster]);
 
   function formRefSetter(formKey: string): React.RefCallback<HTMLFormElement> {
-    return (formElt: HTMLFormElement) => {
+    return (formElt: HTMLFormElement | null) => {
       if (formElt) {
         allFormRefs.current.set(formKey, formElt);
       } else {
+        // `formElt` is null when the component unmounts, so that's when we
+        // should remove this from the `allFormRefs` map
         allFormRefs.current.delete(formKey);
       }
     };

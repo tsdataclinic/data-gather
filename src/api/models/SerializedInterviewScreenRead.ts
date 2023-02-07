@@ -10,8 +10,8 @@
  */
 export type SerializedInterviewScreenRead = {
   order: number;
-  headerText: string;
-  title: string;
+  headerText: Record<string, string>;
+  title: Record<string, string>;
   isInStartingState: boolean;
   startingStateOrder?: number;
   interviewId: string;

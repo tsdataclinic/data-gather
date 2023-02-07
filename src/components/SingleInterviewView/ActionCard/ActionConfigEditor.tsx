@@ -7,9 +7,19 @@ import LabelWrapper from '../../ui/LabelWrapper';
 import assertUnreachable from '../../../util/assertUnreachable';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
 import InputText from '../../ui/InputText';
-import MultiSelect from '../../ui/MultiSelect';
 
-const ACTION_TYPE_OPTIONS = ConditionalAction.ACTION_TYPES.map(actionType => ({
+// TODO: eventually this should be removed because all action types should be
+// fully implemented.
+const UNIMPLEMENTED_ACTION_TYPES = new Set([
+  ConditionalAction.ActionType.CHECKPOINT,
+  ConditionalAction.ActionType.MILESTONE,
+  ConditionalAction.ActionType.RESTORE,
+  ConditionalAction.ActionType.SKIP,
+]);
+
+const ACTION_TYPE_OPTIONS = ConditionalAction.ACTION_TYPES.filter(
+  actionType => !UNIMPLEMENTED_ACTION_TYPES.has(actionType),
+).map(actionType => ({
   displayValue: ConditionalAction.actionTypeToDisplayString(actionType),
   value: actionType,
 }));
@@ -44,7 +54,6 @@ export default function ActionConfigEditor({
       ConditionalAction.createDefaultActionConfig(newActionType),
     );
   };
-  const actionId = 'id' in action ? action.id : action.tempId;
 
   const screenOptions = React.useMemo(
     () =>
@@ -55,7 +64,7 @@ export default function ActionConfigEditor({
             )
             .map(screen => ({
               value: screen.id,
-              displayValue: screen.title,
+              displayValue: Screen.getTitle(screen),
             }))
             .concat({
               // Hardcoding an 'End option' for now just for demoing, but this
@@ -69,26 +78,22 @@ export default function ActionConfigEditor({
 
   const renderEditor = (): JSX.Element | null => {
     switch (actionConfig.type) {
+      case ConditionalAction.ActionType.END_INTERVIEW:
+        return null;
       case ConditionalAction.ActionType.PUSH:
         // TODO: we only allow a single screen to be pushed for now. This needs
         // to be updated once we have a multi-select dropdown component.
         return (
-          <LabelWrapper
-            inline
-            label="Next stage"
-            labelTextClassName="w-20"
-            htmlFor={`${actionId}__push`}
-          >
-            <MultiSelect
-              id={`${actionId}__push`}
-              onChange={(newScreenIds: readonly string[]) =>
+          <LabelWrapper inline label="Next stage" labelTextClassName="w-20">
+            <Dropdown
+              onChange={newScreenId =>
                 onActionConfigChange({
                   type: ConditionalAction.ActionType.PUSH,
-                  payload: newScreenIds,
+                  payload: [newScreenId],
                 })
               }
-              placeholder="Add stage"
-              selectedValues={actionConfig.payload}
+              placeholder="Select a stage"
+              value={actionConfig.payload[0]}
               options={screenOptions}
             />
           </LabelWrapper>

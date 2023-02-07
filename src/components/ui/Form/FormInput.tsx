@@ -11,6 +11,7 @@ type Props = {
   defaultValue?: string;
   disabled?: boolean;
   helperText?: string;
+  infoTooltip?: string;
   inputClassName?: string;
   label?: string;
   name: string;
@@ -24,14 +25,15 @@ type Props = {
 export default function FormInput({
   className,
   inputClassName,
-  disabled = false,
-  required = true,
   label,
   helperText,
+  infoTooltip,
   name,
   defaultValue,
   value,
   onChange,
+  disabled = false,
+  required = true,
   type = 'text',
   options = [],
 }: Props): JSX.Element {
@@ -54,6 +56,7 @@ export default function FormInput({
           className={className}
           label={label + (required ? ' *' : '')}
           helperText={helperText}
+          infoTooltip={infoTooltip}
         >
           <InputNumber
             required={required}
@@ -71,6 +74,7 @@ export default function FormInput({
           className={className}
           label={label + (required ? ' *' : '')}
           helperText={helperText}
+          infoTooltip={infoTooltip}
         >
           <InputText
             type={type}
