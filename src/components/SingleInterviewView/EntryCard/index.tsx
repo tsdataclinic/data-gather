@@ -82,7 +82,7 @@ function EntryCard(
             }}
           />
           <Form.Input
-            label="Helper Text"
+            label="Helper text"
             name="text"
             required={false}
             value={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
