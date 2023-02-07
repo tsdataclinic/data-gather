@@ -1,17 +1,21 @@
 import type { ReactNode } from 'react';
 import Button from '../Button';
 
+type ButtonProps = React.ComponentPropsWithoutRef<typeof Button>;
+
 type Props = {
   children?: ReactNode;
-  className?: string;
-};
+  intent?: ButtonProps['intent'];
+} & Omit<ButtonProps, 'children' | 'intent'>;
 
 export default function FormSubmit({
-  className,
   children = 'Submit',
+  intent = 'primary',
+  ...passThroughProps
 }: Props): JSX.Element {
   return (
-    <Button className={className} type="submit" intent="primary">
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <Button type="submit" intent={intent} {...passThroughProps}>
       {children}
     </Button>
   );
