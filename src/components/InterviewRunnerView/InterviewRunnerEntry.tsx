@@ -64,7 +64,6 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
     );
   }, [responseData]);
 
-  // TODO: whether or not something is required should be configurable
   switch (entry.responseType) {
     case InterviewScreenEntry.ResponseType.TEXT:
       return (
@@ -73,7 +72,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           name={entry.responseKey}
           label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
           helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
-          required={false}
+          required={entry.required}
         />
       );
     case InterviewScreenEntry.ResponseType.BOOLEAN:
@@ -83,7 +82,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           name={entry.responseKey}
           label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
           helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
-          required={false}
+          required={entry.required}
           options={[
             { value: 'Yes', displayValue: 'Yes' },
             { value: 'No', displayValue: 'No' },
@@ -96,7 +95,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           type="number"
           key={entry.id}
           name={entry.responseKey}
-          required={false}
+          required={entry.required}
           label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
           helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
         />
@@ -107,7 +106,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           type="email"
           key={entry.id}
           name={entry.responseKey}
-          required={false}
+          required={entry.required}
           label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
           helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
         />
@@ -165,6 +164,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           key={entry.id}
           name={entry.responseKey}
           label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
+          required={entry.required}
           helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
         />
       );

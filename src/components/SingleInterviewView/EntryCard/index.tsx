@@ -2,12 +2,14 @@ import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as Scroll from 'react-scroll';
+import { MixedCheckbox } from '@reach/checkbox';
 import Form from '../../ui/Form';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import AirtableFieldSelector from './AirtableFieldSelector';
 import EditableName from './EditableName';
 import type { EditableEntry } from '../types';
 import Button from '../../ui/Button';
+import LabelWrapper from '../../ui/LabelWrapper';
 
 type Props = {
   entry: EditableEntry;
@@ -126,6 +128,19 @@ function EntryCard(
               }}
             />
           )}
+          <LabelWrapper
+            inline
+            label="Required"
+            labelTextClassName="w-20"
+            inlineContainerStyles={{ verticalAlign: 'text-top' }}
+          >
+            <MixedCheckbox
+              onChange={e => {
+                onEntryChange(entry, { ...entry, required: e.target.checked });
+              }}
+              checked={entry.required}
+            />
+          </LabelWrapper>
         </Form.Group>
       </Form>
     </Scroll.Element>
