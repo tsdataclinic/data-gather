@@ -131,8 +131,9 @@ function EntryCard(
           <LabelWrapper
             inline
             label="Required"
-            labelTextClassName="w-20"
-            inlineContainerStyles={{ verticalAlign: 'text-top' }}
+            infoTooltip="Determines if this question requires a response"
+            labelTextClassName="mr-1"
+            inlineContainerStyles={{ position: 'relative', top: 1 }}
           >
             <MixedCheckbox
               onChange={e => {
