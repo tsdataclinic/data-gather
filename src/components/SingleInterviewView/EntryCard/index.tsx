@@ -73,6 +73,7 @@ function EntryCard(
           <Form.Input
             label="Text"
             name="prompt"
+            infoTooltip="This is the main prompt the user will see"
             value={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
             onChange={(newVal: string) => {
               onEntryChange(entry, {
@@ -84,6 +85,7 @@ function EntryCard(
           <Form.Input
             label="Helper text"
             name="text"
+            infoTooltip="This is more text that will be displayed if you want to give more details about the question."
             required={false}
             value={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
             onChange={(newVal: string) => {
