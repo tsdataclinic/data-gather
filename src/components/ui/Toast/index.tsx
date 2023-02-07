@@ -1,5 +1,5 @@
 import * as React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as RadixToast from '@radix-ui/react-toast';
@@ -213,6 +213,7 @@ export function useToast(): ToastAPI {
   React.useEffect(() => {
     const { body } = document;
     let container: HTMLDivElement | undefined;
+    let rootNode: ReactDOM.Root | undefined;
 
     // we only need to insert a ToastManager to the DOM if we couldn't find one
     // already via context. If we found one in Context then it means that the
@@ -220,10 +221,14 @@ export function useToast(): ToastAPI {
     if (body && !toastAPIInContext) {
       container = document.createElement('div');
       body.appendChild(container);
-      ReactDOM.render(<ToastManager ref={toasterRef} />, container);
+      rootNode = ReactDOM.createRoot(container);
+      rootNode.render(<ToastManager ref={toasterRef} />);
     }
 
     return () => {
+      if (rootNode) {
+        rootNode.unmount();
+      }
       if (body && container) {
         body.removeChild(container);
       }

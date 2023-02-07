@@ -11,8 +11,9 @@
     "@fortawesome/react-fontawesome": "^0.1.18",
     "@radix-ui/react-scroll-area": "^1.0.0",
     "@radix-ui/react-select": "^1.0.0",
-    "@radix-ui/react-toast": "^1.1.1",
+    "@radix-ui/react-toast": "^1.1.2",
     "@radix-ui/react-toolbar": "^1.0.0",
+    "@radix-ui/react-tooltip": "^1.0.3",
     "@reach/checkbox": "^0.17.0",
     "@reach/dialog": "^0.17.0",
     "@reach/listbox": "^0.17.0",
@@ -25,8 +26,8 @@
     "@types/jest": "^27.0.1",
     "@types/luxon": "^3.0.0",
     "@types/node": "^16.7.13",
-    "@types/react": "^18.0.15",
-    "@types/react-dom": "^18.0.6",
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
     "@types/react-scroll": "^1.8.4",
     "@types/styled-components": "^5.1.25",
     "ag-grid-community": "^28.2.1",
@@ -39,8 +40,8 @@
     "luxon": "^3.0.1",
     "primeicons": "^6.0.1",
     "primereact": "^8.7.3",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-router-dom": "^6.4.4",
     "react-scripts": "5.0.1",
     "react-scroll": "^1.8.7",
@@ -96,7 +97,7 @@
     "eslint-plugin-typescript-sort-keys": "^2.1.0",
     "openapi-typescript-codegen": "^0.23.0",
     "prettier": "^2.6.2",
-    "typescript": "^4.7.4"
+    "typescript": "^4.9.5"
   },
   "settings": {
     "import/parsers": {
