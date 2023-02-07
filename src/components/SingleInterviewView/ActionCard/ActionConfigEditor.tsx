@@ -66,12 +66,6 @@ export default function ActionConfigEditor({
               value: screen.id,
               displayValue: Screen.getTitle(screen),
             }))
-            .concat({
-              // Hardcoding an 'End option' for now just for demoing, but this
-              // should be officially supported
-              value: '__END_INTERVIEW__',
-              displayValue: 'END INTERVIEW',
-            })
         : [],
     [screens, interviewScreen, isAlwaysExecuteChecked],
   );
