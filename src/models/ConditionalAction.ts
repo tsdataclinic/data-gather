@@ -378,6 +378,12 @@ export function isCreateType(
   return 'tempId' in action;
 }
 
+export function getId(
+  action: ConditionalAction | ConditionalActionCreate,
+): string {
+  return isCreateType(action) ? action.tempId : action.id;
+}
+
 export type { ConditionalAction as T };
 export type { ConditionalActionCreate as CreateT };
 export type { SerializedConditionalActionRead as SerializedT };

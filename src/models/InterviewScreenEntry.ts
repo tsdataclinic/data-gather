@@ -182,6 +182,12 @@ export function isCreateType(
   return 'tempId' in entry;
 }
 
+export function getId(
+  entry: InterviewScreenEntry | InterviewScreenEntryCreate,
+): string {
+  return isCreateType(entry) ? entry.tempId : entry.id;
+}
+
 export { ResponseType };
 export type { InterviewScreenEntry as T };
 export type { InterviewScreenEntryWithScreen as WithScreenT };

@@ -10,7 +10,7 @@ import { MixedCheckbox } from '@reach/checkbox';
 import { Element as ScrollableElement } from 'react-scroll';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
-import * as Screen from '../../../models/InterviewScreen';
+import * as InterviewScreen from '../../../models/InterviewScreen';
 import LabelWrapper from '../../ui/LabelWrapper';
 import ActionConfigEditor from './ActionConfigEditor';
 import Form from '../../ui/Form';
@@ -22,7 +22,7 @@ import Button from '../../ui/Button';
 type Props = {
   action: EditableAction;
   interview: Interview.T;
-  interviewScreen: Screen.T;
+  interviewScreen: InterviewScreen.T;
   onActionChange: (
     actionToReplace: EditableAction,
     newAction: EditableAction,
