@@ -26,7 +26,7 @@ export default function InterviewCard({ interview }: Props): JSX.Element {
           <p>{interview.description}</p>
           <p>
             <Link to={Interview.getRunUrl(interview)}>
-              <FontAwesomeIcon size="1x" icon={faPlay} /> Run
+              <FontAwesomeIcon size="1x" icon={faPlay} /> Preview
             </Link>
           </p>
         </div>
