@@ -127,7 +127,7 @@ export default function ConditionalOperatorRow({
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
-        <p className="w-20">Condition</p>
+        <p className="w-20">If...</p>
         <Dropdown
           onChange={onResponseKeyChange}
           placeholder="Response variable"

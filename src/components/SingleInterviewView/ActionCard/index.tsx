@@ -4,13 +4,12 @@ import 'primeicons/primeicons.css';
 import * as React from 'react';
 import * as Scroll from 'react-scroll';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
-import { faLocationArrow } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { MixedCheckbox } from '@reach/checkbox';
 import { Element as ScrollableElement } from 'react-scroll';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
-import * as Screen from '../../../models/InterviewScreen';
+import * as InterviewScreen from '../../../models/InterviewScreen';
 import LabelWrapper from '../../ui/LabelWrapper';
 import ActionConfigEditor from './ActionConfigEditor';
 import Form from '../../ui/Form';
@@ -22,7 +21,7 @@ import Button from '../../ui/Button';
 type Props = {
   action: EditableAction;
   interview: Interview.T;
-  interviewScreen: Screen.T;
+  interviewScreen: InterviewScreen.T;
   onActionChange: (
     actionToReplace: EditableAction,
     newAction: EditableAction,
@@ -102,12 +101,8 @@ function ActionCard(
   return (
     <ScrollableElement
       name={actionId}
-      className="relative grid w-full grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg"
+      className="relative flex w-full flex-row rounded border border-gray-300 bg-gray-50 p-6 text-slate-800"
     >
-      <div className="space-x-3">
-        <FontAwesomeIcon size="1x" icon={faLocationArrow} />
-        <span>Action</span>
-      </div>
       <Button
         unstyled
         className="absolute top-4 right-4"
@@ -124,19 +119,6 @@ function ActionCard(
         // TODO: create a Form.Checkbox control
       }
       <Form ref={forwardedRef} className="col-span-3 space-y-4">
-        <LabelWrapper inline labelAfter label="Always execute this action">
-          <MixedCheckbox
-            checked={isAlwaysExecuteChecked}
-            onChange={onAlwaysExecuteChange}
-          />
-        </LabelWrapper>
-        {!isAlwaysExecuteChecked && (
-          <ConditionalOperatorRow
-            action={action}
-            allEntries={allEntries}
-            onConditionalOperationChange={onConditionalOperationChange}
-          />
-        )}
         <ActionConfigEditor
           action={action}
           onActionConfigChange={onActionConfigChange}
@@ -144,6 +126,19 @@ function ActionCard(
           interviewScreen={interviewScreen}
           isAlwaysExecuteChecked={isAlwaysExecuteChecked}
         />
+        {!isAlwaysExecuteChecked && (
+          <ConditionalOperatorRow
+            action={action}
+            allEntries={allEntries}
+            onConditionalOperationChange={onConditionalOperationChange}
+          />
+        )}
+        <LabelWrapper inline labelAfter label="Always execute this action">
+          <MixedCheckbox
+            checked={isAlwaysExecuteChecked}
+            onChange={onAlwaysExecuteChange}
+          />
+        </LabelWrapper>
       </Form>
     </ScrollableElement>
   );
