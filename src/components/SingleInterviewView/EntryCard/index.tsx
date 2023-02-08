@@ -54,7 +54,7 @@ function EntryCard(
     <Scroll.Element
       name={entryId}
       key={entryId}
-      className="relative flex w-full flex-row border border-gray-200 bg-white p-10 shadow-lg"
+      className="relative flex w-full flex-row rounded border border-gray-300 bg-gray-50 p-6 text-slate-800"
     >
       <Button
         unstyled

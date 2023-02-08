@@ -130,7 +130,7 @@ export default function ConditionalOperatorRow({
       <div className="flex items-center space-x-2">
         <LabelWrapper
           inline
-          label="Condition"
+          label="If..."
           infoTooltip={`An empty date field in the source data will be treated as ${
             process.env.NULL_DATE_OVERRIDE || '1970-01-01'
           }`}

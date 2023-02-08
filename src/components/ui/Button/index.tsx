@@ -1,11 +1,11 @@
+import * as React from 'react';
 import classNames from 'classnames';
-import type { ReactNode, MouseEventHandler } from 'react';
 
 type Props = {
-  children: ReactNode;
+  children: React.ReactNode;
   className?: string;
   intent?: 'primary' | 'danger' | 'default';
-  onClick?: MouseEventHandler<HTMLButtonElement>;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
   size?: 'medium' | 'small';
   type?: 'button' | 'submit';
 
@@ -15,18 +15,22 @@ type Props = {
    * - `full`: Render the button with 100% width in its container and sharp edges.
    */
   variant?: 'normal' | 'full';
-};
+} & React.ComponentPropsWithoutRef<'button'>;
 
-export default function Button({
-  children,
-  className,
-  onClick,
-  type = 'button',
-  variant = 'normal',
-  intent = 'default',
-  unstyled = false,
-  size = 'medium',
-}: Props): JSX.Element {
+function BaseButton(
+  {
+    children,
+    className,
+    onClick,
+    type = 'button',
+    variant = 'normal',
+    intent = 'default',
+    unstyled = false,
+    size = 'medium',
+    ...passThroughProps
+  }: Props,
+  forwardedRef: React.ForwardedRef<HTMLButtonElement>,
+): JSX.Element {
   const buttonClassName = classNames(
     className,
     'focus-visible:outline-fuchsia-700',
@@ -51,11 +55,19 @@ export default function Button({
   );
 
   return (
-    // disable button-has-type lint because we're receiving the type
-    // correctly from the `type` prop
-    // eslint-disable-next-line react/button-has-type
-    <button type={type} className={buttonClassName} onClick={onClick}>
+    /* eslint-disable react/button-has-type, react/jsx-props-no-spreading */
+    <button
+      type={type}
+      ref={forwardedRef}
+      className={buttonClassName}
+      onClick={onClick}
+      {...passThroughProps}
+    >
       {children}
     </button>
+    /* eslint-enable */
   );
 }
+
+const Button = React.forwardRef(BaseButton);
+export default Button;
