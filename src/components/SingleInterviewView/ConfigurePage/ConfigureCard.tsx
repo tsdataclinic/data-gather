@@ -7,9 +7,9 @@ import * as Interview from '../../../models/Interview';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import LabelWrapper from '../../ui/LabelWrapper';
 import TextArea from '../../ui/TextArea';
-import MultiSelect from '../../ui/MultiSelect';
 import InputText from '../../ui/InputText';
 import useIsAuthenticated from '../../../auth/useIsAuthenticated';
+import Dropdown from '../../ui/Dropdown';
 
 type Props = {
   interview: Interview.UpdateT;
@@ -61,11 +61,11 @@ function ConfigureCard({
           />
         </LabelWrapper>
 
-        <LabelWrapper inline label="Starting State" labelTextClassName="w-40">
-          <MultiSelect
-            onChange={onStartingStateChange}
+        <LabelWrapper inline label="Starting stage" labelTextClassName="w-40">
+          <Dropdown
+            onChange={screenId => onStartingStateChange([screenId])}
             placeholder="Add a stage"
-            selectedValues={startingState}
+            value={startingState[0]}
             options={getOptions()}
           />
         </LabelWrapper>

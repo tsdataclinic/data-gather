@@ -85,7 +85,7 @@ function EntryCard(
             }}
           />
           <Form.Input
-            label="Helper Text"
+            label="Helper text"
             name="text"
             infoTooltip="This is more text that will be displayed if you want to give more details about the question."
             required={false}
@@ -131,8 +131,9 @@ function EntryCard(
           <LabelWrapper
             inline
             label="Required"
-            labelTextClassName="w-20"
-            inlineContainerStyles={{ verticalAlign: 'text-top' }}
+            infoTooltip="Use this if this question cannot be left empty"
+            labelTextClassName="mr-1"
+            inlineContainerStyles={{ position: 'relative', top: 1 }}
           >
             <MixedCheckbox
               onChange={e => {
