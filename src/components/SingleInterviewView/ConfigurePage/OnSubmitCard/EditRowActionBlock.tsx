@@ -34,7 +34,10 @@ export default function EditRowActionBlock({
       entry => entry.id === actionConfig.payload.entryId,
     );
     return allTables.find(
-      table => table.key === selectedEntry?.responseTypeOptions.selectedTable,
+      table =>
+        selectedEntry?.responseType ===
+          InterviewScreenEntry.ResponseType.AIRTABLE &&
+        table.key === selectedEntry.responseTypeOptions.selectedTable,
     );
   }, [entries, allTables, actionConfig]);
 

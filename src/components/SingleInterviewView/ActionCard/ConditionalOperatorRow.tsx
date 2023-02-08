@@ -76,8 +76,13 @@ export default function ConditionalOperatorRow({
   // TODO: have to connect <ActionCard> to `entry` for responseKeyColumns to
   // change before 'Save' is clicked
   const allResponseKeyFieldOptions = React.useMemo(() => {
+    // if the selected entry is an Airtable response, then we need to get the
+    // table it links to so that we can get all the available fields
     const airtableTable = allAirtableTables.find(
-      table => table.key === selectedEntry?.responseTypeOptions.selectedTable,
+      table =>
+        selectedEntry?.responseType ===
+          InterviewScreenEntry.ResponseType.AIRTABLE &&
+        table.key === selectedEntry.responseTypeOptions.selectedTable,
     );
 
     return airtableTable?.fields.map(field => ({

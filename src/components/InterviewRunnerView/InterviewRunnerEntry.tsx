@@ -31,7 +31,9 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
 
   const { isError, isLoading, isSuccess, responseData } = useAirtableQuery(
     airtableQuery,
-    entry.responseTypeOptions,
+    entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
+      ? entry.responseTypeOptions
+      : undefined,
   );
 
   const [rowData, setRowData] = React.useState();
@@ -64,7 +66,8 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
     );
   }, [responseData]);
 
-  switch (entry.responseType) {
+  const { responseType } = entry;
+  switch (responseType) {
     case InterviewScreenEntry.ResponseType.TEXT:
       return (
         <Form.Input
@@ -168,13 +171,24 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
         />
       );
+    case InterviewScreenEntry.ResponseType.SINGLE_SELECT:
+      return (
+        <Form.Dropdown
+          label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
+          required={entry.required}
+          name={entry.responseKey}
+          options={entry.responseTypeOptions.options.map(opt => ({
+            displayValue: opt.value,
+            value: opt.value,
+          }))}
+          placeholder="Select one"
+        />
+      );
     default:
-      assertUnreachable(entry.responseType, { throwError: false });
+      assertUnreachable(responseType, { throwError: false });
       return (
         <div>
-          <em>
-            Response type &quot;{entry.responseType}&quot; not implemented.
-          </em>
+          <em>Response type &quot;{responseType}&quot; not implemented.</em>
         </div>
       );
   }

@@ -47,6 +47,8 @@ type SubmissionAction = {
   readonly order: number;
 };
 
+// Make all keys in `payload` optional so that it can be used while we're
+// creating an action and not all keys have been set yet.
 export type WithPartialPayload<Config extends SubmissionAction['config']> =
   // this is a weird trick in TypeScript in order to distribute an expression
   // over a union but in a way that preserves the ability to narrow the types

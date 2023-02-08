@@ -1,7 +1,8 @@
 import enum
 import uuid
-from typing import Optional
+from typing import Optional, Union
 
+from pydantic import BaseModel, validator
 from sqlalchemy import Column
 from sqlalchemy.dialects.sqlite import JSON
 from sqlmodel import Field, Relationship
@@ -19,6 +20,21 @@ class ResponseType(str, enum.Enum):
     NUMBER = "number"
     PHONE_NUMBER = "phone_number"
     TEXT = "text"
+    SINGLE_SELECT = "single_select"
+
+
+class AirtableOptions(BaseModel):
+    selectedBase: str
+    selectedFields: list[str]
+    selectedTable: str
+
+
+class SelectableOption(BaseModel):
+    id: str
+    value: str
+
+class SingleSelectOptions(BaseModel):
+    options: list[SelectableOption]
 
 
 class InterviewScreenEntryBase(OrderedModel):
@@ -29,9 +45,19 @@ class InterviewScreenEntryBase(OrderedModel):
     required: bool = False
     response_key: str
     response_type: ResponseType
-    response_type_options: dict = Field(sa_column=Column(JSON))
+    response_type_options: Optional[
+        Union[AirtableOptions, SingleSelectOptions]
+    ] = Field(sa_column=Column(JSON))
     screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
     text: dict[str, str] = Field(sa_column=Column(JSON))
+
+    @validator("response_type_options")
+    def validate_response_type_options(
+        cls, value: Optional[Union[AirtableOptions, SingleSelectOptions]]
+    ) -> Optional[dict]:
+        # hacky use of validator to allow Pydantic models to be stored as JSON
+        # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
+        return value.dict() if value else None
 
 
 class InterviewScreenEntry(InterviewScreenEntryBase, table=True):
