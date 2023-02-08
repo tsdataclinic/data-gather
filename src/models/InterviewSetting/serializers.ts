@@ -8,7 +8,16 @@ export function deserialize(
 ): InterviewSetting.T {
   const { id, type, settings, interviewId } = serializedInterviewSetting;
   const deserializedSettings = new Map(
-    Object.entries(settings).map(([key, val]) => [key, val]),
+    Object.entries(settings).map(([key, val]) => {
+      let deserializedKey;
+      switch (key) {
+        case InterviewSettingType.AIRTABLE:
+        default:
+          deserializedKey = InterviewSettingType.AIRTABLE;
+          break;
+      }
+      return [deserializedKey, val];
+    }),
   );
 
   return {
@@ -22,8 +31,15 @@ export function deserialize(
 
 function serializeSettings(
   settings: InterviewSetting.T['settings'],
-): Record<string, SerializedAirtableSettings> {
-  const settingsObj: Record<string, SerializedAirtableSettings> = {};
+): Record<InterviewSettingType, SerializedAirtableSettings> {
+  const settingsObj: Record<InterviewSettingType, SerializedAirtableSettings> =
+    {
+      [InterviewSettingType.AIRTABLE]: {
+        accessToken: '',
+        baseId: undefined,
+        tables: undefined,
+      },
+    };
   settings.forEach((value, key) => {
     if (value !== undefined) {
       settingsObj[key] = value;
@@ -36,19 +52,11 @@ export function serialize(
   interviewSetting: InterviewSetting.T,
 ): SerializedInterviewSettingRead {
   const { type, id, settings } = interviewSetting;
-  let serializedInterviewType: InterviewSettingType;
-  switch (type) {
-    case InterviewSettingType.AIRTABLE:
-    default:
-      serializedInterviewType = InterviewSettingType.AIRTABLE;
-      break;
-  }
-
   const serializedSettings = serializeSettings(settings);
 
   return {
     ...interviewSetting,
-    type: serializedInterviewType,
+    type,
     id,
     settings: serializedSettings,
   };
@@ -58,13 +66,6 @@ export function serializeCreate(
   interviewSetting: InterviewSetting.CreateT,
 ): SerializedInterviewSettingCreate {
   const { type, settings } = interviewSetting;
-  let serializedInterviewType: InterviewSettingType;
-  switch (type) {
-    case InterviewSettingType.AIRTABLE:
-    default:
-      serializedInterviewType = InterviewSettingType.AIRTABLE;
-      break;
-  }
 
   const serializedSettings = serializeSettings(settings);
 
@@ -72,7 +73,7 @@ export function serializeCreate(
 
   return {
     ...interviewSetting,
-    type: serializedInterviewType,
+    type,
     settings: serializedSettings,
   };
 }

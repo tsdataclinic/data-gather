@@ -71,7 +71,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
                         ...setting,
                         settings: new Map([
                           [
-                            'AirtableSetting',
+                            InterviewSettingType.AIRTABLE,
                             {
                               accessToken,
                             },

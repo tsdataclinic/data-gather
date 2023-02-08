@@ -28,12 +28,12 @@ export type AirtableSettings = {
 type InterviewSetting = {
   readonly id: string;
   readonly interviewId: string;
-  readonly settings: ReadonlyMap<string, AirtableSettings>;
-  readonly type: string;
+  readonly settings: ReadonlyMap<InterviewSettingType, AirtableSettings>;
+  readonly type: InterviewSettingType;
 };
 
 type InterviewSettingCreate = Omit<InterviewSetting, 'id' | 'settings'> & {
-  readonly settings: Map<string, AirtableSettings>;
+  readonly settings: Map<InterviewSettingType, AirtableSettings>;
 
   /**
    * A temp id used only for identification purposes in the frontend (e.g.

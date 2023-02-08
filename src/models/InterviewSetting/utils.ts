@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { InterviewSettingType } from '../../api';
 import assertUnreachable from '../../util/assertUnreachable';
 import * as InterviewSetting from './types';
 
@@ -18,7 +19,7 @@ export function create(
     tempId: uuidv4(),
     settings: new Map([
       [
-        'AirtableSetting',
+        InterviewSettingType.AIRTABLE,
         <InterviewSetting.AirtableSettings>{
           accessToken: '',
         },
