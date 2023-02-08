@@ -172,7 +172,18 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
         />
       );
     case InterviewScreenEntry.ResponseType.SINGLE_SELECT:
-      return <div>Still need to implement single select</div>;
+      return (
+        <Form.Dropdown
+          label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
+          required={entry.required}
+          name={entry.responseKey}
+          options={entry.responseTypeOptions.options.map(opt => ({
+            displayValue: opt.value,
+            value: opt.value,
+          }))}
+          placeholder="Select one"
+        />
+      );
     default:
       assertUnreachable(responseType, { throwError: false });
       return (
