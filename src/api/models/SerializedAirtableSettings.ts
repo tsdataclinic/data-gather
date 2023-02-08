@@ -5,8 +5,8 @@
 import type { SerializedAirtableTable } from './SerializedAirtableTable';
 
 export type SerializedAirtableSettings = {
-  access_token: string;
-  base_id?: string;
+  accessToken: string;
+  baseId?: string;
   tables?: Array<SerializedAirtableTable>;
 };
 

@@ -73,13 +73,13 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
                           [
                             'AirtableSetting',
                             {
-                              access_token: accessToken,
+                              accessToken,
                             },
                           ],
                         ]),
                       });
                     }}
-                    defaultValue={value.access_token}
+                    defaultValue={value.accessToken}
                     placeholder="Enter Airtable personal access token..."
                   />
                 </LabelWrapper>

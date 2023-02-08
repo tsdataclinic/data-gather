@@ -20,7 +20,7 @@ export function create(
       [
         'AirtableSetting',
         <InterviewSetting.AirtableSettings>{
-          access_token: '',
+          accessToken: '',
         },
       ],
     ]),

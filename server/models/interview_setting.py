@@ -23,8 +23,8 @@ class AirtableTable(BaseModel):
     fields: list[AirtableField]
     
 class AirtableSettings(BaseModel):
-    access_token: str
-    base_id: Optional[str]
+    accessToken: str
+    baseId: Optional[str]
     tables: Optional[list[AirtableTable]]
 
 class InterviewSettingType(str, enum.Enum):

@@ -17,8 +17,8 @@ export type AirtableTable = {
 };
 
 export type AirtableSettings = {
-  access_token: string;
-  base_id?: string;
+  accessToken: string;
+  baseId?: string;
   tables?: AirtableTable[];
 };
 
