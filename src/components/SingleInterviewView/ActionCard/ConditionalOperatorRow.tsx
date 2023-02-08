@@ -8,6 +8,7 @@ import * as InterviewScreen from '../../../models/InterviewScreen';
 import type { EditableAction } from '../types';
 import useAppState from '../../../hooks/useAppState';
 import LabelWrapper from '../../ui/LabelWrapper';
+import InfoIcon from '../../ui/InfoIcon';
 
 type Props = {
   action: EditableAction;
@@ -131,9 +132,6 @@ export default function ConditionalOperatorRow({
         <LabelWrapper
           inline
           label="If..."
-          infoTooltip={`An empty date field in the source data will be treated as ${
-            process.env.NULL_DATE_OVERRIDE || '1970-01-01'
-          }`}
           labelTextClassName="mr-1"
           inlineContainerStyles={{ position: 'relative', top: 1 }}
         >
@@ -163,18 +161,26 @@ export default function ConditionalOperatorRow({
 
         {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
         {ConditionalAction.isDateOperator(action.conditionalOperator) ? (
-          <Calendar
-            placeholder="Date"
-            onChange={e => {
-              if (e.value instanceof Date) {
-                onConditionalValueChange(e.value.toISOString());
-              }
-              if (typeof e.value === 'string') {
-                onConditionalValueChange(e.value);
-              }
-            }}
-            value={action.value ? new Date(action.value) : ''}
-          />
+          <>
+            <Calendar
+              placeholder="Date"
+              inputClassName="py-1.5 border border-gray-400"
+              onChange={e => {
+                if (e.value instanceof Date) {
+                  onConditionalValueChange(e.value.toISOString());
+                }
+                if (typeof e.value === 'string') {
+                  onConditionalValueChange(e.value);
+                }
+              }}
+              value={action.value ? new Date(action.value) : ''}
+            />
+            <InfoIcon
+              tooltip={`An empty date field in the source data will be treated as ${
+                process.env.NULL_DATE_OVERRIDE || '1970-01-01'
+              }`}
+            />
+          </>
         ) : (
           <InputText
             placeholder="Value"
