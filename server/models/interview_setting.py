@@ -10,9 +10,6 @@ from pydantic import BaseModel
 
 from server.models_util import APIModel, update_module_forward_refs
 
-class ValidationError(Exception):
-    pass
-
 class AirtableField(BaseModel):
     description: Optional[str]
     id: str
