@@ -2,7 +2,7 @@ import { InterviewSettingType } from '../../api/models/InterviewSettingType';
 import { SerializedInterviewSettingRead } from '../../api/models/SerializedInterviewSettingRead';
 import { SpecialValueType } from '../../api/models/SpecialValueType';
 
-export type AirtableList = {
+export type AirtableField = {
   description?: string;
   id: string;
   name: string;
@@ -11,7 +11,7 @@ export type AirtableList = {
 
 export type AirtableTable = {
   description?: string;
-  fields: AirtableList[];
+  fields: AirtableField[];
   id: string;
   name: string;
 };

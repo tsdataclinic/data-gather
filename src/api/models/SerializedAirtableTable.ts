@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SerializedAirtableList } from './SerializedAirtableList';
+import type { SerializedAirtableField } from './SerializedAirtableField';
 
 export type SerializedAirtableTable = {
   id: string;
   name: string;
   description?: string;
-  fields: Array<SerializedAirtableList>;
+  fields: Array<SerializedAirtableField>;
 };
 

@@ -13,7 +13,7 @@ from server.models_util import APIModel, update_module_forward_refs
 class ValidationError(Exception):
     pass
 
-class AirtableList(BaseModel):
+class AirtableField(BaseModel):
     description: Optional[str]
     id: str
     name: str
@@ -23,7 +23,7 @@ class AirtableTable(BaseModel):
     id: str
     name: str
     description: Optional[str]
-    fields: list[AirtableList]
+    fields: list[AirtableField]
     
 class AirtableSettings(BaseModel):
     access_token: str
