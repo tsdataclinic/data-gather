@@ -203,7 +203,7 @@ export function getEntryById(
 export function getResponseTypeDisplayName(responseType: ResponseType): string {
   switch (responseType) {
     case ResponseType.AIRTABLE:
-      return 'Airtable Lookup';
+      return 'Airtable lookup';
     case ResponseType.TEXT:
       return 'Text';
     case ResponseType.NUMBER:
@@ -213,9 +213,9 @@ export function getResponseTypeDisplayName(responseType: ResponseType): string {
     case ResponseType.EMAIL:
       return 'Email';
     case ResponseType.PHONE_NUMBER:
-      return 'Phone Number';
+      return 'Phone number';
     case ResponseType.SINGLE_SELECT:
-      return 'Single Select';
+      return 'Single select';
     default:
       return assertUnreachable(responseType);
   }
