@@ -34,7 +34,7 @@ class InterviewSettingBase(APIModel):
     """The base Interview Setting model"""
     type: InterviewSettingType
     # Union[] for further expansion
-    settings: dict[str, Union[AirtableSettings, None]] = Field(sa_column=Column(JSON))
+    settings: dict[InterviewSettingType, AirtableSettings] = Field(sa_column=Column(JSON))
     interview_id: uuid.UUID = Field(foreign_key="interview.id")
 
 class InterviewSetting(InterviewSettingBase, table=True):
