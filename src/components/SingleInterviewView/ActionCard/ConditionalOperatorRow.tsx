@@ -131,7 +131,7 @@ export default function ConditionalOperatorRow({
         <LabelWrapper
           inline
           label="Condition"
-          infoTooltip={`An empty date field in source data will be treated as ${
+          infoTooltip={`An empty date field in the source data will be treated as ${
             process.env.NULL_DATE_OVERRIDE || '1970-01-01'
           }`}
           labelTextClassName="mr-1"
