@@ -28,7 +28,7 @@ export default function Modal({
   // TODO: how much of this can be tailwind?
   return (
     <StyledDialogOverlay isOpen={isOpen} onDismiss={onDismiss}>
-      <DialogContent>
+      <DialogContent style={{ borderRadius: '0.25rem' }}>
         <div style={{ position: 'relative' }}>
           <button
             css={`
@@ -47,6 +47,7 @@ export default function Modal({
                 color: #054382;
                 background: #e7e9ea;
                 outline: none;
+                border-top-right-radius: 0.25rem;
               }
               &:focus-visible {
                 outline: 5px auto -webkit-focus-ring-color;
