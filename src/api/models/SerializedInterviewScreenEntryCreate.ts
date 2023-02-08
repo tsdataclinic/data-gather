@@ -3,6 +3,8 @@
 /* eslint-disable */
 
 import type { ResponseType } from './ResponseType';
+import type { SerializedAirtableOptions } from './SerializedAirtableOptions';
+import type { SerializedSingleSelectOptions } from './SerializedSingleSelectOptions';
 
 /**
  * The InterviewScreenEntry model used when creating a new model.
@@ -15,7 +17,7 @@ export type SerializedInterviewScreenEntryCreate = {
   required?: boolean;
   responseKey: string;
   responseType: ResponseType;
-  responseTypeOptions: any;
+  responseTypeOptions?: (SerializedAirtableOptions | SerializedSingleSelectOptions);
   screenId: string;
   text: Record<string, string>;
   id?: string;

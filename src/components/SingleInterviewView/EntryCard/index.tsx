@@ -5,11 +5,11 @@ import * as Scroll from 'react-scroll';
 import { MixedCheckbox } from '@reach/checkbox';
 import Form from '../../ui/Form';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import AirtableFieldSelector from './AirtableFieldSelector';
 import EditableName from './EditableName';
 import type { EditableEntry } from '../types';
 import Button from '../../ui/Button';
 import LabelWrapper from '../../ui/LabelWrapper';
+import ResponseTypeConfigBlock from './ResponseTypeConfigBlock';
 
 type Props = {
   entry: EditableEntry;
@@ -106,28 +106,17 @@ function EntryCard(
             name="responseType"
             options={ENTRY_RESPONSE_TYPE_OPTIONS}
             value={entry.responseType}
-            onChange={(newVal: InterviewScreenEntry.ResponseType) => {
-              onEntryChange(entry, {
-                ...entry,
-                responseType: newVal,
-              });
+            onChange={(newResponseType: InterviewScreenEntry.ResponseType) => {
+              onEntryChange(
+                entry,
+                InterviewScreenEntry.changeResponseType(entry, newResponseType),
+              );
             }}
           />
-          {entry.responseType ===
-            InterviewScreenEntry.ResponseType.AIRTABLE && (
-            <AirtableFieldSelector
-              fieldSelectorLabel="Fields to search by"
-              airtableConfig={entry.responseTypeOptions}
-              onAirtableConfigurationChange={(
-                newConfig: InterviewScreenEntry.ResponseTypeOptions,
-              ) => {
-                onEntryChange(entry, {
-                  ...entry,
-                  responseTypeOptions: newConfig,
-                });
-              }}
-            />
-          )}
+          <ResponseTypeConfigBlock
+            entry={entry}
+            onEntryChange={onEntryChange}
+          />
           <LabelWrapper
             inline
             label="Required"

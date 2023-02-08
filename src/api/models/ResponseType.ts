@@ -12,4 +12,5 @@ export enum ResponseType {
   NUMBER = 'number',
   PHONE_NUMBER = 'phone_number',
   TEXT = 'text',
+  SINGLE_SELECT = 'single_select',
 }

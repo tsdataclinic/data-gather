@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import assertUnreachable from '../util/assertUnreachable';
 import { SerializedInterviewScreenEntryRead } from '../api/models/SerializedInterviewScreenEntryRead';
@@ -6,13 +7,26 @@ import { ResponseType } from '../api/models/ResponseType';
 import type * as InterviewScreen from './InterviewScreen';
 import { SerializedInterviewScreenEntryReadWithScreen } from '../api/models/SerializedInterviewScreenEntryReadWithScreen';
 
-export type AirtableOptions = {
-  selectedBase: string;
-  selectedFields: string[];
-  selectedTable: string;
-};
+const AirtableOptionsSchema = z.object({
+  selectedBase: z.string(),
+  selectedFields: z.string().array(),
+  selectedTable: z.string(),
+});
 
-export type ResponseTypeOptions = AirtableOptions;
+const SelectionOptionSchema = z.object({
+  id: z.string(),
+  value: z.string(),
+});
+
+const SingleSelectOptionsSchema = z.object({
+  options: SelectionOptionSchema.array(),
+});
+
+export type AirtableOptions = Readonly<z.infer<typeof AirtableOptionsSchema>>;
+export type SelectionOption = Readonly<z.infer<typeof SelectionOptionSchema>>;
+export type SingleSelectOptions = Readonly<
+  z.infer<typeof SingleSelectOptionsSchema>
+>;
 
 export const RESPONSE_TYPES: readonly ResponseType[] =
   Object.values(ResponseType);
@@ -22,7 +36,7 @@ export type Id = string;
 /**
  * Represents a single question asked to the interview subject
  */
-interface InterviewScreenEntry {
+type InterviewScreenEntry = {
   readonly id: Id;
 
   /**  The name to display on the sidebar */
@@ -49,44 +63,52 @@ interface InterviewScreenEntry {
    */
   readonly responseKey: string;
 
-  /** The data type expected as a response */
-  readonly responseType: ResponseType;
-
-  // TODO: extend this to support response configs for other response types
-  // and not just airtable
-  readonly responseTypeOptions: ResponseTypeOptions;
-
   /** The screen that this entry belongs to */
   readonly screenId: string;
 
   /** Map from language to additional flavor text associated with the question, in that language */
   readonly text: { [language: string]: string };
-}
+} & (
+  | {
+      readonly responseType: ResponseType.AIRTABLE;
+      readonly responseTypeOptions: AirtableOptions;
+    }
+  | {
+      readonly responseType: ResponseType.SINGLE_SELECT;
+      readonly responseTypeOptions: SingleSelectOptions;
+    }
+  | {
+      // these response types don't have any configurable `responseTypeOptions`
+      readonly responseType:
+        | ResponseType.BOOLEAN
+        | ResponseType.EMAIL
+        | ResponseType.NUMBER
+        | ResponseType.PHONE_NUMBER
+        | ResponseType.TEXT;
+      readonly responseTypeOptions: undefined;
+    }
+);
 
-interface InterviewScreenEntryWithScreen extends InterviewScreenEntry {
+type InterviewScreenEntryWithScreen = InterviewScreenEntry & {
   readonly screen: InterviewScreen.T;
-}
-
-type InterviewScreenEntryCreate = Omit<InterviewScreenEntry, 'id'> & {
-  /**
-   * A temp id used only for identification purposes in the frontend (e.g.
-   * for React keys)
-   */
-  tempId: string;
 };
 
-export function create(
-  values: Omit<InterviewScreenEntry, 'id' | 'responseKey' | 'tempId'>,
-): InterviewScreenEntryCreate {
-  return {
-    ...values,
-    responseKey: uuidv4(),
-    tempId: uuidv4(),
-    responseTypeOptions: values.responseTypeOptions,
-  };
-}
+// replace the id using this weird conditional expression because it's the only
+// way typescript correctly distributes operations while preserving
+// discriminants in unions
+type ReplaceIdSafely<T> = T extends unknown
+  ? Omit<T, 'id'> & {
+      /**
+       * A temp id used only for identification purposes in the frontend (e.g.
+       * for React keys)
+       */
+      tempId: string;
+    }
+  : never;
 
-export function createDefaultAirtableOptions(): AirtableOptions {
+type InterviewScreenEntryCreate = ReplaceIdSafely<InterviewScreenEntry>;
+
+function createDefaultAirtableOptions(): AirtableOptions {
   return {
     selectedBase: '',
     selectedFields: [],
@@ -94,16 +116,53 @@ export function createDefaultAirtableOptions(): AirtableOptions {
   };
 }
 
+function createDefaultSingleSelectOptions(): SingleSelectOptions {
+  return { options: [] };
+}
+
 export function deserialize(
   rawObj: SerializedInterviewScreenEntryRead,
 ): InterviewScreenEntry {
-  return rawObj;
+  // parse the response type options correctly depending on the responseType
+  const { responseType, responseTypeOptions, ...restOfObj } = rawObj;
+  switch (responseType) {
+    case ResponseType.AIRTABLE:
+      return {
+        ...restOfObj,
+        responseType,
+        responseTypeOptions: AirtableOptionsSchema.parse(responseTypeOptions),
+      };
+    case ResponseType.SINGLE_SELECT:
+      return {
+        ...restOfObj,
+        responseType,
+        responseTypeOptions:
+          SingleSelectOptionsSchema.parse(responseTypeOptions),
+      };
+    case ResponseType.BOOLEAN:
+    case ResponseType.TEXT:
+    case ResponseType.EMAIL:
+    case ResponseType.NUMBER:
+    case ResponseType.PHONE_NUMBER:
+      return {
+        ...restOfObj,
+        responseType,
+        responseTypeOptions: undefined,
+      };
+    default:
+      return assertUnreachable(responseType);
+  }
 }
 
 export function deserializeWithScreen(
   rawObj: SerializedInterviewScreenEntryReadWithScreen,
 ): InterviewScreenEntryWithScreen {
-  return rawObj;
+  const { screen, ...restOfEntry } = rawObj;
+  const deserializedEntry = deserialize(restOfEntry);
+  return {
+    ...deserializedEntry,
+    screen, // no extra deserialization needed for the screen
+  };
 }
 
 /**
@@ -155,6 +214,8 @@ export function getResponseTypeDisplayName(responseType: ResponseType): string {
       return 'Email';
     case ResponseType.PHONE_NUMBER:
       return 'Phone Number';
+    case ResponseType.SINGLE_SELECT:
+      return 'Single Select';
     default:
       return assertUnreachable(responseType);
   }
@@ -186,6 +247,54 @@ export function getId(
   entry: InterviewScreenEntry | InterviewScreenEntryCreate,
 ): string {
   return isCreateType(entry) ? entry.tempId : entry.id;
+}
+
+export function changeResponseType<
+  Entry extends InterviewScreenEntry | InterviewScreenEntryCreate,
+>(entry: Entry, newResponseType: ResponseType): Entry {
+  switch (newResponseType) {
+    case ResponseType.AIRTABLE:
+      return {
+        ...entry,
+        responseType: newResponseType,
+        responseTypeOptions: createDefaultAirtableOptions(),
+      };
+    case ResponseType.SINGLE_SELECT:
+      return {
+        ...entry,
+        responseType: newResponseType,
+        responseTypeOptions: createDefaultSingleSelectOptions(),
+      };
+    case ResponseType.TEXT:
+    case ResponseType.EMAIL:
+    case ResponseType.NUMBER:
+    case ResponseType.PHONE_NUMBER:
+    case ResponseType.BOOLEAN:
+      return {
+        ...entry,
+        responseType: newResponseType,
+        responseTypeOptions: undefined,
+      };
+    default:
+      return assertUnreachable(newResponseType);
+  }
+}
+
+export function create(
+  values: Omit<
+    InterviewScreenEntry,
+    'id' | 'responseKey' | 'tempId' | 'responseTypeOptions'
+  >,
+): InterviewScreenEntryCreate {
+  const defaultEntry: InterviewScreenEntryCreate = {
+    ...values,
+    responseKey: uuidv4(),
+    tempId: uuidv4(),
+    responseType: ResponseType.TEXT,
+    responseTypeOptions: undefined,
+  };
+
+  return changeResponseType(defaultEntry, values.responseType);
 }
 
 export { ResponseType };

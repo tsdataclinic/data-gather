@@ -80,11 +80,6 @@ export default function ScreenCard({
           text: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
           screenId: screen.id,
           responseType: InterviewScreenEntry.ResponseType.TEXT,
-          responseTypeOptions: {
-            selectedBase: '',
-            selectedTable: '',
-            selectedFields: [],
-          },
         }),
       ),
     );

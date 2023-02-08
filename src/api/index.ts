@@ -13,6 +13,7 @@ export { ActionType } from './models/ActionType';
 export { ConditionalOperator } from './models/ConditionalOperator';
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export { ResponseType } from './models/ResponseType';
+export type { SerializedAirtableOptions } from './models/SerializedAirtableOptions';
 export type { SerializedConditionalActionCreate } from './models/SerializedConditionalActionCreate';
 export type { SerializedConditionalActionRead } from './models/SerializedConditionalActionRead';
 export type { SerializedEditRowPayload } from './models/SerializedEditRowPayload';
@@ -29,6 +30,8 @@ export type { SerializedInterviewScreenRead } from './models/SerializedInterview
 export type { SerializedInterviewScreenReadWithChildren } from './models/SerializedInterviewScreenReadWithChildren';
 export type { SerializedInterviewScreenUpdate } from './models/SerializedInterviewScreenUpdate';
 export type { SerializedInterviewUpdate } from './models/SerializedInterviewUpdate';
+export type { SerializedSelectableOption } from './models/SerializedSelectableOption';
+export type { SerializedSingleSelectOptions } from './models/SerializedSingleSelectOptions';
 export type { SerializedSubmissionActionCreate } from './models/SerializedSubmissionActionCreate';
 export type { SerializedSubmissionActionRead } from './models/SerializedSubmissionActionRead';
 export type { SerializedUserRead } from './models/SerializedUserRead';
