@@ -30,6 +30,7 @@ from server.models.interview_screen import (InterviewScreen,
                                             InterviewScreenUpdate)
 from server.models.interview_screen_entry import (
     InterviewScreenEntry, InterviewScreenEntryReadWithScreen)
+from server.models.interview_setting import InterviewSetting
 from server.models.submission_action import SubmissionAction
 from server.models.user import User, UserRead
 
@@ -265,13 +266,27 @@ def update_interview(
     # set the updated actions
     db_interview.submission_actions = actions_to_set
 
+    # get settings to update and delete
+    settings_to_set, settings_to_delete = _diff_model_lists(
+        db_interview.interview_settings,
+        [InterviewSetting.from_orm(setting) for setting in interview.interview_settings],
+    )
+
+    # set the updated settings
+    db_interview.interview_settings = settings_to_set
+
     # now update the top-level db_interview
-    _update_model_diff(db_interview, interview.copy(exclude={"submission_actions"}))
+    _update_model_diff(db_interview, interview.copy(exclude={"submission_actions", "interview_settings"}))
     session.add(db_interview)
 
     # delete the necessary actions
     for action in actions_to_delete:
         session.delete(action)
+
+    
+    # delete the necessary settings
+    for setting in settings_to_delete:
+        session.delete(setting)
 
     try:
         session.commit()

@@ -6,7 +6,7 @@ from typing import Optional, Union, List
 from sqlmodel import Field, Relationship, UniqueConstraint
 from sqlalchemy import Column
 from sqlalchemy.dialects.sqlite import JSON
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from server.models_util import APIModel, update_module_forward_refs
 
@@ -36,6 +36,12 @@ class InterviewSettingBase(APIModel):
     # Union[] for further expansion
     settings: dict[InterviewSettingType, AirtableSettings] = Field(sa_column=Column(JSON))
     interview_id: uuid.UUID = Field(foreign_key="interview.id")
+
+    @validator('settings')
+    def validate_settings(cls, value: dict[InterviewSettingType, AirtableSettings]) -> dict:
+        # hacky use of validator to allow Pydantic models to be stored as JSON
+        # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
+        return {key: val.dict(exclude_none=True) for key, val in value.items()}
 
 class InterviewSetting(InterviewSettingBase, table=True):
     """The InterviewSetting model as a database table. """
