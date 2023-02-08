@@ -132,7 +132,7 @@ export default function ConditionalOperatorRow({
         <LabelWrapper
           inline
           label="If..."
-          labelTextClassName="mr-1"
+          labelTextClassName="w-20"
           inlineContainerStyles={{ position: 'relative', top: 1 }}
         >
           <Dropdown
