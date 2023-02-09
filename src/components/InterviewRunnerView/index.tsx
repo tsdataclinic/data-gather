@@ -254,8 +254,9 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
         </div>
       ) : (
         <div>
-          {currentScreen && currentScreen && entries && responseConsumer && (
+          {interview && currentScreen && entries && responseConsumer && (
             <InterviewRunnerScreen
+              interview={interview}
               screen={currentScreen}
               entries={entries.get(currentScreen.id) ?? []}
               responseConsumer={responseConsumer}

@@ -177,10 +177,18 @@ export function serialize(
 /**
  * Get this screen's title in a given language.
  */
-export function getTitle(screen: InterviewScreen, language: string): string {
+export function getTitle(
+  screen: InterviewScreen,
+  language: string,
+  fallbackLanguage?: string,
+): string {
   const { title: titleObj } = screen;
   if (language in titleObj) {
     return titleObj[language];
+  }
+
+  if (fallbackLanguage && fallbackLanguage in titleObj) {
+    return titleObj[fallbackLanguage];
   }
 
   // otherwise default to the title in the first language we find
