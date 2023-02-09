@@ -14,6 +14,9 @@ export default function SingleInterviewView(): JSX.Element {
   const screens = useInterviewScreens(interview?.id);
   const { selectedLanguageCode } = useAppState();
 
+  // Boolean indicating if there are unsaved changes
+  const [unsavedChanges, setUnsavedChanges] = React.useState(false);
+
   const firstScreenId = React.useMemo(() => {
     if (screens && screens.length >= 1) {
       return screens[0].id;
@@ -30,12 +33,22 @@ export default function SingleInterviewView(): JSX.Element {
   return (
     <SelectedLanguageContext.Provider value={languageCodeToUse}>
       <div className="flex h-full w-full flex-1 items-center overflow-y-hidden p-0">
-        <Sidebar interview={interview} screens={screens} />
+        <Sidebar
+          interview={interview}
+          screens={screens}
+          unsavedChanges={unsavedChanges}
+        />
         <div className="flex h-full w-4/5 flex-col items-center bg-gray-100">
           <Routes>
             <Route
               path="configure"
-              element={<ConfigurePage defaultInterview={interview} />}
+              element={
+                <ConfigurePage
+                  defaultInterview={interview}
+                  unsavedChanges={unsavedChanges}
+                  setUnsavedChanges={setUnsavedChanges}
+                />
+              }
             />
             {screens?.map(screen => (
               <Route
@@ -48,6 +61,8 @@ export default function SingleInterviewView(): JSX.Element {
                     defaultEntries={screen.entries}
                     defaultActions={screen.actions}
                     interview={interview}
+                    unsavedChanges={unsavedChanges}
+                    setUnsavedChanges={setUnsavedChanges}
                   />
                 }
               />
