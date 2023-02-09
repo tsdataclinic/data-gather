@@ -21,11 +21,11 @@ type Props = {
 };
 
 /**
- * The ScreenCard is an uncontrolled component because any changes to actions
+ * The ScreenPage is an uncontrolled component because any changes to actions
  * are only tracked internally. These changes are not bubbled up to the rest
  * of the app until "Save" is clicked.
  */
-export default function ScreenCard({
+export default function ScreenPage({
   defaultEntries,
   defaultActions,
   defaultScreen,
@@ -160,6 +160,7 @@ export default function ScreenCard({
   return (
     <>
       <ScreenToolbar
+        interview={interview}
         screen={screen}
         onSaveClick={onSaveClick}
         onNewEntryClick={onNewEntryClick}

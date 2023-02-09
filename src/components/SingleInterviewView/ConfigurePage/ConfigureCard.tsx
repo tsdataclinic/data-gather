@@ -10,6 +10,8 @@ import TextArea from '../../ui/TextArea';
 import InputText from '../../ui/InputText';
 import useIsAuthenticated from '../../../auth/useIsAuthenticated';
 import Dropdown from '../../ui/Dropdown';
+import MultiSelect from '../../ui/MultiSelect';
+import * as Config from '../../../config';
 
 type Props = {
   interview: Interview.UpdateT;
@@ -17,6 +19,13 @@ type Props = {
   onStartingStateChange: (startingState: readonly string[]) => void;
   startingState: readonly string[];
 };
+
+const LANGUAGE_OPTIONS = Object.entries(Config.LANGUAGES).map(
+  ([languageKey, languageDisplayName]) => ({
+    displayValue: languageDisplayName,
+    value: languageKey,
+  }),
+);
 
 function ConfigureCard({
   interview,
@@ -31,7 +40,7 @@ function ConfigureCard({
     return <p>No stages have been created yet!</p>;
   }
 
-  const getOptions = (): Array<{
+  const getScreenOptions = (): Array<{
     displayValue: string;
     value: string;
   }> =>
@@ -61,12 +70,36 @@ function ConfigureCard({
           />
         </LabelWrapper>
 
-        <LabelWrapper inline label="Starting stage" labelTextClassName="w-40">
+        <LabelWrapper
+          inline
+          label="Allowed languages"
+          labelTextClassName="w-40"
+          infoTooltip="These are the languages that questions can be presented in."
+        >
+          <MultiSelect
+            onChange={languageCodes =>
+              onInterviewChange({
+                ...interview,
+                allowedLanguages: languageCodes,
+              })
+            }
+            placeholder="Add another language"
+            options={LANGUAGE_OPTIONS}
+            selectedValues={interview.allowedLanguages}
+          />
+        </LabelWrapper>
+
+        <LabelWrapper
+          inline
+          label="Starting stage"
+          labelTextClassName="w-40"
+          infoTooltip="This is the first stage the user will see when they start. After that, the next stages will depend on the actions you configure."
+        >
           <Dropdown
             onChange={screenId => onStartingStateChange([screenId])}
             placeholder="Add a stage"
             value={startingState[0]}
-            options={getOptions()}
+            options={getScreenOptions()}
           />
         </LabelWrapper>
 

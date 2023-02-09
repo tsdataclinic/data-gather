@@ -60,9 +60,6 @@ export const DEFAULT_APP_STATE: AppGlobalState = {
   loadedInterviewScreens: new Map(),
   loadedInterviews: new Map(),
   airtableSettings: JSON.parse(getEnvConfig(EnvVar.AirtableConfigJSON)),
-  // settings: {
-  //   airtableAPISettings: AirtableAPISetting.create(),
-  // },
 };
 
 export type AppAction =
@@ -91,16 +88,6 @@ export type AppAction =
       screens: InterviewScreen.WithChildrenT[];
       type: 'SCREENS_UPDATE';
     };
-// /** Create a new setting */
-// | {
-//     setting: AirtableAPISetting.T;
-//     type: 'SETTING_CREATE';
-//   }
-// /** Update a setting */
-// | {
-//     setting: AirtableAPISetting.T;
-//     type: 'SETTING_UPDATE';
-//   };
 
 function cloneMap<K, V>(map: ReadonlyMap<K, V>): Map<K, V> {
   return new Map(Array.from(map.entries()));

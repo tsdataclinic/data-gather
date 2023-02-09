@@ -10,6 +10,8 @@ import useInterviewMutation, {
   InterviewServiceAPI,
 } from '../../hooks/useInterviewMutation';
 import DropdownMenu from '../ui/DropdownMenu';
+import Dropdown from '../ui/Dropdown';
+import * as Config from '../../config';
 
 const StyledHeading = styled.h1`
   flex: 1;
@@ -18,6 +20,7 @@ const StyledHeading = styled.h1`
 `;
 
 type Props = {
+  interview: Interview.T;
   onNewActionClick: () => void;
   onNewEntryClick: () => void;
   onSaveClick: () => void;
@@ -25,6 +28,7 @@ type Props = {
 };
 
 export default function ScreenToolbar({
+  interview,
   screen,
   onNewEntryClick,
   onNewActionClick,
@@ -36,11 +40,32 @@ export default function ScreenToolbar({
       api.interviewScreenAPI.deleteInterviewScreen(screenId),
   });
   const navigate = useNavigate();
+  const { allowedLanguages } = interview;
+
+  const languageOptions = React.useMemo(
+    () =>
+      allowedLanguages.map(langCode => ({
+        displayValue: Config.LANGUAGES[langCode] ?? langCode,
+        value: langCode,
+      })),
+    [allowedLanguages],
+  );
 
   return (
     <div className="z-10 flex w-full bg-white px-8 py-4 shadow">
       <StyledHeading>{InterviewScreen.getTitle(screen)}</StyledHeading>
+
       <Toolbar.Root className="flex space-x-2">
+        {allowedLanguages.length > 1 ? (
+          <div className="flex items-center space-x-2">
+            <p>Currently editing in</p>
+            <Dropdown
+              className="!bg-gray-200 !text-gray-800 !shadow-none hover:!bg-gray-300 hover:!text-gray-900"
+              defaultValue={interview.allowedLanguages[0]}
+              options={languageOptions}
+            />
+          </div>
+        ) : null}
         <DropdownMenu menuButton="New Step">
           <DropdownMenu.Item onSelect={onNewEntryClick}>
             Add a Question

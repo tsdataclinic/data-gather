@@ -22,6 +22,9 @@ class InterviewBase(APIModel):
     published: bool
     owner_id: str = Field(foreign_key="user.id")
 
+    # store allowed languages as a semicolon-separated string
+    allowed_languages: str
+
 
 class Interview(InterviewBase, table=True):
     """The Interview model as a database table."""

@@ -68,7 +68,7 @@ export default class LocalInterviewService
     ): Promise<Interview.T> => {
       // generate id and createdDate
       const serializedInterview: Interview.SerializedT = {
-        ...interview,
+        ...Interview.serialize(interview),
         id: uuidv4(),
         createdDate: new Date().toISOString(),
       };

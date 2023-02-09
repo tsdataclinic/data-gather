@@ -68,6 +68,7 @@ const StyledTooltipContent = styled(RadixTooltip.Content)`
   padding: 0.5rem 1rem;
   user-select: none;
   will-change: transform, opacity;
+  z-index: 100;
 
   &[data-state='delayed-open'][data-side='top'] {
     animation-name: ${slideDownAndFade};
