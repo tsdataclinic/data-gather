@@ -145,27 +145,29 @@ export default function ScreenCard({
     });
 
     if (allFormsValid) {
-      const updatedScreen =
-        await interviewService.interviewScreenAPI.updateInterviewScreen(
-          screen.id,
-          { ...screen, actions: allActions, entries: allEntries },
-        );
+      try {
+        const updatedScreen =
+          await interviewService.interviewScreenAPI.updateInterviewScreen(
+            screen.id,
+            { ...screen, actions: allActions, entries: allEntries },
+          );
 
-      dispatch({
-        screen: updatedScreen,
-        type: 'SCREEN_UPDATE',
-      });
-      toaster.notifySuccess(
-        'Saved!',
-        `Successfully saved ${InterviewScreen.getTitle(screen)}`,
-      );
-    } else {
-      toaster.notifyError(
-        'Error',
-        `Could not save ${InterviewScreen.getTitle(
-          screen,
-        )}. Please check your settings.`,
-      );
+        dispatch({
+          screen: updatedScreen,
+          type: 'SCREEN_UPDATE',
+        });
+        toaster.notifySuccess(
+          'Saved!',
+          `Successfully saved ${InterviewScreen.getTitle(screen)}`,
+        );
+      } catch (e) {
+        if (e instanceof Error) {
+          toaster.notifyError(
+            'Error',
+            `Could not save ${InterviewScreen.getTitle(screen)}. ${e.message}.`,
+          );
+        }
+      }
     }
   }, [allActions, screen, interviewService, allEntries, dispatch, toaster]);
 
