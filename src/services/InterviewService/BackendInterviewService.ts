@@ -23,7 +23,7 @@ export default class BackendInterviewService implements InterviewServiceAPI {
       interview: Interview.CreateT,
     ): Promise<Interview.T> => {
       const serializedInterview = await this.api.interviews.createInterview(
-        interview,
+        Interview.serialize(interview),
       );
       return Interview.deserialize(serializedInterview);
     },

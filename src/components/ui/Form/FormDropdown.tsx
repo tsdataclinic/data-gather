@@ -5,6 +5,7 @@ import Dropdown from '../Dropdown';
 type Props<T extends string> = {
   className?: string;
   defaultValue?: T;
+  helperText?: string;
   label: string;
   name: string;
   onChange?: (value: T) => void;
@@ -24,12 +25,17 @@ export default function FormDropdown<T extends string>({
   label,
   name,
   options,
+  helperText,
   onChange,
   placeholder,
   required = true,
 }: Props<T>): JSX.Element {
   return (
-    <LabelWrapper className={className} label={label + (required ? ' *' : '')}>
+    <LabelWrapper
+      helperText={helperText}
+      className={className}
+      label={label + (required ? ' *' : '')}
+    >
       <Dropdown
         options={options}
         name={name}

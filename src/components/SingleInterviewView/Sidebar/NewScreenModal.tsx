@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import * as Interview from '../../../models/Interview';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import Form from '../../ui/Form';
@@ -5,6 +6,7 @@ import Modal from '../../ui/Modal';
 import useInterviewMutation, {
   type InterviewServiceAPI,
 } from '../../../hooks/useInterviewMutation';
+import useAppDispatch from '../../../hooks/useAppDispatch';
 
 type Props = {
   interview: Interview.T;
@@ -20,6 +22,8 @@ export default function NewScreenModal({
   isOpen,
   onDismiss,
 }: Props): JSX.Element {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const createScreen = useInterviewMutation({
     mutation: (screen: InterviewScreen.CreateT, api: InterviewServiceAPI) =>
       api.interviewScreenAPI.createInterviewScreen(screen),
@@ -31,9 +35,17 @@ export default function NewScreenModal({
       InterviewScreen.create({
         title: vals.get('name') ?? '',
         interviewId: interview.id,
+        defaultLanguage: interview.defaultLanguage,
       }),
       {
-        onSuccess: () => onDismiss(),
+        onSuccess: newScreen => {
+          onDismiss();
+          dispatch({
+            type: 'SELECTED_LANGUAGE_UPDATE',
+            languageCode: interview.defaultLanguage,
+          });
+          navigate(InterviewScreen.getURL(newScreen));
+        },
       },
     );
   };

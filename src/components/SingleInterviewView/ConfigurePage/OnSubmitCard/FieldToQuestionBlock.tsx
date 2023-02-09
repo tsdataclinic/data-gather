@@ -6,6 +6,7 @@ import EntryDropdown from './EntryDropdown';
 
 type Props = {
   airtableTable: AirtableTableConfig;
+  defaultLanguage: string;
   entries: readonly InterviewScreenEntry.WithScreenT[];
   fieldMappings: SubmissionAction.T['fieldMappings'];
   onFieldMappingChange: (
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export default function ColumnToQuestionMapBlock({
+  defaultLanguage,
   airtableTable,
   entries,
   fieldMappings,
@@ -61,6 +63,7 @@ export default function ColumnToQuestionMapBlock({
                   allowSpecialValues
                   emptyOptionText="Do not update"
                   entries={entries}
+                  defaultLanguage={defaultLanguage}
                   selectedEntryId={entryLookupConfig?.entryId}
                   selectedResponseFieldKey={entryLookupConfig?.responseFieldKey}
                   selectedSpecialValueType={entryLookupConfig?.specialValueType}

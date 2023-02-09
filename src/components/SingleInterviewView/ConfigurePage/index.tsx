@@ -37,7 +37,7 @@ export default function ConfigurePage({
   const toaster = useToast();
   const updateScreen = useInterviewMutation({
     mutation: saveUpdatedInterview,
-    invalidateQuery: ['interview', interview.id],
+    invalidateQuery: Interview.QueryKeys.getInterview(interview.id),
   });
   const [startingState, setStartingState] = React.useState<readonly string[]>(
     () =>
