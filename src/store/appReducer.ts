@@ -9,7 +9,7 @@ import getEnvConfig, { EnvVar } from '../util/getEnvConfig';
 export type AirtableField = {
   fieldID: string;
   fieldName: string;
-  options: string[];
+  options?: string[];
 };
 
 export type AirtableTableConfig = {
