@@ -18,22 +18,14 @@ type Props = {
 };
 
 function getOperatorDropdownOptions(
-  type: 'generic' | 'date' | 'number',
+  groupType: ConditionalAction.ConditionalOperatorGroupType,
 ): Array<DropdownOption<ConditionalAction.ConditionalOperator>> {
-  let filterFunction;
-  if (type === 'date') {
-    filterFunction = ConditionalAction.isDateOperator;
-  } else if (type === 'number') {
-    filterFunction = ConditionalAction.isNumberOperator;
-  } else {
-    filterFunction = ConditionalAction.isGenericOperator;
-  }
-  return ConditionalAction.CONDITIONAL_OPERATORS.filter(filterFunction).map(
-    operator => ({
-      displayValue: ConditionalAction.operatorToDisplayString(operator),
-      value: operator,
-    }),
-  );
+  return ConditionalAction.CONDITIONAL_OPERATORS.filter(op =>
+    ConditionalAction.isOperatorOfGroupType(op, groupType),
+  ).map(operator => ({
+    displayValue: ConditionalAction.operatorToDisplayString(operator),
+    value: operator,
+  }));
 }
 
 const OPERATOR_OPTIONS = [
@@ -104,22 +96,10 @@ export default function ConditionalOperatorRow({
 
   const onOperatorChange = React.useCallback(
     (newOperator: ConditionalAction.ConditionalOperator) => {
-      // Set value to anything if operator is generic
-      const newValue = ConditionalAction.isGenericOperator(newOperator)
-        ? 'whatever'
-        : null;
-      if (newValue) {
-        onConditionalOperationChange({
-          ...action,
-          conditionalOperator: newOperator,
-          value: newValue,
-        });
-      } else {
-        onConditionalOperationChange({
-          ...action,
-          conditionalOperator: newOperator,
-        });
-      }
+      onConditionalOperationChange({
+        ...action,
+        conditionalOperator: newOperator,
+      });
     },
     [action, onConditionalOperationChange],
   );

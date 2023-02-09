@@ -5,10 +5,12 @@ import * as React from 'react';
 import * as Scroll from 'react-scroll';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { MixedCheckbox } from '@reach/checkbox';
 import { Element as ScrollableElement } from 'react-scroll';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
-import * as Screen from '../../../models/InterviewScreen';
+import * as InterviewScreen from '../../../models/InterviewScreen';
+import LabelWrapper from '../../ui/LabelWrapper';
 import ActionConfigEditor from './ActionConfigEditor';
 import Form from '../../ui/Form';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
@@ -19,7 +21,7 @@ import Button from '../../ui/Button';
 type Props = {
   action: EditableAction;
   interview: Interview.T;
-  interviewScreen: Screen.T;
+  interviewScreen: InterviewScreen.T;
   onActionChange: (
     actionToReplace: EditableAction,
     newAction: EditableAction,
@@ -50,6 +52,19 @@ function ActionCard(
         screen.entries.map(entry => ({ ...entry, screen })),
       ) ?? [],
     [interviewScreens],
+  );
+
+  const onAlwaysExecuteChange = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>): void => {
+      const isChecked = event.target.checked;
+      onActionChange(action, {
+        ...action,
+        conditionalOperator: isChecked
+          ? ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
+          : ConditionalAction.ConditionalOperator.EQ,
+      });
+    },
+    [action, onActionChange],
   );
 
   const onConditionalOperationChange = React.useCallback(
@@ -119,13 +134,12 @@ function ActionCard(
             defaultLanguage={interview.defaultLanguage}
           />
         )}
-        <ActionConfigEditor
-          action={action}
-          onActionConfigChange={onActionConfigChange}
-          interview={interview}
-          interviewScreen={interviewScreen}
-          isAlwaysExecuteChecked={isAlwaysExecuteChecked}
-        />
+        <LabelWrapper inline labelAfter label="Always execute this action">
+          <MixedCheckbox
+            checked={isAlwaysExecuteChecked}
+            onChange={onAlwaysExecuteChange}
+          />
+        </LabelWrapper>
       </Form>
     </ScrollableElement>
   );

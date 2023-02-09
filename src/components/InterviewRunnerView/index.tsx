@@ -105,40 +105,43 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
                   actionPayload.primaryKeyField,
                 );
 
-                // get all fields mapped to their values collected from the
-                // entry responses
-                const fields: { [fieldId: string]: string } = {};
-                submissionAction.fieldMappings.forEach(
-                  (entryLookupConfig, fieldId) => {
-                    const { entryId, responseFieldKey, specialValueType } =
-                      entryLookupConfig;
-                    let responseValue = '';
-                    if (entryId) {
-                      const entry = allEntries.get(entryId);
-                      if (entry) {
-                        responseValue = ConfigurableScript.getResponseValue(
-                          responseData,
-                          entry.responseKey,
-                          responseFieldKey,
-                        );
+                if (airtableRecordId) {
+                  // get all fields mapped to their values collected from the
+                  // entry responses
+                  const fields: { [fieldId: string]: string } = {};
+                  submissionAction.fieldMappings.forEach(
+                    (entryLookupConfig, fieldId) => {
+                      const { entryId, responseFieldKey, specialValueType } =
+                        entryLookupConfig;
+                      let responseValue = '';
+                      if (entryId) {
+                        const entry = allEntries.get(entryId);
+                        if (entry) {
+                          responseValue =
+                            ConfigurableScript.getResponseValue(
+                              responseData,
+                              entry.responseKey,
+                              responseFieldKey,
+                            ) ?? '';
+                        }
+                      } else if (specialValueType) {
+                        responseValue =
+                          getSpecialValueForSubmission(specialValueType);
                       }
-                    } else if (specialValueType) {
-                      responseValue =
-                        getSpecialValueForSubmission(specialValueType);
-                    }
 
-                    // ignore empty values
-                    if (responseValue !== '') {
-                      fields[fieldId] = responseValue;
-                    }
-                  },
-                );
+                      // ignore empty values
+                      if (responseValue !== '') {
+                        fields[fieldId] = responseValue;
+                      }
+                    },
+                  );
 
-                airtableUpdateRecord({
-                  tableId,
-                  fields,
-                  recordId: airtableRecordId,
-                });
+                  airtableUpdateRecord({
+                    tableId,
+                    fields,
+                    recordId: airtableRecordId,
+                  });
+                }
               }
               break;
             }
@@ -158,11 +161,12 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
                   if (entryId) {
                     const entry = allEntries.get(entryId);
                     if (entry) {
-                      responseValue = ConfigurableScript.getResponseValue(
-                        responseData,
-                        entry.responseKey,
-                        responseFieldKey,
-                      );
+                      responseValue =
+                        ConfigurableScript.getResponseValue(
+                          responseData,
+                          entry.responseKey,
+                          responseFieldKey,
+                        ) ?? '';
                     }
                   } else if (specialValueType) {
                     responseValue =

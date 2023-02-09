@@ -23,6 +23,8 @@ export const CONDITIONAL_OPERATORS: readonly ConditionalOperator[] =
  */
 export const ACTION_TYPES: readonly ActionType[] = Object.values(ActionType);
 
+export type ConditionalOperatorGroupType = 'generic' | 'date' | 'number';
+
 /**
  * An action which may be executed after some response data is collected,
  * if a given condition is true (or, if the condition is 'ALWAYS_EXECUTE',
@@ -161,25 +163,32 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
 export function validate(
   action: ConditionalAction | ConditionalActionCreate,
 ): [boolean, string] {
+  const { value, conditionalOperator, actionConfig, responseKey } = action;
+
   // if we're **not** using the ALWAYS_EXECUTE operator then don't allow an
   // empty `responseKey` or an empty `value`
-  if (action.conditionalOperator !== ConditionalOperator.ALWAYS_EXECUTE) {
-    const operatorName = operatorToDisplayString(action.conditionalOperator);
-    if (action.responseKey === undefined || action.responseKey === '') {
+  if (conditionalOperator !== ConditionalOperator.ALWAYS_EXECUTE) {
+    const operatorName = operatorToDisplayString(conditionalOperator);
+    if (responseKey === undefined || responseKey === '') {
       return [
         false,
         `A '${operatorName}' condition must select a response to compare to`,
       ];
     }
-    if (action.value === undefined) {
+
+    if (
+      value === undefined &&
+      conditionalOperator !== ConditionalOperator.IS_NOT_EMPTY &&
+      conditionalOperator !== ConditionalOperator.IS_EMPTY
+    ) {
       return [false, `A '${operatorName}' condition must have a value`];
     }
   }
 
   // do not allow Push actions to have an empty payload
   if (
-    action.actionConfig.type === ActionType.PUSH &&
-    action.actionConfig.payload.length === 0
+    actionConfig.type === ActionType.PUSH &&
+    actionConfig.payload.length === 0
   ) {
     return [false, 'A Push action cannot have an empty payload'];
   }
@@ -348,6 +357,22 @@ export function isNumberOperator(operator: ConditionalOperator): boolean {
     default:
       assertUnreachable(operator, { throwError: false });
       return operator;
+  }
+}
+
+export function isOperatorOfGroupType(
+  operator: ConditionalOperator,
+  groupType: ConditionalOperatorGroupType,
+): boolean {
+  switch (groupType) {
+    case 'date':
+      return isDateOperator(operator);
+    case 'number':
+      return isNumberOperator(operator);
+    case 'generic':
+      return isGenericOperator(operator);
+    default:
+      return assertUnreachable(groupType);
   }
 }
 
