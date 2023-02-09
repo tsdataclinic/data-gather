@@ -4,10 +4,12 @@ import LabelWrapper from '../../ui/LabelWrapper';
 import MultiSelect from '../../ui/MultiSelect';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import useAppState from '../../../hooks/useAppState';
+import type { AirtableField } from '../../../store/appReducer';
 
 type Props = {
   airtableConfig: InterviewScreenEntry.AirtableOptions;
-  fieldSelectorLabel: string;
+  fieldFilterFn?: (airtableField: AirtableField) => boolean;
+  fieldSelectorLabel?: string;
   onAirtableConfigurationChange: (
     newConfig: InterviewScreenEntry.AirtableOptions,
   ) => void;
@@ -17,8 +19,9 @@ type Props = {
 export default function AirtableFieldSelector({
   airtableConfig,
   onAirtableConfigurationChange,
-  fieldSelectorLabel,
+  fieldSelectorLabel = 'Select field',
   useSingleField = false,
+  fieldFilterFn,
 }: Props): JSX.Element {
   const { airtableSettings } = useAppState();
   const { bases } = airtableSettings;
@@ -45,7 +48,8 @@ export default function AirtableFieldSelector({
       const fields = bases
         .find(b => b.name === selectedBase)
         ?.tables.find(b => b.key === selectedTable)
-        ?.fields.map(f => ({
+        ?.fields.filter(field => (fieldFilterFn ? fieldFilterFn(field) : true))
+        .map(f => ({
           displayValue: f.fieldName,
           value: f.fieldName,
         }));
@@ -54,7 +58,7 @@ export default function AirtableFieldSelector({
       }
     }
     return [];
-  }, [bases, selectedBase, selectedTable]);
+  }, [bases, selectedBase, selectedTable, fieldFilterFn]);
 
   const renderFieldSelector = (): JSX.Element | null => {
     if (selectedBase && selectedTable) {

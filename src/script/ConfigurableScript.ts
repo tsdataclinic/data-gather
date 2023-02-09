@@ -153,7 +153,6 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
           (responseVal, testVal) => responseVal <= testVal,
         );
       case ConditionalAction.ConditionalOperator.IS_EMPTY:
-        console.log('TESTING IS EMPTY', { responseValue });
         return (
           responseValue === undefined ||
           responseValue === null ||
