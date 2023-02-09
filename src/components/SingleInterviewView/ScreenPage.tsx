@@ -19,7 +19,7 @@ type Props = {
   defaultEntries: readonly InterviewScreenEntry.T[];
   defaultScreen: InterviewScreen.WithChildrenT;
   interview: Interview.T;
-  setUnsavedChanges: any;
+  setUnsavedChanges: (unsavedChanges: boolean) => void;
   unsavedChanges: boolean;
 };
 
@@ -28,6 +28,13 @@ function saveInterviewScreen(
   api: InterviewServiceAPI,
 ): Promise<InterviewScreen.WithChildrenT> {
   return api.interviewScreenAPI.updateInterviewScreen(screen.id, screen);
+}
+
+function arrEqual(arr1: readonly unknown[], arr2: readonly unknown[]): boolean {
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+  return arr1.every((val, index) => val === arr2[index]);
 }
 
 /**
@@ -72,13 +79,6 @@ export default function ScreenPage({
   // 'save' is clicked
   const [allEntries, setAllEntries] =
     React.useState<readonly EditableEntry[]>(defaultEntries);
-
-  const arrEqual = (arr1: readonly any[], arr2: readonly any[]): boolean => {
-    if (arr1.length !== arr2.length) {
-      return false;
-    }
-    return arr1.every((val, index) => val === arr2[index]);
-  };
 
   const headerFormRef = React.useRef<null | HTMLFormElement>(null);
   const entriesSectionRef = React.useRef<null | React.ComponentRef<
