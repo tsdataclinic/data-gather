@@ -14,6 +14,7 @@ const LANGUAGE_DELIMITER = ';';
 type Interview = {
   readonly allowedLanguages: readonly string[];
   readonly createdDate: DateTime;
+  readonly defaultLanguage: string;
   readonly description: string;
   readonly id: string;
   readonly name: string;
@@ -89,6 +90,7 @@ export function create(values: {
     published: false,
     notes: '',
     allowedLanguages: ['en'],
+    defaultLanguage: 'en',
   };
 }
 

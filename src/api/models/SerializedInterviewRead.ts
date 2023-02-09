@@ -17,6 +17,7 @@ export type SerializedInterviewRead = {
   vanityUrl?: string;
   published: boolean;
   ownerId: string;
+  defaultLanguage: string;
   allowedLanguages: string;
   id: string;
   createdDate: string;

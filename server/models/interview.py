@@ -21,6 +21,7 @@ class InterviewBase(APIModel):
     vanity_url: Optional[str]
     published: bool
     owner_id: str = Field(foreign_key="user.id")
+    default_language: str
 
     # store allowed languages as a semicolon-separated string
     allowed_languages: str

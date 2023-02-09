@@ -20,7 +20,7 @@ type Props = {
   startingState: readonly string[];
 };
 
-const LANGUAGE_OPTIONS = Object.entries(Config.LANGUAGES).map(
+const ALL_LANGUAGE_OPTIONS = Object.entries(Config.LANGUAGES).map(
   ([languageKey, languageDisplayName]) => ({
     displayValue: languageDisplayName,
     value: languageKey,
@@ -35,19 +35,29 @@ function ConfigureCard({
 }: Props): JSX.Element {
   const screens = useInterviewScreens(interview.id);
   const isAuthenticated = useIsAuthenticated();
+  const { allowedLanguages } = interview;
+
+  const screenOptions = React.useMemo(
+    () =>
+      screens?.map(screen => ({
+        displayValue: InterviewScreen.getTitle(screen),
+        value: screen.id,
+      })) ?? [],
+    [screens],
+  );
+
+  const defaultLanguageOptions = React.useMemo(
+    () =>
+      allowedLanguages.map(languageCode => ({
+        displayValue: Config.LANGUAGES[languageCode],
+        value: languageCode,
+      })),
+    [allowedLanguages],
+  );
 
   if (!screens) {
     return <p>No stages have been created yet!</p>;
   }
-
-  const getScreenOptions = (): Array<{
-    displayValue: string;
-    value: string;
-  }> =>
-    screens.map(screen => ({
-      displayValue: InterviewScreen.getTitle(screen),
-      value: screen.id,
-    }));
 
   return (
     <div className="grid h-auto grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg">
@@ -74,7 +84,7 @@ function ConfigureCard({
           inline
           label="Allowed languages"
           labelTextClassName="w-40"
-          infoTooltip="These are the languages that questions can be presented in."
+          infoTooltip="These are the languages a user can pick from. You will need to configure all questions and prompts for the languages you pick here."
         >
           <MultiSelect
             onChange={languageCodes =>
@@ -84,8 +94,24 @@ function ConfigureCard({
               })
             }
             placeholder="Add another language"
-            options={LANGUAGE_OPTIONS}
-            selectedValues={interview.allowedLanguages}
+            options={ALL_LANGUAGE_OPTIONS}
+            selectedValues={allowedLanguages}
+          />
+        </LabelWrapper>
+
+        <LabelWrapper
+          inline
+          label="Default language"
+          labelTextClassName="w-40"
+          infoTooltip="This is the default language to use"
+        >
+          <Dropdown
+            onChange={languageCode =>
+              onInterviewChange({ ...interview, defaultLanguage: languageCode })
+            }
+            placeholder="Pick a language"
+            value={interview.defaultLanguage}
+            options={defaultLanguageOptions}
           />
         </LabelWrapper>
 
@@ -99,7 +125,7 @@ function ConfigureCard({
             onChange={screenId => onStartingStateChange([screenId])}
             placeholder="Add a stage"
             value={startingState[0]}
-            options={getScreenOptions()}
+            options={screenOptions}
           />
         </LabelWrapper>
 
