@@ -20,6 +20,10 @@ const SelectionOptionSchema = z.object({
 
 const SingleSelectOptionsSchema = z.object({
   options: SelectionOptionSchema.array(),
+
+  // If an airtable config is provided then we will pull the options from the
+  // given airtable field rather than using the manually specified `options`
+  airtableConfig: AirtableOptionsSchema.optional(),
 });
 
 export type AirtableOptions = Readonly<z.infer<typeof AirtableOptionsSchema>>;

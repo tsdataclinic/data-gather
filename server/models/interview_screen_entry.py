@@ -33,8 +33,13 @@ class SelectableOption(BaseModel):
     id: str
     value: str
 
+
 class SingleSelectOptions(BaseModel):
+    # if options are manually set
     options: list[SelectableOption]
+
+    # if options need to be pulled from an airtable field
+    airtableConfig: Optional[AirtableOptions]
 
 
 class InterviewScreenEntryBase(OrderedModel):

@@ -8,6 +8,7 @@ import assertUnreachable from '../../util/assertUnreachable';
 import useAirtableQuery from '../../hooks/useAirtableQuery';
 import LabelWrapper from '../ui/LabelWrapper';
 import { useDebouncedState } from '../../hooks/useDebounce';
+import useAppState from '../../hooks/useAppState';
 
 type Props = {
   defaultLanguage: string;
@@ -37,6 +38,14 @@ export default function InterviewRunnerEntry({
     entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
       ? entry.responseTypeOptions
       : undefined,
+  );
+  const { airtableSettings } = useAppState();
+  const allAirtableFields = React.useMemo(
+    () =>
+      airtableSettings.bases.flatMap(base =>
+        base.tables.flatMap(table => table.fields),
+      ),
+    [airtableSettings.bases],
   );
 
   const [rowData, setRowData] = React.useState();
@@ -178,20 +187,32 @@ export default function InterviewRunnerEntry({
           helperText={entryHelperText}
         />
       );
-    case InterviewScreenEntry.ResponseType.SINGLE_SELECT:
+    case InterviewScreenEntry.ResponseType.SINGLE_SELECT: {
+      const { responseTypeOptions, required, responseKey } = entry;
+      const { airtableConfig, options: manualOptions } = responseTypeOptions;
+
+      // if an airtable config is given then we pull the options from there
+      const options =
+        airtableConfig !== undefined
+          ? allAirtableFields.find(
+              field => field.fieldName === airtableConfig.selectedFields[0],
+            )?.options ?? []
+          : manualOptions.map(opt => opt.value);
+
       return (
         <Form.Dropdown
           label={entryPrompt}
-          required={entry.required}
-          name={entry.responseKey}
-          options={entry.responseTypeOptions.options.map(opt => ({
-            displayValue: opt.value,
-            value: opt.value,
+          required={required}
+          name={responseKey}
+          options={options.map(optValue => ({
+            displayValue: optValue,
+            value: optValue,
           }))}
           helperText={entryHelperText}
           placeholder="Select one"
         />
       );
+    }
     default:
       assertUnreachable(responseType, { throwError: false });
       return (
