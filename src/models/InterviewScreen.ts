@@ -83,6 +83,13 @@ type InterviewScreenUpdate = Override<
   }
 >;
 
+export const QueryKeys = {
+  getScreens: (interviewId: string | undefined) => [
+    'interviewScreens',
+    interviewId,
+  ],
+};
+
 /**
  * Create a new empty screen
  */

@@ -12,7 +12,7 @@ import ConfigureLink from './ConfigureLink';
 
 type Props = {
   interview: Interview.WithScreensAndActions;
-  screens: InterviewScreen.T[] | undefined;
+  screens: InterviewScreen.WithChildrenT[] | undefined;
 };
 
 export default function Sidebar({
@@ -57,11 +57,8 @@ export default function Sidebar({
           {screens.map(screen => (
             <ScreenLink
               key={screen.id}
-              screenId={screen.id}
-              screenTitle={InterviewScreen.getTitle(
-                screen,
-                interview.defaultLanguage,
-              )}
+              screen={screen}
+              defaultLanguage={interview.defaultLanguage}
               onScreenSelect={setSelectedScreen}
               isSelected={selectedScreen === screen.id}
             />

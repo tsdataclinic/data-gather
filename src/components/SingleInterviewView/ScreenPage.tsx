@@ -3,15 +3,16 @@ import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
-import useInterviewService from '../../hooks/useInterviewService';
 import HeaderCard from './HeaderCard';
 import ScreenToolbar from './ScreenToolbar';
 import ScrollArea from '../ui/ScrollArea';
-import useAppDispatch from '../../hooks/useAppDispatch';
 import { useToast } from '../ui/Toast';
 import type { EditableAction, EditableEntry } from './types';
 import EntriesSection from './EntriesSection';
 import ConditionalActionsSection from './ConditionalActionsSection';
+import useInterviewMutation, {
+  type InterviewServiceAPI,
+} from '../../hooks/useInterviewMutation';
 
 type Props = {
   defaultActions: readonly ConditionalAction.T[];
@@ -19,6 +20,13 @@ type Props = {
   defaultScreen: InterviewScreen.WithChildrenT;
   interview: Interview.T;
 };
+
+function saveInterviewScreen(
+  screen: InterviewScreen.UpdateT,
+  api: InterviewServiceAPI,
+): Promise<InterviewScreen.WithChildrenT> {
+  return api.interviewScreenAPI.updateInterviewScreen(screen.id, screen);
+}
 
 /**
  * The ScreenPage is an uncontrolled component because any changes to actions
@@ -32,9 +40,14 @@ export default function ScreenPage({
   interview,
 }: Props): JSX.Element {
   const toaster = useToast();
-  const interviewService = useInterviewService();
-  const dispatch = useAppDispatch();
   const { defaultLanguage } = interview;
+  const updateScreen = useInterviewMutation({
+    mutation: saveInterviewScreen,
+    invalidateQueries: [
+      Interview.QueryKeys.getInterview(interview.id),
+      InterviewScreen.QueryKeys.getScreens(interview.id),
+    ],
+  });
 
   // track the screen internally so we can modify it without persisting until
   // 'save' is clicked
@@ -141,23 +154,23 @@ export default function ScreenPage({
     });
 
     if (allFormsValid) {
-      // TODO: use react query mutation so you can refetch other queries
-      const updatedScreen =
-        await interviewService.interviewScreenAPI.updateInterviewScreen(
-          screen.id,
-          { ...screen, actions: allActions, entries: allEntries },
-        );
-
-      dispatch({
-        screen: updatedScreen,
-        type: 'SCREEN_UPDATE',
-      });
-      toaster.notifySuccess(
-        'Saved!',
-        `Successfully saved ${InterviewScreen.getTitle(
-          screen,
-          defaultLanguage,
-        )}`,
+      updateScreen(
+        {
+          ...screen,
+          actions: allActions,
+          entries: allEntries,
+        },
+        {
+          onSuccess: updatedScreen => {
+            toaster.notifySuccess(
+              'Saved!',
+              `Successfully saved ${InterviewScreen.getTitle(
+                updatedScreen,
+                defaultLanguage,
+              )}`,
+            );
+          },
+        },
       );
     }
   };

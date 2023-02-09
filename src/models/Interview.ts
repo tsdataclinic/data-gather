@@ -54,6 +54,7 @@ type InterviewUpdate = Interview & {
 
 export const QueryKeys = {
   allInterviews: ['allInterviews'],
+  getInterview: (interviewId: string) => ['interview', interviewId],
 };
 
 export const ALL_INTERVIEWS_URL = '/';

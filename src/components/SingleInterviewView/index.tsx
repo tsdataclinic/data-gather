@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { Route, Routes, Navigate, useParams } from 'react-router-dom';
 import useInterview from '../../hooks/useInterview';
-import useInterviewConditionalActions from '../../hooks/useInterviewConditionalActions';
-import useInterviewScreenEntries from '../../hooks/useInterviewScreenEntries';
 import useInterviewScreens from '../../hooks/useInterviewScreens';
 import ConfigurePage from './ConfigurePage';
 import ScreenPage from './ScreenPage';
@@ -14,8 +12,6 @@ export default function SingleInterviewView(): JSX.Element {
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
   const screens = useInterviewScreens(interview?.id);
-  const entries = useInterviewScreenEntries(interview?.id);
-  const actions = useInterviewConditionalActions(interview?.id);
   const { selectedLanguageCode } = useAppState();
 
   const firstScreenId = React.useMemo(() => {
@@ -41,30 +37,20 @@ export default function SingleInterviewView(): JSX.Element {
               path="configure"
               element={<ConfigurePage defaultInterview={interview} />}
             />
-            {screens?.map(screen => {
-              // we track the length of `actions` and `entries` as a cheap
-              // way to remount the page when actions finish loading. If this
-              // causes performance issues (due to array lengths changing whenever
-              // we hit save, causing a remount) then we should address this.
-              const actionsList = actions?.get(screen.id) ?? [];
-              const entriesList = entries?.get(screen.id) ?? [];
-              const screenKey = `${screen.id}__${actionsList.length}__${entriesList.length}`;
-              return (
-                <Route
-                  key={screen.id}
-                  path={`screen/${screen.id}`}
-                  element={
-                    <ScreenPage
-                      key={screenKey}
-                      defaultScreen={screen}
-                      defaultEntries={entriesList}
-                      defaultActions={actionsList}
-                      interview={interview}
-                    />
-                  }
-                />
-              );
-            })}
+            {screens?.map(screen => (
+              <Route
+                key={screen.id}
+                path={`screen/${screen.id}`}
+                element={
+                  <ScreenPage
+                    defaultScreen={screen}
+                    defaultEntries={screen.entries}
+                    defaultActions={screen.actions}
+                    interview={interview}
+                  />
+                }
+              />
+            ))}
             <Route
               path=""
               element={

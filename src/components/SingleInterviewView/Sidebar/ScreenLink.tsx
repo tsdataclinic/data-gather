@@ -1,45 +1,29 @@
+import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
-import { useState, useEffect } from 'react';
 import { NavLink, useMatch } from 'react-router-dom';
 import * as Scroll from 'react-scroll';
-import useInterviewService from '../../../hooks/useInterviewService';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import { actionTypeToDisplayString } from '../../../models/ConditionalAction';
 
 type Props = {
+  defaultLanguage: string;
   isSelected: boolean;
   onScreenSelect: (screenId: string) => void;
-  screenId: string;
-  screenTitle: string;
+  screen: InterviewScreen.WithChildrenT;
 };
 
 export default function ScreenLink({
   isSelected,
   onScreenSelect,
-  screenId,
-  screenTitle,
+  screen,
+  defaultLanguage,
 }: Props): JSX.Element {
   const interviewPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
-  const [selectedEntry, setSelectedEntry] = useState<string | undefined>(
+  const [selectedEntry, setSelectedEntry] = React.useState<string | undefined>(
     undefined,
   );
-  const interviewService = useInterviewService();
-  const [fullScreen, setFullScreen] = useState<
-    InterviewScreen.WithChildrenT | undefined
-  >(undefined);
-
-  useEffect(() => {
-    // TODO: replace this with a useQuery hook instead
-    async function fetchAndSetFullScreen(id: string): Promise<void> {
-      const screenWithChildren =
-        await interviewService.interviewScreenAPI.getInterviewScreen(id);
-      setFullScreen(screenWithChildren);
-    }
-
-    fetchAndSetFullScreen(screenId);
-  }, [interviewService, screenId]);
 
   const screenMenuItemClass = classNames(
     'flex text-slate-600 flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full hover:text-blue-700 transition-colors duration-200',
@@ -55,12 +39,12 @@ export default function ScreenLink({
     );
 
   return (
-    <div className="w-full" key={screenId}>
+    <div className="w-full" key={screen.id}>
       <NavLink
         className={screenMenuItemClass}
-        to={`${interviewPath}/screen/${screenId}`}
+        to={`${interviewPath}/screen/${screen.id}`}
         onClick={() => {
-          onScreenSelect(screenId);
+          onScreenSelect(screen.id);
           setSelectedEntry(undefined);
         }}
       >
@@ -69,7 +53,7 @@ export default function ScreenLink({
           className="pr-2.5"
           icon={IconType.faPenToSquare}
         />
-        {screenTitle}
+        {InterviewScreen.getTitle(screen, defaultLanguage)}
       </NavLink>
 
       {isSelected ? (
@@ -89,7 +73,7 @@ export default function ScreenLink({
           </Scroll.Link>
 
           {/* Entries */}
-          {fullScreen?.entries.map(entry => (
+          {screen.entries.map(entry => (
             <Scroll.Link
               className={entryMenuItemClass(entry.id)}
               smooth
@@ -106,7 +90,7 @@ export default function ScreenLink({
           ))}
 
           {/* Action */}
-          {fullScreen?.actions.map(action => (
+          {screen.actions.map(action => (
             <Scroll.Link
               key={action.id}
               smooth

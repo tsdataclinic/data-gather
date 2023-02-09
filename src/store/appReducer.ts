@@ -87,16 +87,6 @@ export type AppAction =
       screenEntries: InterviewScreenEntry.T[];
       type: 'SCREEN_ENTRIES_UPDATE';
     }
-  /** Update a single interview screen */
-  | {
-      screen: InterviewScreen.WithChildrenT;
-      type: 'SCREEN_UPDATE';
-    }
-  /** Update a bunch of interview screens */
-  | {
-      screens: InterviewScreen.WithChildrenT[];
-      type: 'SCREENS_UPDATE';
-    }
   | {
       languageCode: string;
       type: 'SELECTED_LANGUAGE_UPDATE';
@@ -138,7 +128,6 @@ export default function appReducer(
     loadedConditionalActions,
     loadedInterviews,
     loadedInterviewScreenEntries,
-    loadedInterviewScreens,
     // settings,
   } = state;
 
@@ -174,25 +163,6 @@ export default function appReducer(
         ),
       };
 
-    case 'SCREEN_UPDATE':
-      return {
-        ...state,
-        loadedInterviewScreens: setMap(
-          loadedInterviewScreens,
-          action.screen.id,
-          action.screen,
-        ),
-      };
-
-    case 'SCREENS_UPDATE':
-      return {
-        ...state,
-        loadedInterviewScreens: setMapMultiple(
-          loadedInterviewScreens,
-          action.screens,
-          screen => screen.id,
-        ),
-      };
     case 'SELECTED_LANGUAGE_UPDATE':
       return {
         ...state,
