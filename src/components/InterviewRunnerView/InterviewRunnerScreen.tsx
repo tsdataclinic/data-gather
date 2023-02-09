@@ -73,12 +73,16 @@ export default function InterviewRunnerScreen({
 
   return (
     <div className="mx-auto mt-8 w-4/6 space-y-4 border border-blue-300 bg-white pb-8 shadow-md">
-      <div className="relative w-full space-y-4 bg-blue-700 px-8 py-4 text-center text-blue-50">
+      <div className="relative w-full space-y-4 bg-blue-600 px-8 py-4 text-center">
         {allowedLanguages.length > 1 ? (
           <div className="absolute top-2 left-8">
-            <LabelWrapper label="Language" inline>
+            <LabelWrapper
+              labelTextClassName="text-white"
+              label="Language"
+              inline
+            >
               <Dropdown
-                className="!bg-blue-900 !p-2 !py-1 !text-blue-100 !shadow-none hover:!bg-blue-800"
+                className="!bg-blue-800 !p-2 !py-1 !text-blue-50 !shadow-none hover:!bg-blue-900 hover:!text-white"
                 options={languageOptions}
                 onChange={setSelectedLanguage}
                 value={selectedLanguage}
@@ -87,7 +91,7 @@ export default function InterviewRunnerScreen({
           </div>
         ) : null}
 
-        <h1 className="text-2xl tracking-wide">
+        <h1 className="text-2xl tracking-wide text-white">
           {InterviewScreen.getTitle(screen, selectedLanguage, defaultLanguage)}
         </h1>
         {screen.headerText && (
