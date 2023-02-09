@@ -43,26 +43,27 @@ export default function ScreenLink({
 
   return (
     <div className="w-full" key={screen.id}>
-      <NavLink
-        className={screenMenuItemClass}
-        to={`${interviewPath}/screen/${screen.id}`}
-        onClick={e => {
-          const letsGo = unsavedChangesConfirm(unsavedChanges);
-          if (!letsGo) {
-            e.preventDefault();
-          } else {
-            onScreenSelect(screen.id);
-            setSelectedEntry(undefined);
-          }
-        }}
-      >
+      <div className={screenMenuItemClass}>
         <FontAwesomeIcon
           size="1x"
-          className="pr-2.5"
-          icon={IconType.faPenToSquare}
+          className="cursor-grab pr-2.5"
+          icon={IconType.faGripVertical}
         />
-        {InterviewScreen.getTitle(screen, defaultLanguage)}
-      </NavLink>
+        <NavLink
+          to={`${interviewPath}/screen/${screen.id}`}
+          onClick={e => {
+            const letsGo = unsavedChangesConfirm(unsavedChanges);
+            if (!letsGo) {
+              e.preventDefault();
+            } else {
+              onScreenSelect(screen.id);
+              setSelectedEntry(undefined);
+            }
+          }}
+        >
+          {InterviewScreen.getTitle(screen, defaultLanguage)}
+        </NavLink>
+      </div>
 
       {isSelected ? (
         <div className="flex w-full flex-col items-center p-0">

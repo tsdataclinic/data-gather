@@ -292,6 +292,36 @@ def update_interview(
 
 
 @app.post(
+    "/api/interview/{interview_id}/screen_order",
+    response_model=InterviewReadWithScreensAndActions,
+    tags=["interviews"],
+)
+def update_interview_screens_order(
+    *,
+    session: Session = Depends(get_session),
+    interview_service: InterviewService = Depends(get_interview_service),
+    interview_id: str,
+    new_screen_order: list[str],
+) -> Interview:
+    db_screens = session.exec(
+        select(InterviewScreen).where(InterviewScreen.interview_id == interview_id)
+    ).all()
+
+    db_screen_map = {str(screen.id): screen for screen in db_screens}
+
+    for i, screen_id in enumerate(new_screen_order):
+        db_screen = db_screen_map.get(screen_id, None)
+        if db_screen:
+            db_screen.order = i + 1
+
+    interview_service.commit(add_models=db_screens)
+
+    # get the updated interview now
+    db_interview = interview_service.get_interview_by_id(interview_id)
+    return db_interview
+
+
+@app.post(
     "/api/interviews/{interview_id}/starting_state",
     response_model=InterviewReadWithScreensAndActions,
     tags=["interviews"],

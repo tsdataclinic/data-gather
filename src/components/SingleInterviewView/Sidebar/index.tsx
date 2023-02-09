@@ -2,6 +2,7 @@ import { faCircleChevronLeft, faPlay } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { Reorder } from 'framer-motion';
 import * as Interview from '../../../models/Interview';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import Button from '../../ui/Button';
@@ -10,6 +11,9 @@ import ScreenLink from './ScreenLink';
 import { useToast } from '../../ui/Toast';
 import ConfigureLink from './ConfigureLink';
 import unsavedChangesConfirm from './unsavedChangesConfirm';
+import useInterviewMutation, {
+  type InterviewServiceAPI,
+} from '../../../hooks/useInterviewMutation';
 
 type Props = {
   interview: Interview.WithScreensAndActions;
@@ -25,6 +29,25 @@ export default function Sidebar({
   const [isNewScreenModalOpen, setIsNewScreenModalOpen] = useState(false);
   const [selectedScreen, setSelectedScreen] = useState<string>();
   const toaster = useToast();
+
+  const updateScreenOrder = useInterviewMutation({
+    mutation: (
+      data: { interviewId: string; newScreenOrder: readonly string[] },
+      api: InterviewServiceAPI,
+    ) =>
+      api.interviewAPI.updateScreensOrder(
+        data.interviewId,
+        data.newScreenOrder,
+      ),
+    invalidateQuery: Interview.QueryKeys.getInterview(interview.id),
+  });
+
+  const onReorder = (newScreenOrder: InterviewScreen.T[]): void => {
+    updateScreenOrder({
+      interviewId: interview.id,
+      newScreenOrder: newScreenOrder.map(screen => screen.id),
+    });
+  };
 
   return (
     <nav className="relative top-0 z-20 h-full w-1/5 items-stretch bg-white shadow">
@@ -70,16 +93,20 @@ export default function Sidebar({
           </NavLink>
 
           {/* Screens */}
-          {screens.map(screen => (
-            <ScreenLink
-              key={screen.id}
-              screen={screen}
-              defaultLanguage={interview.defaultLanguage}
-              onScreenSelect={setSelectedScreen}
-              isSelected={selectedScreen === screen.id}
-              unsavedChanges={unsavedChanges}
-            />
-          ))}
+          <Reorder.Group axis="y" values={screens} onReorder={onReorder}>
+            {screens.map(screen => (
+              <Reorder.Item key={screen.id} value={screen}>
+                <ScreenLink
+                  key={screen.id}
+                  screen={screen}
+                  defaultLanguage={interview.defaultLanguage}
+                  onScreenSelect={setSelectedScreen}
+                  isSelected={selectedScreen === screen.id}
+                  unsavedChanges={unsavedChanges}
+                />
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
         </div>
 
         {/* Configure */}

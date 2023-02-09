@@ -85,6 +85,18 @@ export default class BackendInterviewService implements InterviewServiceAPI {
         );
       return Interview.deserialize(serializedInterview);
     },
+
+    updateScreensOrder: async (
+      interviewId: string,
+      newScreenOrder: readonly string[],
+    ): Promise<Interview.WithScreensAndActions> => {
+      const serializedInterview =
+        await this.api.interviews.updateInterviewScreensOrder(
+          interviewId,
+          newScreenOrder as string[],
+        );
+      return Interview.deserialize(serializedInterview);
+    },
   };
 
   interviewScreenAPI = {

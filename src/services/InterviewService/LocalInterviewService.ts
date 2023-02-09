@@ -265,6 +265,11 @@ export default class LocalInterviewService
       actions.sort((act1, act2) => act1.order - act2.order);
       return actions;
     },
+
+    updateScreensOrder: async (): Promise<Interview.WithScreensAndActions> => {
+      // TODO: implement this
+      throw new Error('not implemented yet');
+    },
   };
 
   interviewScreenAPI = {
