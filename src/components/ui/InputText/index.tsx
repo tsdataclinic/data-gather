@@ -49,7 +49,7 @@ function BaseInputText(
     }
   };
 
-  const onKeyPress = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
     if (event.key === 'Enter' && onEnterPress) {
       if (inputRef.current) {
         onEnterPress(inputRef.current.value, event);
@@ -72,7 +72,7 @@ function BaseInputText(
       type={type}
       className={inputClassName}
       onChange={onInputChange}
-      onKeyPress={onKeyPress}
+      onKeyDown={onKeyDown}
       defaultValue={defaultValue}
       value={value}
       placeholder={placeholder}

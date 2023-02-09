@@ -9,6 +9,8 @@
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
     "@fortawesome/react-fontawesome": "^0.1.18",
+    "@radix-ui/react-dropdown-menu": "^2.0.2",
+    "@radix-ui/react-popover": "^1.0.3",
     "@radix-ui/react-scroll-area": "^1.0.0",
     "@radix-ui/react-select": "^1.0.0",
     "@radix-ui/react-toast": "^1.1.2",
@@ -45,10 +47,12 @@
     "react-router-dom": "^6.4.4",
     "react-scripts": "5.0.1",
     "react-scroll": "^1.8.7",
+    "remeda": "^1.6.1",
     "styled-components": "^5.3.5",
     "tailwindcss": "^3.0.24",
     "uuid": "^8.3.2",
-    "web-vitals": "^2.1.0"
+    "web-vitals": "^2.1.0",
+    "zod": "^3.20.3"
   },
   "scripts": {
     "api": "PYTHONPATH=. uvicorn views:app --reload --reload-dir server --app-dir server/api",

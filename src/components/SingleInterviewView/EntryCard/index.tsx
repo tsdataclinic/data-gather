@@ -5,11 +5,11 @@ import * as Scroll from 'react-scroll';
 import { MixedCheckbox } from '@reach/checkbox';
 import Form from '../../ui/Form';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import AirtableFieldSelector from './AirtableFieldSelector';
 import EditableName from './EditableName';
 import type { EditableEntry } from '../types';
 import Button from '../../ui/Button';
 import LabelWrapper from '../../ui/LabelWrapper';
+import ResponseTypeConfigBlock from './ResponseTypeConfigBlock';
 
 type Props = {
   entry: EditableEntry;
@@ -54,7 +54,7 @@ function EntryCard(
     <Scroll.Element
       name={entryId}
       key={entryId}
-      className="relative flex w-full flex-row border border-gray-200 bg-white p-10 shadow-lg"
+      className="relative flex w-full flex-row rounded border border-gray-300 bg-gray-50 p-6 text-slate-800"
     >
       <Button
         unstyled
@@ -85,7 +85,7 @@ function EntryCard(
             }}
           />
           <Form.Input
-            label="Helper Text"
+            label="Helper text"
             name="text"
             infoTooltip="This is more text that will be displayed if you want to give more details about the question."
             required={false}
@@ -106,33 +106,23 @@ function EntryCard(
             name="responseType"
             options={ENTRY_RESPONSE_TYPE_OPTIONS}
             value={entry.responseType}
-            onChange={(newVal: InterviewScreenEntry.ResponseType) => {
-              onEntryChange(entry, {
-                ...entry,
-                responseType: newVal,
-              });
+            onChange={(newResponseType: InterviewScreenEntry.ResponseType) => {
+              onEntryChange(
+                entry,
+                InterviewScreenEntry.changeResponseType(entry, newResponseType),
+              );
             }}
           />
-          {entry.responseType ===
-            InterviewScreenEntry.ResponseType.AIRTABLE && (
-            <AirtableFieldSelector
-              fieldSelectorLabel="Fields to search by"
-              airtableConfig={entry.responseTypeOptions}
-              onAirtableConfigurationChange={(
-                newConfig: InterviewScreenEntry.ResponseTypeOptions,
-              ) => {
-                onEntryChange(entry, {
-                  ...entry,
-                  responseTypeOptions: newConfig,
-                });
-              }}
-            />
-          )}
+          <ResponseTypeConfigBlock
+            entry={entry}
+            onEntryChange={onEntryChange}
+          />
           <LabelWrapper
             inline
             label="Required"
-            labelTextClassName="w-20"
-            inlineContainerStyles={{ verticalAlign: 'text-top' }}
+            infoTooltip="Use this if this question cannot be left empty"
+            labelTextClassName="mr-1"
+            inlineContainerStyles={{ position: 'relative', top: 1 }}
           >
             <MixedCheckbox
               onChange={e => {

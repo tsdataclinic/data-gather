@@ -26,6 +26,7 @@ function HeaderCard(
         <Form.Input
           label="Title"
           name="title"
+          infoTooltip="The title of this stage that will be displayed"
           value={InterviewScreen.getTitle(screen)}
           onChange={(newVal: string) => {
             onScreenChange({ ...screen, title: { en: newVal } }); // TODO multilanguage support rather than hardcoding en
@@ -34,6 +35,7 @@ function HeaderCard(
         <Form.Input
           label="Header text"
           name="headerText"
+          infoTooltip="Additional descriptive text about this stage that will be displayed"
           required={false}
           value={screen.headerText.en} // TODO multilanguage support rather than hardcoding en
           onChange={(newVal: string) => {

@@ -7,6 +7,8 @@ import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import type { EditableAction } from '../types';
 import useAppState from '../../../hooks/useAppState';
+import LabelWrapper from '../../ui/LabelWrapper';
+import InfoIcon from '../../ui/InfoIcon';
 
 type Props = {
   action: EditableAction;
@@ -74,8 +76,13 @@ export default function ConditionalOperatorRow({
   // TODO: have to connect <ActionCard> to `entry` for responseKeyColumns to
   // change before 'Save' is clicked
   const allResponseKeyFieldOptions = React.useMemo(() => {
+    // if the selected entry is an Airtable response, then we need to get the
+    // table it links to so that we can get all the available fields
     const airtableTable = allAirtableTables.find(
-      table => table.key === selectedEntry?.responseTypeOptions.selectedTable,
+      table =>
+        selectedEntry?.responseType ===
+          InterviewScreenEntry.ResponseType.AIRTABLE &&
+        table.key === selectedEntry.responseTypeOptions.selectedTable,
     );
 
     return airtableTable?.fields.map(field => ({
@@ -127,13 +134,19 @@ export default function ConditionalOperatorRow({
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
-        <p className="w-20">Condition</p>
-        <Dropdown
-          onChange={onResponseKeyChange}
-          placeholder="Response variable"
-          value={action.responseKey}
-          options={allResponseKeyOptions}
-        />
+        <LabelWrapper
+          inline
+          label="If..."
+          labelTextClassName="w-20"
+          inlineContainerStyles={{ position: 'relative', top: 1 }}
+        >
+          <Dropdown
+            onChange={onResponseKeyChange}
+            placeholder="Response variable"
+            value={action.responseKey}
+            options={allResponseKeyOptions}
+          />
+        </LabelWrapper>
         {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
         {allResponseKeyFieldOptions && allResponseKeyFieldOptions.length > 0 ? (
           <Dropdown
@@ -153,18 +166,26 @@ export default function ConditionalOperatorRow({
 
         {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
         {ConditionalAction.isDateOperator(action.conditionalOperator) ? (
-          <Calendar
-            placeholder="Date"
-            onChange={e => {
-              if (e.value instanceof Date) {
-                onConditionalValueChange(e.value.toISOString());
-              }
-              if (typeof e.value === 'string') {
-                onConditionalValueChange(e.value);
-              }
-            }}
-            value={action.value ? new Date(action.value) : ''}
-          />
+          <>
+            <Calendar
+              placeholder="Date"
+              inputClassName="py-1.5 border border-gray-400"
+              onChange={e => {
+                if (e.value instanceof Date) {
+                  onConditionalValueChange(e.value.toISOString());
+                }
+                if (typeof e.value === 'string') {
+                  onConditionalValueChange(e.value);
+                }
+              }}
+              value={action.value ? new Date(action.value) : ''}
+            />
+            <InfoIcon
+              tooltip={`An empty date field in the source data will be treated as ${
+                process.env.NULL_DATE_OVERRIDE || '1970-01-01'
+              }`}
+            />
+          </>
         ) : (
           <InputText
             placeholder="Value"

@@ -9,6 +9,7 @@ import Modal from '../ui/Modal';
 import useInterviewMutation, {
   InterviewServiceAPI,
 } from '../../hooks/useInterviewMutation';
+import DropdownMenu from '../ui/DropdownMenu';
 
 const StyledHeading = styled.h1`
   flex: 1;
@@ -42,12 +43,14 @@ export default function ScreenToolbar({
     <div className="z-10 flex w-full bg-white px-8 py-4 shadow">
       <StyledHeading>{InterviewScreen.getTitle(screen)}</StyledHeading>
       <Toolbar.Root className="flex space-x-2">
-        <Toolbar.Button asChild>
-          <Button onClick={onNewEntryClick}>New Question</Button>
-        </Toolbar.Button>
-        <Toolbar.Button asChild>
-          <Button onClick={onNewActionClick}>New Action</Button>
-        </Toolbar.Button>
+        <DropdownMenu menuButton="New Step">
+          <DropdownMenu.Item onSelect={onNewEntryClick}>
+            Add a Question
+          </DropdownMenu.Item>
+          <DropdownMenu.Item onSelect={onNewActionClick}>
+            Add an Action
+          </DropdownMenu.Item>
+        </DropdownMenu>
         <Toolbar.Button asChild>
           <Button
             intent={unsavedChanges ? 'primary' : 'default'}

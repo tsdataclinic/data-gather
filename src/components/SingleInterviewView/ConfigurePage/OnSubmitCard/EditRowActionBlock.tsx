@@ -34,7 +34,10 @@ export default function EditRowActionBlock({
       entry => entry.id === actionConfig.payload.entryId,
     );
     return allTables.find(
-      table => table.key === selectedEntry?.responseTypeOptions.selectedTable,
+      table =>
+        selectedEntry?.responseType ===
+          InterviewScreenEntry.ResponseType.AIRTABLE &&
+        table.key === selectedEntry.responseTypeOptions.selectedTable,
     );
   }, [entries, allTables, actionConfig]);
 
@@ -79,7 +82,7 @@ export default function EditRowActionBlock({
       {entriesWithAirtableLookup.length === 0 ? (
         <p>There are no questions configured for Airtable yet.</p>
       ) : (
-        <LabelWrapper label="What row would you like to edit?">
+        <LabelWrapper label="What response and corresponding row would you like to edit?">
           <EntryDropdown
             entries={entriesWithAirtableLookup}
             onChangeEntrySelection={onChangeRowTarget}

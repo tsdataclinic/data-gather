@@ -8,7 +8,12 @@ import * as ConditionalAction from '../models/ConditionalAction';
 import type { ResponseData } from './types';
 
 function stringToDateTime(dateString: string): DateTime {
-  const date = DateTime.fromISO(dateString);
+  // If the date is null, set date to start of epoch time
+  // TODO: maybe make this externally configurable in case users  have really old dates in data
+  const date =
+    dateString === 'null'
+      ? DateTime.fromISO(process.env.NULL_DATE_OVERRIDE || '1970-01-01')
+      : DateTime.fromISO(dateString);
   if (!date.isValid) {
     throw new Error(`The date '${dateString}' failed to parse.`);
   }
@@ -31,13 +36,15 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
       return response;
     }
 
+    // Airtable will drop any colums from the response that have a null value
+    // https://community.airtable.com/t5/development-apis/api-behavior-for-empty-fields-null-values/td-p/108285
+    // It should be ok to assume that the value exists but is null here  because we enforce users selecting only
+    // existing keys further up the stack
     if (responseKeyField) {
-      invariant(
-        responseKeyField in response,
-        `Could not find '${responseKeyField}' in the object held by '${responseKey}'`,
-      );
+      const responseKeyReturn =
+        responseKeyField in response ? response[responseKeyField] : null;
 
-      return String(response[responseKeyField]);
+      return String(responseKeyReturn);
     }
 
     return JSON.stringify(response);

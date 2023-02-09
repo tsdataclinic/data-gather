@@ -3,8 +3,6 @@ import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
-import ActionCard from './ActionCard';
-import EntryCard from './EntryCard';
 import useInterviewService from '../../hooks/useInterviewService';
 import HeaderCard from './HeaderCard';
 import ScreenToolbar from './ScreenToolbar';
@@ -12,7 +10,8 @@ import ScrollArea from '../ui/ScrollArea';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { useToast } from '../ui/Toast';
 import type { EditableAction, EditableEntry } from './types';
-import Button from '../ui/Button';
+import EntriesSection from './EntriesSection';
+import ConditionalActionsSection from './ConditionalActionsSection';
 
 type Props = {
   defaultActions: readonly ConditionalAction.T[];
@@ -68,6 +67,13 @@ export default function ScreenCard({
   };
 
   const allFormRefs = React.useRef(new Map<string, HTMLFormElement>());
+  const headerFormRef = React.useRef<null | HTMLFormElement>(null);
+  const entriesSectionRef = React.useRef<null | React.ComponentRef<
+    typeof EntriesSection
+  >>(null);
+  const actionsSectionRef = React.useRef<null | React.ComponentRef<
+    typeof ConditionalActionsSection
+  >>(null);
 
   // Any time actions or entries are changed compare to default
   React.useEffect(() => {
@@ -102,11 +108,6 @@ export default function ScreenCard({
           text: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
           screenId: screen.id,
           responseType: InterviewScreenEntry.ResponseType.TEXT,
-          responseTypeOptions: {
-            selectedBase: '',
-            selectedTable: '',
-            selectedFields: [],
-          },
         }),
       ),
     );
@@ -153,8 +154,15 @@ export default function ScreenCard({
   );
 
   const onSaveClick = React.useCallback(async () => {
-    const actionsForms = Array.from(allFormRefs.current.entries());
-    const allFormsValid = actionsForms.every(([_, form]) => {
+    const entriesForms = entriesSectionRef.current?.getForms() ?? [];
+    const actionsForms = actionsSectionRef.current?.getForms() ?? [];
+    const headerForm = headerFormRef.current;
+    const allForms = (headerForm ? [headerForm] : []).concat(
+      entriesForms,
+      actionsForms,
+    );
+
+    const allFormsValid = allForms.every(form => {
       // side-effect: also trigger the builtin browser validation UI
       form.reportValidity();
       return form.checkValidity();
@@ -187,18 +195,6 @@ export default function ScreenCard({
     setUnsavedChanges,
   ]);
 
-  function formRefSetter(formKey: string): React.RefCallback<HTMLFormElement> {
-    return (formElt: HTMLFormElement | null) => {
-      if (formElt) {
-        allFormRefs.current.set(formKey, formElt);
-      } else {
-        // `formElt` is null when the component unmounts, so that's when we
-        // should remove this from the `allFormRefs` map
-        allFormRefs.current.delete(formKey);
-      }
-    };
-  }
-
   return (
     <>
       <ScreenToolbar
@@ -209,71 +205,28 @@ export default function ScreenCard({
         unsavedChanges={unsavedChanges}
       />
       <ScrollArea id="scrollContainer" className="w-full overflow-auto">
-        <div className="flex flex-col items-center gap-14 p-14">
+        <div className="flex flex-col items-center gap-10 px-14 py-10">
           <HeaderCard
-            ref={formRefSetter('header-card')}
+            ref={headerFormRef}
             screen={screen}
             onScreenChange={onScreenChange}
           />
-          {allEntries.length === 0 ? (
-            <div className="relative flex w-full flex-col items-center space-y-4 border border-gray-200 bg-white p-10 shadow-lg">
-              <p>No questions have been added yet.</p>
-              <Button intent="primary" onClick={onNewEntryClick}>
-                Add your first question
-              </Button>
-            </div>
-          ) : (
-            allEntries.map(entry => (
-              <EntryCard
-                key={
-                  InterviewScreenEntry.isCreateType(entry)
-                    ? entry.tempId
-                    : entry.id
-                }
-                ref={formRefSetter(
-                  InterviewScreenEntry.isCreateType(entry)
-                    ? entry.tempId
-                    : entry.id,
-                )}
-                entry={entry}
-                onEntryChange={onEntryChange}
-                onEntryDelete={onEntryDelete}
-                scrollOnMount={InterviewScreenEntry.isCreateType(entry)}
-              />
-            ))
-          )}
-          {allActions.length === 0 ? (
-            <div className="relative flex w-full flex-col items-center space-y-4 border border-gray-200 bg-white p-10 text-center shadow-lg">
-              <p>
-                This stage has no actions to run after the user answers your
-                questions.
-              </p>
-              <Button intent="primary" onClick={onNewActionClick}>
-                Add an action
-              </Button>
-            </div>
-          ) : (
-            allActions.map(action => (
-              <ActionCard
-                key={
-                  ConditionalAction.isCreateType(action)
-                    ? action.tempId
-                    : action.id
-                }
-                ref={formRefSetter(
-                  ConditionalAction.isCreateType(action)
-                    ? action.tempId
-                    : action.id,
-                )}
-                action={action}
-                interview={interview}
-                interviewScreen={screen}
-                onActionChange={onActionChange}
-                onActionDelete={onActionDelete}
-                scrollOnMount={ConditionalAction.isCreateType(action)}
-              />
-            ))
-          )}
+          <EntriesSection
+            ref={entriesSectionRef}
+            entries={allEntries}
+            onEntryChange={onEntryChange}
+            onEntryDelete={onEntryDelete}
+            onNewEntryClick={onNewEntryClick}
+          />
+          <ConditionalActionsSection
+            ref={actionsSectionRef}
+            actions={allActions}
+            onActionChange={onActionChange}
+            onActionDelete={onActionDelete}
+            onNewActionClick={onNewActionClick}
+            interview={interview}
+            interviewScreen={screen}
+          />
         </div>
       </ScrollArea>
     </>
