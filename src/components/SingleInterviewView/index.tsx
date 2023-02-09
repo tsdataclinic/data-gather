@@ -43,6 +43,7 @@ export default function SingleInterviewView(): JSX.Element {
                 path={`screen/${screen.id}`}
                 element={
                   <ScreenPage
+                    key={screen.id}
                     defaultScreen={screen}
                     defaultEntries={screen.entries}
                     defaultActions={screen.actions}
