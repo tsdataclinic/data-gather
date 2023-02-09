@@ -138,19 +138,19 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
         return responseValue === testValue;
       case ConditionalAction.ConditionalOperator.GT:
         return withRequiredValues(
-          (responseVal, testVal) => responseVal > testVal,
+          (responseVal, testVal) => Number(responseVal) > Number(testVal),
         );
       case ConditionalAction.ConditionalOperator.GTE:
         return withRequiredValues(
-          (responseVal, testVal) => responseVal >= testVal,
+          (responseVal, testVal) => Number(responseVal) >= Number(testVal),
         );
       case ConditionalAction.ConditionalOperator.LT:
         return withRequiredValues(
-          (responseVal, testVal) => responseVal < testVal,
+          (responseVal, testVal) => Number(responseVal) < Number(testVal),
         );
       case ConditionalAction.ConditionalOperator.LTE:
         return withRequiredValues(
-          (responseVal, testVal) => responseVal <= testVal,
+          (responseVal, testVal) => Number(responseVal) <= Number(testVal),
         );
       case ConditionalAction.ConditionalOperator.IS_EMPTY:
         return (

@@ -134,9 +134,9 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
     case ConditionalOperator.BEFORE_OR_EQUAL:
       return 'Before or equal';
     case ConditionalOperator.EQUALS_DATE:
-      return 'Equals';
+      return 'Is on day';
     case ConditionalOperator.EQ:
-      return '=';
+      return 'Equals';
     case ConditionalOperator.GT:
       return '>';
     case ConditionalOperator.GTE:
@@ -146,9 +146,9 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
     case ConditionalOperator.LTE:
       return '≤';
     case ConditionalOperator.IS_EMPTY:
-      return 'Is Empty';
+      return 'Is empty';
     case ConditionalOperator.IS_NOT_EMPTY:
-      return 'Is not Empty';
+      return 'Is not empty';
     default:
       assertUnreachable(operator, { throwError: false });
       return operator;
@@ -320,9 +320,9 @@ export function isGenericOperator(operator: ConditionalOperator): boolean {
   switch (operator) {
     case ConditionalOperator.IS_EMPTY:
     case ConditionalOperator.IS_NOT_EMPTY:
+    case ConditionalOperator.EQ:
       return true;
     case ConditionalOperator.ALWAYS_EXECUTE:
-    case ConditionalOperator.EQ:
     case ConditionalOperator.GT:
     case ConditionalOperator.GTE:
     case ConditionalOperator.LT:
@@ -341,12 +341,12 @@ export function isGenericOperator(operator: ConditionalOperator): boolean {
 
 export function isNumberOperator(operator: ConditionalOperator): boolean {
   switch (operator) {
-    case ConditionalOperator.EQ:
     case ConditionalOperator.GT:
     case ConditionalOperator.GTE:
     case ConditionalOperator.LT:
     case ConditionalOperator.LTE:
       return true;
+    case ConditionalOperator.EQ:
     case ConditionalOperator.AFTER:
     case ConditionalOperator.AFTER_OR_EQUAL:
     case ConditionalOperator.BEFORE:
