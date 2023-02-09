@@ -145,7 +145,7 @@ export default function ConditionalOperatorRow({
         >
           <Dropdown
             onChange={onResponseKeyChange}
-            placeholder="Response variable"
+            placeholder="Select a response"
             value={action.responseKey}
             options={allResponseKeyOptions}
           />

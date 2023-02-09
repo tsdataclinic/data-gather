@@ -116,6 +116,40 @@ export function create(vals: {
 }
 
 /**
+ * Convert a ConditionalOperator to a string. Useful if listing operators
+ * in a dropdown.
+ */
+export function operatorToDisplayString(operator: ConditionalOperator): string {
+  switch (operator) {
+    case ConditionalOperator.ALWAYS_EXECUTE:
+      return 'Always execute';
+    case ConditionalOperator.AFTER:
+      return 'After';
+    case ConditionalOperator.BEFORE:
+      return 'Before';
+    case ConditionalOperator.AFTER_OR_EQUAL:
+      return 'After or equal';
+    case ConditionalOperator.BEFORE_OR_EQUAL:
+      return 'Before or equal';
+    case ConditionalOperator.EQUALS_DATE:
+      return 'Equals';
+    case ConditionalOperator.EQ:
+      return '=';
+    case ConditionalOperator.GT:
+      return '>';
+    case ConditionalOperator.GTE:
+      return '≥';
+    case ConditionalOperator.LT:
+      return '<';
+    case ConditionalOperator.LTE:
+      return '≤';
+    default:
+      assertUnreachable(operator, { throwError: false });
+      return operator;
+  }
+}
+
+/**
  * Validate if a conditional action is valid to be saved.
  * @returns {[boolean, string]} A tuple of whether or not validation passed,
  * and an error string if validation did not pass.
@@ -126,15 +160,15 @@ export function validate(
   // if we're **not** using the ALWAYS_EXECUTE operator then don't allow an
   // empty `responseKey` or an empty `value`
   if (action.conditionalOperator !== ConditionalOperator.ALWAYS_EXECUTE) {
-    if (
-      action.responseKey === undefined ||
-      action.responseKey === '' ||
-      action.value === undefined
-    ) {
+    const operatorName = operatorToDisplayString(action.conditionalOperator);
+    if (action.responseKey === undefined || action.responseKey === '') {
       return [
         false,
-        `A '${action.conditionalOperator}' operator must have a responseKey and a value`,
+        `A '${operatorName}' condition must select a response to compare to`,
       ];
+    }
+    if (action.value === undefined) {
+      return [false, `A '${operatorName}' condition must have a value`];
     }
   }
 
@@ -242,40 +276,6 @@ export function serialize(
         : undefined,
     actionType: actionConfig.type,
   };
-}
-
-/**
- * Convert a ConditionalOperator to a string. Useful if listing operators
- * in a dropdown.
- */
-export function operatorToDisplayString(operator: ConditionalOperator): string {
-  switch (operator) {
-    case ConditionalOperator.ALWAYS_EXECUTE:
-      return 'Always execute';
-    case ConditionalOperator.AFTER:
-      return 'After';
-    case ConditionalOperator.BEFORE:
-      return 'Before';
-    case ConditionalOperator.AFTER_OR_EQUAL:
-      return 'After or equal';
-    case ConditionalOperator.BEFORE_OR_EQUAL:
-      return 'Before or equal';
-    case ConditionalOperator.EQUALS_DATE:
-      return 'Equals';
-    case ConditionalOperator.EQ:
-      return '=';
-    case ConditionalOperator.GT:
-      return '>';
-    case ConditionalOperator.GTE:
-      return '≥';
-    case ConditionalOperator.LT:
-      return '<';
-    case ConditionalOperator.LTE:
-      return '≤';
-    default:
-      assertUnreachable(operator, { throwError: false });
-      return operator;
-  }
 }
 
 export function isDateOperator(operator: ConditionalOperator): boolean {

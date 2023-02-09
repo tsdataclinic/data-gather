@@ -23,7 +23,7 @@ function HeaderCard(
       className="flex w-full flex-row border border-gray-200 bg-white p-5 shadow-lg"
     >
       <div className="flex w-1/6 flex-row">
-        <FontAwesomeIcon className="h-6 w-6 pr-4" icon={faTag} />
+        <FontAwesomeIcon className="h-6 w-6 pl-6 pr-4" icon={faTag} />
       </div>
       <Form ref={forwardedRef} className="w-full pr-16 pb-4">
         <Form.Input
