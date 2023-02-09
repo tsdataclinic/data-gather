@@ -18,12 +18,16 @@ type Props = {
 };
 
 function getOperatorDropdownOptions(
-  type: 'date' | 'number',
+  type: 'generic' | 'date' | 'number',
 ): Array<DropdownOption<ConditionalAction.ConditionalOperator>> {
-  const filterFunction =
-    type === 'date'
-      ? ConditionalAction.isDateOperator
-      : ConditionalAction.isNumberOperator;
+  let filterFunction;
+  if (type === 'date') {
+    filterFunction = ConditionalAction.isDateOperator;
+  } else if (type === 'number') {
+    filterFunction = ConditionalAction.isNumberOperator;
+  } else {
+    filterFunction = ConditionalAction.isGenericOperator;
+  }
   return ConditionalAction.CONDITIONAL_OPERATORS.filter(filterFunction).map(
     operator => ({
       displayValue: ConditionalAction.operatorToDisplayString(operator),
@@ -33,6 +37,10 @@ function getOperatorDropdownOptions(
 }
 
 const OPERATOR_OPTIONS = [
+  {
+    label: 'Generic comparisons',
+    options: getOperatorDropdownOptions('generic'),
+  },
   {
     label: 'Date comparisons',
     options: getOperatorDropdownOptions('date'),
@@ -96,10 +104,22 @@ export default function ConditionalOperatorRow({
 
   const onOperatorChange = React.useCallback(
     (newOperator: ConditionalAction.ConditionalOperator) => {
-      onConditionalOperationChange({
-        ...action,
-        conditionalOperator: newOperator,
-      });
+      // Set value to anything if operator is generic
+      const newValue = ConditionalAction.isGenericOperator(newOperator)
+        ? 'whatever'
+        : null;
+      if (newValue) {
+        onConditionalOperationChange({
+          ...action,
+          conditionalOperator: newOperator,
+          value: newValue,
+        });
+      } else {
+        onConditionalOperationChange({
+          ...action,
+          conditionalOperator: newOperator,
+        });
+      }
     },
     [action, onConditionalOperationChange],
   );
@@ -168,7 +188,7 @@ export default function ConditionalOperatorRow({
         />
 
         {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
-        {ConditionalAction.isDateOperator(action.conditionalOperator) ? (
+        {(ConditionalAction.isDateOperator(action.conditionalOperator) && (
           <>
             <Calendar
               placeholder="Date"
@@ -189,13 +209,14 @@ export default function ConditionalOperatorRow({
               }`}
             />
           </>
-        ) : (
-          <InputText
-            placeholder="Value"
-            onChange={onConditionalValueChange}
-            value={action.value ?? ''}
-          />
-        )}
+        )) ||
+          (ConditionalAction.isNumberOperator(action.conditionalOperator) && (
+            <InputText
+              placeholder="Value"
+              onChange={onConditionalValueChange}
+              value={action.value ?? ''}
+            />
+          ))}
       </div>
     </div>
   );

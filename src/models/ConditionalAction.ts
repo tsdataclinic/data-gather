@@ -143,6 +143,10 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
       return '<';
     case ConditionalOperator.LTE:
       return '≤';
+    case ConditionalOperator.IS_EMPTY:
+      return 'Is Empty';
+    case ConditionalOperator.IS_NOT_EMPTY:
+      return 'Is not Empty';
     default:
       assertUnreachable(operator, { throwError: false });
       return operator;
@@ -292,6 +296,31 @@ export function isDateOperator(operator: ConditionalOperator): boolean {
     case ConditionalOperator.GTE:
     case ConditionalOperator.LT:
     case ConditionalOperator.LTE:
+    case ConditionalOperator.IS_EMPTY:
+    case ConditionalOperator.IS_NOT_EMPTY:
+      return false;
+    default:
+      assertUnreachable(operator, { throwError: false });
+      return operator;
+  }
+}
+
+export function isGenericOperator(operator: ConditionalOperator): boolean {
+  switch (operator) {
+    case ConditionalOperator.IS_EMPTY:
+    case ConditionalOperator.IS_NOT_EMPTY:
+      return true;
+    case ConditionalOperator.ALWAYS_EXECUTE:
+    case ConditionalOperator.EQ:
+    case ConditionalOperator.GT:
+    case ConditionalOperator.GTE:
+    case ConditionalOperator.LT:
+    case ConditionalOperator.LTE:
+    case ConditionalOperator.AFTER:
+    case ConditionalOperator.AFTER_OR_EQUAL:
+    case ConditionalOperator.BEFORE:
+    case ConditionalOperator.BEFORE_OR_EQUAL:
+    case ConditionalOperator.EQUALS_DATE:
       return false;
     default:
       assertUnreachable(operator, { throwError: false });
@@ -313,6 +342,8 @@ export function isNumberOperator(operator: ConditionalOperator): boolean {
     case ConditionalOperator.BEFORE_OR_EQUAL:
     case ConditionalOperator.EQUALS_DATE:
     case ConditionalOperator.ALWAYS_EXECUTE:
+    case ConditionalOperator.IS_EMPTY:
+    case ConditionalOperator.IS_NOT_EMPTY:
       return false;
     default:
       assertUnreachable(operator, { throwError: false });

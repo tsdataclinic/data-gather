@@ -136,6 +136,18 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
         return responseValue < testValue;
       case ConditionalAction.ConditionalOperator.LTE:
         return responseValue <= testValue;
+      case ConditionalAction.ConditionalOperator.IS_EMPTY:
+        return (
+          responseValue === undefined ||
+          responseValue === null ||
+          responseValue === 'null'
+        );
+      case ConditionalAction.ConditionalOperator.IS_NOT_EMPTY:
+        return (
+          responseValue !== undefined &&
+          responseValue !== null &&
+          responseValue !== 'null'
+        );
 
       // process datetime operators
       case ConditionalAction.ConditionalOperator.AFTER:
