@@ -9,15 +9,18 @@ import NewScreenModal from './NewScreenModal';
 import ScreenLink from './ScreenLink';
 import { useToast } from '../../ui/Toast';
 import ConfigureLink from './ConfigureLink';
+import unsavedChangesConfirm from './unsavedChangesConfirm';
 
 type Props = {
   interview: Interview.WithScreensAndActions;
   screens: InterviewScreen.WithChildrenT[] | undefined;
+  unsavedChanges: boolean;
 };
 
 export default function Sidebar({
   interview,
   screens = [],
+  unsavedChanges,
 }: Props): JSX.Element {
   const [isNewScreenModalOpen, setIsNewScreenModalOpen] = useState(false);
   const [selectedScreen, setSelectedScreen] = useState<string>();
@@ -27,7 +30,16 @@ export default function Sidebar({
     <nav className="relative top-0 z-20 h-full w-1/5 items-stretch bg-white shadow">
       <div className="flex flex-col items-start py-10 px-0">
         <div className="flex flex-row items-center gap-2.5 py-2.5 px-5 text-2xl">
-          <NavLink className="h-7 w-7" to="/">
+          <NavLink
+            className="h-7 w-7"
+            to="/"
+            onClick={e => {
+              const letsGo = unsavedChangesConfirm(unsavedChanges);
+              if (!letsGo) {
+                e.preventDefault();
+              }
+            }}
+          >
             <FontAwesomeIcon className="h-6 w-6" icon={faCircleChevronLeft} />
           </NavLink>
           {interview.name}
@@ -39,6 +51,10 @@ export default function Sidebar({
             to={Interview.getRunUrl(interview)}
             className="flex flex-row items-center gap-2.5 py-2.5 pl-14 text-slate-600 hover:text-blue-700"
             onClick={e => {
+              const letsGo = unsavedChangesConfirm(unsavedChanges);
+              if (!letsGo) {
+                e.preventDefault();
+              }
               const startingScreens = Interview.getStartingScreens(interview);
               // disable going to the Run screen if we have no starting screens
               if (startingScreens.length === 0) {
@@ -61,6 +77,7 @@ export default function Sidebar({
               defaultLanguage={interview.defaultLanguage}
               onScreenSelect={setSelectedScreen}
               isSelected={selectedScreen === screen.id}
+              unsavedChanges={unsavedChanges}
             />
           ))}
         </div>
@@ -69,6 +86,7 @@ export default function Sidebar({
         <ConfigureLink
           onSelect={() => setSelectedScreen('configure')}
           isSelected={selectedScreen === 'configure'}
+          unsavedChanges={unsavedChanges}
         />
       </div>
 

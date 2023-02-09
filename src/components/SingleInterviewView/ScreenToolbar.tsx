@@ -27,6 +27,7 @@ type Props = {
   onNewEntryClick: () => void;
   onSaveClick: () => void;
   screen: InterviewScreen.T;
+  unsavedChanges: boolean;
 };
 
 export default function ScreenToolbar({
@@ -35,6 +36,7 @@ export default function ScreenToolbar({
   onNewEntryClick,
   onNewActionClick,
   onSaveClick,
+  unsavedChanges,
 }: Props): JSX.Element {
   const selectedLanguageCode = React.useContext(SelectedLanguageContext);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
@@ -87,7 +89,10 @@ export default function ScreenToolbar({
           </DropdownMenu.Item>
         </DropdownMenu>
         <Toolbar.Button asChild>
-          <Button intent="primary" onClick={onSaveClick}>
+          <Button
+            intent={unsavedChanges ? 'primary' : 'default'}
+            onClick={onSaveClick}
+          >
             Save
           </Button>
         </Toolbar.Button>

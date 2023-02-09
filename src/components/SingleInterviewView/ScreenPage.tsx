@@ -19,6 +19,8 @@ type Props = {
   defaultEntries: readonly InterviewScreenEntry.T[];
   defaultScreen: InterviewScreen.WithChildrenT;
   interview: Interview.T;
+  setUnsavedChanges: any;
+  unsavedChanges: boolean;
 };
 
 function saveInterviewScreen(
@@ -38,6 +40,8 @@ export default function ScreenPage({
   defaultActions,
   defaultScreen,
   interview,
+  setUnsavedChanges,
+  unsavedChanges,
 }: Props): JSX.Element {
   const toaster = useToast();
   const { defaultLanguage } = interview;
@@ -48,6 +52,9 @@ export default function ScreenPage({
       InterviewScreen.QueryKeys.getScreens(interview.id),
     ],
   });
+  // Boolean indicating if there are unsaved changes
+  const [unsavedActions, setUnsavedActions] = React.useState(false);
+  const [unsavedEntries, setUnsavedEntries] = React.useState(false);
 
   // track the screen internally so we can modify it without persisting until
   // 'save' is clicked
@@ -66,6 +73,13 @@ export default function ScreenPage({
   const [allEntries, setAllEntries] =
     React.useState<readonly EditableEntry[]>(defaultEntries);
 
+  const arrEqual = (arr1: readonly any[], arr2: readonly any[]): boolean => {
+    if (arr1.length !== arr2.length) {
+      return false;
+    }
+    return arr1.every((val, index) => val === arr2[index]);
+  };
+
   const headerFormRef = React.useRef<null | HTMLFormElement>(null);
   const entriesSectionRef = React.useRef<null | React.ComponentRef<
     typeof EntriesSection
@@ -73,6 +87,19 @@ export default function ScreenPage({
   const actionsSectionRef = React.useRef<null | React.ComponentRef<
     typeof ConditionalActionsSection
   >>(null);
+
+  // Any time actions or entries are changed compare to default
+  React.useEffect(() => {
+    setUnsavedActions(!arrEqual(defaultActions, allActions));
+  }, [defaultActions, allActions, setUnsavedActions]);
+
+  React.useEffect(() => {
+    setUnsavedEntries(!arrEqual(defaultEntries, allEntries));
+  }, [defaultEntries, allEntries, setUnsavedEntries]);
+
+  React.useEffect(() => {
+    setUnsavedChanges(unsavedActions || unsavedEntries);
+  }, [unsavedActions, unsavedEntries, setUnsavedChanges]);
 
   const onNewActionClick = (): void =>
     setAllActions(prevActions =>
@@ -133,9 +160,10 @@ export default function ScreenPage({
 
   const onScreenChange = React.useCallback(
     (newScreen: InterviewScreen.WithChildrenT) => {
+      setUnsavedChanges(true);
       setScreen(newScreen);
     },
-    [],
+    [setUnsavedChanges],
   );
 
   const onSaveClick = async (): Promise<void> => {
@@ -184,6 +212,7 @@ export default function ScreenPage({
         },
       );
     }
+    setUnsavedChanges(false);
   };
 
   return (
@@ -194,6 +223,7 @@ export default function ScreenPage({
         onSaveClick={onSaveClick}
         onNewEntryClick={onNewEntryClick}
         onNewActionClick={onNewActionClick}
+        unsavedChanges={unsavedChanges}
       />
       <ScrollArea id="scrollContainer" className="w-full overflow-auto">
         <div className="flex flex-col items-center gap-10 px-14 py-10">

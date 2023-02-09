@@ -6,12 +6,14 @@ import { NavLink, useMatch } from 'react-router-dom';
 import * as Scroll from 'react-scroll';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import { actionTypeToDisplayString } from '../../../models/ConditionalAction';
+import unsavedChangesConfirm from './unsavedChangesConfirm';
 
 type Props = {
   defaultLanguage: string;
   isSelected: boolean;
   onScreenSelect: (screenId: string) => void;
   screen: InterviewScreen.WithChildrenT;
+  unsavedChanges: boolean;
 };
 
 export default function ScreenLink({
@@ -19,6 +21,7 @@ export default function ScreenLink({
   onScreenSelect,
   screen,
   defaultLanguage,
+  unsavedChanges,
 }: Props): JSX.Element {
   const interviewPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
   const [selectedEntry, setSelectedEntry] = React.useState<string | undefined>(
@@ -43,9 +46,14 @@ export default function ScreenLink({
       <NavLink
         className={screenMenuItemClass}
         to={`${interviewPath}/screen/${screen.id}`}
-        onClick={() => {
-          onScreenSelect(screen.id);
-          setSelectedEntry(undefined);
+        onClick={e => {
+          const letsGo = unsavedChangesConfirm(unsavedChanges);
+          if (!letsGo) {
+            e.preventDefault();
+          } else {
+            onScreenSelect(screen.id);
+            setSelectedEntry(undefined);
+          }
         }}
       >
         <FontAwesomeIcon
