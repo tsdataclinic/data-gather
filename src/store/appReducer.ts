@@ -26,6 +26,7 @@ export type AirtableSettings = {
 
 export type AppGlobalState = {
   airtableSettings: AirtableSettings;
+
   /**
    * A map of all interview conditional actions we have loaded so far.
    * Maps action id to ConditionalAction object.
@@ -49,20 +50,25 @@ export type AppGlobalState = {
    * Maps interview id to Interview object.
    */
   loadedInterviews: ReadonlyMap<string, Interview.WithScreensAndActions>;
+
+  /**
+   * The current language we are editing an interview in.
+   * If undefined, we should default to whichever langauge the interview is
+   * configured to use as the default.
+   */
+  selectedLanguageCode: string | undefined;
   // settings: {
   //   airtableAPISettings: AirtableAPISetting.T;
   // };
 };
 
 export const DEFAULT_APP_STATE: AppGlobalState = {
+  selectedLanguageCode: undefined,
   loadedConditionalActions: new Map(),
   loadedInterviewScreenEntries: new Map(),
   loadedInterviewScreens: new Map(),
   loadedInterviews: new Map(),
   airtableSettings: JSON.parse(getEnvConfig(EnvVar.AirtableConfigJSON)),
-  // settings: {
-  //   airtableAPISettings: AirtableAPISetting.create(),
-  // },
 };
 
 export type AppAction =
@@ -81,26 +87,10 @@ export type AppAction =
       screenEntries: InterviewScreenEntry.T[];
       type: 'SCREEN_ENTRIES_UPDATE';
     }
-  /** Update a single interview screen */
   | {
-      screen: InterviewScreen.WithChildrenT;
-      type: 'SCREEN_UPDATE';
-    }
-  /** Update a bunch of interview screens */
-  | {
-      screens: InterviewScreen.WithChildrenT[];
-      type: 'SCREENS_UPDATE';
+      languageCode: string;
+      type: 'SELECTED_LANGUAGE_UPDATE';
     };
-// /** Create a new setting */
-// | {
-//     setting: AirtableAPISetting.T;
-//     type: 'SETTING_CREATE';
-//   }
-// /** Update a setting */
-// | {
-//     setting: AirtableAPISetting.T;
-//     type: 'SETTING_UPDATE';
-//   };
 
 function cloneMap<K, V>(map: ReadonlyMap<K, V>): Map<K, V> {
   return new Map(Array.from(map.entries()));
@@ -138,7 +128,6 @@ export default function appReducer(
     loadedConditionalActions,
     loadedInterviews,
     loadedInterviewScreenEntries,
-    loadedInterviewScreens,
     // settings,
   } = state;
 
@@ -174,24 +163,10 @@ export default function appReducer(
         ),
       };
 
-    case 'SCREEN_UPDATE':
+    case 'SELECTED_LANGUAGE_UPDATE':
       return {
         ...state,
-        loadedInterviewScreens: setMap(
-          loadedInterviewScreens,
-          action.screen.id,
-          action.screen,
-        ),
-      };
-
-    case 'SCREENS_UPDATE':
-      return {
-        ...state,
-        loadedInterviewScreens: setMapMultiple(
-          loadedInterviewScreens,
-          action.screens,
-          screen => screen.id,
-        ),
+        selectedLanguageCode: action.languageCode,
       };
 
     // case 'SETTING_CREATE':

@@ -51,7 +51,8 @@
     "styled-components": "^5.3.5",
     "tailwindcss": "^3.0.24",
     "uuid": "^8.3.2",
-    "web-vitals": "^2.1.0"
+    "web-vitals": "^2.1.0",
+    "zod": "^3.20.3"
   },
   "scripts": {
     "api": "PYTHONPATH=. uvicorn views:app --reload --reload-dir server --app-dir server/api",

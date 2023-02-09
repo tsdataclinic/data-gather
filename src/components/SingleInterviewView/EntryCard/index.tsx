@@ -5,11 +5,12 @@ import * as Scroll from 'react-scroll';
 import { MixedCheckbox } from '@reach/checkbox';
 import Form from '../../ui/Form';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import AirtableFieldSelector from './AirtableFieldSelector';
 import EditableName from './EditableName';
 import type { EditableEntry } from '../types';
 import Button from '../../ui/Button';
 import LabelWrapper from '../../ui/LabelWrapper';
+import ResponseTypeConfigBlock from './ResponseTypeConfigBlock';
+import SelectedLanguageContext from '../SelectedLanguageContext';
 
 type Props = {
   entry: EditableEntry;
@@ -34,6 +35,7 @@ function EntryCard(
   { entry, onEntryChange, onEntryDelete, scrollOnMount }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
+  const selectedLanguageCode = React.useContext(SelectedLanguageContext);
   const entryId = 'id' in entry ? entry.id : entry.tempId;
 
   const onNameChange = (newName: string): void => {
@@ -76,11 +78,11 @@ function EntryCard(
             label="Text"
             name="prompt"
             infoTooltip="This is the main prompt the user will see"
-            value={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
+            value={entry.prompt[selectedLanguageCode] ?? ''}
             onChange={(newVal: string) => {
               onEntryChange(entry, {
                 ...entry,
-                prompt: { en: newVal }, // TODO UI should support multiple language prompts rather than hardcoding english
+                prompt: { ...entry.prompt, [selectedLanguageCode]: newVal },
               });
             }}
           />
@@ -89,13 +91,12 @@ function EntryCard(
             name="text"
             infoTooltip="This is more text that will be displayed if you want to give more details about the question."
             required={false}
-            value={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
+            value={entry.text[selectedLanguageCode] ?? ''}
             onChange={(newVal: string) => {
               onEntryChange(entry, {
                 ...entry,
                 // TODO: change this to be named `helperText` instead of just `text`
-                // TODO UI should support multiple language prompts rather than hardcoding english
-                text: { en: newVal },
+                text: { ...entry.text, [selectedLanguageCode]: newVal },
               });
             }}
           />
@@ -106,28 +107,17 @@ function EntryCard(
             name="responseType"
             options={ENTRY_RESPONSE_TYPE_OPTIONS}
             value={entry.responseType}
-            onChange={(newVal: InterviewScreenEntry.ResponseType) => {
-              onEntryChange(entry, {
-                ...entry,
-                responseType: newVal,
-              });
+            onChange={(newResponseType: InterviewScreenEntry.ResponseType) => {
+              onEntryChange(
+                entry,
+                InterviewScreenEntry.changeResponseType(entry, newResponseType),
+              );
             }}
           />
-          {entry.responseType ===
-            InterviewScreenEntry.ResponseType.AIRTABLE && (
-            <AirtableFieldSelector
-              fieldSelectorLabel="Fields to search by"
-              airtableConfig={entry.responseTypeOptions}
-              onAirtableConfigurationChange={(
-                newConfig: InterviewScreenEntry.ResponseTypeOptions,
-              ) => {
-                onEntryChange(entry, {
-                  ...entry,
-                  responseTypeOptions: newConfig,
-                });
-              }}
-            />
-          )}
+          <ResponseTypeConfigBlock
+            entry={entry}
+            onEntryChange={onEntryChange}
+          />
           <LabelWrapper
             inline
             label="Required"

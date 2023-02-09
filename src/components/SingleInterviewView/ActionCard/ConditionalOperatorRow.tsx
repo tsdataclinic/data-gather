@@ -13,6 +13,7 @@ import InfoIcon from '../../ui/InfoIcon';
 type Props = {
   action: EditableAction;
   allEntries: readonly InterviewScreenEntry.WithScreenT[];
+  defaultLanguage: string;
   onConditionalOperationChange: (action: EditableAction) => void;
 };
 
@@ -48,6 +49,7 @@ export default function ConditionalOperatorRow({
   action,
   allEntries,
   onConditionalOperationChange,
+  defaultLanguage,
 }: Props): JSX.Element {
   const { airtableSettings } = useAppState();
   const { bases } = airtableSettings;
@@ -65,19 +67,25 @@ export default function ConditionalOperatorRow({
   const allResponseKeyOptions = React.useMemo(
     () =>
       allEntries.map(entry => ({
-        displayValue: `${InterviewScreen.getTitle(entry.screen)} - ${
-          entry.name
-        }`,
+        displayValue: `${InterviewScreen.getTitle(
+          entry.screen,
+          defaultLanguage,
+        )} - ${entry.name}`,
         value: entry.responseKey,
       })),
-    [allEntries],
+    [allEntries, defaultLanguage],
   );
 
   // TODO: have to connect <ActionCard> to `entry` for responseKeyColumns to
   // change before 'Save' is clicked
   const allResponseKeyFieldOptions = React.useMemo(() => {
+    // if the selected entry is an Airtable response, then we need to get the
+    // table it links to so that we can get all the available fields
     const airtableTable = allAirtableTables.find(
-      table => table.key === selectedEntry?.responseTypeOptions.selectedTable,
+      table =>
+        selectedEntry?.responseType ===
+          InterviewScreenEntry.ResponseType.AIRTABLE &&
+        table.key === selectedEntry.responseTypeOptions.selectedTable,
     );
 
     return airtableTable?.fields.map(field => ({

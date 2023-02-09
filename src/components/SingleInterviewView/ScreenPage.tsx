@@ -3,15 +3,16 @@ import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
-import useInterviewService from '../../hooks/useInterviewService';
 import HeaderCard from './HeaderCard';
 import ScreenToolbar from './ScreenToolbar';
 import ScrollArea from '../ui/ScrollArea';
-import useAppDispatch from '../../hooks/useAppDispatch';
 import { useToast } from '../ui/Toast';
 import type { EditableAction, EditableEntry } from './types';
 import EntriesSection from './EntriesSection';
 import ConditionalActionsSection from './ConditionalActionsSection';
+import useInterviewMutation, {
+  type InterviewServiceAPI,
+} from '../../hooks/useInterviewMutation';
 
 type Props = {
   defaultActions: readonly ConditionalAction.T[];
@@ -20,20 +21,33 @@ type Props = {
   interview: Interview.T;
 };
 
+function saveInterviewScreen(
+  screen: InterviewScreen.UpdateT,
+  api: InterviewServiceAPI,
+): Promise<InterviewScreen.WithChildrenT> {
+  return api.interviewScreenAPI.updateInterviewScreen(screen.id, screen);
+}
+
 /**
- * The ScreenCard is an uncontrolled component because any changes to actions
+ * The ScreenPage is an uncontrolled component because any changes to actions
  * are only tracked internally. These changes are not bubbled up to the rest
  * of the app until "Save" is clicked.
  */
-export default function ScreenCard({
+export default function ScreenPage({
   defaultEntries,
   defaultActions,
   defaultScreen,
   interview,
 }: Props): JSX.Element {
   const toaster = useToast();
-  const interviewService = useInterviewService();
-  const dispatch = useAppDispatch();
+  const { defaultLanguage } = interview;
+  const updateScreen = useInterviewMutation({
+    mutation: saveInterviewScreen,
+    invalidateQueries: [
+      Interview.QueryKeys.getInterview(interview.id),
+      InterviewScreen.QueryKeys.getScreens(interview.id),
+    ],
+  });
 
   // track the screen internally so we can modify it without persisting until
   // 'save' is clicked
@@ -76,15 +90,10 @@ export default function ScreenCard({
         InterviewScreenEntry.create({
           name: `Question ${prevEntries.length + 1}`,
           order: prevEntries.length + 1,
-          prompt: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
-          text: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
+          prompt: { [defaultLanguage]: '' },
+          text: { [defaultLanguage]: '' },
           screenId: screen.id,
           responseType: InterviewScreenEntry.ResponseType.TEXT,
-          responseTypeOptions: {
-            selectedBase: '',
-            selectedTable: '',
-            selectedFields: [],
-          },
         }),
       ),
     );
@@ -129,7 +138,7 @@ export default function ScreenCard({
     [],
   );
 
-  const onSaveClick = React.useCallback(async () => {
+  const onSaveClick = async (): Promise<void> => {
     const entriesForms = entriesSectionRef.current?.getForms() ?? [];
     const actionsForms = actionsSectionRef.current?.getForms() ?? [];
     const headerForm = headerFormRef.current;
@@ -145,35 +154,39 @@ export default function ScreenCard({
     });
 
     if (allFormsValid) {
-      try {
-        const updatedScreen =
-          await interviewService.interviewScreenAPI.updateInterviewScreen(
-            screen.id,
-            { ...screen, actions: allActions, entries: allEntries },
-          );
-
-        dispatch({
-          screen: updatedScreen,
-          type: 'SCREEN_UPDATE',
-        });
-        toaster.notifySuccess(
-          'Saved!',
-          `Successfully saved ${InterviewScreen.getTitle(screen)}`,
-        );
-      } catch (e) {
-        if (e instanceof Error) {
-          toaster.notifyError(
-            'Error',
-            `Could not save ${InterviewScreen.getTitle(screen)}. ${e.message}.`,
-          );
-        }
-      }
+      updateScreen(
+        {
+          ...screen,
+          actions: allActions,
+          entries: allEntries,
+        },
+        {
+          onSuccess: updatedScreen => {
+            toaster.notifySuccess(
+              'Saved!',
+              `Successfully saved ${InterviewScreen.getTitle(
+                updatedScreen,
+                defaultLanguage,
+              )}`,
+            );
+          },
+          onError: error => {
+            if (e instanceof Error) {
+              toaster.notifyError(
+                'Error',
+                `Could not save ${InterviewScreen.getTitle(screen)}. ${e.message}.`,
+              );
+            }
+          },
+        },
+      );
     }
-  }, [allActions, screen, interviewService, allEntries, dispatch, toaster]);
+  };
 
   return (
     <>
       <ScreenToolbar
+        interview={interview}
         screen={screen}
         onSaveClick={onSaveClick}
         onNewEntryClick={onNewEntryClick}

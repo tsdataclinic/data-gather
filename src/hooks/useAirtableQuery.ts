@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ResponseTypeOptions } from '../models/InterviewScreenEntry';
+import * as InterviewScreenEntry from '../models/InterviewScreenEntry';
 
 /**
  * Hook to access Airtable Records API
@@ -7,7 +7,7 @@ import { ResponseTypeOptions } from '../models/InterviewScreenEntry';
 // TODO - add support for other API functions
 export default function useAirtableQuery(
   queryString: string,
-  queryOptions: ResponseTypeOptions,
+  queryOptions: InterviewScreenEntry.AirtableOptions | undefined,
 ): {
   isError: boolean;
   isLoading: boolean;
@@ -20,10 +20,11 @@ export default function useAirtableQuery(
     isLoading,
     isSuccess,
   } = useQuery({
+    enabled: !!queryOptions,
     queryKey: ['airtableQuery', queryString],
     queryFn: async () => {
       // fetch all based on Base and Table
-      if (queryString) {
+      if (queryString && queryOptions) {
         const { selectedFields, selectedTable } = queryOptions;
         const searchParams = new URLSearchParams();
         selectedFields.forEach(field => {

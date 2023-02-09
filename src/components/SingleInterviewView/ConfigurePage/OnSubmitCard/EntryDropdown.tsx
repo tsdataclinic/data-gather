@@ -7,6 +7,7 @@ import useAppState from '../../../../hooks/useAppState';
 
 type Props = {
   allowSpecialValues?: boolean;
+  defaultLanguage: string;
   emptyIsAnOption?: boolean;
   emptyOptionText?: string;
   entries: readonly InterviewScreenEntry.WithScreenT[];
@@ -18,6 +19,7 @@ type Props = {
     specialValueType: SubmissionAction.SpecialValueType,
   ) => void;
   responseFieldPlaceholder?: string;
+
   selectedEntryId?: InterviewScreenEntry.Id | undefined;
   /**
    * If the entry stores an object (e.g. an Airtable lookup returns a full
@@ -40,6 +42,7 @@ const SPECIAL_VALUE_OPTIONS = [
 ];
 
 export default function EntryDropdown({
+  defaultLanguage,
   entries,
   allowSpecialValues,
   selectedEntryId,
@@ -88,12 +91,19 @@ export default function EntryDropdown({
     return emptyOptionSingleton.concat(specialOptionSingleton).concat(
       entries.map(entry => ({
         value: entry.id,
-        displayValue: `${InterviewScreen.getTitle(entry.screen)} - ${
-          entry.name
-        }`,
+        displayValue: `${InterviewScreen.getTitle(
+          entry.screen,
+          defaultLanguage,
+        )} - ${entry.name}`,
       })),
     );
-  }, [entries, allowSpecialValues, emptyIsAnOption, emptyOptionText]);
+  }, [
+    defaultLanguage,
+    entries,
+    allowSpecialValues,
+    emptyIsAnOption,
+    emptyOptionText,
+  ]);
 
   const airtableFieldOptions = React.useMemo(() => {
     if (
