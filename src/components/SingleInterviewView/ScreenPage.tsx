@@ -170,11 +170,13 @@ export default function ScreenPage({
               )}`,
             );
           },
-          onError: error => {
+          onError: e => {
             if (e instanceof Error) {
               toaster.notifyError(
                 'Error',
-                `Could not save ${InterviewScreen.getTitle(screen)}. ${e.message}.`,
+                `Could not save ${InterviewScreen.getTitle(screen)}. ${
+                  e.message
+                }.`,
               );
             }
           },
