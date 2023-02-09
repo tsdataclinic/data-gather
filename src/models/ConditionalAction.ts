@@ -291,6 +291,8 @@ export function serialize(
   };
 }
 
+// TODO: eventually track a registry of all operators to their configurations,
+//   E.g. { EQ: { displayName: 'abc', groupType: 'date', requiresValue: true } }
 export function isDateOperator(operator: ConditionalOperator): boolean {
   switch (operator) {
     case ConditionalOperator.AFTER:
