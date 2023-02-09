@@ -7,22 +7,21 @@ import * as Scroll from 'react-scroll';
 import useInterviewService from '../../../hooks/useInterviewService';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import { actionTypeToDisplayString } from '../../../models/ConditionalAction';
+import unsavedChangesConfirm from './unsavedChangesConfirm';
 
 type Props = {
   isSelected: boolean;
   onScreenSelect: (screenId: string) => void;
   screen: InterviewScreen.T;
-  // setUnsavedChanges: any;
-  // unsavedChanges: boolean;
+  unsavedChanges: boolean;
 };
 
 export default function ScreenLink({
   isSelected,
   onScreenSelect,
   screen,
-}: // setUnsavedChanges,
-// unsavedChanges,
-Props): JSX.Element {
+  unsavedChanges,
+}: Props): JSX.Element {
   const interviewPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
   const [selectedEntry, setSelectedEntry] = useState<string | undefined>(
     undefined,
@@ -61,9 +60,14 @@ Props): JSX.Element {
       <NavLink
         className={screenMenuItemClass}
         to={`${interviewPath}/screen/${screen.id}`}
-        onClick={() => {
-          onScreenSelect(screen.id);
-          setSelectedEntry(undefined);
+        onClick={e => {
+          const letsGo = unsavedChangesConfirm(unsavedChanges);
+          if (!letsGo) {
+            e.preventDefault();
+          } else {
+            onScreenSelect(screen.id);
+            setSelectedEntry(undefined);
+          }
         }}
       >
         <FontAwesomeIcon

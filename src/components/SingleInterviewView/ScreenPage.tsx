@@ -39,6 +39,9 @@ export default function ScreenCard({
   const toaster = useToast();
   const interviewService = useInterviewService();
   const dispatch = useAppDispatch();
+  // Boolean indicating if there are unsaved changes
+  const [unsavedActions, setUnsavedActions] = React.useState(false);
+  const [unsavedEntries, setUnsavedEntries] = React.useState(false);
 
   // track the screen internally so we can modify it without persisting until
   // 'save' is clicked
@@ -68,12 +71,16 @@ export default function ScreenCard({
 
   // Any time actions or entries are changed compare to default
   React.useEffect(() => {
-    setUnsavedChanges(!arrEqual(defaultActions, allActions));
-  }, [defaultActions, allActions, setUnsavedChanges]);
+    setUnsavedActions(!arrEqual(defaultActions, allActions));
+  }, [defaultActions, allActions, setUnsavedActions]);
 
   React.useEffect(() => {
-    setUnsavedChanges(!arrEqual(defaultEntries, allEntries));
-  }, [defaultEntries, allEntries, setUnsavedChanges]);
+    setUnsavedEntries(!arrEqual(defaultEntries, allEntries));
+  }, [defaultEntries, allEntries, setUnsavedEntries]);
+
+  React.useEffect(() => {
+    setUnsavedChanges(unsavedActions || unsavedEntries);
+  }, [unsavedActions, unsavedEntries, setUnsavedChanges]);
 
   const onNewActionClick = (): void =>
     setAllActions(prevActions =>
@@ -139,9 +146,10 @@ export default function ScreenCard({
 
   const onScreenChange = React.useCallback(
     (newScreen: InterviewScreen.WithChildrenT) => {
+      setUnsavedChanges(true);
       setScreen(newScreen);
     },
-    [],
+    [setUnsavedChanges],
   );
 
   const onSaveClick = React.useCallback(async () => {

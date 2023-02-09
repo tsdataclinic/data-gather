@@ -35,13 +35,18 @@ export default function SingleInterviewView(): JSX.Element {
         interview={interview}
         screens={screens}
         unsavedChanges={unsavedChanges}
-        // setUnsavedChanges={setUnsavedChanges}
       />
       <div className="flex h-full w-4/5 flex-col items-center bg-gray-100">
         <Routes>
           <Route
             path="configure"
-            element={<ConfigurePage defaultInterview={interview} />}
+            element={
+              <ConfigurePage
+                defaultInterview={interview}
+                unsavedChanges={unsavedChanges}
+                setUnsavedChanges={setUnsavedChanges}
+              />
+            }
           />
           {screens?.map(screen => {
             // we track the length of `actions` and `entries` as a cheap
