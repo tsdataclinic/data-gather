@@ -1,11 +1,11 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
-import LabelWrapper from '../../../ui/LabelWrapper';
 import FieldToQuestionBlock from './FieldToQuestionBlock';
 import useAppState from '../../../../hooks/useAppState';
 import type { EditableAction } from './types';
 import EntryDropdown from './EntryDropdown';
+import InfoIcon from '../../../ui/InfoIcon';
 
 type Props = {
   action: EditableAction;
@@ -30,6 +30,10 @@ export default function EditRowActionBlock({
     () => airtableSettings.bases.flatMap(base => base.tables),
     [airtableSettings],
   );
+
+  const [selectedIdentifierEntry, setSelectedIdentifierEntry] = React.useState<
+    InterviewScreenEntry.T | undefined
+  >(undefined);
 
   const selectedTable = React.useMemo(() => {
     const selectedEntry = entries.find(
@@ -59,6 +63,7 @@ export default function EditRowActionBlock({
       type: actionConfig.type,
       payload: { ...actionConfig.payload, entryId },
     };
+    setSelectedIdentifierEntry(entries.find(entry => entry.id === entryId));
     onActionChange(action, { ...action, config: newConfig } as EditableAction);
   };
 
@@ -84,22 +89,42 @@ export default function EditRowActionBlock({
       {entriesWithAirtableLookup.length === 0 ? (
         <p>There are no questions configured for Airtable yet.</p>
       ) : (
-        <LabelWrapper label="What response and corresponding row would you like to edit?">
-          <EntryDropdown
-            entries={entriesWithAirtableLookup}
-            onChangeEntrySelection={onChangeRowTarget}
-            selectedEntryId={actionConfig.payload.entryId}
-            onChangeResponseFieldKey={onChangeResponseFieldKey}
-            selectedResponseFieldKey={actionConfig.payload.primaryKeyField}
-            responseFieldPlaceholder="Select ID field"
-            defaultLanguage={defaultLanguage}
-          />
-        </LabelWrapper>
+        <>
+          <p>
+            What response and corresponding row would you like to edit?
+            <InfoIcon
+              className="ml-2"
+              tooltip="Select the question and field that will be used to uniquely identify the row you'd like to edit"
+            />
+          </p>
+          <div className="flex items-center">
+            <EntryDropdown
+              entries={entriesWithAirtableLookup}
+              onChangeEntrySelection={onChangeRowTarget}
+              selectedEntryId={actionConfig.payload.entryId}
+              onChangeResponseFieldKey={onChangeResponseFieldKey}
+              selectedResponseFieldKey={actionConfig.payload.primaryKeyField}
+              responseFieldPlaceholder="Select an ID field"
+              defaultLanguage={defaultLanguage}
+            />
+            {selectedTable && selectedIdentifierEntry ? (
+              <InfoIcon
+                className="ml-2"
+                tooltip={`This will look up the row in the ${
+                  selectedTable.name
+                } table, identified by the ${
+                  actionConfig.payload.primaryKeyField ??
+                  'field you select here'
+                } from the response to ${selectedIdentifierEntry.name}`}
+              />
+            ) : null}
+          </div>
+        </>
       )}
       {selectedTable && (
         <>
           <p>
-            Map each column you want to edit to the question that should be
+            Now map each column you want to edit to the question that should be
             used.
           </p>
           <FieldToQuestionBlock

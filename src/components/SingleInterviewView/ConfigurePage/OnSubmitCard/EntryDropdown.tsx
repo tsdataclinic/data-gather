@@ -128,12 +128,12 @@ export default function EntryDropdown({
   let entryIdToDisplay = selectedEntryId;
   if (isSpecialValueSelected) {
     entryIdToDisplay = SPECIAL_OPTION_ID;
-  } else if (isEmptyValueSelected) {
+  } else if (isEmptyValueSelected && emptyIsAnOption) {
     entryIdToDisplay = EMPTY_ENTRY_ID;
   }
 
   return (
-    <>
+    <div className="flex space-x-2">
       <Dropdown
         placeholder="Select response"
         options={entryOptions}
@@ -150,7 +150,6 @@ export default function EntryDropdown({
       />
       {airtableFieldOptions ? (
         <Dropdown
-          className="!ml-2"
           placeholder={responseFieldPlaceholder}
           options={airtableFieldOptions}
           onChange={onChangeResponseFieldKey}
@@ -159,13 +158,12 @@ export default function EntryDropdown({
       ) : null}
       {isSpecialValueSelected ? (
         <Dropdown
-          className="!ml-2"
           placeholder="Select special value"
           options={SPECIAL_VALUE_OPTIONS}
           onChange={onChangeSpecialValueType}
           value={selectedSpecialValueType}
         />
       ) : null}
-    </>
+    </div>
   );
 }
