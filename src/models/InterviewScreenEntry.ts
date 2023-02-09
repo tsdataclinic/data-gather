@@ -23,7 +23,9 @@ const SingleSelectOptionsSchema = z.object({
 
   // If an airtable config is provided then we will pull the options from the
   // given airtable field rather than using the manually specified `options`
-  airtableConfig: AirtableOptionsSchema.optional(),
+  airtableConfig: AirtableOptionsSchema.optional()
+    .nullable()
+    .transform(val => (val === null ? undefined : val)), // convert null to undefined
 });
 
 export type AirtableOptions = Readonly<z.infer<typeof AirtableOptionsSchema>>;
