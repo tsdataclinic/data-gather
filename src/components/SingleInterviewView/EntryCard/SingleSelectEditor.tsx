@@ -20,7 +20,7 @@ type Props = {
 
 function doesAirtableFieldHaveOptions(airtableField: AirtableField): boolean {
   return (
-    airtableField.options &&
+    airtableField.options !== undefined &&
     airtableField.options.length > 0 &&
     airtableField.options.every(option => option !== '' && option !== undefined)
   );
@@ -166,7 +166,7 @@ export default function SingleSelectEditor({
           />
           {selectedAirtableField ? (
             <ul className="ml-8 list-disc">
-              {selectedAirtableField.options.map(opt => (
+              {(selectedAirtableField.options ?? []).map(opt => (
                 <li key={opt}>{opt}</li>
               ))}
             </ul>
