@@ -159,6 +159,13 @@ export default function ScreenCard({
         'Saved!',
         `Successfully saved ${InterviewScreen.getTitle(screen)}`,
       );
+    } else {
+      toaster.notifyError(
+        'Error',
+        `Could not save ${InterviewScreen.getTitle(
+          screen,
+        )}. Please check your settings.`,
+      );
     }
   }, [allActions, screen, interviewService, allEntries, dispatch, toaster]);
 
