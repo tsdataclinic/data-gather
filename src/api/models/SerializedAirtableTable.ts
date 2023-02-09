@@ -6,8 +6,8 @@ import type { SerializedAirtableField } from './SerializedAirtableField';
 
 export type SerializedAirtableTable = {
   id: string;
-  name: string;
+  name?: string;
   description?: string;
-  fields: Array<SerializedAirtableField>;
+  fields?: Array<SerializedAirtableField>;
 };
 

@@ -14,6 +14,7 @@ export { ConditionalOperator } from './models/ConditionalOperator';
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export { InterviewSettingType } from './models/InterviewSettingType';
 export { ResponseType } from './models/ResponseType';
+export type { SerializedAirtableBase } from './models/SerializedAirtableBase';
 export type { SerializedAirtableField } from './models/SerializedAirtableField';
 export type { SerializedAirtableSettings } from './models/SerializedAirtableSettings';
 export type { SerializedAirtableTable } from './models/SerializedAirtableTable';

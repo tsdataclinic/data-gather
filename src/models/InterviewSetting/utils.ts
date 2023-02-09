@@ -21,7 +21,7 @@ export function create(
       [
         InterviewSettingType.AIRTABLE,
         <InterviewSetting.AirtableSettings>{
-          accessToken: '',
+          apiKey: '',
         },
       ],
     ]),

@@ -35,9 +35,7 @@ function serializeSettings(
   const settingsObj: Record<InterviewSettingType, SerializedAirtableSettings> =
     {
       [InterviewSettingType.AIRTABLE]: {
-        accessToken: '',
-        baseId: undefined,
-        tables: undefined,
+        apiKey: '',
       },
     };
   settings.forEach((value, key) => {

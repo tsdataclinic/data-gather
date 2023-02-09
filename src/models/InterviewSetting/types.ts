@@ -6,20 +6,26 @@ export type AirtableField = {
   description?: string;
   id: string;
   name: string;
+  options?: string[];
   type?: string;
 };
 
 export type AirtableTable = {
   description?: string;
-  fields: AirtableField[];
+  fields?: AirtableField[];
   id: string;
-  name: string;
+  name?: string;
+};
+
+export type AirtableBase = {
+  id: string;
+  name?: string;
+  tables?: AirtableTable[];
 };
 
 export type AirtableSettings = {
-  accessToken: string;
-  baseId?: string;
-  tables?: AirtableTable[];
+  apiKey: string;
+  bases?: AirtableBase[];
 };
 
 /**

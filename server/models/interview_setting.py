@@ -11,21 +11,26 @@ from pydantic import BaseModel, validator
 from server.models_util import APIModel, update_module_forward_refs
 
 class AirtableField(BaseModel):
-    description: Optional[str]
     id: str
     name: str
+    description: Optional[str]
     type: Optional[str]
+    options: Optional[list[str]]
 
 class AirtableTable(BaseModel):
     id: str
-    name: str
+    name: Optional[str]
     description: Optional[str]
-    fields: list[AirtableField]
+    fields: Optional[list[AirtableField]]
+
+class AirtableBase(BaseModel):
+    name: Optional[str]
+    id: str
+    tables: Optional[list[AirtableTable]]
     
 class AirtableSettings(BaseModel):
-    accessToken: str
-    baseId: Optional[str]
-    tables: Optional[list[AirtableTable]]
+    apiKey: str
+    bases: Optional[list[AirtableBase]]    
 
 class InterviewSettingType(str, enum.Enum):
     AIRTABLE = "airtable"

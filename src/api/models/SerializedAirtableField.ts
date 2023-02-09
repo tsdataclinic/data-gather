@@ -3,9 +3,10 @@
 /* eslint-disable */
 
 export type SerializedAirtableField = {
-  description?: string;
   id: string;
   name: string;
+  description?: string;
   type?: string;
+  options?: Array<string>;
 };
 

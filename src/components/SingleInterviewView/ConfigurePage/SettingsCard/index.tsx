@@ -66,20 +66,20 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
               <div key={`_${value}`} className="space-y-4">
                 <LabelWrapper label="Airtable Personal Access Token">
                   <InputText
-                    onChange={(accessToken: string) => {
+                    onChange={(apiKey: string) => {
                       onSettingChange(setting, {
                         ...setting,
                         settings: new Map([
                           [
                             InterviewSettingType.AIRTABLE,
                             {
-                              accessToken,
+                              apiKey,
                             },
                           ],
                         ]),
                       });
                     }}
-                    defaultValue={value.accessToken}
+                    defaultValue={value.apiKey}
                     placeholder="Enter Airtable personal access token..."
                   />
                 </LabelWrapper>

@@ -2,11 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SerializedAirtableTable } from './SerializedAirtableTable';
+import type { SerializedAirtableBase } from './SerializedAirtableBase';
 
 export type SerializedAirtableSettings = {
-  accessToken: string;
-  baseId?: string;
-  tables?: Array<SerializedAirtableTable>;
+  apiKey: string;
+  bases?: Array<SerializedAirtableBase>;
 };
 
