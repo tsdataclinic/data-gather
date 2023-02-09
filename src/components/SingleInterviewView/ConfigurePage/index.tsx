@@ -11,7 +11,7 @@ import useInterviewMutation, {
 
 type Props = {
   defaultInterview: Interview.WithScreensAndActions;
-  setUnsavedChanges: any;
+  setUnsavedChanges: (unsavedChanges: boolean) => void;
   unsavedChanges: boolean;
 };
 
