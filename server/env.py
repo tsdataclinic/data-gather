@@ -6,8 +6,11 @@ from dotenv import find_dotenv, load_dotenv
 ENV_FILES = [
     ".env",
     ".env.local",
+    ".env.development",
     ".env.development.local",
+    ".env.test",
     ".env.test.local",
+    ".env.production",
 ]
 
 
