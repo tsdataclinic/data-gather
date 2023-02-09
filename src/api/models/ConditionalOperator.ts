@@ -18,4 +18,6 @@ export enum ConditionalOperator {
   GTE = 'gte',
   LT = 'lt',
   LTE = 'lte',
+  IS_EMPTY = 'is_empty',
+  IS_NOT_EMPTY = 'is_not_empty',
 }
