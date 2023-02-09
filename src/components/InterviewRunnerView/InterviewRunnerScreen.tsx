@@ -53,14 +53,14 @@ export default function InterviewRunnerScreen({
   );
 
   return (
-    <div className="mx-auto mt-8 w-4/6 space-y-4 border border-gray-400 bg-white pb-8 shadow-md">
+    <div className="mx-auto mt-8 w-4/6 space-y-4 border border-blue-800 bg-white pb-8 shadow-md">
       {/* TODO multilanguage support rather than hardcoding en */}
-      <div className="w-full space-y-4 border-b border-gray-400 bg-slate-200 px-8 py-4 text-center text-slate-900">
+      <div className="w-full space-y-4 bg-blue-700 px-8 py-4 text-center text-blue-50">
         <h1 className="text-2xl tracking-wide">
           {InterviewScreen.getTitle(screen, 'en')}
         </h1>
         {screen.headerText && (
-          <p className="text-lg text-slate-700">{screen.headerText.en}</p>
+          <p className="text-lg text-blue-100">{screen.headerText.en}</p>
         )}
       </div>
       <Form className="px-8" onSubmit={handleSubmit}>
