@@ -1,5 +1,5 @@
 import {
-  faGear,
+  faTag,
   faLocationArrow,
   faQuestion,
 } from '@fortawesome/free-solid-svg-icons';
@@ -17,19 +17,19 @@ export default function ScreenDropdown({ entries }: Props): JSX.Element {
   )?.pathnameBase;
 
   return (
-    <div className="flex flex-col items-center p-0 w-full">
+    <div className="flex w-full flex-col items-center p-0">
       {/* Configure */}
       <NavLink
-        className="flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full"
+        className="flex w-full flex-row items-center gap-2.5 py-2.5 pr-5 pl-20"
         to={`${path}`}
       >
-        <FontAwesomeIcon size="1x" icon={faGear} />
+        <FontAwesomeIcon size="1x" icon={faTag} />
         Header
       </NavLink>
 
       {entries.map(({ id }) => (
         <NavLink
-          className="flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full"
+          className="flex w-full flex-row items-center gap-2.5 py-2.5 pr-5 pl-20"
           to={`${path}`}
           key={id}
         >
@@ -39,7 +39,7 @@ export default function ScreenDropdown({ entries }: Props): JSX.Element {
       ))}
 
       <NavLink
-        className="flex flex-row gap-2.5 items-center py-2.5 pr-5 pl-20 w-full"
+        className="flex w-full flex-row items-center gap-2.5 py-2.5 pr-5 pl-20"
         to={`${path}`}
       >
         <FontAwesomeIcon size="1x" icon={faLocationArrow} />

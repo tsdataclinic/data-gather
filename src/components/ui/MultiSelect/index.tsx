@@ -89,6 +89,7 @@ export default function MultiSelect({
         placeholder={placeholder}
         onChange={onSelection}
         disabled={allItemsAreSelected}
+        iconType={IconType.faPlus}
       />
 
       <div className="inline-block">

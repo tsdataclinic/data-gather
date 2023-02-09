@@ -13,6 +13,7 @@ import InfoIcon from '../../ui/InfoIcon';
 type Props = {
   action: EditableAction;
   allEntries: readonly InterviewScreenEntry.WithScreenT[];
+  defaultLanguage: string;
   onConditionalOperationChange: (action: EditableAction) => void;
 };
 
@@ -48,6 +49,7 @@ export default function ConditionalOperatorRow({
   action,
   allEntries,
   onConditionalOperationChange,
+  defaultLanguage,
 }: Props): JSX.Element {
   const { airtableSettings } = useAppState();
   const { bases } = airtableSettings;
@@ -65,12 +67,13 @@ export default function ConditionalOperatorRow({
   const allResponseKeyOptions = React.useMemo(
     () =>
       allEntries.map(entry => ({
-        displayValue: `${InterviewScreen.getTitle(entry.screen)} - ${
-          entry.name
-        }`,
+        displayValue: `${InterviewScreen.getTitle(
+          entry.screen,
+          defaultLanguage,
+        )} - ${entry.name}`,
         value: entry.responseKey,
       })),
-    [allEntries],
+    [allEntries, defaultLanguage],
   );
 
   // TODO: have to connect <ActionCard> to `entry` for responseKeyColumns to
@@ -142,7 +145,7 @@ export default function ConditionalOperatorRow({
         >
           <Dropdown
             onChange={onResponseKeyChange}
-            placeholder="Response variable"
+            placeholder="Select a response"
             value={action.responseKey}
             options={allResponseKeyOptions}
           />

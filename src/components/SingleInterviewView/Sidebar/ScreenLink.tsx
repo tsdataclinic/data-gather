@@ -1,18 +1,18 @@
+import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import classNames from 'classnames';
-import { useState, useEffect } from 'react';
 import { NavLink, useMatch } from 'react-router-dom';
 import * as Scroll from 'react-scroll';
-import useInterviewService from '../../../hooks/useInterviewService';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import { actionTypeToDisplayString } from '../../../models/ConditionalAction';
 import unsavedChangesConfirm from './unsavedChangesConfirm';
 
 type Props = {
+  defaultLanguage: string;
   isSelected: boolean;
   onScreenSelect: (screenId: string) => void;
-  screen: InterviewScreen.T;
+  screen: InterviewScreen.WithChildrenT;
   unsavedChanges: boolean;
 };
 
@@ -20,27 +20,13 @@ export default function ScreenLink({
   isSelected,
   onScreenSelect,
   screen,
+  defaultLanguage,
   unsavedChanges,
 }: Props): JSX.Element {
   const interviewPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
-  const [selectedEntry, setSelectedEntry] = useState<string | undefined>(
+  const [selectedEntry, setSelectedEntry] = React.useState<string | undefined>(
     undefined,
   );
-  const interviewService = useInterviewService();
-  const [fullScreen, setFullScreen] = useState<
-    InterviewScreen.WithChildrenT | undefined
-  >(undefined);
-
-  useEffect(() => {
-    // TODO: replace this with a useQuery hook instead
-    async function fetchAndSetFullScreen(screenId: string): Promise<void> {
-      const screenWithChildren =
-        await interviewService.interviewScreenAPI.getInterviewScreen(screenId);
-      setFullScreen(screenWithChildren);
-    }
-
-    fetchAndSetFullScreen(screen.id);
-  }, [interviewService, screen]);
 
   const screenMenuItemClass = classNames(
     'flex text-slate-600 flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full hover:text-blue-700 transition-colors duration-200',
@@ -75,8 +61,7 @@ export default function ScreenLink({
           className="pr-2.5"
           icon={IconType.faPenToSquare}
         />
-        {/* TODO multilanguage support rather than hardcoding en */}
-        {InterviewScreen.getTitle(screen)}
+        {InterviewScreen.getTitle(screen, defaultLanguage)}
       </NavLink>
 
       {isSelected ? (
@@ -91,12 +76,12 @@ export default function ScreenLink({
             containerId="scrollContainer"
             onClick={() => setSelectedEntry('HEADER')}
           >
-            <FontAwesomeIcon size="1x" icon={IconType.faGear} />
+            <FontAwesomeIcon size="1x" icon={IconType.faTag} />
             Header
           </Scroll.Link>
 
           {/* Entries */}
-          {fullScreen?.entries.map(entry => (
+          {screen.entries.map(entry => (
             <Scroll.Link
               className={entryMenuItemClass(entry.id)}
               smooth
@@ -113,7 +98,7 @@ export default function ScreenLink({
           ))}
 
           {/* Action */}
-          {fullScreen?.actions.map(action => (
+          {screen.actions.map(action => (
             <Scroll.Link
               key={action.id}
               smooth

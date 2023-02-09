@@ -52,19 +52,6 @@ function ActionCard(
     [interviewScreens],
   );
 
-  const onAlwaysExecuteChange = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>): void => {
-      const isChecked = event.target.checked;
-      onActionChange(action, {
-        ...action,
-        conditionalOperator: isChecked
-          ? ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
-          : ConditionalAction.ConditionalOperator.EQ,
-      });
-    },
-    [action, onActionChange],
-  );
-
   const onConditionalOperationChange = React.useCallback(
     (newAction: EditableAction) => {
       onActionChange(action, newAction);
@@ -129,6 +116,7 @@ function ActionCard(
             action={action}
             allEntries={allEntries}
             onConditionalOperationChange={onConditionalOperationChange}
+            defaultLanguage={interview.defaultLanguage}
           />
         )}
         <ActionConfigEditor

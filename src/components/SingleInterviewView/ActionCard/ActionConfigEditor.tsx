@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
-import * as Screen from '../../../models/InterviewScreen';
+import * as InterviewScreen from '../../../models/InterviewScreen';
 import Dropdown from '../../ui/Dropdown';
 import LabelWrapper from '../../ui/LabelWrapper';
 import assertUnreachable from '../../../util/assertUnreachable';
@@ -29,7 +29,7 @@ type ActionConfig = ConditionalAction.T['actionConfig'];
 type Props = {
   action: ConditionalAction.T | ConditionalAction.CreateT;
   interview: Interview.T;
-  interviewScreen: Screen.T;
+  interviewScreen: InterviewScreen.T;
   isAlwaysExecuteChecked: boolean;
   onActionConfigChange: (actionConfig: ActionConfig) => void;
 };
@@ -45,8 +45,9 @@ export default function ActionConfigEditor({
   interviewScreen,
   isAlwaysExecuteChecked,
 }: Props): JSX.Element {
+  const { id: interviewId, defaultLanguage } = interview;
   const { actionConfig } = action;
-  const screens = useInterviewScreens(interview.id);
+  const screens = useInterviewScreens(interviewId);
   const onActionTypeChange = (
     newActionType: ConditionalAction.ActionType,
   ): void => {
@@ -64,7 +65,7 @@ export default function ActionConfigEditor({
             )
             .map(screen => ({
               value: screen.id,
-              displayValue: Screen.getTitle(screen),
+              displayValue: InterviewScreen.getTitle(screen, defaultLanguage),
             }))
             .concat({
               // Hardcoding an 'End option' for now just for demoing, but this
@@ -73,7 +74,7 @@ export default function ActionConfigEditor({
               displayValue: 'END INTERVIEW',
             })
         : [],
-    [screens, interviewScreen, isAlwaysExecuteChecked],
+    [screens, interviewScreen, isAlwaysExecuteChecked, defaultLanguage],
   );
 
   const renderEditor = (): JSX.Element | null => {

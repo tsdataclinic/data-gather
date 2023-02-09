@@ -69,6 +69,7 @@ type Props<T> = {
   className?: string;
   defaultValue?: T | undefined;
   disabled?: boolean;
+  iconType?: IconType.IconDefinition;
   id?: string;
   name?: string;
   onChange?: (value: T) => void;
@@ -92,6 +93,7 @@ export default function Dropdown<T extends string>({
   value,
   id,
   disabled,
+  iconType = IconType.faChevronDown,
 }: Props<T>): JSX.Element {
   const ariaLabelToUse = ariaLabel ?? placeholder;
   const selectItems = useMemo(
@@ -134,7 +136,7 @@ export default function Dropdown<T extends string>({
         <Select.Icon>
           <FontAwesomeIcon
             style={{ marginLeft: 8 }}
-            icon={IconType.faChevronDown}
+            icon={iconType}
             size="xs"
           />
         </Select.Icon>

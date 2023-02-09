@@ -13,7 +13,7 @@ import unsavedChangesConfirm from './unsavedChangesConfirm';
 
 type Props = {
   interview: Interview.WithScreensAndActions;
-  screens: InterviewScreen.T[] | undefined;
+  screens: InterviewScreen.WithChildrenT[] | undefined;
   unsavedChanges: boolean;
 };
 
@@ -74,6 +74,7 @@ export default function Sidebar({
             <ScreenLink
               key={screen.id}
               screen={screen}
+              defaultLanguage={interview.defaultLanguage}
               onScreenSelect={setSelectedScreen}
               isSelected={selectedScreen === screen.id}
               unsavedChanges={unsavedChanges}
