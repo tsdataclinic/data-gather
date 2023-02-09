@@ -82,7 +82,7 @@ function ConfigureCard({
 
         <LabelWrapper
           inline
-          label="Allowed languages"
+          label="Enabled languages"
           labelTextClassName="w-40"
           infoTooltip="These are the languages a user can pick from. You will need to configure all questions and prompts for the languages you pick here."
         >
