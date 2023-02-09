@@ -8,6 +8,7 @@ ENV_FILES = [
     ".env.local",
     ".env.development.local",
     ".env.test.local",
+    ".env.prod",
     ".env.production.local",
 ]
 
