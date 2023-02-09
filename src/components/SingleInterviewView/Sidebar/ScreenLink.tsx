@@ -68,7 +68,7 @@ export default function ScreenLink({
             containerId="scrollContainer"
             onClick={() => setSelectedEntry('HEADER')}
           >
-            <FontAwesomeIcon size="1x" icon={IconType.faGear} />
+            <FontAwesomeIcon size="1x" icon={IconType.faTag} />
             Header
           </Scroll.Link>
 
