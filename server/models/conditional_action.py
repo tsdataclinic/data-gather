@@ -27,6 +27,10 @@ class ConditionalOperator(str, enum.Enum):
     LESS_THAN = "lt"
     LESS_THAN_OR_EQUAL = "lte"
 
+    # generic operators
+    IS_EMPTY = "is_empty"
+    IS_NOT_EMPTY = "is_not_empty"
+
 
 class ActionType(str, enum.Enum):
     """The different action types a ConditionalAction can be"""
