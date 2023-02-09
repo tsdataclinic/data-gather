@@ -57,7 +57,11 @@ export default function Sidebar({
           {screens.map(screen => (
             <ScreenLink
               key={screen.id}
-              screen={screen}
+              screenId={screen.id}
+              screenTitle={InterviewScreen.getTitle(
+                screen,
+                interview.defaultLanguage,
+              )}
               onScreenSelect={setSelectedScreen}
               isSelected={selectedScreen === screen.id}
             />

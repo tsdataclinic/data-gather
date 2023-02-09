@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Element as ScrollableElement } from 'react-scroll';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import Form from '../ui/Form';
+import SelectedLanguageContext from './SelectedLanguageContext';
 
 type Props = {
   onScreenChange: (newScreen: InterviewScreen.WithChildrenT) => void;
@@ -14,6 +15,8 @@ function HeaderCard(
   { screen, onScreenChange }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
+  const selectedLanguageCode = React.useContext(SelectedLanguageContext);
+
   return (
     <ScrollableElement
       name="HEADER"
@@ -27,9 +30,12 @@ function HeaderCard(
           label="Title"
           name="title"
           infoTooltip="The title of this stage that will be displayed"
-          value={InterviewScreen.getTitle(screen)}
+          value={screen.title[selectedLanguageCode] ?? ''}
           onChange={(newVal: string) => {
-            onScreenChange({ ...screen, title: { en: newVal } }); // TODO multilanguage support rather than hardcoding en
+            onScreenChange({
+              ...screen,
+              title: { ...screen.title, [selectedLanguageCode]: newVal },
+            });
           }}
         />
         <Form.Input
@@ -37,9 +43,15 @@ function HeaderCard(
           name="headerText"
           infoTooltip="Additional descriptive text about this stage that will be displayed"
           required={false}
-          value={screen.headerText.en} // TODO multilanguage support rather than hardcoding en
+          value={screen.headerText[selectedLanguageCode] ?? ''}
           onChange={(newVal: string) => {
-            onScreenChange({ ...screen, headerText: { en: newVal } }); // TODO multilanguage support rather than hardcoding en
+            onScreenChange({
+              ...screen,
+              headerText: {
+                ...screen.headerText,
+                [selectedLanguageCode]: newVal,
+              },
+            });
           }}
         />
       </Form>

@@ -26,6 +26,7 @@ export type AirtableSettings = {
 
 export type AppGlobalState = {
   airtableSettings: AirtableSettings;
+
   /**
    * A map of all interview conditional actions we have loaded so far.
    * Maps action id to ConditionalAction object.
@@ -49,12 +50,20 @@ export type AppGlobalState = {
    * Maps interview id to Interview object.
    */
   loadedInterviews: ReadonlyMap<string, Interview.WithScreensAndActions>;
+
+  /**
+   * The current language we are editing an interview in.
+   * If undefined, we should default to whichever langauge the interview is
+   * configured to use as the default.
+   */
+  selectedLanguageCode: string | undefined;
   // settings: {
   //   airtableAPISettings: AirtableAPISetting.T;
   // };
 };
 
 export const DEFAULT_APP_STATE: AppGlobalState = {
+  selectedLanguageCode: undefined,
   loadedConditionalActions: new Map(),
   loadedInterviewScreenEntries: new Map(),
   loadedInterviewScreens: new Map(),
@@ -87,6 +96,10 @@ export type AppAction =
   | {
       screens: InterviewScreen.WithChildrenT[];
       type: 'SCREENS_UPDATE';
+    }
+  | {
+      languageCode: string;
+      type: 'SELECTED_LANGUAGE_UPDATE';
     };
 
 function cloneMap<K, V>(map: ReadonlyMap<K, V>): Map<K, V> {
@@ -179,6 +192,11 @@ export default function appReducer(
           action.screens,
           screen => screen.id,
         ),
+      };
+    case 'SELECTED_LANGUAGE_UPDATE':
+      return {
+        ...state,
+        selectedLanguageCode: action.languageCode,
       };
 
     // case 'SETTING_CREATE':

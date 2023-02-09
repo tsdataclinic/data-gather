@@ -12,6 +12,8 @@ import useInterviewMutation, {
 import DropdownMenu from '../ui/DropdownMenu';
 import Dropdown from '../ui/Dropdown';
 import * as Config from '../../config';
+import useAppDispatch from '../../hooks/useAppDispatch';
+import SelectedLanguageContext from './SelectedLanguageContext';
 
 const StyledHeading = styled.h1`
   flex: 1;
@@ -34,6 +36,7 @@ export default function ScreenToolbar({
   onNewActionClick,
   onSaveClick,
 }: Props): JSX.Element {
+  const selectedLanguageCode = React.useContext(SelectedLanguageContext);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const deleteInterview = useInterviewMutation({
     mutation: (screenId: string, api: InterviewServiceAPI) =>
@@ -41,6 +44,7 @@ export default function ScreenToolbar({
   });
   const navigate = useNavigate();
   const { allowedLanguages } = interview;
+  const dispatch = useAppDispatch();
 
   const languageOptions = React.useMemo(
     () =>
@@ -53,7 +57,9 @@ export default function ScreenToolbar({
 
   return (
     <div className="z-10 flex w-full bg-white px-8 py-4 shadow">
-      <StyledHeading>{InterviewScreen.getTitle(screen)}</StyledHeading>
+      <StyledHeading>
+        {InterviewScreen.getTitle(screen, interview.defaultLanguage)}
+      </StyledHeading>
 
       <Toolbar.Root className="flex space-x-2">
         {allowedLanguages.length > 1 ? (
@@ -61,8 +67,14 @@ export default function ScreenToolbar({
             <p>Currently editing in</p>
             <Dropdown
               className="!bg-gray-200 !text-gray-800 !shadow-none hover:!bg-gray-300 hover:!text-gray-900"
-              defaultValue={interview.allowedLanguages[0]}
+              value={selectedLanguageCode}
               options={languageOptions}
+              onChange={newLanguageCode =>
+                dispatch({
+                  type: 'SELECTED_LANGUAGE_UPDATE',
+                  languageCode: newLanguageCode,
+                })
+              }
             />
           </div>
         ) : null}
@@ -87,7 +99,10 @@ export default function ScreenToolbar({
       </Toolbar.Root>
       {isDeleteModalOpen && (
         <Modal
-          title={`Delete ${InterviewScreen.getTitle(screen)}`}
+          title={`Delete ${InterviewScreen.getTitle(
+            screen,
+            interview.defaultLanguage,
+          )}`}
           isOpen={isDeleteModalOpen}
           onDismiss={() => setIsDeleteModalOpen(false)}
         >

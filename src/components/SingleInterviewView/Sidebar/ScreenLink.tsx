@@ -11,13 +11,15 @@ import { actionTypeToDisplayString } from '../../../models/ConditionalAction';
 type Props = {
   isSelected: boolean;
   onScreenSelect: (screenId: string) => void;
-  screen: InterviewScreen.T;
+  screenId: string;
+  screenTitle: string;
 };
 
 export default function ScreenLink({
   isSelected,
   onScreenSelect,
-  screen,
+  screenId,
+  screenTitle,
 }: Props): JSX.Element {
   const interviewPath = useMatch('/interview/:interviewId/*')?.pathnameBase;
   const [selectedEntry, setSelectedEntry] = useState<string | undefined>(
@@ -30,14 +32,14 @@ export default function ScreenLink({
 
   useEffect(() => {
     // TODO: replace this with a useQuery hook instead
-    async function fetchAndSetFullScreen(screenId: string): Promise<void> {
+    async function fetchAndSetFullScreen(id: string): Promise<void> {
       const screenWithChildren =
-        await interviewService.interviewScreenAPI.getInterviewScreen(screenId);
+        await interviewService.interviewScreenAPI.getInterviewScreen(id);
       setFullScreen(screenWithChildren);
     }
 
-    fetchAndSetFullScreen(screen.id);
-  }, [interviewService, screen]);
+    fetchAndSetFullScreen(screenId);
+  }, [interviewService, screenId]);
 
   const screenMenuItemClass = classNames(
     'flex text-slate-600 flex-row gap-2.5 items-center py-2.5 pr-5 pl-14 w-full hover:text-blue-700 transition-colors duration-200',
@@ -53,12 +55,12 @@ export default function ScreenLink({
     );
 
   return (
-    <div className="w-full" key={screen.id}>
+    <div className="w-full" key={screenId}>
       <NavLink
         className={screenMenuItemClass}
-        to={`${interviewPath}/screen/${screen.id}`}
+        to={`${interviewPath}/screen/${screenId}`}
         onClick={() => {
-          onScreenSelect(screen.id);
+          onScreenSelect(screenId);
           setSelectedEntry(undefined);
         }}
       >
@@ -67,8 +69,7 @@ export default function ScreenLink({
           className="pr-2.5"
           icon={IconType.faPenToSquare}
         />
-        {/* TODO multilanguage support rather than hardcoding en */}
-        {InterviewScreen.getTitle(screen)}
+        {screenTitle}
       </NavLink>
 
       {isSelected ? (

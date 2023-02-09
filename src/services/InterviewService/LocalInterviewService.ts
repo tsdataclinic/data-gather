@@ -80,6 +80,7 @@ export default class LocalInterviewService
         isInStartingState: true,
         startingStateOrder: 1,
         title: 'Stage 1',
+        defaultLanguage: serializedInterview.defaultLanguage,
       });
 
       // start the interview with 1 screen by default

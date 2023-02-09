@@ -131,6 +131,7 @@ function ActionCard(
             action={action}
             allEntries={allEntries}
             onConditionalOperationChange={onConditionalOperationChange}
+            defaultLanguage={interview.defaultLanguage}
           />
         )}
         <LabelWrapper inline labelAfter label="Always execute this action">

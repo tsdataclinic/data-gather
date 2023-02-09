@@ -34,6 +34,7 @@ export default function ScreenPage({
   const toaster = useToast();
   const interviewService = useInterviewService();
   const dispatch = useAppDispatch();
+  const { defaultLanguage } = interview;
 
   // track the screen internally so we can modify it without persisting until
   // 'save' is clicked
@@ -76,8 +77,8 @@ export default function ScreenPage({
         InterviewScreenEntry.create({
           name: `Question ${prevEntries.length + 1}`,
           order: prevEntries.length + 1,
-          prompt: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
-          text: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
+          prompt: { [defaultLanguage]: '' },
+          text: { [defaultLanguage]: '' },
           screenId: screen.id,
           responseType: InterviewScreenEntry.ResponseType.TEXT,
         }),
@@ -124,7 +125,7 @@ export default function ScreenPage({
     [],
   );
 
-  const onSaveClick = React.useCallback(async () => {
+  const onSaveClick = async (): Promise<void> => {
     const entriesForms = entriesSectionRef.current?.getForms() ?? [];
     const actionsForms = actionsSectionRef.current?.getForms() ?? [];
     const headerForm = headerFormRef.current;
@@ -140,6 +141,7 @@ export default function ScreenPage({
     });
 
     if (allFormsValid) {
+      // TODO: use react query mutation so you can refetch other queries
       const updatedScreen =
         await interviewService.interviewScreenAPI.updateInterviewScreen(
           screen.id,
@@ -152,10 +154,13 @@ export default function ScreenPage({
       });
       toaster.notifySuccess(
         'Saved!',
-        `Successfully saved ${InterviewScreen.getTitle(screen)}`,
+        `Successfully saved ${InterviewScreen.getTitle(
+          screen,
+          defaultLanguage,
+        )}`,
       );
     }
-  }, [allActions, screen, interviewService, allEntries, dispatch, toaster]);
+  };
 
   return (
     <>

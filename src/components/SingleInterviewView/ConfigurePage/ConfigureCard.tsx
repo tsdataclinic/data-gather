@@ -35,15 +35,15 @@ function ConfigureCard({
 }: Props): JSX.Element {
   const screens = useInterviewScreens(interview.id);
   const isAuthenticated = useIsAuthenticated();
-  const { allowedLanguages } = interview;
+  const { allowedLanguages, defaultLanguage } = interview;
 
   const screenOptions = React.useMemo(
     () =>
       screens?.map(screen => ({
-        displayValue: InterviewScreen.getTitle(screen),
+        displayValue: InterviewScreen.getTitle(screen, defaultLanguage),
         value: screen.id,
       })) ?? [],
-    [screens],
+    [defaultLanguage, screens],
   );
 
   const defaultLanguageOptions = React.useMemo(

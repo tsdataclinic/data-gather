@@ -87,18 +87,27 @@ type InterviewScreenUpdate = Override<
  * Create a new empty screen
  */
 export function create(values: {
+  defaultLanguage: string;
   headerText?: string;
   interviewId: string;
   isInStartingState?: boolean;
   startingStateOrder?: number;
   title: string;
 }): InterviewScreenCreate {
+  const {
+    defaultLanguage,
+    headerText,
+    isInStartingState,
+    title,
+    startingStateOrder,
+    interviewId,
+  } = values;
   return {
-    headerText: { en: values.headerText ?? '' }, // TODO multilanguage support rather than hardcoding en
-    title: { en: values.title }, // TODO multilanguage support rather than hardcoding en
-    isInStartingState: values.isInStartingState ?? false,
-    startingStateOrder: values.startingStateOrder,
-    interviewId: values.interviewId,
+    startingStateOrder,
+    interviewId,
+    headerText: { [defaultLanguage]: headerText ?? '' },
+    title: { [defaultLanguage]: title },
+    isInStartingState: isInStartingState ?? false,
   };
 }
 
@@ -160,15 +169,8 @@ export function serialize(
 
 /**
  * Get this screen's title in a given language.
- *
- * TODO: for now we default to english, but eventually this should default
- * to a user-configured default.
  */
-export function getTitle(
-  screen: InterviewScreen,
-  // TODO multilanguage support rather than hardcoding en
-  language: string = 'en',
-): string {
+export function getTitle(screen: InterviewScreen, language: string): string {
   const { title: titleObj } = screen;
   if (language in titleObj) {
     return titleObj[language];
@@ -176,6 +178,10 @@ export function getTitle(
 
   // otherwise default to the title in the first language we find
   return titleObj[Object.keys(titleObj)[0]];
+}
+
+export function getURL(screen: InterviewScreen): string {
+  return `/interview/${screen.interviewId}/screen/${screen.id}`;
 }
 
 export type { InterviewScreen as T };

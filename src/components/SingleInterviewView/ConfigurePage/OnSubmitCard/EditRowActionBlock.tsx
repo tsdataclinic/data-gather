@@ -10,6 +10,7 @@ import EntryDropdown from './EntryDropdown';
 type Props = {
   action: EditableAction;
   actionConfig: SubmissionAction.WithPartialPayload<SubmissionAction.EditRowActionConfig>;
+  defaultLanguage: string;
   entries: readonly InterviewScreenEntry.WithScreenT[];
   onActionChange: (
     actionToReplace: EditableAction,
@@ -20,6 +21,7 @@ type Props = {
 export default function EditRowActionBlock({
   action,
   actionConfig,
+  defaultLanguage,
   entries,
   onActionChange,
 }: Props): JSX.Element {
@@ -90,6 +92,7 @@ export default function EditRowActionBlock({
             onChangeResponseFieldKey={onChangeResponseFieldKey}
             selectedResponseFieldKey={actionConfig.payload.primaryKeyField}
             responseFieldPlaceholder="Select ID field"
+            defaultLanguage={defaultLanguage}
           />
         </LabelWrapper>
       )}
@@ -104,6 +107,7 @@ export default function EditRowActionBlock({
             airtableTable={selectedTable}
             fieldMappings={action.fieldMappings}
             onFieldMappingChange={onFieldMappingChange}
+            defaultLanguage={defaultLanguage}
           />
         </>
       )}
