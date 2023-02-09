@@ -53,15 +53,17 @@ export default function InterviewRunnerScreen({
   );
 
   return (
-    <div className="mx-auto mt-8 w-4/6">
-      <div className="mb-8 flex flex-col items-center">
-        {/* TODO multilanguage support rather than hardcoding en */}
-        <h1 className="text-2xl">{InterviewScreen.getTitle(screen, 'en')}</h1>
+    <div className="mx-auto mt-8 w-4/6 space-y-4 border border-gray-400 bg-white pb-8 shadow-md">
+      {/* TODO multilanguage support rather than hardcoding en */}
+      <div className="w-full space-y-4 border-b border-gray-400 bg-slate-200 px-8 py-4 text-center text-slate-900">
+        <h1 className="text-2xl tracking-wide">
+          {InterviewScreen.getTitle(screen, 'en')}
+        </h1>
         {screen.headerText && (
-          <h3 className="text-xl">{screen.headerText.en}</h3>
+          <p className="text-lg text-slate-700">{screen.headerText.en}</p>
         )}
       </div>
-      <Form onSubmit={handleSubmit}>
+      <Form className="px-8" onSubmit={handleSubmit}>
         {entries.map((entry: InterviewScreenEntry.T) => (
           <InterviewRunnerEntry key={entry.id} entry={entry} />
         ))}
