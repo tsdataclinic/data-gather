@@ -13,6 +13,7 @@ import ConditionalActionsSection from './ConditionalActionsSection';
 import useInterviewMutation, {
   type InterviewServiceAPI,
 } from '../../hooks/useInterviewMutation';
+import useInterviewScreens from '../../hooks/useInterviewScreens';
 
 type Props = {
   defaultActions: readonly ConditionalAction.T[];
@@ -80,6 +81,27 @@ export default function ScreenPage({
   const [allEntries, setAllEntries] =
     React.useState<readonly EditableEntry[]>(defaultEntries);
 
+  // get all entries from this interview, we will need this for the conditional
+  // actions
+  const interviewScreens = useInterviewScreens(interview.id);
+  const allInterviewEntries = React.useMemo(
+    () =>
+      interviewScreens?.flatMap(interviewScreen => {
+        // for the current screen, take our current entries instead of the ones
+        // in storage
+        const entriesToUse =
+          interviewScreen.id === screen.id
+            ? allEntries
+            : interviewScreen.entries;
+        return entriesToUse.map(entry => ({
+          ...entry,
+          screen: interviewScreen,
+        }));
+      }) ?? [],
+    [screen.id, interviewScreens, allEntries],
+  );
+
+  // track form refs
   const headerFormRef = React.useRef<null | HTMLFormElement>(null);
   const entriesSectionRef = React.useRef<null | React.ComponentRef<
     typeof EntriesSection
@@ -242,6 +264,7 @@ export default function ScreenPage({
           <ConditionalActionsSection
             ref={actionsSectionRef}
             actions={allActions}
+            allInterviewEntries={allInterviewEntries}
             onActionChange={onActionChange}
             onActionDelete={onActionDelete}
             onNewActionClick={onNewActionClick}

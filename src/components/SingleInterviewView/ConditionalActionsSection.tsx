@@ -5,14 +5,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import Button from '../ui/Button';
 import ActionCard from './ActionCard';
-import type { EditableAction } from './types';
 import useRefMap from '../../hooks/useRefMap';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import InfoIcon from '../ui/InfoIcon';
+import type { EditableAction, EditableEntryWithScreen } from './types';
 
 type Props = {
   actions: readonly EditableAction[];
+  allInterviewEntries: readonly EditableEntryWithScreen[];
   interview: Interview.T;
   interviewScreen: InterviewScreen.T;
   onActionChange: (
@@ -30,6 +31,7 @@ type ConditionalActionsSectionAPI = {
 function BaseConditionalActionsSection(
   {
     actions,
+    allInterviewEntries,
     interview,
     interviewScreen,
     onActionChange,
@@ -88,6 +90,7 @@ function BaseConditionalActionsSection(
         return (
           <ActionCard
             key={actionId}
+            allInterviewEntries={allInterviewEntries}
             ref={formRefs.get(actionId)}
             action={action}
             onActionChange={onActionChange}

@@ -6,6 +6,7 @@ import '@reach/listbox/styles.css';
 import * as Select from '@radix-ui/react-select';
 import DropdownOptionItem from './DropdownOptionItem';
 import type { DropdownOption, DropdownOptionGroup } from './types';
+import Tooltip from '../Tooltip';
 
 // re-export these types
 export type { DropdownOption, DropdownOptionGroup };
@@ -119,6 +120,20 @@ export default function Dropdown<T extends string>({
     [options],
   );
 
+  const triggerButton = (
+    <StyledTriggerButton
+      id={id}
+      className={className}
+      aria-label={ariaLabelToUse}
+      disabled={disabled || options.length === 0}
+    >
+      <Select.Value placeholder={placeholder} />
+      <Select.Icon>
+        <FontAwesomeIcon style={{ marginLeft: 8 }} icon={iconType} size="xs" />
+      </Select.Icon>
+    </StyledTriggerButton>
+  );
+
   return (
     <Select.Root
       value={value}
@@ -126,21 +141,11 @@ export default function Dropdown<T extends string>({
       onValueChange={onChange}
       name={name}
     >
-      <StyledTriggerButton
-        id={id}
-        className={className}
-        aria-label={ariaLabelToUse}
-        disabled={disabled}
-      >
-        <Select.Value placeholder={placeholder} />
-        <Select.Icon>
-          <FontAwesomeIcon
-            style={{ marginLeft: 8 }}
-            icon={iconType}
-            size="xs"
-          />
-        </Select.Icon>
-      </StyledTriggerButton>
+      {options.length === 0 ? (
+        <Tooltip content="This dropdown is empty">{triggerButton}</Tooltip>
+      ) : (
+        triggerButton
+      )}
 
       <Select.Portal>
         <StyledSelectContent>

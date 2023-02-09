@@ -5,14 +5,14 @@ import InputText from '../../ui/InputText';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import * as InterviewScreen from '../../../models/InterviewScreen';
-import type { EditableAction } from '../types';
 import useAppState from '../../../hooks/useAppState';
 import LabelWrapper from '../../ui/LabelWrapper';
 import InfoIcon from '../../ui/InfoIcon';
+import type { EditableAction, EditableEntryWithScreen } from '../types';
 
 type Props = {
   action: EditableAction;
-  allEntries: readonly InterviewScreenEntry.WithScreenT[];
+  allInterviewEntries: readonly EditableEntryWithScreen[];
   defaultLanguage: string;
   onConditionalOperationChange: (action: EditableAction) => void;
 };
@@ -47,7 +47,7 @@ const OPERATOR_OPTIONS = [
 // subcomponents because we need more control over how it renders
 export default function ConditionalOperatorRow({
   action,
-  allEntries,
+  allInterviewEntries,
   onConditionalOperationChange,
   defaultLanguage,
 }: Props): JSX.Element {
@@ -59,25 +59,26 @@ export default function ConditionalOperatorRow({
   );
 
   const selectedEntry = React.useMemo(
-    () => allEntries.find(entry => entry.responseKey === action.responseKey),
-    [allEntries, action],
+    () =>
+      allInterviewEntries.find(
+        entry => entry.responseKey === action.responseKey,
+      ),
+    [allInterviewEntries, action],
   );
 
   // TODO: this is only looking at entries. We also need to look at Skip actions.
   const allResponseKeyOptions = React.useMemo(
     () =>
-      allEntries.map(entry => ({
+      allInterviewEntries.map(entry => ({
         displayValue: `${InterviewScreen.getTitle(
           entry.screen,
           defaultLanguage,
         )} - ${entry.name}`,
         value: entry.responseKey,
       })),
-    [allEntries, defaultLanguage],
+    [allInterviewEntries, defaultLanguage],
   );
 
-  // TODO: have to connect <ActionCard> to `entry` for responseKeyColumns to
-  // change before 'Save' is clicked
   const allResponseKeyFieldOptions = React.useMemo(() => {
     // if the selected entry is an Airtable response, then we need to get the
     // table it links to so that we can get all the available fields
@@ -87,6 +88,15 @@ export default function ConditionalOperatorRow({
           InterviewScreenEntry.ResponseType.AIRTABLE &&
         table.key === selectedEntry.responseTypeOptions.selectedTable,
     );
+
+    // if we couldn't find a table, but the response type is set to 'airtable'
+    // then still return an empty array rather than undefined
+    if (
+      airtableTable === undefined &&
+      selectedEntry?.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
+    ) {
+      return [];
+    }
 
     return airtableTable?.fields.map(field => ({
       displayValue: field.fieldName,
@@ -150,8 +160,7 @@ export default function ConditionalOperatorRow({
             options={allResponseKeyOptions}
           />
         </LabelWrapper>
-        {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
-        {allResponseKeyFieldOptions && allResponseKeyFieldOptions.length > 0 ? (
+        {allResponseKeyFieldOptions ? (
           <Dropdown
             onChange={onResponseKeyFieldChange}
             placeholder="Column name"

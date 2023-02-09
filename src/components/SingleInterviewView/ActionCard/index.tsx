@@ -13,13 +13,13 @@ import * as InterviewScreen from '../../../models/InterviewScreen';
 import LabelWrapper from '../../ui/LabelWrapper';
 import ActionConfigEditor from './ActionConfigEditor';
 import Form from '../../ui/Form';
-import useInterviewScreens from '../../../hooks/useInterviewScreens';
-import type { EditableAction } from '../types';
 import ConditionalOperatorRow from './ConditionalOperatorRow';
 import Button from '../../ui/Button';
+import type { EditableAction, EditableEntryWithScreen } from '../types';
 
 type Props = {
   action: EditableAction;
+  allInterviewEntries: readonly EditableEntryWithScreen[];
   interview: Interview.T;
   interviewScreen: InterviewScreen.T;
   onActionChange: (
@@ -35,6 +35,7 @@ type Props = {
 function ActionCard(
   {
     action,
+    allInterviewEntries,
     interview,
     onActionChange,
     onActionDelete,
@@ -45,14 +46,6 @@ function ActionCard(
 ): JSX.Element {
   // TODO: when interview is a nested model we won't need these sub-queries
   const actionId = 'id' in action ? action.id : action.tempId;
-  const interviewScreens = useInterviewScreens(interview.id);
-  const allEntries = React.useMemo(
-    () =>
-      interviewScreens?.flatMap(screen =>
-        screen.entries.map(entry => ({ ...entry, screen })),
-      ) ?? [],
-    [interviewScreens],
-  );
 
   const onAlwaysExecuteChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -129,7 +122,7 @@ function ActionCard(
         {!isAlwaysExecuteChecked && (
           <ConditionalOperatorRow
             action={action}
-            allEntries={allEntries}
+            allInterviewEntries={allInterviewEntries}
             onConditionalOperationChange={onConditionalOperationChange}
             defaultLanguage={interview.defaultLanguage}
           />
