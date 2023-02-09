@@ -170,6 +170,14 @@ export default function ScreenPage({
               )}`,
             );
           },
+          onError: error => {
+            if (e instanceof Error) {
+              toaster.notifyError(
+                'Error',
+                `Could not save ${InterviewScreen.getTitle(screen)}. ${e.message}.`,
+              );
+            }
+          },
         },
       );
     }
