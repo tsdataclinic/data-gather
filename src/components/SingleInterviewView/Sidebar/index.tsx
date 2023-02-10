@@ -100,7 +100,7 @@ export default function Sidebar({
   const screenOrderToDisplay = isReordering ? optimisticScreenOrder : screens;
 
   return (
-    <nav className="relative top-0 z-20 h-full w-1/5 items-stretch bg-white shadow">
+    <nav className="relative top-0 z-20 h-full w-1/5 items-stretch overflow-auto bg-white shadow">
       <div className="flex flex-col items-start py-10 px-0">
         <div className="flex flex-row items-center gap-2.5 py-2.5 px-5 text-2xl">
           <NavLink
