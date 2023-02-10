@@ -55,28 +55,35 @@ export default function InterviewRunnerEntry({
   // when new airtable response data comes in, reset the table headers
   // and data
   React.useEffect(() => {
-    if (!responseData || responseData.length < 1) return;
-    // collect superset of all fields from all results
-    const allFields: string[] = [];
-    const seenFields: Set<string> = new Set();
-    responseData.forEach((row: { fields: Record<string, string> }) => {
-      const fieldNames: string[] = Object.keys(row.fields);
-      fieldNames.forEach(fieldName => {
-        if (!seenFields.has(fieldName)) {
-          seenFields.add(fieldName);
-          allFields.push(fieldName);
-        }
+    if (!responseData || responseData.length < 1) {
+      return;
+    }
+    if (entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE) {
+      // collect superset of all fields from all results
+      const allFields: string[] = [];
+      const seenFields: Set<string> = new Set();
+      responseData.forEach((row: { fields: Record<string, string> }) => {
+        const fieldNames: string[] = Object.keys(row.fields);
+        fieldNames.forEach(fieldName => {
+          if (
+            entry.responseTypeOptions.selectedFields.includes(fieldName) &&
+            !seenFields.has(fieldName)
+          ) {
+            seenFields.add(fieldName);
+            allFields.push(fieldName);
+          }
+        });
       });
-    });
 
-    setColumnDefs(allFields.map(f => ({ field: f })));
-    setRowData(
-      responseData.map((d: any) => ({
-        id: d.id,
-        ...d.fields,
-      })),
-    );
-  }, [responseData]);
+      setColumnDefs(allFields.map(f => ({ field: f })));
+      setRowData(
+        responseData.map((d: any) => ({
+          id: d.id,
+          ...d.fields,
+        })),
+      );
+    }
+  }, [responseData, entry]);
 
   const { responseType } = entry;
   const entryPrompt =
