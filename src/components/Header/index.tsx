@@ -1,6 +1,6 @@
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Link } from 'react-router-dom';
+import { Link, useMatch } from 'react-router-dom';
 import useDataClinicAuth from '../../auth/useDataClinicAuth';
 import useIsAuthenticated from '../../auth/useIsAuthenticated';
 import Button from '../ui/Button';
@@ -8,6 +8,8 @@ import Button from '../ui/Button';
 export default function Header(): JSX.Element {
   const { login, logout } = useDataClinicAuth();
   const isAuthenticated = useIsAuthenticated();
+
+  const path = useMatch('/published/:vanityUrl');
 
   return (
     <>
@@ -32,7 +34,7 @@ export default function Header(): JSX.Element {
           <FontAwesomeIcon className="ml-2" size="lg" icon={faUser} />
         </Button>
       </header>
-      {!isAuthenticated && (
+      {!isAuthenticated && path?.params.vanityUrl === undefined ? (
         <header className="z-50 flex h-12 w-full items-center bg-red-400 py-2 px-8 text-white">
           <span className="text-xl font-bold tracking-wide">
             You aren&apos;t signed in!
@@ -42,7 +44,7 @@ export default function Header(): JSX.Element {
             Click the button in the top-right to sign in.
           </span>
         </header>
-      )}
+      ) : null}
     </>
   );
 }
