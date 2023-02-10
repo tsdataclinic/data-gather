@@ -34,9 +34,6 @@ export default function SingleSelectEditor({
   const { airtableSettings } = useAppState();
   const showAirtableConfig = selectionConfig.airtableConfig !== undefined;
 
-  console.log('selection config', selectionConfig);
-  console.log('show it?', showAirtableConfig);
-
   const allAirtableFields = React.useMemo(
     () =>
       airtableSettings.bases.flatMap(base =>
@@ -83,19 +80,6 @@ export default function SingleSelectEditor({
             type="checkbox"
             onChange={e => {
               const shouldShowAirtableConfig = e.target.checked;
-              console.log('should show it?', shouldShowAirtableConfig);
-              const newConfig = {
-                ...selectionConfig,
-                airtableConfig: shouldShowAirtableConfig
-                  ? {
-                      selectedTable: '',
-                      selectedBase: '',
-                      selectedFields: [],
-                    }
-                  : undefined,
-              };
-              console.log('new config', newConfig);
-
               onSelectionConfigurationChange({
                 ...selectionConfig,
                 airtableConfig: shouldShowAirtableConfig
@@ -106,8 +90,6 @@ export default function SingleSelectEditor({
                     }
                   : undefined,
               });
-
-              // setShowAirtableConfig(shouldShowAirtableConfig);
             }}
             checked={showAirtableConfig}
           />

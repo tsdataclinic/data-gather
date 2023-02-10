@@ -132,7 +132,10 @@ export default function InterviewRunnerEntry({
         <div>
           <strong>{entryPrompt}</strong>
           <LabelWrapper label="Search for record">
-            <InputText onChange={(val: string) => setAirtableQuery(val)} />
+            <InputText
+              required
+              onChange={(val: string) => setAirtableQuery(val)}
+            />
           </LabelWrapper>
           {isLoading && <p>Loading Airtable records...</p>}
           {isError && (

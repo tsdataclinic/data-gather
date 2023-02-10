@@ -11,6 +11,7 @@ import Dropdown from '../ui/Dropdown';
 import * as Config from '../../config';
 import LabelWrapper from '../ui/LabelWrapper';
 import Button from '../ui/Button';
+import { useToast } from '../ui/Toast';
 
 type Props = {
   entries: InterviewScreenEntry.T[];
@@ -30,6 +31,7 @@ export default function InterviewRunnerScreen({
   const { allowedLanguages, defaultLanguage } = interview;
   const [selectedLanguage, setSelectedLanguage] =
     React.useState(defaultLanguage);
+  const toaster = useToast();
 
   const languageOptions = React.useMemo(
     () =>
@@ -56,6 +58,31 @@ export default function InterviewRunnerScreen({
       }
       const formResponses: ResponseData = {};
 
+      // check if any form is an airtable lookup and is missing data
+      const invalidAirtableSelection = [...formData.entries()].some(
+        ([key, value]) => {
+          const entry = entriesMap.get(key);
+          if (!entry) {
+            return true;
+          }
+
+          if (
+            entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
+          ) {
+            return value === undefined || value === '';
+          }
+          return false;
+        },
+      );
+
+      if (invalidAirtableSelection) {
+        toaster.notifyError(
+          'Missing selection',
+          'You need to make a selection in the table before you can move forward',
+        );
+        return;
+      }
+
       formData.forEach((value, key) => {
         const entry = entriesMap.get(key);
         if (entry) {
@@ -71,7 +98,7 @@ export default function InterviewRunnerScreen({
       responseConsumer.answer(formResponses);
       responseConsumer.submit();
     },
-    [responseConsumer, entriesMap],
+    [responseConsumer, entriesMap, toaster],
   );
 
   return (

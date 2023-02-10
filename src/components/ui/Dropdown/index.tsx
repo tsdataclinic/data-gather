@@ -80,6 +80,7 @@ type Props<T> = {
    * This will also be the default value for `ariaLabel` too.
    */
   placeholder?: string;
+  required?: boolean;
   value?: T | undefined;
 };
 
@@ -90,6 +91,7 @@ export default function Dropdown<T extends string>({
   placeholder,
   name,
   onChange,
+  required,
   options,
   value,
   id,
@@ -140,6 +142,7 @@ export default function Dropdown<T extends string>({
       defaultValue={defaultValue}
       onValueChange={onChange}
       name={name}
+      required={required}
     >
       {options.length === 0 ? (
         <Tooltip content="This dropdown is empty">{triggerButton}</Tooltip>

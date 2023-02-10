@@ -39,6 +39,7 @@ export default function FormDropdown<T extends string>({
       <Dropdown
         options={options}
         name={name}
+        required={required}
         defaultValue={defaultValue}
         value={value}
         onChange={onChange}
