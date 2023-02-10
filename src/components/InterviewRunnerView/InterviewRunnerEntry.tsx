@@ -59,23 +59,13 @@ export default function InterviewRunnerEntry({
       return;
     }
     if (entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE) {
-      // collect superset of all fields from all results
-      const allFields: string[] = [];
-      const seenFields: Set<string> = new Set();
-      responseData.forEach((row: { fields: Record<string, string> }) => {
-        const fieldNames: string[] = Object.keys(row.fields);
-        fieldNames.forEach(fieldName => {
-          if (
-            entry.responseTypeOptions.selectedFields.includes(fieldName) &&
-            !seenFields.has(fieldName)
-          ) {
-            seenFields.add(fieldName);
-            allFields.push(fieldName);
-          }
-        });
-      });
+      // set the subset of fields to display from the results
+      const fieldsToDisplayInTable: string[] =
+        entry.responseTypeOptions.selectedFields;
+      console.log('fields to display', fieldsToDisplayInTable);
+      setColumnDefs(fieldsToDisplayInTable.map(f => ({ field: f })));
 
-      setColumnDefs(allFields.map(f => ({ field: f })));
+      // row data should include all fields, even if we only display a subset
       setRowData(
         responseData.map((d: any) => ({
           id: d.id,
