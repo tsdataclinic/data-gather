@@ -45,7 +45,10 @@ export default function Sidebar({
         params.interviewId,
         params.newScreenOrder.map(screen => screen.id),
       ),
-    invalidateQuery: InterviewScreen.QueryKeys.getScreens(interview.id),
+    invalidateQueries: [
+      Interview.QueryKeys.getInterview(interview.id),
+      InterviewScreen.QueryKeys.getScreens(interview.id),
+    ],
     onMutate: (params, queryClient) => {
       const previousScreenOrder: InterviewScreen.WithChildrenT[] | undefined =
         queryClient.getQueryData(
