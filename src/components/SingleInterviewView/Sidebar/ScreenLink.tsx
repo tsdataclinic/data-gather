@@ -9,6 +9,8 @@ import * as InterviewScreen from '../../../models/InterviewScreen';
 import { actionTypeToDisplayString } from '../../../models/ConditionalAction';
 import unsavedChangesConfirm from './unsavedChangesConfirm';
 
+const SCROLL_OFFSET = -100;
+
 type Props = {
   defaultLanguage: string;
   isSelected: boolean;
@@ -79,8 +81,8 @@ export default function ScreenLink({
             {/* Header */}
             <Scroll.Link
               smooth
+              offset={SCROLL_OFFSET}
               className={entryMenuItemClass('HEADER')}
-              activeClass="active"
               to="HEADER"
               duration={250}
               containerId="scrollContainer"
@@ -93,10 +95,10 @@ export default function ScreenLink({
             {/* Entries */}
             {screen.entries.map(entry => (
               <Scroll.Link
-                className={entryMenuItemClass(entry.id)}
                 smooth
+                offset={SCROLL_OFFSET}
+                className={entryMenuItemClass(entry.id)}
                 key={entry.id}
-                activeClass="active"
                 to={entry.id}
                 duration={250}
                 containerId="scrollContainer"
@@ -110,14 +112,14 @@ export default function ScreenLink({
             {/* Action */}
             {screen.actions.map(action => (
               <Scroll.Link
-                key={action.id}
                 smooth
-                className={entryMenuItemClass('ACTION')}
-                activeClass="active"
-                to="ACTION"
+                offset={SCROLL_OFFSET}
+                key={action.id}
+                className={entryMenuItemClass(action.id)}
+                to={action.id}
                 duration={250}
                 containerId="scrollContainer"
-                onClick={() => setSelectedEntry('ACTION')}
+                onClick={() => setSelectedEntry(action.id)}
               >
                 <FontAwesomeIcon size="1x" icon={IconType.faLocationArrow} />
                 Action: {actionTypeToDisplayString(action.actionConfig.type)}
