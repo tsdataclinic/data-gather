@@ -5,7 +5,6 @@ import * as React from 'react';
 import * as Scroll from 'react-scroll';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { MixedCheckbox } from '@reach/checkbox';
 import { Element as ScrollableElement } from 'react-scroll';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
@@ -136,7 +135,8 @@ function ActionCard(
           />
         )}
         <LabelWrapper inline labelAfter label="Always execute this action">
-          <MixedCheckbox
+          <input
+            type="checkbox"
             checked={isAlwaysExecuteChecked}
             onChange={onAlwaysExecuteChange}
           />

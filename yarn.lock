@@ -2264,18 +2264,6 @@
     "@reach/utils" "0.17.0"
     tslib "^2.3.0"
 
-"@reach/checkbox@^0.17.0":
-  version "0.17.0"
-  resolved "https://registry.yarnpkg.com/@reach/checkbox/-/checkbox-0.17.0.tgz#bfd40409cd541dede53a4a919ab3c8bd843b04fc"
-  integrity sha512-a/poJjBkyEuFvOSrxyxI2yi31L5osO1xhGYOl6A4A0URldJt9tpXbXeAKfOtzStmR2f+zzPy820p/sPAJ4+meg==
-  dependencies:
-    "@reach/auto-id" "0.17.0"
-    "@reach/machine" "0.17.0"
-    "@reach/utils" "0.17.0"
-    prop-types "^15.7.2"
-    tiny-warning "^1.0.3"
-    tslib "^2.3.0"
-
 "@reach/descendants@0.17.0":
   version "0.17.0"
   resolved "https://registry.yarnpkg.com/@reach/descendants/-/descendants-0.17.0.tgz#3fb087125a67870acd4dee1528449ed546829b67"

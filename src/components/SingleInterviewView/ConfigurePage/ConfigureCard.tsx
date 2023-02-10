@@ -1,6 +1,5 @@
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { MixedCheckbox } from '@reach/checkbox';
 import * as React from 'react';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
 import * as Interview from '../../../models/Interview';
@@ -135,7 +134,8 @@ function ConfigureCard({
           labelTextClassName="w-40"
           inlineContainerStyles={{ verticalAlign: 'text-top' }}
         >
-          <MixedCheckbox
+          <input
+            type="checkbox"
             onChange={e => {
               onInterviewChange({ ...interview, published: e.target.checked });
             }}

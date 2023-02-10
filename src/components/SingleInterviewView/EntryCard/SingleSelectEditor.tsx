@@ -2,7 +2,6 @@ import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { v4 as uuidv4 } from 'uuid';
-import { MixedCheckbox } from '@reach/checkbox';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import InputText from '../../ui/InputText';
 import Button from '../../ui/Button';
@@ -30,10 +29,13 @@ export default function SingleSelectEditor({
   onSelectionConfigurationChange,
   selectionConfig,
 }: Props): JSX.Element {
-  const [showAirtableConfig, setShowAirtableConfig] = React.useState(false);
   const { airtableConfig, options } = selectionConfig;
   const [optionToAdd, setOptionToAdd] = React.useState<string>('');
   const { airtableSettings } = useAppState();
+  const showAirtableConfig = selectionConfig.airtableConfig !== undefined;
+
+  console.log('selection config', selectionConfig);
+  console.log('show it?', showAirtableConfig);
 
   const allAirtableFields = React.useMemo(
     () =>
@@ -77,9 +79,22 @@ export default function SingleSelectEditor({
           labelTextClassName="mr-1"
           inlineContainerStyles={{ position: 'relative', top: 1 }}
         >
-          <MixedCheckbox
+          <input
+            type="checkbox"
             onChange={e => {
               const shouldShowAirtableConfig = e.target.checked;
+              console.log('should show it?', shouldShowAirtableConfig);
+              const newConfig = {
+                ...selectionConfig,
+                airtableConfig: shouldShowAirtableConfig
+                  ? {
+                      selectedTable: '',
+                      selectedBase: '',
+                      selectedFields: [],
+                    }
+                  : undefined,
+              };
+              console.log('new config', newConfig);
 
               onSelectionConfigurationChange({
                 ...selectionConfig,
@@ -92,7 +107,7 @@ export default function SingleSelectEditor({
                   : undefined,
               });
 
-              setShowAirtableConfig(shouldShowAirtableConfig);
+              // setShowAirtableConfig(shouldShowAirtableConfig);
             }}
             checked={showAirtableConfig}
           />

@@ -2,7 +2,6 @@ import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as Scroll from 'react-scroll';
-import { MixedCheckbox } from '@reach/checkbox';
 import Form from '../../ui/Form';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import EditableName from './EditableName';
@@ -133,11 +132,12 @@ function EntryCard(
             labelTextClassName="mr-1"
             inlineContainerStyles={{ position: 'relative', top: 1 }}
           >
-            <MixedCheckbox
+            <input
+              type="checkbox"
               onChange={e => {
                 onEntryChange(entry, { ...entry, required: e.target.checked });
               }}
-              checked={entry.required}
+              checked={!!entry.required}
             />
           </LabelWrapper>
         </Form.Group>

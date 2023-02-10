@@ -62,7 +62,6 @@ export default function InterviewRunnerEntry({
       // set the subset of fields to display from the results
       const fieldsToDisplayInTable: string[] =
         entry.responseTypeOptions.selectedFields;
-      console.log('fields to display', fieldsToDisplayInTable);
       setColumnDefs(fieldsToDisplayInTable.map(f => ({ field: f })));
 
       // row data should include all fields, even if we only display a subset
