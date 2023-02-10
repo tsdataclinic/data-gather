@@ -199,9 +199,9 @@ export default function ConditionalOperatorRow({
             />
           </>
         )) ||
-          ConditionalAction.isNumberOperator(action.conditionalOperator) ||
-          (action.conditionalOperator ===
-            ConditionalAction.ConditionalOperator.EQ && (
+          (ConditionalAction.doesOperatorRequireValue(
+            action.conditionalOperator,
+          ) && (
             <InputText
               placeholder="Value"
               onChange={onConditionalValueChange}

@@ -53,7 +53,7 @@ export default function ScreenPage({
 }: Props): JSX.Element {
   const toaster = useToast();
   const { defaultLanguage } = interview;
-  const updateScreen = useInterviewMutation({
+  const { mutate: updateScreen } = useInterviewMutation({
     mutation: saveInterviewScreen,
     invalidateQueries: [
       Interview.QueryKeys.getInterview(interview.id),

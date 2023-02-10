@@ -14,6 +14,7 @@ import unsavedChangesConfirm from './unsavedChangesConfirm';
 import useInterviewMutation, {
   type InterviewServiceAPI,
 } from '../../../hooks/useInterviewMutation';
+import { useDebouncedCallback } from '../../../hooks/useDebounce';
 
 type Props = {
   interview: Interview.WithScreensAndActions;
@@ -30,24 +31,72 @@ export default function Sidebar({
   const [selectedScreen, setSelectedScreen] = useState<string>();
   const toaster = useToast();
 
-  const updateScreenOrder = useInterviewMutation({
+  // configure the screen order mutation to refetch the necessary queries,
+  // and optimistically update.
+  const { mutate: updateScreenOrder } = useInterviewMutation({
     mutation: (
-      data: { interviewId: string; newScreenOrder: readonly string[] },
+      params: {
+        interviewId: string;
+        newScreenOrder: readonly InterviewScreen.WithChildrenT[];
+      },
       api: InterviewServiceAPI,
     ) =>
       api.interviewAPI.updateScreensOrder(
-        data.interviewId,
-        data.newScreenOrder,
+        params.interviewId,
+        params.newScreenOrder.map(screen => screen.id),
       ),
-    invalidateQuery: Interview.QueryKeys.getInterview(interview.id),
+    invalidateQuery: InterviewScreen.QueryKeys.getScreens(interview.id),
+    onMutate: (params, queryClient) => {
+      const previousScreenOrder: InterviewScreen.WithChildrenT[] | undefined =
+        queryClient.getQueryData(
+          InterviewScreen.QueryKeys.getScreens(interview.id),
+        );
+
+      // optimistically update the screens
+      queryClient.setQueryData(
+        InterviewScreen.QueryKeys.getScreens(interview.id),
+        params.newScreenOrder,
+      );
+      return { previousScreenOrder };
+    },
+
+    // rollback the optimistic update if there was an error
+    onError: (_error, _params, context, queryClient) => {
+      if (context) {
+        queryClient.setQueryData(
+          InterviewScreen.QueryKeys.getScreens(interview.id),
+          context.previousScreenOrder,
+        );
+      }
+    },
   });
 
-  const onReorder = (newScreenOrder: InterviewScreen.T[]): void => {
-    updateScreenOrder({
-      interviewId: interview.id,
-      newScreenOrder: newScreenOrder.map(screen => screen.id),
-    });
+  // while the order is updating in the backend, this is the order we will show
+  const [optimisticScreenOrder, setOptimisticScreenOrder] =
+    useState<InterviewScreen.WithChildrenT[]>(screens);
+  const [isReordering, setIsReordering] = useState(false);
+
+  // create a debounced version of the backend mutation so that even if we do
+  // multiple frontend reorders, we will only send the backend request once
+  const sendUpdateScreenOrderRequest = useDebouncedCallback(
+    (interviewId: string, newScreenOrder: InterviewScreen.WithChildrenT[]) => {
+      updateScreenOrder(
+        { interviewId, newScreenOrder },
+        {
+          onSuccess: () => setIsReordering(true),
+        },
+      );
+    },
+    400,
+  );
+
+  const onReorder = (newScreenOrder: InterviewScreen.WithChildrenT[]): void => {
+    setOptimisticScreenOrder(newScreenOrder);
+    setIsReordering(true);
+    sendUpdateScreenOrderRequest(interview.id, newScreenOrder);
   };
+
+  const screenOrderToDisplay = isReordering ? optimisticScreenOrder : screens;
 
   return (
     <nav className="relative top-0 z-20 h-full w-1/5 items-stretch bg-white shadow">
@@ -93,8 +142,12 @@ export default function Sidebar({
           </NavLink>
 
           {/* Screens */}
-          <Reorder.Group axis="y" values={screens} onReorder={onReorder}>
-            {screens.map(screen => (
+          <Reorder.Group
+            axis="y"
+            values={screenOrderToDisplay}
+            onReorder={onReorder}
+          >
+            {screenOrderToDisplay.map(screen => (
               <Reorder.Item key={screen.id} value={screen}>
                 <ScreenLink
                   key={screen.id}

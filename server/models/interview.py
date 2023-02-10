@@ -40,7 +40,10 @@ class Interview(InterviewBase, table=True):
     )
 
     # relationships
-    screens: list["InterviewScreen"] = Relationship(back_populates="interview")
+    screens: list["InterviewScreen"] = Relationship(
+        back_populates="interview",
+        sa_relationship_kwargs={"order_by": "InterviewScreen.order"},
+    )
     submission_actions: list["SubmissionAction"] = Relationship(
         back_populates="interview"
     )

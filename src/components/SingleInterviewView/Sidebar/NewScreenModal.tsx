@@ -24,7 +24,7 @@ export default function NewScreenModal({
 }: Props): JSX.Element {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const createScreen = useInterviewMutation({
+  const { mutate: createScreen } = useInterviewMutation({
     mutation: (screen: InterviewScreen.CreateT, api: InterviewServiceAPI) =>
       api.interviewScreenAPI.createInterviewScreen(screen),
     invalidateQuery: ['interviewScreens', interview.id],
