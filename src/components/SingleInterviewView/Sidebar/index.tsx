@@ -151,7 +151,6 @@ export default function Sidebar({
             {screenOrderToDisplay.map(screen => (
               <Reorder.Item key={screen.id} value={screen}>
                 <ScreenLink
-                  key={screen.id}
                   screen={screen}
                   defaultLanguage={interview.defaultLanguage}
                   onScreenSelect={setSelectedScreen}

@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as R from 'remeda';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Reorder } from 'framer-motion';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import Button from '../ui/Button';
 import ActionCard from './ActionCard';
@@ -21,6 +22,7 @@ type Props = {
     newAction: EditableAction,
   ) => void;
   onActionDelete: (entryToDelete: EditableAction) => void;
+  onActionsOrderChange: (newActions: readonly EditableAction[]) => void;
   onNewActionClick: () => void;
 };
 
@@ -37,6 +39,7 @@ function BaseConditionalActionsSection(
     onActionChange,
     onActionDelete,
     onNewActionClick,
+    onActionsOrderChange,
   }: Props,
   forwardedRef: React.ForwardedRef<ConditionalActionsSectionAPI>,
 ): JSX.Element {
@@ -85,22 +88,31 @@ function BaseConditionalActionsSection(
         <InfoIcon tooltip="These are the actions to take after a user finishes this stage" />
       </div>
 
-      {actions.map(action => {
-        const actionId = ConditionalAction.getId(action);
-        return (
-          <ActionCard
-            key={actionId}
-            allInterviewEntries={allInterviewEntries}
-            ref={formRefs.get(actionId)}
-            action={action}
-            onActionChange={onActionChange}
-            onActionDelete={onActionDelete}
-            scrollOnMount={ConditionalAction.isCreateType(action)}
-            interview={interview}
-            interviewScreen={interviewScreen}
-          />
-        );
-      })}
+      <Reorder.Group
+        axis="y"
+        className="w-full space-y-6"
+        values={actions as EditableAction[]}
+        onReorder={onActionsOrderChange}
+      >
+        {actions.map(action => {
+          const actionId = ConditionalAction.getId(action);
+          return (
+            <Reorder.Item key={actionId} value={action}>
+              <ActionCard
+                key={actionId}
+                allInterviewEntries={allInterviewEntries}
+                ref={formRefs.get(actionId)}
+                action={action}
+                onActionChange={onActionChange}
+                onActionDelete={onActionDelete}
+                scrollOnMount={ConditionalAction.isCreateType(action)}
+                interview={interview}
+                interviewScreen={interviewScreen}
+              />
+            </Reorder.Item>
+          );
+        })}
+      </Reorder.Group>
     </div>
   );
 }

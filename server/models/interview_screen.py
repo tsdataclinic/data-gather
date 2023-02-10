@@ -28,8 +28,15 @@ class InterviewScreen(InterviewScreenBase, table=True):
     )
 
     # relationships
-    actions: list["ConditionalAction"] = Relationship(back_populates="screen")
-    entries: list["InterviewScreenEntry"] = Relationship(back_populates="screen")
+    actions: list["ConditionalAction"] = Relationship(
+        back_populates="screen",
+        sa_relationship_kwargs={"order_by": "ConditionalAction.order"},
+    )
+
+    entries: list["InterviewScreenEntry"] = Relationship(
+        back_populates="screen",
+        sa_relationship_kwargs={"order_by": "InterviewScreenEntry.order"},
+    )
     interview: "Interview" = Relationship(back_populates="screens")
 
 

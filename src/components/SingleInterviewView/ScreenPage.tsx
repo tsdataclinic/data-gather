@@ -123,6 +123,16 @@ export default function ScreenPage({
     setUnsavedChanges(unsavedActions || unsavedEntries);
   }, [unsavedActions, unsavedEntries, setUnsavedChanges]);
 
+  const onEntriesOrderChange = (newEntries: readonly EditableEntry[]): void => {
+    setAllEntries(newEntries.map((entry, i) => ({ ...entry, order: i + 1 })));
+  };
+
+  const onActionsOrderChange = (
+    newActions: readonly EditableAction[],
+  ): void => {
+    setAllActions(newActions.map((action, i) => ({ ...action, order: i + 1 })));
+  };
+
   const onNewActionClick = (): void =>
     setAllActions(prevActions =>
       prevActions.concat(
@@ -260,6 +270,7 @@ export default function ScreenPage({
             onEntryChange={onEntryChange}
             onEntryDelete={onEntryDelete}
             onNewEntryClick={onNewEntryClick}
+            onEntryOrderChange={onEntriesOrderChange}
           />
           <ConditionalActionsSection
             ref={actionsSectionRef}
@@ -270,6 +281,7 @@ export default function ScreenPage({
             onNewActionClick={onNewActionClick}
             interview={interview}
             interviewScreen={screen}
+            onActionsOrderChange={onActionsOrderChange}
           />
         </div>
       </ScrollArea>
