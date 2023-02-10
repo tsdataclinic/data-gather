@@ -4,7 +4,7 @@ import {
   Moderator,
   ResponseConsumer,
 } from '@dataclinic/interview';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import useInterview from '../../hooks/useInterview';
 import useInterviewScreenEntries from '../../hooks/useInterviewScreenEntries';
@@ -18,6 +18,7 @@ import ConfigurableScript from '../../script/ConfigurableScript';
 import { FastAPIService } from '../../api/FastAPIService';
 import assertUnreachable from '../../util/assertUnreachable';
 import type { ResponseData } from '../../script/types';
+import Button from '../ui/Button';
 
 const api = new FastAPIService();
 
@@ -37,6 +38,8 @@ function getSpecialValueForSubmission(
 }
 
 export function InterviewRunnerView(props: Props): JSX.Element | null {
+  const navigate = useNavigate();
+
   const { interviewId } = props;
   const interview = useInterview(interviewId);
   const screens = useInterviewScreens(interviewId);
@@ -233,12 +236,19 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
     });
   }, [interview, screens, actions, onInterviewComplete]);
 
+  const handleRestart = (): void => {
+    navigate(0);
+  };
+
   return (
     <div>
       {complete ? (
         <div className="mx-auto mt-8 w-4/6">
-          <div className="mb-8 flex flex-col items-center">
+          <div className="mb-8 flex flex-row justify-between">
             <h1 className="text-2xl">Done!</h1>
+            <Button onClick={handleRestart} intent="primary">
+              Start a new interview
+            </Button>
           </div>
           <h2 className="mb-2 text-xl">Responses:</h2>
           <dl>
