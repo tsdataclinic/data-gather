@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as R from 'remeda';
+import { Reorder } from 'framer-motion';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import Button from '../ui/Button';
 import EntryCard from './EntryCard';
@@ -16,6 +17,7 @@ type Props = {
     newEntry: EditableEntry,
   ) => void;
   onEntryDelete: (entryToDelete: EditableEntry) => void;
+  onEntryOrderChange: (newEntries: readonly EditableEntry[]) => void;
   onNewEntryClick: () => void;
 };
 
@@ -24,7 +26,13 @@ type EntriesSectionAPI = {
 };
 
 function BaseEntriesSection(
-  { entries, onEntryChange, onEntryDelete, onNewEntryClick }: Props,
+  {
+    entries,
+    onEntryChange,
+    onEntryDelete,
+    onNewEntryClick,
+    onEntryOrderChange,
+  }: Props,
   forwardedRef: React.ForwardedRef<EntriesSectionAPI>,
 ): JSX.Element {
   const entryIds = React.useMemo(
@@ -69,19 +77,27 @@ function BaseEntriesSection(
         <InfoIcon tooltip="These are the questions that will be displayed to the user" />
       </div>
 
-      {entries.map(entry => {
-        const entryId = InterviewScreenEntry.getId(entry);
-        return (
-          <EntryCard
-            key={entryId}
-            ref={formRefs.get(entryId)}
-            entry={entry}
-            onEntryChange={onEntryChange}
-            onEntryDelete={onEntryDelete}
-            scrollOnMount={InterviewScreenEntry.isCreateType(entry)}
-          />
-        );
-      })}
+      <Reorder.Group
+        axis="y"
+        className="w-full space-y-6"
+        values={entries as EditableEntry[]}
+        onReorder={onEntryOrderChange}
+      >
+        {entries.map(entry => {
+          const entryId = InterviewScreenEntry.getId(entry);
+          return (
+            <Reorder.Item key={entryId} value={entry}>
+              <EntryCard
+                ref={formRefs.get(entryId)}
+                entry={entry}
+                onEntryChange={onEntryChange}
+                onEntryDelete={onEntryDelete}
+                scrollOnMount={InterviewScreenEntry.isCreateType(entry)}
+              />
+            </Reorder.Item>
+          );
+        })}
+      </Reorder.Group>
     </div>
   );
 }

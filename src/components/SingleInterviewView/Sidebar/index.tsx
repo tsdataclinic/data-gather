@@ -2,6 +2,7 @@ import { faCircleChevronLeft, faPlay } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { Reorder } from 'framer-motion';
 import * as Interview from '../../../models/Interview';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import Button from '../../ui/Button';
@@ -10,6 +11,10 @@ import ScreenLink from './ScreenLink';
 import { useToast } from '../../ui/Toast';
 import ConfigureLink from './ConfigureLink';
 import unsavedChangesConfirm from './unsavedChangesConfirm';
+import useInterviewMutation, {
+  type InterviewServiceAPI,
+} from '../../../hooks/useInterviewMutation';
+import { useDebouncedCallback } from '../../../hooks/useDebounce';
 
 type Props = {
   interview: Interview.WithScreensAndActions;
@@ -25,6 +30,74 @@ export default function Sidebar({
   const [isNewScreenModalOpen, setIsNewScreenModalOpen] = useState(false);
   const [selectedScreen, setSelectedScreen] = useState<string>();
   const toaster = useToast();
+
+  // configure the screen order mutation to refetch the necessary queries,
+  // and optimistically update.
+  const { mutate: updateScreenOrder } = useInterviewMutation({
+    mutation: (
+      params: {
+        interviewId: string;
+        newScreenOrder: readonly InterviewScreen.WithChildrenT[];
+      },
+      api: InterviewServiceAPI,
+    ) =>
+      api.interviewAPI.updateScreensOrder(
+        params.interviewId,
+        params.newScreenOrder.map(screen => screen.id),
+      ),
+    invalidateQueries: [
+      Interview.QueryKeys.getInterview(interview.id),
+      InterviewScreen.QueryKeys.getScreens(interview.id),
+    ],
+    onMutate: (params, queryClient) => {
+      const previousScreenOrder: InterviewScreen.WithChildrenT[] | undefined =
+        queryClient.getQueryData(
+          InterviewScreen.QueryKeys.getScreens(interview.id),
+        );
+
+      // optimistically update the screens
+      queryClient.setQueryData(
+        InterviewScreen.QueryKeys.getScreens(interview.id),
+        params.newScreenOrder,
+      );
+      return { previousScreenOrder };
+    },
+
+    // rollback the optimistic update if there was an error
+    onError: (_error, _params, context, queryClient) => {
+      if (context) {
+        queryClient.setQueryData(
+          InterviewScreen.QueryKeys.getScreens(interview.id),
+          context.previousScreenOrder,
+        );
+      }
+    },
+  });
+
+  // while the order is updating in the backend, this is the order we will show
+  const [optimisticScreenOrder, setOptimisticScreenOrder] =
+    useState<InterviewScreen.WithChildrenT[]>(screens);
+  const [isReordering, setIsReordering] = useState(false);
+
+  // create a debounced version of the backend mutation so that even if we do
+  // multiple frontend reorders, we will only send the backend request once
+  const sendUpdateScreenOrderRequest = useDebouncedCallback(
+    (interviewId: string, newScreenOrder: InterviewScreen.WithChildrenT[]) => {
+      updateScreenOrder(
+        { interviewId, newScreenOrder },
+        { onSuccess: () => setIsReordering(false) },
+      );
+    },
+    400,
+  );
+
+  const onReorder = (newScreenOrder: InterviewScreen.WithChildrenT[]): void => {
+    setOptimisticScreenOrder(newScreenOrder);
+    setIsReordering(true);
+    sendUpdateScreenOrderRequest(interview.id, newScreenOrder);
+  };
+
+  const screenOrderToDisplay = isReordering ? optimisticScreenOrder : screens;
 
   return (
     <nav className="relative top-0 z-20 h-full w-1/5 items-stretch bg-white shadow">
@@ -70,16 +143,23 @@ export default function Sidebar({
           </NavLink>
 
           {/* Screens */}
-          {screens.map(screen => (
-            <ScreenLink
-              key={screen.id}
-              screen={screen}
-              defaultLanguage={interview.defaultLanguage}
-              onScreenSelect={setSelectedScreen}
-              isSelected={selectedScreen === screen.id}
-              unsavedChanges={unsavedChanges}
-            />
-          ))}
+          <Reorder.Group
+            axis="y"
+            values={screenOrderToDisplay}
+            onReorder={onReorder}
+          >
+            {screenOrderToDisplay.map(screen => (
+              <Reorder.Item key={screen.id} value={screen}>
+                <ScreenLink
+                  screen={screen}
+                  defaultLanguage={interview.defaultLanguage}
+                  onScreenSelect={setSelectedScreen}
+                  isSelected={selectedScreen === screen.id}
+                  unsavedChanges={unsavedChanges}
+                />
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
         </div>
 
         {/* Configure */}

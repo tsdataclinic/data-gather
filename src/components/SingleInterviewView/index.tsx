@@ -44,6 +44,12 @@ export default function SingleInterviewView(): JSX.Element {
               path="configure"
               element={
                 <ConfigurePage
+                  // set key to be all starting screen ids so that we can
+                  // remount if the order changes via sidebar drag-and-drop
+                  key={interview.screens
+                    .filter(screen => screen.isInStartingState)
+                    .map(screen => screen.id)
+                    .join('_')}
                   defaultInterview={interview}
                   unsavedChanges={unsavedChanges}
                   setUnsavedChanges={setUnsavedChanges}

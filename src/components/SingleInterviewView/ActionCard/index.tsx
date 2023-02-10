@@ -94,8 +94,16 @@ function ActionCard(
   return (
     <ScrollableElement
       name={actionId}
-      className="relative flex w-full flex-row rounded border border-gray-300 bg-gray-50 p-6 text-slate-800"
+      className="relative flex w-full flex-row rounded border border-gray-300 bg-gray-50 px-8 py-6 text-slate-800"
     >
+      <span className="absolute top-2 left-2 flex">
+        <FontAwesomeIcon
+          size="1x"
+          className="cursor-grab pr-2.5 text-slate-500 transition-transform hover:scale-110"
+          icon={IconType.faGripVertical}
+        />
+      </span>
+
       <Button
         unstyled
         className="absolute top-4 right-4"

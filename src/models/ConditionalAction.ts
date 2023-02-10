@@ -442,6 +442,12 @@ export function getId(
   return isCreateType(action) ? action.tempId : action.id;
 }
 
+export function doesOperatorRequireValue(
+  operator: ConditionalOperator,
+): boolean {
+  return isNumberOperator(operator) || operator === ConditionalOperator.EQ;
+}
+
 export type { ConditionalAction as T };
 export type { ConditionalActionCreate as CreateT };
 export type { SerializedConditionalActionRead as SerializedT };

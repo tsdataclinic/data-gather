@@ -23,7 +23,7 @@ export default function ConfigureToolbar({
   const navigate = useNavigate();
   const toaster = useToast();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
-  const deleteInterview = useInterviewMutation({
+  const { mutate: deleteInterview } = useInterviewMutation({
     mutation: (interviewId: string, api: InterviewServiceAPI) =>
       api.interviewAPI.deleteInterview(interviewId),
     invalidateQuery: Interview.QueryKeys.allInterviews,

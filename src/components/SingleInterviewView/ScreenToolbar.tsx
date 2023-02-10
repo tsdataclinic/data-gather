@@ -40,7 +40,7 @@ export default function ScreenToolbar({
 }: Props): JSX.Element {
   const selectedLanguageCode = React.useContext(SelectedLanguageContext);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
-  const deleteInterview = useInterviewMutation({
+  const { mutate: deleteInterview } = useInterviewMutation({
     mutation: (screenId: string, api: InterviewServiceAPI) =>
       api.interviewScreenAPI.deleteInterviewScreen(screenId),
   });

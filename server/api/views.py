@@ -292,6 +292,71 @@ def update_interview(
 
 
 @app.post(
+    "/api/interview/{interview_id}/screen_order",
+    response_model=InterviewReadWithScreensAndActions,
+    tags=["interviews"],
+)
+def update_interview_screens_order(
+    *,
+    session: Session = Depends(get_session),
+    interview_service: InterviewService = Depends(get_interview_service),
+    interview_id: str,
+    new_screen_order: list[str],
+) -> Interview:
+    db_screens = sorted(
+        session.exec(
+            select(InterviewScreen).where(InterviewScreen.interview_id == interview_id)
+        ).all(),
+        key=lambda scr: scr.order,
+    )
+
+    did_first_screen_change = new_screen_order[0] != db_screens[0].id
+
+    db_screen_dict = {str(screen.id): screen for screen in db_screens}
+
+    for i, screen_id in enumerate(new_screen_order):
+        db_screen = db_screen_dict.get(screen_id, None)
+        if db_screen:
+            db_screen.order = i + 1
+
+    # now we have to do a weird thing where, if a new screen is first, we need
+    # to set that screen as the new starting screen
+    new_first_screen = db_screen_dict.get(new_screen_order[0], None)
+
+    if new_first_screen and did_first_screen_change:
+        starting_screens = sorted(
+            [screen for screen in db_screens if screen.is_in_starting_state],
+            key=lambda screen: screen.starting_state_order or len(new_screen_order),
+        )
+
+        if len(starting_screens) == 1:
+            # if there's only 1 starting screen, then swap it out
+            starting_screens[0].is_in_starting_state = False
+            starting_screens[0].starting_state_order = None
+            new_starting_screens = [new_first_screen]
+        else:
+            # otherwise, first remove new_first_screen from the starting_screens
+            new_starting_screens = [
+                screen
+                for screen in starting_screens
+                if screen.id != new_first_screen.id
+            ]
+            # now insert it back at the start
+            new_starting_screens.insert(0, new_first_screen)
+
+        # finally, take the new_starting_screens and reset their starting order
+        for i, screen in enumerate(new_starting_screens):
+            screen.is_in_starting_state = True
+            screen.starting_state_order = i + 1
+
+    interview_service.commit(add_models=db_screens)
+
+    # get the updated interview now
+    db_interview = interview_service.get_interview_by_id(interview_id)
+    return db_interview
+
+
+@app.post(
     "/api/interviews/{interview_id}/starting_state",
     response_model=InterviewReadWithScreensAndActions,
     tags=["interviews"],
