@@ -51,7 +51,7 @@ const StyledViewport = styled(RadixToast.Viewport)`
   max-width: 100vw;
   outline: none;
   right: 0;
-  top: 0;
+  bottom: 0;
   width: 300px;
   z-index: 9999;
 `;
@@ -75,7 +75,7 @@ const StyledToast = styled(RadixToast.Root)<{ intent: 'success' | 'error' }>`
     left: 0;
     position: absolute;
     width: 8px;
-    top: 0;
+    bottom: 0;
   }
 
   @media (prefers-reduced-motion: no-preference) {
