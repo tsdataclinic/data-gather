@@ -4,7 +4,7 @@ import {
   Moderator,
   ResponseConsumer,
 } from '@dataclinic/interview';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import useInterview from '../../hooks/useInterview';
 import useInterviewScreenEntries from '../../hooks/useInterviewScreenEntries';
@@ -19,11 +19,14 @@ import { FastAPIService } from '../../api/FastAPIService';
 import assertUnreachable from '../../util/assertUnreachable';
 import type { ResponseData } from '../../script/types';
 import Button from '../ui/Button';
+import { useToast } from '../ui/Toast';
 
 const api = new FastAPIService();
 
 type Props = {
   interviewId: string;
+  onInterviewReset: () => void;
+  onStartNewInterview: () => void;
 };
 
 function getSpecialValueForSubmission(
@@ -37,10 +40,11 @@ function getSpecialValueForSubmission(
   }
 }
 
-export function InterviewRunnerView(props: Props): JSX.Element | null {
-  const navigate = useNavigate();
-
-  const { interviewId } = props;
+function BaseInterviewRunnerView({
+  interviewId,
+  onInterviewReset,
+  onStartNewInterview,
+}: Props): JSX.Element | null {
   const interview = useInterview(interviewId);
   const screens = useInterviewScreens(interviewId);
   const actions = useInterviewConditionalActions(interviewId);
@@ -50,8 +54,6 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
   const [responseConsumer, setResponseConsumer] = React.useState<
     ResponseConsumer | undefined
   >(undefined);
-  const [finalResponseData, setFinalResponseData] =
-    React.useState<ResponseData>({});
   const [complete, setComplete] = React.useState<boolean>(false);
   const entries = useInterviewScreenEntries(interviewId);
   const { mutate: airtableUpdateRecord } = useMutation({
@@ -76,7 +78,6 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
 
   const onInterviewComplete = React.useCallback(
     (responseData: ResponseData): void => {
-      setFinalResponseData(responseData);
       if (interview) {
         const allEntries: Map<InterviewScreenEntry.Id, InterviewScreenEntry.T> =
           Object.keys(responseData).reduce(
@@ -236,35 +237,14 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
     });
   }, [interview, screens, actions, onInterviewComplete]);
 
-  const handleRestart = (): void => {
-    navigate(0);
-  };
-
   return (
     <div>
       {complete ? (
-        <div className="mx-auto mt-8 w-4/6">
-          <div className="mb-8 flex flex-row justify-between">
-            <h1 className="text-2xl">Done!</h1>
-            <Button onClick={handleRestart} intent="primary">
-              Start a new interview
-            </Button>
-          </div>
-          <h2 className="mb-2 text-xl">Responses:</h2>
-          <dl>
-            {Object.values(finalResponseData).map(response => (
-              <React.Fragment key={response.entry.responseKey}>
-                {/* TODO UI should support multiple language prompts rather than hardcoding english */}
-                <dt className="font-bold">{response.entry.prompt.en}:</dt>
-                <dd className="mb-2 pl-8">
-                  {ConfigurableScript.getResponseValue(
-                    finalResponseData,
-                    response.entry.responseKey,
-                  )}
-                </dd>
-              </React.Fragment>
-            ))}
-          </dl>
+        <div className="m-16 flex flex-col items-center space-y-8">
+          <h1 className="text-2xl">Done!</h1>
+          <Button onClick={onStartNewInterview} intent="primary">
+            Start a new interview
+          </Button>
         </div>
       ) : (
         <div>
@@ -274,6 +254,7 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
               screen={currentScreen}
               entries={entries.get(currentScreen.id) ?? []}
               responseConsumer={responseConsumer}
+              onInterviewReset={onInterviewReset}
             />
           )}
         </div>
@@ -282,11 +263,42 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
   );
 }
 
+export function InterviewRunnerView(props: {
+  interviewId: string;
+}): JSX.Element | null {
+  const { interviewId } = props;
+  const toaster = useToast();
+
+  // keep track of a counter just to reset the interview easily by resetting its key
+  const [resetCounter, setResetCounter] = React.useState(1);
+  const onInterviewReset = React.useCallback(() => {
+    setResetCounter(prev => prev + 1);
+    toaster.notifySuccess(
+      'Reset interview',
+      'The interview has been restarted',
+    );
+  }, [toaster]);
+
+  const onStartNewInterview = React.useCallback(() => {
+    setResetCounter(prev => prev + 1);
+  }, []);
+
+  return (
+    <BaseInterviewRunnerView
+      key={resetCounter}
+      interviewId={interviewId}
+      onInterviewReset={onInterviewReset}
+      onStartNewInterview={onStartNewInterview}
+    />
+  );
+}
+
 /**
  * Runs an interview based on the ID of the interview in the URL params.
  */
 export function InterviewRunnerViewRoute(): JSX.Element | null {
   const { interviewId } = useParams();
+
   if (interviewId) {
     return <InterviewRunnerView interviewId={interviewId} />;
   }

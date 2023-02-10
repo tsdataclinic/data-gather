@@ -11,6 +11,8 @@ type ToastProps = {
   title: string;
 };
 
+const TOAST_TIME_MS = 3000;
+
 const VIEWPORT_PADDING = 25;
 
 const hide = keyframes`
@@ -119,7 +121,7 @@ type ToastAPI = {
 
 function Toast({ children, title, intent }: ToastProps): JSX.Element {
   return (
-    <StyledToast duration={5000} intent={intent}>
+    <StyledToast duration={TOAST_TIME_MS} intent={intent}>
       <StyledTitle className="text-base font-semibold text-slate-800">
         {title}
       </StyledTitle>

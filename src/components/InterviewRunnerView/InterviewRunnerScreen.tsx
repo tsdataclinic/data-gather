@@ -10,10 +10,12 @@ import type { ResponseData } from '../../script/types';
 import Dropdown from '../ui/Dropdown';
 import * as Config from '../../config';
 import LabelWrapper from '../ui/LabelWrapper';
+import Button from '../ui/Button';
 
 type Props = {
   entries: InterviewScreenEntry.T[];
   interview: Interview.T;
+  onInterviewReset: () => void;
   responseConsumer: ResponseConsumer;
   screen: InterviewScreen.T;
 };
@@ -23,6 +25,7 @@ export default function InterviewRunnerScreen({
   screen,
   entries,
   responseConsumer,
+  onInterviewReset,
 }: Props): JSX.Element {
   const { allowedLanguages, defaultLanguage } = interview;
   const [selectedLanguage, setSelectedLanguage] =
@@ -110,7 +113,10 @@ export default function InterviewRunnerScreen({
             entry={entry}
           />
         ))}
-        <Form.SubmitButton />
+        <div className="flex justify-between">
+          <Form.SubmitButton />
+          <Button onClick={onInterviewReset}>Restart Interview</Button>
+        </div>
       </Form>
     </div>
   );
