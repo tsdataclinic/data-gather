@@ -75,7 +75,7 @@ const StyledToast = styled(RadixToast.Root)<{ intent: 'success' | 'error' }>`
     left: 0;
     position: absolute;
     width: 8px;
-    top: 0;
+    bottom: 0;
   }
 
   @media (prefers-reduced-motion: no-preference) {
