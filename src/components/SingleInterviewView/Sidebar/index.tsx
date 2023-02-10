@@ -82,9 +82,7 @@ export default function Sidebar({
     (interviewId: string, newScreenOrder: InterviewScreen.WithChildrenT[]) => {
       updateScreenOrder(
         { interviewId, newScreenOrder },
-        {
-          onSuccess: () => setIsReordering(true),
-        },
+        { onSuccess: () => setIsReordering(false) },
       );
     },
     400,
