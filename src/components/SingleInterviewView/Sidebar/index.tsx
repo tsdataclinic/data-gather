@@ -144,6 +144,7 @@ export default function Sidebar({
 
           {/* Screens */}
           <Reorder.Group
+            className="w-full"
             axis="y"
             values={screenOrderToDisplay}
             onReorder={onReorder}
