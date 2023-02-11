@@ -105,7 +105,7 @@ export default function InterviewRunnerScreen({
     <div className="mx-auto space-y-4 bg-white pb-8 sm:mt-8 sm:w-4/6 sm:border sm:border-blue-300 sm:shadow-md">
       <div className="relative w-full space-y-4 bg-blue-600 px-8 py-4 text-center">
         {allowedLanguages.length > 1 ? (
-          <div className="absolute top-2 right-1 text-sm sm:right-auto sm:left-8">
+          <div className="absolute top-2 right-2 text-sm sm:right-auto sm:left-8">
             <LabelWrapper
               labelTextClassName="text-white hidden sm:inline"
               label="Language"
