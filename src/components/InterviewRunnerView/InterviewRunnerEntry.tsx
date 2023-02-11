@@ -164,6 +164,17 @@ export default function InterviewRunnerEntry({
                       );
                     }
                   }}
+                  headerHeight={50}
+                  rowHeight={50}
+                  defaultColDef={{
+                    headerClass: 'bg-gray-200',
+                    cellStyle: {
+                      display: 'flex',
+                      height: '100%',
+                      alignItems: 'center',
+                    },
+                  }}
+                  className="text-lg"
                   rowSelection="single"
                   rowData={rowData}
                   columnDefs={columnDefs}
