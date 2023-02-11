@@ -148,7 +148,7 @@ export default function InterviewRunnerEntry({
             typeof responseData !== 'string' &&
             responseData.length > 0 && (
               <div
-                className="ag-theme-alpine"
+                className="ag-theme-alpine mt-4"
                 style={{ width: '100%', height: 250 }}
               >
                 <input
@@ -172,7 +172,7 @@ export default function InterviewRunnerEntry({
             )}
           {isSuccess &&
             typeof responseData !== 'string' &&
-            responseData.length < 1 && <p>No matches found</p>}
+            responseData.length < 1 && <p className="mt-2">No matches found</p>}
         </div>
       );
     case InterviewScreenEntry.ResponseType.PHONE_NUMBER:

@@ -102,12 +102,12 @@ export default function InterviewRunnerScreen({
   );
 
   return (
-    <div className="mx-auto mt-8 w-4/6 space-y-4 border border-blue-300 bg-white pb-8 shadow-md">
+    <div className="mx-auto space-y-4 bg-white pb-8 sm:mt-8 sm:w-4/6 sm:border sm:border-blue-300 sm:shadow-md">
       <div className="relative w-full space-y-4 bg-blue-600 px-8 py-4 text-center">
         {allowedLanguages.length > 1 ? (
-          <div className="absolute top-2 left-8">
+          <div className="absolute top-2 right-1 text-sm sm:right-auto sm:left-8">
             <LabelWrapper
-              labelTextClassName="text-white"
+              labelTextClassName="text-white hidden sm:inline"
               label="Language"
               inline
             >
@@ -131,7 +131,7 @@ export default function InterviewRunnerScreen({
           </p>
         )}
       </div>
-      <Form className="px-8" onSubmit={handleSubmit}>
+      <Form className="px-5 sm:px-8" onSubmit={handleSubmit}>
         {entries.map((entry: InterviewScreenEntry.T) => (
           <InterviewRunnerEntry
             selectedLanguage={selectedLanguage}
@@ -142,7 +142,13 @@ export default function InterviewRunnerScreen({
         ))}
         <div className="flex justify-between">
           <Form.SubmitButton />
-          <Button onClick={onInterviewReset}>Restart Interview</Button>
+          <Button
+            className="text-blue-800 underline underline-offset-4 transition-colors hover:text-blue-400"
+            onClick={onInterviewReset}
+            unstyled
+          >
+            Restart Interview
+          </Button>
         </div>
       </Form>
     </div>
