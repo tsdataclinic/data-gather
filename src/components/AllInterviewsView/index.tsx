@@ -16,7 +16,7 @@ export default function AllInterviewsView(): JSX.Element {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   return (
-    <div className="container mx-auto space-y-8 pt-8">
+    <div className="container mx-auto space-y-8 px-4 pt-8 sm:px-8">
       <div className="flex">
         <h1 className="flex-1 text-3xl tracking-wider">My Interviews</h1>
         <Button
