@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Sequence, TypeVar, Union
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Request, Security
@@ -43,7 +44,12 @@ from server.models.submission_action import SubmissionAction
 from server.models.user import User, UserRead
 
 LOG = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelprefix)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
@@ -679,8 +685,14 @@ def get_airtable_records(table_name, request: Request) -> list[Record]:
     Fetch records from an airtable table. Filtering can be performed
     by adding query parameters to the URL, keyed by column name.
     """
+    start_time = time.time()
+
     query = dict(request.query_params)
-    return airtable_client.search_records(table_name, query)
+    results = airtable_client.search_records(table_name, query)
+
+    end_time = time.time()
+    LOG.info(f"Completed airtable search in {round(end_time - start_time, 3)} seconds")
+    return results
 
 
 @app.get("/api/airtable-records/{table_name}/{record_id}", tags=["airtable"])
