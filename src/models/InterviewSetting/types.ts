@@ -6,7 +6,7 @@ export type AirtableField = {
   description?: string;
   id: string;
   name: string;
-  options?: string[];
+  options?: Record<string, unknown>;
   type?: string;
 };
 

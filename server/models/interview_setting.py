@@ -15,7 +15,7 @@ class AirtableField(BaseModel):
     name: str
     description: Optional[str]
     type: Optional[str]
-    options: Optional[list[str]]
+    options: Optional[dict]
 
 class AirtableTable(BaseModel):
     id: str

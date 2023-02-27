@@ -7,6 +7,6 @@ export type SerializedAirtableField = {
   name: string;
   description?: string;
   type?: string;
-  options?: Array<string>;
+  options?: any;
 };
 

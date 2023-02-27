@@ -30,14 +30,15 @@ from server.models.interview_screen import (InterviewScreen,
                                             InterviewScreenUpdate)
 from server.models.interview_screen_entry import (
     InterviewScreenEntry, InterviewScreenEntryReadWithScreen)
-from server.models.interview_setting import InterviewSetting
+from server.models.interview_setting import InterviewSetting, InterviewSettingType
 from server.models.submission_action import SubmissionAction
 from server.models.user import User, UserRead
 
 LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
+# TODO - get api key from a given interview
+# airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
 
 class Settings(BaseSettings):
@@ -631,6 +632,37 @@ def get_airtable_record(table_name: str, record_id: str) -> Record:
     """
     return airtable_client.fetch_record(table_name, record_id)
 
+@app.get("/api/airtable-schema/{interview_id}", tags=["airtable"])
+def get_airtable_schema(
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
+    session: Session = Depends(get_session),
+) -> Record:
+    """
+    Interview must have an associated InterviewSettings object
+    List bases given an interview ID
+    For each base - 
+        Fetch base schema 
+    call interview update after?
+    """
+    # TODO - instantiate client w/ InterviewSetting. at call time?
+    interview = interview_service.get_interview_by_id(interview_id)
+    new_interview = InterviewUpdate.from_orm(interview)
+    airtableSetting = {}
+    update_interview_setting_index = 0
+    update_interview_setting = InterviewSetting()
+    for index, setting in enumerate(interview.interview_settings):
+        if (setting.settings[InterviewSettingType.AIRTABLE]):
+            update_interview_setting_index = index
+            update_interview_setting = setting
+            airtableSetting = setting.settings[InterviewSettingType.AIRTABLE]
+    
+    airtable_client = AirtableAPI(airtableSetting)
+    new_airtable_settings = airtable_client.fetch_schema(airtableSetting)
+    update_interview_setting.settings[InterviewSettingType.AIRTABLE].update(new_airtable_settings)
+    new_interview.interview_settings[update_interview_setting_index] = update_interview_setting
+    
+    return update_interview(interview_id, new_interview, session)
 
 @app.post("/api/airtable-records/{table_name}", tags=["airtable"])
 async def create_airtable_record(table_name: str, record: Record = Body(...)) -> Record:

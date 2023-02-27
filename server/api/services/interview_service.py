@@ -6,6 +6,7 @@ from server.api.services.base_service import BaseService
 from server.api.services.interview_screen_service import InterviewScreenService
 from server.models.interview import Interview, InterviewCreate
 from server.models.interview_screen import InterviewScreen
+from server.models.interview_setting import InterviewSetting, InterviewSettingType
 
 
 class InterviewService(BaseService):
@@ -48,6 +49,21 @@ class InterviewService(BaseService):
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
         return interview
+
+    def get_interview_setting_by_interview_id_and_type(self, interview_id: str, interview_setting_type: InterviewSettingType) -> InterviewSetting:
+        """Get an interview setting by its associated interview id"""
+        interview = self.db.get(Interview, interview_id)
+        if not interview:
+            raise HTTPException(status_code=404, detail="Interview not found")
+        output = {}
+        for setting in interview.interview_settings:
+            if (setting.type == interview_setting_type):
+                output = setting.settings[interview_setting_type]
+        if output == {}:
+            raise HTTPException(status_code=404, detail="Airtable setting not found for interview {interview_id}")
+
+        print('get_interview_setting', output)
+        return output
 
     def get_interview_by_vanity_url(self, vanity_url: str) -> Interview:
         """Get an interview by its vanity url"""
