@@ -8,6 +8,9 @@ import LabelWrapper from '../../../ui/LabelWrapper';
 import Dropdown from '../../../ui/Dropdown';
 import { InterviewSettingType } from '../../../../api/models/InterviewSettingType';
 import InputText from '../../../ui/InputText';
+import { FastAPIService } from '../../../../api/FastAPIService';
+
+const api = new FastAPIService();
 
 type EditableSetting = InterviewSettings.T | InterviewSettings.CreateT;
 const SETTING_TYPE_OPTIONS = InterviewSettings.SETTING_TYPES.map(
@@ -54,6 +57,10 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     });
   };
 
+  const handleUpdateAirtableSchema = (): void => {
+    api.airtable.getAirtableSchema(interview.id);
+  };
+
   const renderSettingBlock = (
     setting: EditableSetting,
   ): JSX.Element | JSX.Element[] => {
@@ -83,6 +90,23 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
                     placeholder="Enter Airtable personal access token..."
                   />
                 </LabelWrapper>
+                {value.bases?.flatMap(base => (
+                  <>
+                    <div>Base: {base.name}</div>
+                    {base.tables?.map(table => (
+                      <div key={`${table}`}>
+                        Table: {table.name}
+                        <div>Fields:</div>
+                        {table.fields?.map(field => (
+                          <li key={`${field}`}>{field.name}</li>
+                        ))}
+                      </div>
+                    ))}
+                  </>
+                ))}
+                <Button onClick={handleUpdateAirtableSchema}>
+                  Update Airtable schema
+                </Button>
               </div>,
             );
           }
