@@ -1,11 +1,14 @@
 import * as React from 'react';
 import { Calendar } from 'primereact/calendar';
+import { useParams } from 'react-router-dom';
 import Dropdown from '../../ui/Dropdown';
 import InputText from '../../ui/InputText';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import type { EditableAction } from '../types';
-import useAppState from '../../../hooks/useAppState';
+// import useAppState from '../../../hooks/useAppState';
+import useInterview from '../../../hooks/useInterview';
+import { InterviewSettingType } from '../../../api';
 
 type Props = {
   action: EditableAction;
@@ -29,10 +32,18 @@ export default function ConditionalOperatorRow({
   allEntries,
   onConditionalOperationChange,
 }: Props): JSX.Element {
-  const { airtableSettings } = useAppState();
-  const { bases } = airtableSettings;
+  // const interviewSettings = useInterviewSettings(interview?.id);
+  // const { airtableSettings } = useAppState();
+  const { interviewId } = useParams();
+  const interview = useInterview(interviewId);
+  const interviewSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === InterviewSettingType.AIRTABLE,
+  );
+  const settings = interviewSetting?.settings;
+  const airtableSettings = settings?.get(InterviewSettingType.AIRTABLE);
+  const bases = airtableSettings?.bases;
   const allAirtableTables = React.useMemo(
-    () => bases.flatMap(base => base.tables),
+    () => bases && bases.flatMap(base => base.tables),
     [bases],
   );
 
@@ -54,14 +65,21 @@ export default function ConditionalOperatorRow({
   // TODO: have to connect <ActionCard> to `entry` for responseKeyColumns to
   // change before 'Save' is clicked
   const allResponseKeyFieldOptions = React.useMemo(() => {
-    const airtableTable = allAirtableTables.find(
-      table => table.key === selectedEntry?.responseTypeOptions.selectedTable,
-    );
+    const airtableTable =
+      allAirtableTables &&
+      allAirtableTables.find(
+        table =>
+          table &&
+          table.id === selectedEntry?.responseTypeOptions.selectedTable,
+      );
 
-    return airtableTable?.fields.map(field => ({
-      displayValue: field.fieldName,
-      value: field.fieldName,
-    }));
+    return (
+      airtableTable?.fields &&
+      airtableTable?.fields.map(field => ({
+        displayValue: field.name,
+        value: field.name,
+      }))
+    );
   }, [selectedEntry, allAirtableTables]);
 
   const onOperatorChange = React.useCallback(

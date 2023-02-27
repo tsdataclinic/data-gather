@@ -1,11 +1,14 @@
 import * as React from 'react';
+import { useParams } from 'react-router-dom';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import LabelWrapper from '../../../ui/LabelWrapper';
 import FieldToQuestionBlock from './FieldToQuestionBlock';
-import useAppState from '../../../../hooks/useAppState';
+// import useAppState from '../../../../hooks/useAppState';
 import type { EditableAction } from './types';
 import EntryDropdown from './EntryDropdown';
+import useInterview from '../../../../hooks/useInterview';
+import { InterviewSettingType } from '../../../../api';
 
 type Props = {
   action: EditableAction;
@@ -23,9 +26,20 @@ export default function EditRowActionBlock({
   entries,
   onActionChange,
 }: Props): JSX.Element {
-  const { airtableSettings } = useAppState();
+  // const { airtableSettings } = useAppState();
+  const { interviewId } = useParams();
+  const interview = useInterview(interviewId);
+  const interviewSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === InterviewSettingType.AIRTABLE,
+  );
+  const settings = interviewSetting?.settings;
+  const airtableSettings = settings?.get(InterviewSettingType.AIRTABLE);
+
   const allTables = React.useMemo(
-    () => airtableSettings.bases.flatMap(base => base.tables),
+    () =>
+      airtableSettings && airtableSettings?.bases
+        ? airtableSettings?.bases?.flatMap(base => base.tables)
+        : [],
     [airtableSettings],
   );
 
@@ -34,7 +48,8 @@ export default function EditRowActionBlock({
       entry => entry.id === actionConfig.payload.entryId,
     );
     return allTables.find(
-      table => table.key === selectedEntry?.responseTypeOptions.selectedTable,
+      table =>
+        table && table.id === selectedEntry?.responseTypeOptions.selectedTable,
     );
   }, [entries, allTables, actionConfig]);
 
