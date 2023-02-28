@@ -60,6 +60,7 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
       api.airtable.updateAirtableRecord(
         data.tableId,
         data.recordId,
+        interviewId,
         data.fields,
       ),
   });
@@ -68,7 +69,7 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
     mutationFn: (data: {
       fields: { [fieldName: string]: string };
       tableId: string;
-    }) => api.airtable.createAirtableRecord(data.tableId, data.fields),
+    }) => api.airtable.createAirtableRecord(data.tableId, interviewId, data.fields),
   });
 
   const onInterviewComplete = React.useCallback(

@@ -256,7 +256,6 @@ def update_interview(
         raise HTTPException(
             status_code=404, detail=f"Interview with id {interview_id} not found"
         )
-
     # update the nested submission actions
     _reset_object_order(interview.submission_actions)
     actions_to_set, actions_to_delete = _diff_model_lists(
@@ -615,21 +614,36 @@ def _adjust_screen_order(
     return (db_screen, sorted_screens + [db_screen])
 
 
-@app.get("/api/airtable-records/{table_name}", tags=["airtable"])
-def get_airtable_records(table_name, request: Request) -> list[Record]:
+@app.get("/api/airtable-records/{interview_id}/{table_name}", tags=["airtable"])
+def get_airtable_records(
+    table_name,
+    request: Request,
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
+) -> list[Record]:
     """
     Fetch records from an airtable table. Filtering can be performed
     by adding query parameters to the URL, keyed by column name.
     """
+    airtable_settings = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_client = AirtableAPI(airtable_settings)
     query = dict(request.query_params)
     return airtable_client.search_records(table_name, query)
 
 
-@app.get("/api/airtable-records/{table_name}/{record_id}", tags=["airtable"])
-def get_airtable_record(table_name: str, record_id: str) -> Record:
+@app.get("/api/airtable-records/{interview_id}/{table_name}/{record_id}", tags=["airtable"])
+def get_airtable_record(
+    table_name: str,
+    record_id: str,
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
+    session: Session = Depends(get_session),
+) -> Record:
     """
     Fetch record with a particular id from a table in airtable.
     """
+    airtable_settings = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_client = AirtableAPI(airtable_settings)
     return airtable_client.fetch_record(table_name, record_id)
 
 @app.get("/api/airtable-schema/{interview_id}", tags=["airtable"])
@@ -664,20 +678,34 @@ def get_airtable_schema(
     
     return update_interview(interview_id, new_interview, session)
 
-@app.post("/api/airtable-records/{table_name}", tags=["airtable"])
-async def create_airtable_record(table_name: str, record: Record = Body(...)) -> Record:
+@app.post("/api/airtable-records/{interview_id}/{table_name}", tags=["airtable"])
+async def create_airtable_record(
+    table_name: str, 
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
+    session: Session = Depends(get_session),
+    record: Record = Body(...),
+) -> Record:
     """
     Create an airtable record in a table.
     """
-    print(record)
+    airtable_settings = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_client = AirtableAPI(airtable_settings)
     return airtable_client.create_record(table_name, record)
 
 
-@app.put("/api/airtable-records/{table_name}/{record_id}", tags=["airtable"])
+@app.put("/api/airtable-records/{interview_id}/{table_name}/{record_id}", tags=["airtable"])
 async def update_airtable_record(
-    table_name: str, record_id: str, update: PartialRecord = Body(...)
+    table_name: str,
+    record_id: str,
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
+    session: Session = Depends(get_session),
+    update: PartialRecord = Body(...)
 ) -> Record:
     """
     Update an airtable record in a table.
     """
+    airtable_settings = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_client = AirtableAPI(airtable_settings)
     return airtable_client.update_record(table_name, record_id, update)

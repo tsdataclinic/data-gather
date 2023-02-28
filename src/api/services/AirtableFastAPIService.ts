@@ -13,24 +13,19 @@ export class AirtableFastAPIService {
    * Fetch records from an airtable table. Filtering can be performed
    * by adding query parameters to the URL, keyed by column name.
    * @param tableName
-   * @param baseId
    * @param interviewId
    * @returns any Successful Response
    * @throws ApiError
    */
   public getAirtableRecords(
     tableName: any,
-    baseId: string,
     interviewId: string,
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'GET',
-      url: '/api/airtable-records/{table_name}',
+      url: '/api/airtable-records/{interview_id}/{table_name}',
       path: {
         'table_name': tableName,
-      },
-      query: {
-        'base_id': baseId,
         'interview_id': interviewId,
       },
       errors: {
@@ -43,7 +38,6 @@ export class AirtableFastAPIService {
    * Create Airtable Record
    * Create an airtable record in a table.
    * @param tableName
-   * @param baseId
    * @param interviewId
    * @param requestBody
    * @returns any Successful Response
@@ -51,18 +45,14 @@ export class AirtableFastAPIService {
    */
   public createAirtableRecord(
     tableName: string,
-    baseId: string,
     interviewId: string,
     requestBody: any,
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'POST',
-      url: '/api/airtable-records/{table_name}',
+      url: '/api/airtable-records/{interview_id}/{table_name}',
       path: {
         'table_name': tableName,
-      },
-      query: {
-        'base_id': baseId,
         'interview_id': interviewId,
       },
       body: requestBody,
@@ -78,7 +68,6 @@ export class AirtableFastAPIService {
    * Fetch record with a particular id from a table in airtable.
    * @param tableName
    * @param recordId
-   * @param baseId
    * @param interviewId
    * @returns any Successful Response
    * @throws ApiError
@@ -86,18 +75,14 @@ export class AirtableFastAPIService {
   public getAirtableRecord(
     tableName: string,
     recordId: string,
-    baseId: string,
     interviewId: string,
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'GET',
-      url: '/api/airtable-records/{table_name}/{record_id}',
+      url: '/api/airtable-records/{interview_id}/{table_name}/{record_id}',
       path: {
         'table_name': tableName,
         'record_id': recordId,
-      },
-      query: {
-        'base_id': baseId,
         'interview_id': interviewId,
       },
       errors: {
@@ -111,7 +96,6 @@ export class AirtableFastAPIService {
    * Update an airtable record in a table.
    * @param tableName
    * @param recordId
-   * @param baseId
    * @param interviewId
    * @param requestBody
    * @returns any Successful Response
@@ -120,19 +104,15 @@ export class AirtableFastAPIService {
   public updateAirtableRecord(
     tableName: string,
     recordId: string,
-    baseId: string,
     interviewId: string,
     requestBody: any,
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'PUT',
-      url: '/api/airtable-records/{table_name}/{record_id}',
+      url: '/api/airtable-records/{interview_id}/{table_name}/{record_id}',
       path: {
         'table_name': tableName,
         'record_id': recordId,
-      },
-      query: {
-        'base_id': baseId,
         'interview_id': interviewId,
       },
       body: requestBody,
