@@ -6,7 +6,6 @@ import InputText from '../../ui/InputText';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import type { EditableAction } from '../types';
-// import useAppState from '../../../hooks/useAppState';
 import useInterview from '../../../hooks/useInterview';
 import { InterviewSettingType } from '../../../api';
 
@@ -32,8 +31,6 @@ export default function ConditionalOperatorRow({
   allEntries,
   onConditionalOperationChange,
 }: Props): JSX.Element {
-  // const interviewSettings = useInterviewSettings(interview?.id);
-  // const { airtableSettings } = useAppState();
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
   const interviewSetting = interview?.interviewSettings.find(

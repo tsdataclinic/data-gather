@@ -2,7 +2,6 @@ import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import { AirtableTable } from '../../../../models/InterviewSetting';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
-// import { AirtableTableConfig } from '../../../../store/appReducer';
 import EntryDropdown from './EntryDropdown';
 
 type Props = {

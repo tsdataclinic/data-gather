@@ -4,7 +4,6 @@ import Form from '../../ui/Form';
 import LabelWrapper from '../../ui/LabelWrapper';
 import MultiSelect from '../../ui/MultiSelect';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-// import useAppState from '../../../hooks/useAppState';
 import useInterview from '../../../hooks/useInterview';
 import { InterviewSettingType } from '../../../api';
 
@@ -25,17 +24,12 @@ export default function AirtableFieldSelector({
 }: Props): JSX.Element {
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
-  // const interviewSettings = useInterviewSettings(interview?.id);
   const interviewSetting = interview?.interviewSettings.find(
     intSetting => intSetting.type === InterviewSettingType.AIRTABLE,
   );
-  // const { airtableSettings } = useAppState();
   const settings = interviewSetting?.settings;
   const airtableSettings = settings?.get(InterviewSettingType.AIRTABLE);
-  console.log(airtableSettings);
   const bases = airtableSettings?.bases;
-  // const { airtableSettings } = useAppState();
-  // const { bases } = airtableSettings;
   const { selectedBase, selectedTable, selectedFields } = airtableConfig;
 
   const availableTables = React.useMemo(() => {

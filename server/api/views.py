@@ -653,13 +653,10 @@ def get_airtable_schema(
     session: Session = Depends(get_session),
 ) -> Record:
     """
-    Interview must have an associated InterviewSettings object
-    List bases given an interview ID
-    For each base - 
-        Fetch base schema 
-    call interview update after?
+    Given an interview object, fetch the list of bases + schema for each base for its given Airtable access key.
+    Combine the schema into a single JSON object.
+    Update a given Interview object with that schema.
     """
-    # TODO - instantiate client w/ InterviewSetting. at call time?
     interview = interview_service.get_interview_by_id(interview_id)
     new_interview = InterviewUpdate.from_orm(interview)
     airtableSetting = {}

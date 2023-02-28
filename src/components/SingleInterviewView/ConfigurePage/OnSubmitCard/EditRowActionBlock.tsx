@@ -4,7 +4,6 @@ import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import LabelWrapper from '../../../ui/LabelWrapper';
 import FieldToQuestionBlock from './FieldToQuestionBlock';
-// import useAppState from '../../../../hooks/useAppState';
 import type { EditableAction } from './types';
 import EntryDropdown from './EntryDropdown';
 import useInterview from '../../../../hooks/useInterview';
@@ -26,7 +25,6 @@ export default function EditRowActionBlock({
   entries,
   onActionChange,
 }: Props): JSX.Element {
-  // const { airtableSettings } = useAppState();
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
   const interviewSetting = interview?.interviewSettings.find(
