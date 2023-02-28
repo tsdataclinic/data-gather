@@ -71,14 +71,17 @@ class AirtableAPI:
     def __init__(self, airtableSettings: AirtableSettings):
         if not airtableSettings['apiKey']:
             logger.warn(
-                "**No AIRTABLE_API_KEY environment variable set. Airtable endpoints will not function.**"
+                "**No Airtable API key set. Airtable endpoints will not function.**"
             )
-        if not base_id:
+        if not airtableSettings['bases'][0]['id']:
             logger.warn(
-                "**No AIRTABLE_BASE_ID environment variable set. Airtable endpoints will not function.**"
+                "**No Airtable Base set. Airtable endpoints will not function.**"
             )
 
         self.api = Api(airtableSettings['apiKey'])
+        # for now, default to first base (implication is there can only be one base)
+        # TODO - make this selectable from the UI 
+        self.base_id = airtableSettings['bases'][0]['id']
 
     @airtable_errors_wrapped
     def fetch_record(self, table_name: str, id: str) -> Record:
@@ -108,7 +111,7 @@ class AirtableAPI:
         Returns: A list of records matching that query
         """
         logger.debug(
-            f"Fetching records in {table_name}" + (f"with {query = }" if query else "")
+            f"Fetching records in base: {self.base_id} table: {table_name}" + (f"with {query = }" if query else "")
         )
         find_statements = [
             FIND(LOWER(STR_VALUE(query_val)), LOWER(FIELD(field_name)))
@@ -129,7 +132,7 @@ class AirtableAPI:
 
         Returns: The new record
         """
-        logger.debug(f"Creating new record in {table_name}: {record}")
+        logger.debug(f"Creating new record in base: {self.base_id} table: {table_name}: {record}")
         return self.api.create(self.base_id, table_name, record, typecast=True)
 
     @airtable_errors_wrapped
@@ -145,7 +148,7 @@ class AirtableAPI:
         Returns:
         - The updated response
         """
-        logger.debug(f"Updating record {id} in {table_name}: {update}")
+        logger.debug(f"Updating record {id} in base: {self.base_id} table: {table_name}: {update}")
         return cast(
             dict,
             self.api.update(
