@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useNavigate } from 'react-router-dom';
 import * as Interview from '../../../../models/Interview';
 import * as InterviewSettings from '../../../../models/InterviewSetting';
 import Button from '../../../ui/Button';
@@ -26,6 +27,7 @@ type Props = {
 };
 
 function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
+  const navigate = useNavigate();
   const onAddClick = (): void => {
     onInterviewChange({
       ...interview,
@@ -57,8 +59,9 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     });
   };
 
-  const handleUpdateAirtableSchema = (): void => {
-    api.airtable.getAirtableSchema(interview.id);
+  const handleUpdateAirtableSchema = async (): Promise<void> => {
+    await api.airtable.getAirtableSchema(interview.id);
+    navigate(0);
   };
 
   const renderSettingBlock = (
