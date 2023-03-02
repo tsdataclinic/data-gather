@@ -1,5 +1,5 @@
 import * as React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as RadixToast from '@radix-ui/react-toast';
@@ -10,6 +10,8 @@ type ToastProps = {
   intent: 'success' | 'error';
   title: string;
 };
+
+const TOAST_TIME_MS = 3000;
 
 const VIEWPORT_PADDING = 25;
 
@@ -49,7 +51,7 @@ const StyledViewport = styled(RadixToast.Viewport)`
   max-width: 100vw;
   outline: none;
   right: 0;
-  top: 0;
+  bottom: 0;
   width: 300px;
   z-index: 9999;
 `;
@@ -73,7 +75,7 @@ const StyledToast = styled(RadixToast.Root)<{ intent: 'success' | 'error' }>`
     left: 0;
     position: absolute;
     width: 8px;
-    top: 0;
+    bottom: 0;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -119,7 +121,7 @@ type ToastAPI = {
 
 function Toast({ children, title, intent }: ToastProps): JSX.Element {
   return (
-    <StyledToast duration={5000} intent={intent}>
+    <StyledToast duration={TOAST_TIME_MS} intent={intent}>
       <StyledTitle className="text-base font-semibold text-slate-800">
         {title}
       </StyledTitle>
@@ -213,6 +215,7 @@ export function useToast(): ToastAPI {
   React.useEffect(() => {
     const { body } = document;
     let container: HTMLDivElement | undefined;
+    let rootNode: ReactDOM.Root | undefined;
 
     // we only need to insert a ToastManager to the DOM if we couldn't find one
     // already via context. If we found one in Context then it means that the
@@ -220,10 +223,14 @@ export function useToast(): ToastAPI {
     if (body && !toastAPIInContext) {
       container = document.createElement('div');
       body.appendChild(container);
-      ReactDOM.render(<ToastManager ref={toasterRef} />, container);
+      rootNode = ReactDOM.createRoot(container);
+      rootNode.render(<ToastManager ref={toasterRef} />);
     }
 
     return () => {
+      if (rootNode) {
+        rootNode.unmount();
+      }
       if (body && container) {
         body.removeChild(container);
       }

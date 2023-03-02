@@ -7,11 +7,15 @@ import { SerializedInterviewCreate } from '../api/models/SerializedInterviewCrea
 import { SerializedInterviewUpdate } from '../api/models/SerializedInterviewUpdate';
 import { SerializedInterviewReadWithScreensAndActions } from '../api/models/SerializedInterviewReadWithScreensAndActions';
 
+const LANGUAGE_DELIMITER = ';';
+
 /**
  * All the metadata data for an interview.
  */
-interface Interview {
+type Interview = {
+  readonly allowedLanguages: readonly string[];
   readonly createdDate: DateTime;
+  readonly defaultLanguage: string;
   readonly description: string;
   readonly id: string;
   readonly name: string;
@@ -19,8 +23,10 @@ interface Interview {
   readonly ownerId: string;
   readonly published: boolean;
   readonly vanityUrl?: string;
-}
+};
 
+// TODO: change name to WithSettingsScreensAndActions or just
+// 'FullInterview' or something
 /**
  * Interview model with its associated screens loaded.
  */
@@ -56,6 +62,7 @@ type InterviewUpdate = Interview & {
 
 export const QueryKeys = {
   allInterviews: ['allInterviews'],
+  getInterview: (interviewId: string) => ['interview', interviewId],
 };
 
 export const ALL_INTERVIEWS_URL = '/';
@@ -91,6 +98,8 @@ export function create(values: {
     name: values.name,
     published: false,
     notes: '',
+    allowedLanguages: ['en'],
+    defaultLanguage: 'en',
   };
 }
 
@@ -139,12 +148,14 @@ export function deserialize(
       interviewSettings: rawObj.interviewSettings?.map(
         InterviewSettings.deserialize,
       ),
+      allowedLanguages: rawObj.allowedLanguages.split(LANGUAGE_DELIMITER),
     };
   }
 
   return {
     ...rawObj,
     createdDate: datetime,
+    allowedLanguages: rawObj.allowedLanguages.split(LANGUAGE_DELIMITER),
   };
 }
 
@@ -172,9 +183,13 @@ export function serialize(
           : InterviewSettings.serialize(setting),
       ),
       createdDate: interview.createdDate?.toISO(),
+      allowedLanguages: interview.allowedLanguages.join(LANGUAGE_DELIMITER),
     };
   }
-  return interview;
+  return {
+    ...interview,
+    allowedLanguages: interview.allowedLanguages.join(LANGUAGE_DELIMITER),
+  };
 }
 
 export type { Interview as T };

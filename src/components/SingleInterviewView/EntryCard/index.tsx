@@ -4,19 +4,23 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as Scroll from 'react-scroll';
 import Form from '../../ui/Form';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import AirtableFieldSelector from './AirtableFieldSelector';
+import * as Interview from '../../../models/Interview';
 import EditableName from './EditableName';
 import type { EditableEntry } from '../types';
 import Button from '../../ui/Button';
+import LabelWrapper from '../../ui/LabelWrapper';
+import ResponseTypeConfigBlock from './ResponseTypeConfigBlock';
+import SelectedLanguageContext from '../SelectedLanguageContext';
 
 type Props = {
   entry: EditableEntry;
+  interview: Interview.WithScreensAndActions;
   onEntryChange: (
     entryToReplace: EditableEntry,
     newEntry: EditableEntry,
   ) => void;
-  onEntryDelete: (entryToDelete: EditableEntry) => void;
 
+  onEntryDelete: (entryToDelete: EditableEntry) => void;
   /** Should we scroll to this card when it mounts? */
   scrollOnMount: boolean;
 };
@@ -29,9 +33,10 @@ const ENTRY_RESPONSE_TYPE_OPTIONS = InterviewScreenEntry.RESPONSE_TYPES.map(
 );
 
 function EntryCard(
-  { entry, onEntryChange, onEntryDelete, scrollOnMount }: Props,
+  { entry, onEntryChange, onEntryDelete, scrollOnMount, interview }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
+  const selectedLanguageCode = React.useContext(SelectedLanguageContext);
   const entryId = 'id' in entry ? entry.id : entry.tempId;
 
   const onNameChange = (newName: string): void => {
@@ -52,8 +57,16 @@ function EntryCard(
     <Scroll.Element
       name={entryId}
       key={entryId}
-      className="relative flex w-full flex-row border border-gray-200 bg-white p-10 shadow-lg"
+      className="relative flex w-full flex-row rounded border border-gray-300 bg-gray-50 py-6 px-8 text-slate-800"
     >
+      <span className="absolute top-2 left-2 flex">
+        <FontAwesomeIcon
+          size="1x"
+          className="cursor-grab pr-2.5 text-slate-500 transition-transform hover:scale-110"
+          icon={IconType.faGripVertical}
+        />
+      </span>
+
       <Button
         unstyled
         className="absolute top-4 right-4"
@@ -73,63 +86,63 @@ function EntryCard(
           <Form.Input
             label="Text"
             name="prompt"
-            value={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
+            infoTooltip="This is the main prompt the user will see"
+            value={entry.prompt[selectedLanguageCode] ?? ''}
             onChange={(newVal: string) => {
               onEntryChange(entry, {
                 ...entry,
-                prompt: { en: newVal }, // TODO UI should support multiple language prompts rather than hardcoding english
+                prompt: { ...entry.prompt, [selectedLanguageCode]: newVal },
               });
             }}
           />
           <Form.Input
-            label="Helper Text"
+            label="Helper text"
             name="text"
+            infoTooltip="This is more text that will be displayed if you want to give more details about the question."
             required={false}
-            value={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
+            value={entry.text[selectedLanguageCode] ?? ''}
             onChange={(newVal: string) => {
               onEntryChange(entry, {
                 ...entry,
                 // TODO: change this to be named `helperText` instead of just `text`
-                // TODO UI should support multiple language prompts rather than hardcoding english
-                text: { en: newVal },
+                text: { ...entry.text, [selectedLanguageCode]: newVal },
               });
             }}
           />
         </Form.Group>
         <Form.Group label="Response">
-          <Form.Input
-            disabled
-            label="ID"
-            name="responseKey"
-            defaultValue={entry.responseKey}
-          />
           <Form.Dropdown
             label="Type"
             name="responseType"
             options={ENTRY_RESPONSE_TYPE_OPTIONS}
             value={entry.responseType}
-            onChange={(newVal: InterviewScreenEntry.ResponseType) => {
-              onEntryChange(entry, {
-                ...entry,
-                responseType: newVal,
-              });
+            onChange={(newResponseType: InterviewScreenEntry.ResponseType) => {
+              onEntryChange(
+                entry,
+                InterviewScreenEntry.changeResponseType(entry, newResponseType),
+              );
             }}
           />
-          {entry.responseType ===
-            InterviewScreenEntry.ResponseType.AIRTABLE && (
-            <AirtableFieldSelector
-              fieldSelectorLabel="Fields to search by"
-              airtableConfig={entry.responseTypeOptions}
-              onAirtableConfigurationChange={(
-                newConfig: InterviewScreenEntry.ResponseTypeOptions,
-              ) => {
-                onEntryChange(entry, {
-                  ...entry,
-                  responseTypeOptions: newConfig,
-                });
+          <ResponseTypeConfigBlock
+            entry={entry}
+            onEntryChange={onEntryChange}
+            interview={interview}
+          />
+          <LabelWrapper
+            inline
+            label="Required"
+            infoTooltip="Use this if this question cannot be left empty"
+            labelTextClassName="mr-1"
+            inlineContainerStyles={{ position: 'relative', top: 1 }}
+          >
+            <input
+              type="checkbox"
+              onChange={e => {
+                onEntryChange(entry, { ...entry, required: e.target.checked });
               }}
+              checked={!!entry.required}
             />
-          )}
+          </LabelWrapper>
         </Form.Group>
       </Form>
     </Scroll.Element>

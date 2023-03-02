@@ -23,6 +23,8 @@ export const CONDITIONAL_OPERATORS: readonly ConditionalOperator[] =
  */
 export const ACTION_TYPES: readonly ActionType[] = Object.values(ActionType);
 
+export type ConditionalOperatorGroupType = 'generic' | 'date' | 'number';
+
 /**
  * An action which may be executed after some response data is collected,
  * if a given condition is true (or, if the condition is 'ALWAYS_EXECUTE',
@@ -37,6 +39,10 @@ export const ACTION_TYPES: readonly ActionType[] = Object.values(ActionType);
 interface ConditionalAction {
   /** The action to do if the condition evaluates to true */
   readonly actionConfig:
+    | {
+        /** End the interview */
+        type: ActionType.END_INTERVIEW;
+      }
     | {
         /** Push some entries on to the stack */
         payload: readonly string[];
@@ -112,6 +118,44 @@ export function create(vals: {
 }
 
 /**
+ * Convert a ConditionalOperator to a string. Useful if listing operators
+ * in a dropdown.
+ */
+export function operatorToDisplayString(operator: ConditionalOperator): string {
+  switch (operator) {
+    case ConditionalOperator.ALWAYS_EXECUTE:
+      return 'Always execute';
+    case ConditionalOperator.AFTER:
+      return 'After';
+    case ConditionalOperator.BEFORE:
+      return 'Before';
+    case ConditionalOperator.AFTER_OR_EQUAL:
+      return 'After or equal';
+    case ConditionalOperator.BEFORE_OR_EQUAL:
+      return 'Before or equal';
+    case ConditionalOperator.EQUALS_DATE:
+      return 'Is on day';
+    case ConditionalOperator.EQ:
+      return 'Equals';
+    case ConditionalOperator.GT:
+      return '>';
+    case ConditionalOperator.GTE:
+      return '≥';
+    case ConditionalOperator.LT:
+      return '<';
+    case ConditionalOperator.LTE:
+      return '≤';
+    case ConditionalOperator.IS_EMPTY:
+      return 'Is empty';
+    case ConditionalOperator.IS_NOT_EMPTY:
+      return 'Is not empty';
+    default:
+      assertUnreachable(operator, { throwError: false });
+      return operator;
+  }
+}
+
+/**
  * Validate if a conditional action is valid to be saved.
  * @returns {[boolean, string]} A tuple of whether or not validation passed,
  * and an error string if validation did not pass.
@@ -119,25 +163,32 @@ export function create(vals: {
 export function validate(
   action: ConditionalAction | ConditionalActionCreate,
 ): [boolean, string] {
+  const { value, conditionalOperator, actionConfig, responseKey } = action;
+
   // if we're **not** using the ALWAYS_EXECUTE operator then don't allow an
   // empty `responseKey` or an empty `value`
-  if (action.conditionalOperator !== ConditionalOperator.ALWAYS_EXECUTE) {
-    if (
-      action.responseKey === undefined ||
-      action.responseKey === '' ||
-      action.value === undefined
-    ) {
+  if (conditionalOperator !== ConditionalOperator.ALWAYS_EXECUTE) {
+    const operatorName = operatorToDisplayString(conditionalOperator);
+    if (responseKey === undefined || responseKey === '') {
       return [
         false,
-        `A '${action.conditionalOperator}' operator must have a responseKey and a value`,
+        `A '${operatorName}' condition must select a response to compare to`,
       ];
+    }
+
+    if (
+      value === undefined &&
+      conditionalOperator !== ConditionalOperator.IS_NOT_EMPTY &&
+      conditionalOperator !== ConditionalOperator.IS_EMPTY
+    ) {
+      return [false, `A '${operatorName}' condition must have a value`];
     }
   }
 
   // do not allow Push actions to have an empty payload
   if (
-    action.actionConfig.type === ActionType.PUSH &&
-    action.actionConfig.payload.length === 0
+    actionConfig.type === ActionType.PUSH &&
+    actionConfig.payload.length === 0
   ) {
     return [false, 'A Push action cannot have an empty payload'];
   }
@@ -153,9 +204,19 @@ export function validate(
 export function deserialize(
   rawObj: SerializedConditionalActionRead,
 ): ConditionalAction {
-  const { actionPayload, actionType, ...condition } = nullsToUndefined(rawObj);
+  const {
+    actionPayload: payload,
+    actionType,
+    ...condition
+  } = nullsToUndefined(rawObj);
+  const actionPayload = payload ?? '';
 
   switch (actionType) {
+    case ActionType.END_INTERVIEW:
+      return {
+        ...condition,
+        actionConfig: { type: actionType },
+      };
     case ActionType.PUSH:
       return {
         ...condition,
@@ -222,43 +283,23 @@ export function serialize(
   const { actionConfig, ...conditionalAction } = action;
   return {
     ...conditionalAction,
-    actionPayload: serializeActionPayload(actionConfig.payload),
+    actionPayload:
+      'payload' in actionConfig
+        ? serializeActionPayload(actionConfig.payload)
+        : undefined,
     actionType: actionConfig.type,
   };
 }
 
-/**
- * Convert a ConditionalOperator to a string. Useful if listing operators
- * in a dropdown.
- */
-export function operatorToDisplayString(operator: ConditionalOperator): string {
-  switch (operator) {
-    case ConditionalOperator.ALWAYS_EXECUTE:
-      return 'Always execute';
-    case ConditionalOperator.AFTER:
-      return 'After';
-    case ConditionalOperator.BEFORE:
-      return 'Before';
-    case ConditionalOperator.EQ:
-      return '=';
-    case ConditionalOperator.GT:
-      return '>';
-    case ConditionalOperator.GTE:
-      return '≥';
-    case ConditionalOperator.LT:
-      return '<';
-    case ConditionalOperator.LTE:
-      return '≤';
-    default:
-      assertUnreachable(operator, { throwError: false });
-      return operator;
-  }
-}
-
-export function isTimeOperator(operator: ConditionalOperator): boolean {
+// TODO: eventually track a registry of all operators to their configurations,
+//   E.g. { EQ: { displayName: 'abc', groupType: 'date', requiresValue: true } }
+export function isDateOperator(operator: ConditionalOperator): boolean {
   switch (operator) {
     case ConditionalOperator.AFTER:
+    case ConditionalOperator.AFTER_OR_EQUAL:
     case ConditionalOperator.BEFORE:
+    case ConditionalOperator.BEFORE_OR_EQUAL:
+    case ConditionalOperator.EQUALS_DATE:
       return true;
     case ConditionalOperator.ALWAYS_EXECUTE:
     case ConditionalOperator.EQ:
@@ -266,10 +307,74 @@ export function isTimeOperator(operator: ConditionalOperator): boolean {
     case ConditionalOperator.GTE:
     case ConditionalOperator.LT:
     case ConditionalOperator.LTE:
+    case ConditionalOperator.IS_EMPTY:
+    case ConditionalOperator.IS_NOT_EMPTY:
       return false;
     default:
       assertUnreachable(operator, { throwError: false });
       return operator;
+  }
+}
+
+export function isGenericOperator(operator: ConditionalOperator): boolean {
+  switch (operator) {
+    case ConditionalOperator.IS_EMPTY:
+    case ConditionalOperator.IS_NOT_EMPTY:
+    case ConditionalOperator.EQ:
+      return true;
+    case ConditionalOperator.ALWAYS_EXECUTE:
+    case ConditionalOperator.GT:
+    case ConditionalOperator.GTE:
+    case ConditionalOperator.LT:
+    case ConditionalOperator.LTE:
+    case ConditionalOperator.AFTER:
+    case ConditionalOperator.AFTER_OR_EQUAL:
+    case ConditionalOperator.BEFORE:
+    case ConditionalOperator.BEFORE_OR_EQUAL:
+    case ConditionalOperator.EQUALS_DATE:
+      return false;
+    default:
+      assertUnreachable(operator, { throwError: false });
+      return operator;
+  }
+}
+
+export function isNumberOperator(operator: ConditionalOperator): boolean {
+  switch (operator) {
+    case ConditionalOperator.GT:
+    case ConditionalOperator.GTE:
+    case ConditionalOperator.LT:
+    case ConditionalOperator.LTE:
+      return true;
+    case ConditionalOperator.EQ:
+    case ConditionalOperator.AFTER:
+    case ConditionalOperator.AFTER_OR_EQUAL:
+    case ConditionalOperator.BEFORE:
+    case ConditionalOperator.BEFORE_OR_EQUAL:
+    case ConditionalOperator.EQUALS_DATE:
+    case ConditionalOperator.ALWAYS_EXECUTE:
+    case ConditionalOperator.IS_EMPTY:
+    case ConditionalOperator.IS_NOT_EMPTY:
+      return false;
+    default:
+      assertUnreachable(operator, { throwError: false });
+      return operator;
+  }
+}
+
+export function isOperatorOfGroupType(
+  operator: ConditionalOperator,
+  groupType: ConditionalOperatorGroupType,
+): boolean {
+  switch (groupType) {
+    case 'date':
+      return isDateOperator(operator);
+    case 'number':
+      return isNumberOperator(operator);
+    case 'generic':
+      return isGenericOperator(operator);
+    default:
+      return assertUnreachable(groupType);
   }
 }
 
@@ -284,11 +389,20 @@ export function actionTypeToDisplayString(
     return '';
   }
 
-  if (actionType === ActionType.PUSH) {
-    return 'Go to stage';
+  switch (actionType) {
+    case ActionType.END_INTERVIEW:
+      return 'End interview';
+    case ActionType.PUSH:
+      return 'Go to stage';
+    case ActionType.SKIP:
+    case ActionType.CHECKPOINT:
+    case ActionType.RESTORE:
+    case ActionType.MILESTONE:
+      // capitalize first letter
+      return actionType[0].toUpperCase() + actionType.substring(1);
+    default:
+      return assertUnreachable(actionType);
   }
-  // capitalize first letter
-  return actionType[0].toUpperCase() + actionType.substring(1);
 }
 
 /**
@@ -298,16 +412,12 @@ export function createDefaultActionConfig(
   actionType: ActionType,
 ): ConditionalAction['actionConfig'] {
   switch (actionType) {
+    case ActionType.END_INTERVIEW:
+      return { type: actionType };
     case ActionType.PUSH:
-      return {
-        payload: [],
-        type: actionType,
-      };
+      return { payload: [], type: actionType };
     case ActionType.SKIP:
-      return {
-        payload: {},
-        type: actionType,
-      };
+      return { payload: {}, type: actionType };
     case ActionType.CHECKPOINT:
     case ActionType.RESTORE:
     case ActionType.MILESTONE:
@@ -324,6 +434,18 @@ export function isCreateType(
   action: ConditionalAction | ConditionalActionCreate,
 ): action is ConditionalActionCreate {
   return 'tempId' in action;
+}
+
+export function getId(
+  action: ConditionalAction | ConditionalActionCreate,
+): string {
+  return isCreateType(action) ? action.tempId : action.id;
+}
+
+export function doesOperatorRequireValue(
+  operator: ConditionalOperator,
+): boolean {
+  return isNumberOperator(operator) || operator === ConditionalOperator.EQ;
 }
 
 export type { ConditionalAction as T };

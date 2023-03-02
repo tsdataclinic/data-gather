@@ -4,12 +4,17 @@ import Form from '../../ui/Form';
 import LabelWrapper from '../../ui/LabelWrapper';
 import MultiSelect from '../../ui/MultiSelect';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
+import * as InterviewSetting from '../../../models/InterviewSetting';
 import useInterview from '../../../hooks/useInterview';
-import { InterviewSettingType } from '../../../api';
 
 type Props = {
   airtableConfig: InterviewScreenEntry.AirtableOptions;
-  fieldSelectorLabel: string;
+  /**
+   * Pass a way to filter the fields to show so that the UI doesn't show
+   * all fields
+   */
+  fieldFilterFn?: (airtableField: InterviewSetting.AirtableField) => boolean;
+  fieldSelectorLabel?: string;
   onAirtableConfigurationChange: (
     newConfig: InterviewScreenEntry.AirtableOptions,
   ) => void;
@@ -19,16 +24,16 @@ type Props = {
 export default function AirtableFieldSelector({
   airtableConfig,
   onAirtableConfigurationChange,
-  fieldSelectorLabel,
+  fieldSelectorLabel = 'Select field',
   useSingleField = false,
+  fieldFilterFn,
 }: Props): JSX.Element {
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
   const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === InterviewSettingType.AIRTABLE,
+    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
   );
-  const settings = interviewSetting?.settings;
-  const airtableSettings = settings?.get(InterviewSettingType.AIRTABLE);
+  const airtableSettings = interviewSetting?.settings;
   const bases = airtableSettings?.bases;
   const { selectedBase, selectedTable, selectedFields } = airtableConfig;
 
@@ -53,7 +58,8 @@ export default function AirtableFieldSelector({
       const fields = bases
         .find(b => b.name === selectedBase)
         ?.tables?.find(b => b.id === selectedTable)
-        ?.fields?.map(f => ({
+        ?.fields?.filter(field => (fieldFilterFn ? fieldFilterFn(field) : true))
+        .map(f => ({
           displayValue: f.name,
           value: f.name,
         }));
@@ -62,7 +68,7 @@ export default function AirtableFieldSelector({
       }
     }
     return [];
-  }, [bases, selectedBase, selectedTable]);
+  }, [bases, selectedBase, selectedTable, fieldFilterFn]);
 
   const renderFieldSelector = (): JSX.Element | null => {
     if (selectedBase && selectedTable) {
@@ -117,8 +123,8 @@ export default function AirtableFieldSelector({
             });
           }}
           options={bases.map(b => ({
-            displayValue: b.name!,
-            value: b.name!,
+            displayValue: b.name ?? '',
+            value: b.name ?? '',
           }))}
         />
       )}

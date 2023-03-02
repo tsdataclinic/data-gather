@@ -11,7 +11,7 @@ import type { SerializedAirtableSettings } from './SerializedAirtableSettings';
  */
 export type SerializedInterviewSettingCreate = {
   type: InterviewSettingType;
-  settings: Record<string, SerializedAirtableSettings>;
+  settings: SerializedAirtableSettings;
   interviewId: string;
   id?: string;
 };

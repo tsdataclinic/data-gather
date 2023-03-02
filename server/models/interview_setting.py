@@ -15,6 +15,9 @@ class AirtableField(BaseModel):
     name: str
     description: Optional[str]
     type: Optional[str]
+
+    # TODO: model this type according to the Airtable API Reference for
+    # field types
     options: Optional[dict]
 
 class AirtableTable(BaseModel):
@@ -38,15 +41,16 @@ class InterviewSettingType(str, enum.Enum):
 class InterviewSettingBase(APIModel):
     """The base Interview Setting model"""
     type: InterviewSettingType
-    # Union[] for further expansion
-    settings: dict[InterviewSettingType, AirtableSettings] = Field(sa_column=Column(JSON))
+
+    # TODO: Union[] for further expansion when we add more settings types
+    settings: AirtableSettings = Field(sa_column=Column(JSON))
     interview_id: uuid.UUID = Field(foreign_key="interview.id")
 
     @validator('settings')
-    def validate_settings(cls, value: dict[InterviewSettingType, AirtableSettings]) -> dict:
+    def validate_settings(cls, value: AirtableSettings) -> dict:
         # hacky use of validator to allow Pydantic models to be stored as JSON
         # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
-        return {key: val.dict(exclude_none=True) for key, val in value.items()}
+        return value.dict(exclude_none=True)
 
 class InterviewSetting(InterviewSettingBase, table=True):
     """The InterviewSetting model as a database table. """

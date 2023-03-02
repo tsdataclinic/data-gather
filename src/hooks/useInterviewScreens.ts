@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
 import * as InterviewScreen from '../models/InterviewScreen';
-import useAppDispatch from './useAppDispatch';
 import useInterviewService from './useInterviewService';
 
 /**
@@ -15,13 +13,12 @@ import useInterviewService from './useInterviewService';
 export default function useInterviewScreens(
   interviewId: string | undefined,
 ): InterviewScreen.WithChildrenT[] | undefined {
-  const dispatch = useAppDispatch();
   const interviewService = useInterviewService();
 
   // load interview screens from backend
   const { data: screensFromStorage } = useQuery({
     enabled: !!interviewId,
-    queryKey: ['interviewScreens', interviewId],
+    queryKey: InterviewScreen.QueryKeys.getScreens(interviewId),
     queryFn: async () => {
       if (interviewId === undefined) {
         return undefined;
@@ -36,17 +33,6 @@ export default function useInterviewScreens(
       );
     },
   });
-
-  // if the screensFromStorage has changed then we should update it in
-  // our global state
-  useEffect(() => {
-    if (screensFromStorage) {
-      dispatch({
-        screens: screensFromStorage,
-        type: 'SCREENS_UPDATE',
-      });
-    }
-  }, [screensFromStorage, dispatch]);
 
   return screensFromStorage;
 }

@@ -1,6 +1,7 @@
+import * as React from 'react';
 import 'styled-components/macro';
 import classNames from 'classnames';
-import { ChangeEvent, KeyboardEvent, useRef } from 'react';
+import useComposedRefs from '../../../hooks/useComposedRefs';
 
 type Props = {
   className?: string;
@@ -9,41 +10,49 @@ type Props = {
   id?: string;
   name?: string;
 
-  onChange?: (val: string, event: ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (val: string, event: React.ChangeEvent<HTMLInputElement>) => void;
   /**
    * Triggered when the 'Enter' key is pressed.
    */
-  onEnterPress?: (val: string, event: KeyboardEvent<HTMLInputElement>) => void;
+  onEnterPress?: (
+    val: string,
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => void;
   placeholder?: string;
   required?: boolean;
   type?: 'text' | 'email' | 'tel';
   value?: string;
 };
 
-export default function InputText({
-  className,
-  disabled,
-  id,
-  name,
-  onChange,
-  onEnterPress,
-  placeholder,
-  required,
-  defaultValue,
-  value,
-  type = 'text',
-}: Props): JSX.Element {
-  const valueRef = useRef<HTMLInputElement | null>(null);
-  const onInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
+function BaseInputText(
+  {
+    className,
+    disabled,
+    id,
+    name,
+    onChange,
+    onEnterPress,
+    placeholder,
+    required,
+    defaultValue,
+    value,
+    type = 'text',
+  }: Props,
+  forwardedRef: React.ForwardedRef<HTMLInputElement>,
+): JSX.Element {
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const combinedRefs = useComposedRefs(inputRef, forwardedRef);
+
+  const onInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     if (onChange) {
       onChange(event.currentTarget.value, event);
     }
   };
 
-  const onKeyPress = (event: KeyboardEvent<HTMLInputElement>): void => {
+  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
     if (event.key === 'Enter' && onEnterPress) {
-      if (valueRef.current) {
-        onEnterPress(valueRef.current.value, event);
+      if (inputRef.current) {
+        onEnterPress(inputRef.current.value, event);
       }
     }
   };
@@ -55,7 +64,7 @@ export default function InputText({
 
   return (
     <input
-      ref={valueRef}
+      ref={combinedRefs}
       name={name}
       disabled={disabled}
       id={id}
@@ -63,7 +72,7 @@ export default function InputText({
       type={type}
       className={inputClassName}
       onChange={onInputChange}
-      onKeyPress={onKeyPress}
+      onKeyDown={onKeyDown}
       defaultValue={defaultValue}
       value={value}
       placeholder={placeholder}
@@ -84,3 +93,7 @@ export default function InputText({
     />
   );
 }
+
+const InputText = React.forwardRef<HTMLInputElement, Props>(BaseInputText);
+
+export default InputText;

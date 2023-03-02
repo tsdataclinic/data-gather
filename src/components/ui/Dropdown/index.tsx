@@ -2,9 +2,14 @@ import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useMemo } from 'react';
 import styled from 'styled-components/macro';
-import type { ReactNode } from 'react';
 import '@reach/listbox/styles.css';
 import * as Select from '@radix-ui/react-select';
+import DropdownOptionItem from './DropdownOptionItem';
+import type { DropdownOption, DropdownOptionGroup } from './types';
+import Tooltip from '../Tooltip';
+
+// re-export these types
+export type { DropdownOption, DropdownOptionGroup };
 
 export const StyledTriggerButton = styled(Select.Trigger)`
   all: unset;
@@ -47,36 +52,17 @@ const StyledSelectViewport = styled(Select.Viewport)`
   padding: 5px;
 `;
 
-const StyledSelectItem = styled(Select.Item)`
-  align-items: center;
-  all: unset;
-  border-radius: 3px;
-  cursor: pointer;
-  display: flex;
-  padding: 4px 35px 4px 25px;
-  position: relative;
-  user-select: none;
-
-  &[data-highlighted] {
-    color: white;
-    background: #3b82f6;
-  }
-
-  &[data-disabled] {
-    color: #94a3b8;
-    cursor: unset;
-  }
+const StyledGroupLabel = styled(Select.Label)`
+  color: #94a3b8; // slate-400
+  font-size: 0.95rem;
+  line-height: 1.5rem;
+  padding: 0 1.5rem;
 `;
 
-const StyledItemIndicator = styled(Select.ItemIndicator)`
-  align-items: center;
-  display: inline-flex;
-  justify-content: center;
-  height: 100%;
-  left: 0;
-  position: absolute;
-  width: 25px;
-  top: 0;
+const StyledSeparator = styled(Select.Separator)`
+  height: 1px;
+  background-color: #cbd5e1;
+  margin: 5px;
 `;
 
 type Props<T> = {
@@ -84,19 +70,17 @@ type Props<T> = {
   className?: string;
   defaultValue?: T | undefined;
   disabled?: boolean;
+  iconType?: IconType.IconDefinition;
   id?: string;
   name?: string;
   onChange?: (value: T) => void;
-  options: ReadonlyArray<{
-    disabled?: boolean;
-    displayValue: ReactNode;
-    value: T;
-  }>;
+  options: ReadonlyArray<DropdownOptionGroup<T> | DropdownOption<T>>;
   /**
    * The button label to display when no option is selected.
    * This will also be the default value for `ariaLabel` too.
    */
   placeholder?: string;
+  required?: boolean;
   value?: T | undefined;
 };
 
@@ -107,27 +91,49 @@ export default function Dropdown<T extends string>({
   placeholder,
   name,
   onChange,
+  required,
   options,
   value,
   id,
   disabled,
+  iconType = IconType.faChevronDown,
 }: Props<T>): JSX.Element {
   const ariaLabelToUse = ariaLabel ?? placeholder;
   const selectItems = useMemo(
     () =>
-      options.map(obj => (
-        <StyledSelectItem
-          key={obj.value}
-          value={obj.value}
-          disabled={!!obj.disabled}
-        >
-          <Select.ItemText>{obj.displayValue}</Select.ItemText>
-          <StyledItemIndicator>
-            <FontAwesomeIcon icon={IconType.faCheck} size="sm" />
-          </StyledItemIndicator>
-        </StyledSelectItem>
-      )),
+      options.map((obj, i) => {
+        if ('options' in obj) {
+          // if 'options' is present then this is a DropdownOptionGroup
+          return (
+            <>
+              <Select.Group>
+                <StyledGroupLabel>{obj.label}</StyledGroupLabel>
+                {obj.options.map(option => (
+                  <DropdownOptionItem key={option.value} option={option} />
+                ))}
+              </Select.Group>
+              {i !== options.length - 1 ? <StyledSeparator /> : null}
+            </>
+          );
+        }
+
+        return <DropdownOptionItem key={obj.value} option={obj} />;
+      }),
     [options],
+  );
+
+  const triggerButton = (
+    <StyledTriggerButton
+      id={id}
+      className={className}
+      aria-label={ariaLabelToUse}
+      disabled={disabled || options.length === 0}
+    >
+      <Select.Value placeholder={placeholder} />
+      <Select.Icon>
+        <FontAwesomeIcon style={{ marginLeft: 8 }} icon={iconType} size="xs" />
+      </Select.Icon>
+    </StyledTriggerButton>
   );
 
   return (
@@ -136,22 +142,13 @@ export default function Dropdown<T extends string>({
       defaultValue={defaultValue}
       onValueChange={onChange}
       name={name}
+      required={required}
     >
-      <StyledTriggerButton
-        id={id}
-        className={className}
-        aria-label={ariaLabelToUse}
-        disabled={disabled}
-      >
-        <Select.Value placeholder={placeholder} />
-        <Select.Icon>
-          <FontAwesomeIcon
-            style={{ marginLeft: 8 }}
-            icon={IconType.faChevronDown}
-            size="xs"
-          />
-        </Select.Icon>
-      </StyledTriggerButton>
+      {options.length === 0 ? (
+        <Tooltip content="This dropdown is empty">{triggerButton}</Tooltip>
+      ) : (
+        triggerButton
+      )}
 
       <Select.Portal>
         <StyledSelectContent>

@@ -12,16 +12,18 @@ import { useToast } from '../../ui/Toast';
 type Props = {
   interview: Interview.UpdateT;
   onSaveClick: () => void;
+  unsavedChanges: boolean;
 };
 
 export default function ConfigureToolbar({
   interview,
   onSaveClick,
+  unsavedChanges,
 }: Props): JSX.Element {
   const navigate = useNavigate();
   const toaster = useToast();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
-  const deleteInterview = useInterviewMutation({
+  const { mutate: deleteInterview } = useInterviewMutation({
     mutation: (interviewId: string, api: InterviewServiceAPI) =>
       api.interviewAPI.deleteInterview(interviewId),
     invalidateQuery: Interview.QueryKeys.allInterviews,
@@ -31,7 +33,10 @@ export default function ConfigureToolbar({
     <div className="z-10 flex w-full justify-end bg-white px-8 py-4 shadow">
       <Toolbar.Root className="flex space-x-2">
         <Toolbar.Button asChild>
-          <Button intent="primary" onClick={onSaveClick}>
+          <Button
+            intent={unsavedChanges ? 'primary' : 'default'}
+            onClick={onSaveClick}
+          >
             Save
           </Button>
         </Toolbar.Button>

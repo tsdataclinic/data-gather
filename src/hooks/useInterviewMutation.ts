@@ -1,7 +1,8 @@
 import {
   useMutation,
   useQueryClient,
-  type UseMutateFunction,
+  type UseMutationResult,
+  type QueryClient,
 } from '@tanstack/react-query';
 import useInterviewService from './useInterviewService';
 import type { InterviewServiceAPI } from '../services/InterviewService/InterviewServiceAPI';
@@ -33,14 +34,29 @@ import type { InterviewServiceAPI } from '../services/InterviewService/Interview
 export default function useInterviewMutation<
   TVariables = unknown,
   TResponse = unknown,
+  TError = unknown,
+  TContext = unknown,
 >(options: {
   invalidateQueries?: unknown[][];
   invalidateQuery?: unknown[];
-  mutation: (data: TVariables, api: InterviewServiceAPI) => Promise<TResponse>;
-}): UseMutateFunction<TResponse, unknown, TVariables> {
+  mutation: (
+    params: TVariables,
+    api: InterviewServiceAPI,
+  ) => Promise<TResponse>;
+  onError?: (
+    err: TError,
+    params: TVariables,
+    context: TContext | undefined,
+    queryClient: QueryClient,
+  ) => Promise<unknown> | unknown;
+  onMutate?: (
+    params: TVariables,
+    queryClient: QueryClient,
+  ) => Promise<TContext | undefined> | TContext | undefined;
+}): UseMutationResult<TResponse, TError, TVariables, TContext> {
   const api = useInterviewService();
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const mutationObj = useMutation({
     mutationFn: (data: TVariables) => options.mutation(data, api),
     onSuccess: () => {
       if (options?.invalidateQueries) {
@@ -51,9 +67,19 @@ export default function useInterviewMutation<
         queryClient.invalidateQueries(options.invalidateQuery);
       }
     },
+    onMutate: (params: TVariables) =>
+      options.onMutate ? options.onMutate(params, queryClient) : undefined,
+    onError: (
+      error: TError,
+      params: TVariables,
+      context: TContext | undefined,
+    ) =>
+      options.onError
+        ? options.onError(error, params, context, queryClient)
+        : undefined,
   });
 
-  return mutation.mutate;
+  return mutationObj;
 }
 
 export type { InterviewServiceAPI };

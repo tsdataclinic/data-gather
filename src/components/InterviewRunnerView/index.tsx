@@ -18,11 +18,15 @@ import ConfigurableScript from '../../script/ConfigurableScript';
 import { FastAPIService } from '../../api/FastAPIService';
 import assertUnreachable from '../../util/assertUnreachable';
 import type { ResponseData } from '../../script/types';
+import Button from '../ui/Button';
+import { useToast } from '../ui/Toast';
 
 const api = new FastAPIService();
 
 type Props = {
   interviewId: string;
+  onInterviewReset: () => void;
+  onStartNewInterview: () => void;
 };
 
 function getSpecialValueForSubmission(
@@ -36,8 +40,11 @@ function getSpecialValueForSubmission(
   }
 }
 
-export function InterviewRunnerView(props: Props): JSX.Element | null {
-  const { interviewId } = props;
+function BaseInterviewRunnerView({
+  interviewId,
+  onInterviewReset,
+  onStartNewInterview,
+}: Props): JSX.Element | null {
   const interview = useInterview(interviewId);
   const screens = useInterviewScreens(interviewId);
   const actions = useInterviewConditionalActions(interviewId);
@@ -47,8 +54,6 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
   const [responseConsumer, setResponseConsumer] = React.useState<
     ResponseConsumer | undefined
   >(undefined);
-  const [finalResponseData, setFinalResponseData] =
-    React.useState<ResponseData>({});
   const [complete, setComplete] = React.useState<boolean>(false);
   const entries = useInterviewScreenEntries(interviewId);
   const { mutate: airtableUpdateRecord } = useMutation({
@@ -69,12 +74,12 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
     mutationFn: (data: {
       fields: { [fieldName: string]: string };
       tableId: string;
-    }) => api.airtable.createAirtableRecord(data.tableId, interviewId, data.fields),
+    }) =>
+      api.airtable.createAirtableRecord(data.tableId, interviewId, data.fields),
   });
 
   const onInterviewComplete = React.useCallback(
     (responseData: ResponseData): void => {
-      setFinalResponseData(responseData);
       if (interview) {
         const allEntries: Map<InterviewScreenEntry.Id, InterviewScreenEntry.T> =
           Object.keys(responseData).reduce(
@@ -94,7 +99,11 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
               const actionPayload = actionConfig.payload;
               const entryTarget = allEntries.get(actionPayload.entryId);
 
-              if (entryTarget) {
+              if (
+                entryTarget &&
+                entryTarget.responseType ===
+                  InterviewScreenEntry.ResponseType.AIRTABLE
+              ) {
                 const tableId = entryTarget.responseTypeOptions.selectedTable;
                 const airtableRecordId = ConfigurableScript.getResponseValue(
                   responseData,
@@ -102,40 +111,43 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
                   actionPayload.primaryKeyField,
                 );
 
-                // get all fields mapped to their values collected from the
-                // entry responses
-                const fields: { [fieldId: string]: string } = {};
-                submissionAction.fieldMappings.forEach(
-                  (entryLookupConfig, fieldId) => {
-                    const { entryId, responseFieldKey, specialValueType } =
-                      entryLookupConfig;
-                    let responseValue = '';
-                    if (entryId) {
-                      const entry = allEntries.get(entryId);
-                      if (entry) {
-                        responseValue = ConfigurableScript.getResponseValue(
-                          responseData,
-                          entry.responseKey,
-                          responseFieldKey,
-                        );
+                if (airtableRecordId) {
+                  // get all fields mapped to their values collected from the
+                  // entry responses
+                  const fields: { [fieldId: string]: string } = {};
+                  submissionAction.fieldMappings.forEach(
+                    (entryLookupConfig, fieldId) => {
+                      const { entryId, responseFieldKey, specialValueType } =
+                        entryLookupConfig;
+                      let responseValue = '';
+                      if (entryId) {
+                        const entry = allEntries.get(entryId);
+                        if (entry) {
+                          responseValue =
+                            ConfigurableScript.getResponseValue(
+                              responseData,
+                              entry.responseKey,
+                              responseFieldKey,
+                            ) ?? '';
+                        }
+                      } else if (specialValueType) {
+                        responseValue =
+                          getSpecialValueForSubmission(specialValueType);
                       }
-                    } else if (specialValueType) {
-                      responseValue =
-                        getSpecialValueForSubmission(specialValueType);
-                    }
 
-                    // ignore empty values
-                    if (responseValue !== '') {
-                      fields[fieldId] = responseValue;
-                    }
-                  },
-                );
+                      // ignore empty values
+                      if (responseValue !== '') {
+                        fields[fieldId] = responseValue;
+                      }
+                    },
+                  );
 
-                airtableUpdateRecord({
-                  tableId,
-                  fields,
-                  recordId: airtableRecordId,
-                });
+                  airtableUpdateRecord({
+                    tableId,
+                    fields,
+                    recordId: airtableRecordId,
+                  });
+                }
               }
               break;
             }
@@ -155,11 +167,12 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
                   if (entryId) {
                     const entry = allEntries.get(entryId);
                     if (entry) {
-                      responseValue = ConfigurableScript.getResponseValue(
-                        responseData,
-                        entry.responseKey,
-                        responseFieldKey,
-                      );
+                      responseValue =
+                        ConfigurableScript.getResponseValue(
+                          responseData,
+                          entry.responseKey,
+                          responseFieldKey,
+                        ) ?? '';
                     }
                   } else if (specialValueType) {
                     responseValue =
@@ -229,33 +242,21 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
   return (
     <div>
       {complete ? (
-        <div className="mx-auto mt-8 w-4/6">
-          <div className="mb-8 flex flex-col items-center">
-            <h1 className="text-2xl">Done!</h1>
-          </div>
-          <h2 className="mb-2 text-xl">Responses:</h2>
-          <dl>
-            {Object.values(finalResponseData).map(response => (
-              <React.Fragment key={response.entry.responseKey}>
-                {/* TODO UI should support multiple language prompts rather than hardcoding english */}
-                <dt className="font-bold">{response.entry.prompt.en}:</dt>
-                <dd className="mb-2 pl-8">
-                  {ConfigurableScript.getResponseValue(
-                    finalResponseData,
-                    response.entry.responseKey,
-                  )}
-                </dd>
-              </React.Fragment>
-            ))}
-          </dl>
+        <div className="m-16 flex flex-col items-center space-y-8">
+          <h1 className="text-2xl">Done!</h1>
+          <Button onClick={onStartNewInterview} intent="primary">
+            Start a new interview
+          </Button>
         </div>
       ) : (
         <div>
-          {currentScreen && currentScreen && entries && responseConsumer && (
+          {interview && currentScreen && entries && responseConsumer && (
             <InterviewRunnerScreen
+              interview={interview}
               screen={currentScreen}
               entries={entries.get(currentScreen.id) ?? []}
               responseConsumer={responseConsumer}
+              onInterviewReset={onInterviewReset}
             />
           )}
         </div>
@@ -264,11 +265,42 @@ export function InterviewRunnerView(props: Props): JSX.Element | null {
   );
 }
 
+export function InterviewRunnerView(props: {
+  interviewId: string;
+}): JSX.Element | null {
+  const { interviewId } = props;
+  const toaster = useToast();
+
+  // keep track of a counter just to reset the interview easily by resetting its key
+  const [resetCounter, setResetCounter] = React.useState(1);
+  const onInterviewReset = React.useCallback(() => {
+    setResetCounter(prev => prev + 1);
+    toaster.notifySuccess(
+      'Reset interview',
+      'The interview has been restarted',
+    );
+  }, [toaster]);
+
+  const onStartNewInterview = React.useCallback(() => {
+    setResetCounter(prev => prev + 1);
+  }, []);
+
+  return (
+    <BaseInterviewRunnerView
+      key={resetCounter}
+      interviewId={interviewId}
+      onInterviewReset={onInterviewReset}
+      onStartNewInterview={onStartNewInterview}
+    />
+  );
+}
+
 /**
  * Runs an interview based on the ID of the interview in the URL params.
  */
 export function InterviewRunnerViewRoute(): JSX.Element | null {
   const { interviewId } = useParams();
+
   if (interviewId) {
     return <InterviewRunnerView interviewId={interviewId} />;
   }

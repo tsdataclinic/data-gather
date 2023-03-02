@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "views": {
+      "()": "uvicorn.logging.DefaultFormatter",
+      "fmt": "%(asctime)s [%(name)s] %(levelprefix)s %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    },
+    "default": {
+      "()": "uvicorn.logging.DefaultFormatter",
+      "fmt": "%(asctime)s %(levelprefix)s %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    },
+    "access": {
+      "()": "uvicorn.logging.AccessFormatter",
+      "fmt": "%(asctime)s %(levelprefix)s %(client_addr)s - '%(request_line)s' %(status_code)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    }
+  },
+  "handlers": {
+    "views": {
+      "formatter": "views",
+      "class": "logging.StreamHandler",
+      "stream": "ext://sys.stderr"
+    },
+    "default": {
+      "formatter": "default",
+      "class": "logging.StreamHandler",
+      "stream": "ext://sys.stderr"
+    },
+    "access": {
+      "formatter": "access",
+      "class": "logging.StreamHandler",
+      "stream": "ext://sys.stdout"
+    }
+  },
+  "loggers": {
+    "views": {
+      "handlers": ["views"],
+      "level": "INFO",
+      "propagate": false
+    },
+    "uvicorn": {
+      "handlers": ["default"],
+      "level": "INFO",
+      "propagate": false
+    },
+    "uvicorn.error": { "level": "INFO" },
+    "uvicorn.access": {
+      "handlers": ["access"],
+      "level": "INFO",
+      "propagate": false
+    }
+  }
+}

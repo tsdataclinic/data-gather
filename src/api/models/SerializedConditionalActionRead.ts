@@ -15,7 +15,7 @@ import type { ConditionalOperator } from './ConditionalOperator';
  */
 export type SerializedConditionalActionRead = {
   order: number;
-  actionPayload: string;
+  actionPayload?: string;
   actionType: ActionType;
   conditionalOperator: ConditionalOperator;
   responseKey?: string;

@@ -1,15 +1,18 @@
 import classNames from 'classnames';
 import type { ReactNode, CSSProperties } from 'react';
+import InfoIcon from '../InfoIcon';
 
 type Props = {
   children: ReactNode;
   className?: string;
   helperText?: string;
   htmlFor?: string;
+  infoTooltip?: string;
   inline?: boolean;
   inlineContainerStyles?: CSSProperties;
   label: string;
   labelAfter?: boolean;
+  labelSize?: 'small' | 'normal';
   labelTextClassName?: string;
   labelTextStyle?: CSSProperties;
 };
@@ -28,7 +31,9 @@ export default function LabelWrapper({
   labelAfter = false,
   labelTextClassName,
   labelTextStyle,
+  infoTooltip,
   htmlFor,
+  labelSize = 'normal',
 }: Props): JSX.Element {
   const childrenBlock = inline ? (
     <div className="inline-block" style={inlineContainerStyles}>
@@ -38,9 +43,21 @@ export default function LabelWrapper({
     children
   );
 
-  const spanClassName = classNames(labelTextClassName, {
+  const labelClassName = classNames(labelTextClassName, {
     'inline-block': inline,
+    'text-sm': labelSize === 'small',
+    'text-base': labelSize === 'normal',
   });
+
+  const tooltipIcon = infoTooltip ? <InfoIcon tooltip={infoTooltip} /> : null;
+
+  const helperTextDiv = helperText ? (
+    <div className={labelClassName} style={labelTextStyle}>
+      <small>
+        <i>{helperText}</i>
+      </small>
+    </div>
+  ) : null;
 
   let labelComponent = null;
   if (htmlFor) {
@@ -50,16 +67,10 @@ export default function LabelWrapper({
       <div className={inline ? 'space-x-2' : 'space-y-1'}>
         {labelAfter ? childrenBlock : null}
         <label htmlFor={htmlFor}>
-          <div className={spanClassName} style={labelTextStyle}>
-            {label}
+          <div className={labelClassName} style={labelTextStyle}>
+            {label} {tooltipIcon}
           </div>
-          {helperText && (
-            <div className={spanClassName} style={labelTextStyle}>
-              <small>
-                <i>{helperText}</i>
-              </small>
-            </div>
-          )}
+          {helperTextDiv}
         </label>
         {labelAfter ? null : childrenBlock}
       </div>
@@ -70,15 +81,9 @@ export default function LabelWrapper({
     labelComponent = (
       <label className={inline ? 'space-x-2' : 'space-y-1'} htmlFor={htmlFor}>
         {labelAfter ? childrenBlock : null}
-        <div className={spanClassName} style={labelTextStyle}>
-          {label}
-          {helperText && (
-            <div className={spanClassName} style={labelTextStyle}>
-              <small>
-                <i>{helperText}</i>
-              </small>
-            </div>
-          )}
+        <div className={labelClassName} style={labelTextStyle}>
+          {label} {tooltipIcon}
+          {helperTextDiv}
         </div>
         {labelAfter ? null : childrenBlock}
       </label>

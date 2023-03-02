@@ -11,11 +11,13 @@ type Props = {
   defaultValue?: string;
   disabled?: boolean;
   helperText?: string;
+  infoTooltip?: string;
   inputClassName?: string;
   label?: string;
   name: string;
   onChange?: (val: string, event: React.ChangeEvent<HTMLInputElement>) => void;
   options?: ReadonlyArray<{ displayValue: string; value: string | boolean }>;
+  placeholder?: string;
   required?: boolean;
   type?: 'text' | 'radio' | 'number' | 'email' | 'tel';
   value?: string;
@@ -24,14 +26,16 @@ type Props = {
 export default function FormInput({
   className,
   inputClassName,
-  disabled = false,
-  required = true,
   label,
   helperText,
+  infoTooltip,
   name,
   defaultValue,
   value,
   onChange,
+  placeholder,
+  disabled = false,
+  required = true,
   type = 'text',
   options = [],
 }: Props): JSX.Element {
@@ -54,6 +58,7 @@ export default function FormInput({
           className={className}
           label={label + (required ? ' *' : '')}
           helperText={helperText}
+          infoTooltip={infoTooltip}
         >
           <InputNumber
             required={required}
@@ -71,6 +76,7 @@ export default function FormInput({
           className={className}
           label={label + (required ? ' *' : '')}
           helperText={helperText}
+          infoTooltip={infoTooltip}
         >
           <InputText
             type={type}
@@ -81,6 +87,7 @@ export default function FormInput({
             defaultValue={defaultValue}
             value={value}
             onChange={onChange}
+            placeholder={placeholder}
           />
         </LabelWrapper>
       );

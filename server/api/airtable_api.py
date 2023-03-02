@@ -73,15 +73,12 @@ class AirtableAPI:
             logger.warn(
                 "**No Airtable API key set. Airtable endpoints will not function.**"
             )
-        if not airtableSettings['bases'][0]['id']:
-            logger.warn(
-                "**No Airtable Base set. Airtable endpoints will not function.**"
-            )
 
         self.api = Api(airtableSettings['apiKey'])
+
         # for now, default to first base (implication is there can only be one base)
         # TODO - make this selectable from the UI 
-        self.base_id = airtableSettings['bases'][0]['id']
+        self.base_id = airtableSettings['bases'][0]['id'] if 'bases' in airtableSettings else None
 
     @airtable_errors_wrapped
     def fetch_record(self, table_name: str, id: str) -> Record:

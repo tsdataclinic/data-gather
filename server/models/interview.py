@@ -21,6 +21,10 @@ class InterviewBase(APIModel):
     vanity_url: Optional[str]
     published: bool
     owner_id: str = Field(foreign_key="user.id")
+    default_language: str
+
+    # store allowed languages as a semicolon-separated string
+    allowed_languages: str
 
 
 class Interview(InterviewBase, table=True):
@@ -36,7 +40,10 @@ class Interview(InterviewBase, table=True):
     )
 
     # relationships
-    screens: list["InterviewScreen"] = Relationship(back_populates="interview")
+    screens: list["InterviewScreen"] = Relationship(
+        back_populates="interview",
+        sa_relationship_kwargs={"order_by": "InterviewScreen.order"},
+    )
     submission_actions: list["SubmissionAction"] = Relationship(
         back_populates="interview"
     )

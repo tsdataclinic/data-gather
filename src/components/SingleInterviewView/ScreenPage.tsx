@@ -3,38 +3,66 @@ import * as ConditionalAction from '../../models/ConditionalAction';
 import * as InterviewScreen from '../../models/InterviewScreen';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
-import ActionCard from './ActionCard';
-import EntryCard from './EntryCard';
-import useInterviewService from '../../hooks/useInterviewService';
 import HeaderCard from './HeaderCard';
 import ScreenToolbar from './ScreenToolbar';
 import ScrollArea from '../ui/ScrollArea';
-import useAppDispatch from '../../hooks/useAppDispatch';
 import { useToast } from '../ui/Toast';
 import type { EditableAction, EditableEntry } from './types';
-import Button from '../ui/Button';
+import EntriesSection from './EntriesSection';
+import ConditionalActionsSection from './ConditionalActionsSection';
+import useInterviewMutation, {
+  type InterviewServiceAPI,
+} from '../../hooks/useInterviewMutation';
+import useInterviewScreens from '../../hooks/useInterviewScreens';
 
 type Props = {
   defaultActions: readonly ConditionalAction.T[];
   defaultEntries: readonly InterviewScreenEntry.T[];
   defaultScreen: InterviewScreen.WithChildrenT;
-  interview: Interview.T;
+  interview: Interview.WithScreensAndActions;
+  setUnsavedChanges: (unsavedChanges: boolean) => void;
+  unsavedChanges: boolean;
 };
 
+function saveInterviewScreen(
+  screen: InterviewScreen.UpdateT,
+  api: InterviewServiceAPI,
+): Promise<InterviewScreen.WithChildrenT> {
+  return api.interviewScreenAPI.updateInterviewScreen(screen.id, screen);
+}
+
+function arrEqual(arr1: readonly unknown[], arr2: readonly unknown[]): boolean {
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+  return arr1.every((val, index) => val === arr2[index]);
+}
+
 /**
- * The ScreenCard is an uncontrolled component because any changes to actions
+ * The ScreenPage is an uncontrolled component because any changes to actions
  * are only tracked internally. These changes are not bubbled up to the rest
  * of the app until "Save" is clicked.
  */
-export default function ScreenCard({
+export default function ScreenPage({
   defaultEntries,
   defaultActions,
   defaultScreen,
   interview,
+  setUnsavedChanges,
+  unsavedChanges,
 }: Props): JSX.Element {
   const toaster = useToast();
-  const interviewService = useInterviewService();
-  const dispatch = useAppDispatch();
+  const { defaultLanguage } = interview;
+  const { mutate: updateScreen } = useInterviewMutation({
+    mutation: saveInterviewScreen,
+    invalidateQueries: [
+      Interview.QueryKeys.getInterview(interview.id),
+      InterviewScreen.QueryKeys.getScreens(interview.id),
+    ],
+  });
+  // Boolean indicating if there are unsaved changes
+  const [unsavedActions, setUnsavedActions] = React.useState(false);
+  const [unsavedEntries, setUnsavedEntries] = React.useState(false);
 
   // track the screen internally so we can modify it without persisting until
   // 'save' is clicked
@@ -53,7 +81,57 @@ export default function ScreenCard({
   const [allEntries, setAllEntries] =
     React.useState<readonly EditableEntry[]>(defaultEntries);
 
-  const allFormRefs = React.useRef(new Map<string, HTMLFormElement>());
+  // get all entries from this interview, we will need this for the conditional
+  // actions
+  const interviewScreens = useInterviewScreens(interview.id);
+  const allInterviewEntries = React.useMemo(
+    () =>
+      interviewScreens?.flatMap(interviewScreen => {
+        // for the current screen, take our current entries instead of the ones
+        // in storage
+        const entriesToUse =
+          interviewScreen.id === screen.id
+            ? allEntries
+            : interviewScreen.entries;
+        return entriesToUse.map(entry => ({
+          ...entry,
+          screen: interviewScreen,
+        }));
+      }) ?? [],
+    [screen.id, interviewScreens, allEntries],
+  );
+
+  // track form refs
+  const headerFormRef = React.useRef<null | HTMLFormElement>(null);
+  const entriesSectionRef = React.useRef<null | React.ComponentRef<
+    typeof EntriesSection
+  >>(null);
+  const actionsSectionRef = React.useRef<null | React.ComponentRef<
+    typeof ConditionalActionsSection
+  >>(null);
+
+  // Any time actions or entries are changed compare to default
+  React.useEffect(() => {
+    setUnsavedActions(!arrEqual(defaultActions, allActions));
+  }, [defaultActions, allActions, setUnsavedActions]);
+
+  React.useEffect(() => {
+    setUnsavedEntries(!arrEqual(defaultEntries, allEntries));
+  }, [defaultEntries, allEntries, setUnsavedEntries]);
+
+  React.useEffect(() => {
+    setUnsavedChanges(unsavedActions || unsavedEntries);
+  }, [unsavedActions, unsavedEntries, setUnsavedChanges]);
+
+  const onEntriesOrderChange = (newEntries: readonly EditableEntry[]): void => {
+    setAllEntries(newEntries.map((entry, i) => ({ ...entry, order: i + 1 })));
+  };
+
+  const onActionsOrderChange = (
+    newActions: readonly EditableAction[],
+  ): void => {
+    setAllActions(newActions.map((action, i) => ({ ...action, order: i + 1 })));
+  };
 
   const onNewActionClick = (): void =>
     setAllActions(prevActions =>
@@ -71,15 +149,10 @@ export default function ScreenCard({
         InterviewScreenEntry.create({
           name: `Question ${prevEntries.length + 1}`,
           order: prevEntries.length + 1,
-          prompt: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
-          text: { en: '' }, // TODO UI should support multiple language prompts rather than hardcoding english
+          prompt: { [defaultLanguage]: '' },
+          text: { [defaultLanguage]: '' },
           screenId: screen.id,
           responseType: InterviewScreenEntry.ResponseType.TEXT,
-          responseTypeOptions: {
-            selectedBase: '',
-            selectedTable: '',
-            selectedFields: [],
-          },
         }),
       ),
     );
@@ -119,119 +192,98 @@ export default function ScreenCard({
 
   const onScreenChange = React.useCallback(
     (newScreen: InterviewScreen.WithChildrenT) => {
+      setUnsavedChanges(true);
       setScreen(newScreen);
     },
-    [],
+    [setUnsavedChanges],
   );
 
-  const onSaveClick = React.useCallback(async () => {
-    const actionsForms = Array.from(allFormRefs.current.entries());
-    const allFormsValid = actionsForms.every(([_, form]) => {
+  const onSaveClick = async (): Promise<void> => {
+    const entriesForms = entriesSectionRef.current?.getForms() ?? [];
+    const actionsForms = actionsSectionRef.current?.getForms() ?? [];
+    const headerForm = headerFormRef.current;
+    const allForms = (headerForm ? [headerForm] : []).concat(
+      entriesForms,
+      actionsForms,
+    );
+
+    const allFormsValid = allForms.every(form => {
       // side-effect: also trigger the builtin browser validation UI
       form.reportValidity();
       return form.checkValidity();
     });
 
     if (allFormsValid) {
-      const updatedScreen =
-        await interviewService.interviewScreenAPI.updateInterviewScreen(
-          screen.id,
-          { ...screen, actions: allActions, entries: allEntries },
-        );
-
-      dispatch({
-        screen: updatedScreen,
-        type: 'SCREEN_UPDATE',
-      });
-      toaster.notifySuccess('Saved!', `Successfully saved ${screen.title.en}`); // TODO multilanguage support rather than hardcoded en
+      updateScreen(
+        {
+          ...screen,
+          actions: allActions,
+          entries: allEntries,
+        },
+        {
+          onSuccess: updatedScreen => {
+            toaster.notifySuccess(
+              'Saved!',
+              `Successfully saved ${InterviewScreen.getTitle(
+                updatedScreen,
+                defaultLanguage,
+              )}`,
+            );
+          },
+          onError: e => {
+            if (e instanceof Error) {
+              toaster.notifyError(
+                'Error',
+                `Could not save ${InterviewScreen.getTitle(
+                  screen,
+                  defaultLanguage,
+                )}. ${e.message}.`,
+              );
+            }
+          },
+        },
+      );
     }
-  }, [allActions, screen, interviewService, allEntries, dispatch, toaster]);
-
-  function formRefSetter(formKey: string): React.RefCallback<HTMLFormElement> {
-    return (formElt: HTMLFormElement | null) => {
-      if (formElt) {
-        allFormRefs.current.set(formKey, formElt);
-      } else {
-        // `formElt` is null when the component unmounts, so that's when we
-        // should remove this from the `allFormRefs` map
-        allFormRefs.current.delete(formKey);
-      }
-    };
-  }
+    setUnsavedChanges(false);
+  };
 
   return (
     <>
       <ScreenToolbar
+        interview={interview}
         screen={screen}
         onSaveClick={onSaveClick}
         onNewEntryClick={onNewEntryClick}
         onNewActionClick={onNewActionClick}
+        unsavedChanges={unsavedChanges}
       />
       <ScrollArea id="scrollContainer" className="w-full overflow-auto">
-        <div className="flex flex-col items-center gap-14 p-14">
+        <div className="flex flex-col items-center gap-10 px-14 py-10">
           <HeaderCard
-            ref={formRefSetter('header-card')}
+            ref={headerFormRef}
             screen={screen}
             onScreenChange={onScreenChange}
           />
-          {allEntries.length === 0 ? (
-            <div className="relative flex w-full flex-col items-center space-y-4 border border-gray-200 bg-white p-10 shadow-lg">
-              <p>No questions have been added yet.</p>
-              <Button intent="primary" onClick={onNewEntryClick}>
-                Add your first question
-              </Button>
-            </div>
-          ) : (
-            allEntries.map(entry => (
-              <EntryCard
-                key={
-                  InterviewScreenEntry.isCreateType(entry)
-                    ? entry.tempId
-                    : entry.id
-                }
-                ref={formRefSetter(
-                  InterviewScreenEntry.isCreateType(entry)
-                    ? entry.tempId
-                    : entry.id,
-                )}
-                entry={entry}
-                onEntryChange={onEntryChange}
-                onEntryDelete={onEntryDelete}
-                scrollOnMount={InterviewScreenEntry.isCreateType(entry)}
-              />
-            ))
-          )}
-          {allActions.length === 0 ? (
-            <div className="relative flex w-full flex-col items-center space-y-4 border border-gray-200 bg-white p-10 text-center shadow-lg">
-              <p>
-                This stage has no actions to run after the user answers your
-                questions.
-              </p>
-              <Button intent="primary" onClick={onNewActionClick}>
-                Add an action
-              </Button>
-            </div>
-          ) : (
-            allActions.map(action => (
-              <ActionCard
-                key={
-                  ConditionalAction.isCreateType(action)
-                    ? action.tempId
-                    : action.id
-                }
-                ref={formRefSetter(
-                  ConditionalAction.isCreateType(action)
-                    ? action.tempId
-                    : action.id,
-                )}
-                action={action}
-                interview={interview}
-                onActionChange={onActionChange}
-                onActionDelete={onActionDelete}
-                scrollOnMount={ConditionalAction.isCreateType(action)}
-              />
-            ))
-          )}
+          <EntriesSection
+            ref={entriesSectionRef}
+            entries={allEntries}
+            onEntryChange={onEntryChange}
+            onEntryDelete={onEntryDelete}
+            onNewEntryClick={onNewEntryClick}
+            onEntryOrderChange={onEntriesOrderChange}
+            interview={interview}
+          />
+          <ConditionalActionsSection
+            ref={actionsSectionRef}
+            actions={allActions}
+            allInterviewEntries={allInterviewEntries}
+            onActionChange={onActionChange}
+            onActionDelete={onActionDelete}
+            onNewActionClick={onNewActionClick}
+            interview={interview}
+            interviewScreen={screen}
+            onActionsOrderChange={onActionsOrderChange}
+          />
         </div>
       </ScrollArea>
     </>

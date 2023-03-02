@@ -12,6 +12,8 @@ import SettingsCard from './SettingsCard';
 
 type Props = {
   defaultInterview: Interview.WithScreensAndActions;
+  setUnsavedChanges: (unsavedChanges: boolean) => void;
+  unsavedChanges: boolean;
 };
 
 async function saveUpdatedInterview(
@@ -32,18 +34,25 @@ async function saveUpdatedInterview(
 
 export default function ConfigurePage({
   defaultInterview,
+  unsavedChanges,
+  setUnsavedChanges,
 }: Props): JSX.Element {
   const [interview, setInterview] =
     React.useState<Interview.UpdateT>(defaultInterview);
   const toaster = useToast();
-  const updateScreen = useInterviewMutation({
+  const { mutate: updateScreen } = useInterviewMutation({
     mutation: saveUpdatedInterview,
-    invalidateQuery: ['interview', interview.id],
+    invalidateQuery: Interview.QueryKeys.getInterview(interview.id),
   });
   const [startingState, setStartingState] = React.useState<readonly string[]>(
     () =>
       Interview.getStartingScreens(defaultInterview).map(screen => screen.id),
   );
+
+  // Reset the unsaved changes state when the page loads
+  React.useEffect(() => {
+    setUnsavedChanges(false);
+  }, [setUnsavedChanges]);
 
   const onSaveClick = (): void => {
     updateScreen(
@@ -60,18 +69,28 @@ export default function ConfigurePage({
         },
       },
     );
+    setUnsavedChanges(false);
+  };
+
+  const onInterviewChange = (changedInterview: Interview.UpdateT): void => {
+    setUnsavedChanges(true);
+    setInterview(changedInterview);
   };
 
   return (
     <>
-      <ConfigureToolbar onSaveClick={onSaveClick} interview={interview} />
+      <ConfigureToolbar
+        onSaveClick={onSaveClick}
+        interview={interview}
+        unsavedChanges={unsavedChanges}
+      />
       <ScrollArea className="w-full overflow-auto">
         <div className="space-y-8 p-14">
           <ConfigureCard
             interview={interview}
             startingState={startingState}
             onStartingStateChange={setStartingState}
-            onInterviewChange={setInterview}
+            onInterviewChange={onInterviewChange}
           />
           <SettingsCard
             interview={interview}
@@ -79,7 +98,7 @@ export default function ConfigurePage({
           />
           <OnSubmitCard
             interview={interview}
-            onInterviewChange={setInterview}
+            onInterviewChange={onInterviewChange}
           />
         </div>
       </ScrollArea>

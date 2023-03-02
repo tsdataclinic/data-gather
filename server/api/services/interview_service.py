@@ -56,13 +56,12 @@ class InterviewService(BaseService):
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
         output = {}
-        for setting in interview.interview_settings:
-            if (setting.type == interview_setting_type):
-                output = setting.settings[interview_setting_type]
+        for interview_setting in interview.interview_settings:
+            if interview_setting.type == interview_setting_type:
+                output = interview_setting.settings
         if output == {}:
             raise HTTPException(status_code=404, detail="Airtable setting not found for interview {interview_id}")
 
-        print('get_interview_setting', output)
         return output
 
     def get_interview_by_vanity_url(self, vanity_url: str) -> Interview:

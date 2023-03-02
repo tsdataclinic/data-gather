@@ -12,14 +12,24 @@ class ConditionalOperator(str, enum.Enum):
     """The different types of conditional operator that can be used for a
     ConditionalAction"""
 
+    # date operators
+    AFTER_OR_EQUAL = "after_or_equal"
     AFTER = "after"
-    ALWAYS_EXECUTE = "ALWAYS_EXECUTE"
+    EQUALS_DATE = "equals_date"
     BEFORE = "before"
+    BEFORE_OR_EQUAL = "before_or_equal"
+
+    # numeric operators
+    ALWAYS_EXECUTE = "always_execute"
     EQUALS = "eq"
     GREATER_THAN = "gt"
     GREATER_THAN_OR_EQUAL = "gte"
     LESS_THAN = "lt"
     LESS_THAN_OR_EQUAL = "lte"
+
+    # generic operators
+    IS_EMPTY = "is_empty"
+    IS_NOT_EMPTY = "is_not_empty"
 
 
 class ActionType(str, enum.Enum):
@@ -30,12 +40,14 @@ class ActionType(str, enum.Enum):
     PUSH = "push"
     RESTORE = "restore"
     SKIP = "skip"
+    END_INTERVIEW = "end_interview"
 
 
 class ConditionalActionBase(OrderedModel):
     """The base ConditionalAction model"""
 
-    action_payload: str
+    # TODO: change the payload to be an optional JSON blob
+    action_payload: Optional[str]
     action_type: ActionType
     conditional_operator: ConditionalOperator
     response_key: Optional[str]

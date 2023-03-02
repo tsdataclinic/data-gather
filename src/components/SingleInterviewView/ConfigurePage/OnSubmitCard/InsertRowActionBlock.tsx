@@ -1,18 +1,19 @@
 import * as React from 'react';
-import { useParams } from 'react-router-dom';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
+import * as InterviewSetting from '../../../../models/InterviewSetting';
+import * as Interview from '../../../../models/Interview';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import Dropdown from '../../../ui/Dropdown';
 import LabelWrapper from '../../../ui/LabelWrapper';
 import FieldToQuestionBlock from './FieldToQuestionBlock';
 import type { EditableAction } from './types';
-import useInterview from '../../../../hooks/useInterview';
-import { InterviewSettingType } from '../../../../api';
 
 type Props = {
   action: EditableAction;
   actionConfig: SubmissionAction.WithPartialPayload<SubmissionAction.InsertRowActionConfig>;
+  defaultLanguage: string;
   entries: readonly InterviewScreenEntry.WithScreenT[];
+  interview: Interview.UpdateT;
   onActionChange: (
     actionToReplace: EditableAction,
     newAction: EditableAction,
@@ -22,16 +23,15 @@ type Props = {
 export default function EditRowActionBlock({
   action,
   actionConfig,
+  defaultLanguage,
   entries,
+  interview,
   onActionChange,
 }: Props): JSX.Element {
-  const { interviewId } = useParams();
-  const interview = useInterview(interviewId);
   const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === InterviewSettingType.AIRTABLE,
+    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
   );
-  const settings = interviewSetting?.settings;
-  const airtableSettings = settings?.get(InterviewSettingType.AIRTABLE);
+  const airtableSettings = interviewSetting?.settings;
 
   const allTables = React.useMemo(
     () =>
@@ -96,6 +96,8 @@ export default function EditRowActionBlock({
             airtableTable={selectedTable}
             fieldMappings={action.fieldMappings}
             onFieldMappingChange={onFieldMappingChange}
+            defaultLanguage={defaultLanguage}
+            interview={interview}
           />
         </>
       )}

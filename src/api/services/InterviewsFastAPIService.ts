@@ -138,6 +138,31 @@ export class InterviewsFastAPIService {
   }
 
   /**
+   * Update Interview Screens Order
+   * @param interviewId
+   * @param requestBody
+   * @returns SerializedInterviewReadWithScreensAndActions Successful Response
+   * @throws ApiError
+   */
+  public updateInterviewScreensOrder(
+    interviewId: string,
+    requestBody: Array<string>,
+  ): CancelablePromise<SerializedInterviewReadWithScreensAndActions> {
+    return this.httpRequest.request({
+      method: 'POST',
+      url: '/api/interview/{interview_id}/screen_order',
+      path: {
+        'interview_id': interviewId,
+      },
+      body: requestBody,
+      mediaType: 'application/json',
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
    * Update Interview Starting State
    * @param interviewId
    * @param requestBody

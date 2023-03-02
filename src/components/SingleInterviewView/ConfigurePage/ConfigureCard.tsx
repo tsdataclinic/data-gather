@@ -1,14 +1,16 @@
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { MixedCheckbox } from '@reach/checkbox';
 import * as React from 'react';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
 import * as Interview from '../../../models/Interview';
+import * as InterviewScreen from '../../../models/InterviewScreen';
 import LabelWrapper from '../../ui/LabelWrapper';
 import TextArea from '../../ui/TextArea';
-import MultiSelect from '../../ui/MultiSelect';
 import InputText from '../../ui/InputText';
 import useIsAuthenticated from '../../../auth/useIsAuthenticated';
+import Dropdown from '../../ui/Dropdown';
+import MultiSelect from '../../ui/MultiSelect';
+import * as Config from '../../../config';
 
 type Props = {
   interview: Interview.UpdateT;
@@ -16,6 +18,13 @@ type Props = {
   onStartingStateChange: (startingState: readonly string[]) => void;
   startingState: readonly string[];
 };
+
+const ALL_LANGUAGE_OPTIONS = Object.entries(Config.LANGUAGES).map(
+  ([languageKey, languageDisplayName]) => ({
+    displayValue: languageDisplayName,
+    value: languageKey,
+  }),
+);
 
 function ConfigureCard({
   interview,
@@ -25,19 +34,29 @@ function ConfigureCard({
 }: Props): JSX.Element {
   const screens = useInterviewScreens(interview.id);
   const isAuthenticated = useIsAuthenticated();
+  const { allowedLanguages, defaultLanguage } = interview;
+
+  const screenOptions = React.useMemo(
+    () =>
+      screens?.map(screen => ({
+        displayValue: InterviewScreen.getTitle(screen, defaultLanguage),
+        value: screen.id,
+      })) ?? [],
+    [defaultLanguage, screens],
+  );
+
+  const defaultLanguageOptions = React.useMemo(
+    () =>
+      allowedLanguages.map(languageCode => ({
+        displayValue: Config.LANGUAGES[languageCode],
+        value: languageCode,
+      })),
+    [allowedLanguages],
+  );
 
   if (!screens) {
     return <p>No stages have been created yet!</p>;
   }
-
-  const getOptions = (): Array<{
-    displayValue: string;
-    value: string;
-  }> =>
-    screens.map(screen => ({
-      displayValue: screen.title.en, // // TODO multilanguage support rather than hardcoding en
-      value: screen.id,
-    }));
 
   return (
     <div className="grid h-auto grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg">
@@ -60,12 +79,52 @@ function ConfigureCard({
           />
         </LabelWrapper>
 
-        <LabelWrapper inline label="Starting State" labelTextClassName="w-40">
+        <LabelWrapper
+          inline
+          label="Enabled languages"
+          labelTextClassName="w-40"
+          infoTooltip="These are the languages a user can pick from. You will need to configure all questions and prompts for the languages you pick here."
+        >
           <MultiSelect
-            onChange={onStartingStateChange}
+            onChange={languageCodes =>
+              onInterviewChange({
+                ...interview,
+                allowedLanguages: languageCodes,
+              })
+            }
+            placeholder="Add another language"
+            options={ALL_LANGUAGE_OPTIONS}
+            selectedValues={allowedLanguages}
+          />
+        </LabelWrapper>
+
+        <LabelWrapper
+          inline
+          label="Default language"
+          labelTextClassName="w-40"
+          infoTooltip="This is the default language to use"
+        >
+          <Dropdown
+            onChange={languageCode =>
+              onInterviewChange({ ...interview, defaultLanguage: languageCode })
+            }
+            placeholder="Pick a language"
+            value={interview.defaultLanguage}
+            options={defaultLanguageOptions}
+          />
+        </LabelWrapper>
+
+        <LabelWrapper
+          inline
+          label="Starting stage"
+          labelTextClassName="w-40"
+          infoTooltip="This is the first stage the user will see when they start. After that, the next stages will depend on the actions you configure."
+        >
+          <Dropdown
+            onChange={screenId => onStartingStateChange([screenId])}
             placeholder="Add a stage"
-            selectedValues={startingState}
-            options={getOptions()}
+            value={startingState[0]}
+            options={screenOptions}
           />
         </LabelWrapper>
 
@@ -75,7 +134,8 @@ function ConfigureCard({
           labelTextClassName="w-40"
           inlineContainerStyles={{ verticalAlign: 'text-top' }}
         >
-          <MixedCheckbox
+          <input
+            type="checkbox"
             onChange={e => {
               onInterviewChange({ ...interview, published: e.target.checked });
             }}

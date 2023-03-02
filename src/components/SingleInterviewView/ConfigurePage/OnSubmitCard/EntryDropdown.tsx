@@ -1,14 +1,18 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
+import * as InterviewScreen from '../../../../models/InterviewScreen';
+import * as InterviewSetting from '../../../../models/InterviewSetting';
+import * as Interview from '../../../../models/Interview';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import Dropdown from '../../../ui/Dropdown';
-import useAppState from '../../../../hooks/useAppState';
 
 type Props = {
   allowSpecialValues?: boolean;
+  defaultLanguage: string;
   emptyIsAnOption?: boolean;
   emptyOptionText?: string;
   entries: readonly InterviewScreenEntry.WithScreenT[];
+  interview: Interview.UpdateT;
   onChangeEntrySelection: (
     entryId: InterviewScreenEntry.Id | undefined,
   ) => void;
@@ -17,6 +21,7 @@ type Props = {
     specialValueType: SubmissionAction.SpecialValueType,
   ) => void;
   responseFieldPlaceholder?: string;
+
   selectedEntryId?: InterviewScreenEntry.Id | undefined;
   /**
    * If the entry stores an object (e.g. an Airtable lookup returns a full
@@ -39,6 +44,7 @@ const SPECIAL_VALUE_OPTIONS = [
 ];
 
 export default function EntryDropdown({
+  defaultLanguage,
   entries,
   allowSpecialValues,
   selectedEntryId,
@@ -50,6 +56,7 @@ export default function EntryDropdown({
   emptyIsAnOption = false,
   emptyOptionText = 'No selection',
   selectedSpecialValueType,
+  interview,
 }: Props): JSX.Element {
   const [isEmptyValueSelected, setIsEmptyValueSelected] = React.useState(
     selectedEntryId === undefined && selectedSpecialValueType === undefined,
@@ -58,8 +65,10 @@ export default function EntryDropdown({
     selectedSpecialValueType !== undefined,
   );
 
-  const { airtableSettings } = useAppState();
-  const { bases } = airtableSettings;
+  const interviewSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+  );
+  const airtableSettings = interviewSetting?.settings;
 
   const selectedEntry = React.useMemo(
     () => entries.find(entry => entry.id === selectedEntryId),
@@ -87,10 +96,19 @@ export default function EntryDropdown({
     return emptyOptionSingleton.concat(specialOptionSingleton).concat(
       entries.map(entry => ({
         value: entry.id,
-        displayValue: `${entry.screen.title} - ${entry.name}`,
+        displayValue: `${InterviewScreen.getTitle(
+          entry.screen,
+          defaultLanguage,
+        )} - ${entry.name}`,
       })),
     );
-  }, [entries, allowSpecialValues, emptyIsAnOption, emptyOptionText]);
+  }, [
+    defaultLanguage,
+    entries,
+    allowSpecialValues,
+    emptyIsAnOption,
+    emptyOptionText,
+  ]);
 
   const airtableFieldOptions = React.useMemo(() => {
     if (
@@ -98,29 +116,29 @@ export default function EntryDropdown({
       selectedEntry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
     ) {
       const { selectedTable } = selectedEntry.responseTypeOptions;
-      const airtableFields = bases
-        .flatMap(base => base.tables)
-        .find(table => table.key === selectedTable)?.fields;
+      const airtableFields = airtableSettings?.bases
+        ?.flatMap(base => base.tables)
+        .find(table => table?.id === selectedTable)?.fields;
       return airtableFields?.map(field => ({
-        displayValue: field.fieldName,
+        displayValue: field.name,
         // interestingly, airtable seems to key the fields by their name
         // rather than ID
-        value: field.fieldName,
+        value: field.name,
       }));
     }
 
     return undefined;
-  }, [bases, selectedEntry]);
+  }, [airtableSettings, selectedEntry]);
 
   let entryIdToDisplay = selectedEntryId;
   if (isSpecialValueSelected) {
     entryIdToDisplay = SPECIAL_OPTION_ID;
-  } else if (isEmptyValueSelected) {
+  } else if (isEmptyValueSelected && emptyIsAnOption) {
     entryIdToDisplay = EMPTY_ENTRY_ID;
   }
 
   return (
-    <>
+    <div className="flex space-x-2">
       <Dropdown
         placeholder="Select response"
         options={entryOptions}
@@ -137,7 +155,6 @@ export default function EntryDropdown({
       />
       {airtableFieldOptions ? (
         <Dropdown
-          className="!ml-2"
           placeholder={responseFieldPlaceholder}
           options={airtableFieldOptions}
           onChange={onChangeResponseFieldKey}
@@ -146,13 +163,12 @@ export default function EntryDropdown({
       ) : null}
       {isSpecialValueSelected ? (
         <Dropdown
-          className="!ml-2"
           placeholder="Select special value"
           options={SPECIAL_VALUE_OPTIONS}
           onChange={onChangeSpecialValueType}
           value={selectedSpecialValueType}
         />
       ) : null}
-    </>
+    </div>
   );
 }

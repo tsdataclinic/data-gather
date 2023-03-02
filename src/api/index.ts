@@ -16,6 +16,7 @@ export { InterviewSettingType } from './models/InterviewSettingType';
 export { ResponseType } from './models/ResponseType';
 export type { SerializedAirtableBase } from './models/SerializedAirtableBase';
 export type { SerializedAirtableField } from './models/SerializedAirtableField';
+export type { SerializedAirtableOptions } from './models/SerializedAirtableOptions';
 export type { SerializedAirtableSettings } from './models/SerializedAirtableSettings';
 export type { SerializedAirtableTable } from './models/SerializedAirtableTable';
 export type { SerializedConditionalActionCreate } from './models/SerializedConditionalActionCreate';
@@ -36,6 +37,8 @@ export type { SerializedInterviewScreenUpdate } from './models/SerializedIntervi
 export type { SerializedInterviewSettingCreate } from './models/SerializedInterviewSettingCreate';
 export type { SerializedInterviewSettingRead } from './models/SerializedInterviewSettingRead';
 export type { SerializedInterviewUpdate } from './models/SerializedInterviewUpdate';
+export type { SerializedSelectableOption } from './models/SerializedSelectableOption';
+export type { SerializedSingleSelectOptions } from './models/SerializedSingleSelectOptions';
 export type { SerializedSubmissionActionCreate } from './models/SerializedSubmissionActionCreate';
 export type { SerializedSubmissionActionRead } from './models/SerializedSubmissionActionRead';
 export type { SerializedUserRead } from './models/SerializedUserRead';

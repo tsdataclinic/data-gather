@@ -1,4 +1,3 @@
-import invariant from 'invariant';
 import { QuestionRouter, Script } from '@dataclinic/interview';
 import { DateTime } from 'luxon';
 import assertUnreachable from '../util/assertUnreachable';
@@ -8,7 +7,12 @@ import * as ConditionalAction from '../models/ConditionalAction';
 import type { ResponseData } from './types';
 
 function stringToDateTime(dateString: string): DateTime {
-  const date = DateTime.fromISO(dateString);
+  // If the date is null, set date to start of epoch time
+  // TODO: maybe make this externally configurable in case users  have really old dates in data
+  const date =
+    dateString === 'null'
+      ? DateTime.fromISO(process.env.NULL_DATE_OVERRIDE || '1970-01-01')
+      : DateTime.fromISO(dateString);
   if (!date.isValid) {
     throw new Error(`The date '${dateString}' failed to parse.`);
   }
@@ -20,24 +24,26 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
     responseData: ResponseData,
     responseKey: string,
     responseKeyField?: string,
-  ): string {
-    invariant(
-      responseKey in responseData,
-      `Could not find '${responseKey}' in the response data.`,
-    );
+  ): string | undefined {
+    if (!(responseKey in responseData)) {
+      return undefined;
+    }
 
     const { response } = responseData[responseKey];
+
     if (typeof response === 'string') {
       return response;
     }
 
+    // Airtable will drop any colums from the response that have a null value
+    // https://community.airtable.com/t5/development-apis/api-behavior-for-empty-fields-null-values/td-p/108285
+    // It should be ok to assume that the value exists but is null here  because we enforce users selecting only
+    // existing keys further up the stack
     if (responseKeyField) {
-      invariant(
-        responseKeyField in response,
-        `Could not find '${responseKeyField}' in the object held by '${responseKey}'`,
-      );
+      const responseKeyReturn =
+        responseKeyField in response ? response[responseKeyField] : null;
 
-      return String(response[responseKeyField]);
+      return String(responseKeyReturn);
     }
 
     return JSON.stringify(response);
@@ -97,9 +103,11 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
     action: ConditionalAction.T,
     responseData: ResponseData,
   ): boolean {
+    const { responseKey, conditionalOperator } = action;
+
     if (
-      !action.responseKey ||
-      action.conditionalOperator ===
+      !responseKey ||
+      conditionalOperator ===
         ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
     ) {
       return true;
@@ -114,35 +122,86 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
       action,
     );
 
-    if (!testValue || !responseValue) {
-      return false;
-    }
+    // wrapper function to require values, which we need for many conditions
+    // (but some, like IS_EMPTY and IS_NOT_EMPTY work fine without a value
+    const withRequiredValues = (
+      predicate: (responseVal: string, testVal: string) => boolean,
+    ): boolean => {
+      if (!testValue || !responseValue) {
+        return false;
+      }
+      return predicate(responseValue, testValue);
+    };
 
-    switch (action.conditionalOperator) {
+    switch (conditionalOperator) {
       case ConditionalAction.ConditionalOperator.EQ:
         return responseValue === testValue;
       case ConditionalAction.ConditionalOperator.GT:
-        return responseValue > testValue;
-      case ConditionalAction.ConditionalOperator.AFTER: {
-        const responseDate = stringToDateTime(responseValue);
-        const testDate = stringToDateTime(testValue);
-        return responseDate > testDate;
-      }
+        return withRequiredValues(
+          (responseVal, testVal) => Number(responseVal) > Number(testVal),
+        );
       case ConditionalAction.ConditionalOperator.GTE:
-        return responseValue >= testValue;
+        return withRequiredValues(
+          (responseVal, testVal) => Number(responseVal) >= Number(testVal),
+        );
       case ConditionalAction.ConditionalOperator.LT:
-        return responseValue < testValue;
-      case ConditionalAction.ConditionalOperator.BEFORE: {
-        const responseDate = stringToDateTime(responseValue);
-        const testDate = stringToDateTime(testValue);
-        return responseDate < testDate;
-      }
+        return withRequiredValues(
+          (responseVal, testVal) => Number(responseVal) < Number(testVal),
+        );
       case ConditionalAction.ConditionalOperator.LTE:
-        return responseValue <= testValue;
+        return withRequiredValues(
+          (responseVal, testVal) => Number(responseVal) <= Number(testVal),
+        );
+      case ConditionalAction.ConditionalOperator.IS_EMPTY:
+        return (
+          responseValue === undefined ||
+          responseValue === null ||
+          responseValue === '' ||
+          responseValue === 'null'
+        );
+      case ConditionalAction.ConditionalOperator.IS_NOT_EMPTY:
+        return (
+          responseValue !== undefined &&
+          responseValue !== null &&
+          responseValue !== '' &&
+          responseValue !== 'null'
+        );
+
+      // process datetime operators
+      case ConditionalAction.ConditionalOperator.AFTER:
+      case ConditionalAction.ConditionalOperator.AFTER_OR_EQUAL:
+      case ConditionalAction.ConditionalOperator.BEFORE:
+      case ConditionalAction.ConditionalOperator.BEFORE_OR_EQUAL:
+      case ConditionalAction.ConditionalOperator.EQUALS_DATE:
+        return withRequiredValues((responseVal, testVal) => {
+          const responseDate = stringToDateTime(responseVal);
+          const testDate = stringToDateTime(testVal);
+
+          switch (conditionalOperator) {
+            case ConditionalAction.ConditionalOperator.AFTER:
+              return responseDate > testDate;
+            case ConditionalAction.ConditionalOperator.AFTER_OR_EQUAL:
+              return responseDate >= testDate;
+            case ConditionalAction.ConditionalOperator.BEFORE:
+              return responseDate < testDate;
+            case ConditionalAction.ConditionalOperator.BEFORE_OR_EQUAL:
+              return responseDate <= testDate;
+            case ConditionalAction.ConditionalOperator.EQUALS_DATE:
+              // we will count two dates as equal if they occur on the same day
+              return responseDate
+                .startOf('day')
+                .equals(testDate.startOf('day'));
+            default:
+              assertUnreachable(conditionalOperator, {
+                throwError: false,
+              });
+              return false;
+          }
+        });
       default:
-        assertUnreachable(action.conditionalOperator, { throwError: false });
+        assertUnreachable(conditionalOperator, { throwError: false });
+        return false;
     }
-    return false;
   }
 
   private executeAction(
@@ -150,6 +209,9 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
     router: QuestionRouter<InterviewScreen.T>,
   ): void {
     switch (action.actionConfig.type) {
+      case ConditionalAction.ActionType.END_INTERVIEW:
+        router.complete();
+        break;
       case ConditionalAction.ActionType.PUSH:
         this.pushInReverseOrder(action.actionConfig.payload, router);
         break;

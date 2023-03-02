@@ -64,57 +64,44 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     navigate(0);
   };
 
-  const renderSettingBlock = (
-    setting: EditableSetting,
-  ): JSX.Element | JSX.Element[] => {
-    let output: JSX.Element[] = [];
+  const renderSettingBlock = (setting: EditableSetting): JSX.Element => {
     switch (setting.type) {
-      case InterviewSettings.SettingType.AIRTABLE:
-        setting.settings.forEach(value => {
-          if (value) {
-            output = output.concat(
-              <div key={`_${value}`} className="space-y-4">
-                <LabelWrapper label="Airtable Personal Access Token">
-                  <InputText
-                    onChange={(apiKey: string) => {
-                      onSettingChange(setting, {
-                        ...setting,
-                        settings: new Map([
-                          [
-                            InterviewSettingType.AIRTABLE,
-                            {
-                              apiKey,
-                            },
-                          ],
-                        ]),
-                      });
-                    }}
-                    defaultValue={value.apiKey}
-                    placeholder="Enter Airtable personal access token..."
-                  />
-                </LabelWrapper>
-                {value.bases?.flatMap(base => (
-                  <>
-                    <div>Base: {base.name}</div>
-                    {base.tables?.map(table => (
-                      <div key={`${table}`}>
-                        Table: {table.name}
-                        <div>Fields:</div>
-                        {table.fields?.map(field => (
-                          <li key={`${field}`}>{field.name}</li>
-                        ))}
-                      </div>
+      case InterviewSettings.SettingType.AIRTABLE: {
+        const airtableSettings = setting.settings;
+        return (
+          <div key={`_${airtableSettings.apiKey}`} className="space-y-4">
+            <LabelWrapper label="Airtable Personal Access Token">
+              <InputText
+                onChange={(apiKey: string) => {
+                  onSettingChange(setting, {
+                    ...setting,
+                    settings: { apiKey },
+                  });
+                }}
+                defaultValue={airtableSettings.apiKey}
+                placeholder="Enter Airtable personal access token..."
+              />
+            </LabelWrapper>
+            {airtableSettings.bases?.flatMap(base => (
+              <>
+                <div>Base: {base.name}</div>
+                {base.tables?.map(table => (
+                  <div key={`${table}`}>
+                    Table: {table.name}
+                    <div>Fields:</div>
+                    {table.fields?.map(field => (
+                      <li key={`${field}`}>{field.name}</li>
                     ))}
-                  </>
+                  </div>
                 ))}
-                <Button onClick={handleUpdateAirtableSchema}>
-                  Update Airtable schema
-                </Button>
-              </div>,
-            );
-          }
-        });
-        return output;
+              </>
+            ))}
+            <Button onClick={handleUpdateAirtableSchema}>
+              Update Airtable schema
+            </Button>
+          </div>
+        );
+      }
       default:
         return <div />;
     }

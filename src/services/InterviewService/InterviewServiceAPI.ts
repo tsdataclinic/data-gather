@@ -23,6 +23,10 @@ export interface InterviewServiceAPI {
       interviewId: string,
       startingScreenIds: readonly string[],
     ): Promise<Interview.WithScreensAndActions>;
+    updateScreensOrder(
+      interviewId: string,
+      newScreenOrder: readonly string[],
+    ): Promise<Interview.WithScreensAndActions>;
   };
 
   interviewScreenAPI: {

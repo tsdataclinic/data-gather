@@ -1,13 +1,16 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
+import * as Interview from '../../../../models/Interview';
 import { AirtableTable } from '../../../../models/InterviewSetting';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import EntryDropdown from './EntryDropdown';
 
 type Props = {
-  airtableTable: AirtableTable; // AirtableTableConfig;
+  airtableTable: AirtableTable;
+  defaultLanguage: string;
   entries: readonly InterviewScreenEntry.WithScreenT[];
   fieldMappings: SubmissionAction.T['fieldMappings'];
+  interview: Interview.UpdateT;
   onFieldMappingChange: (
     newMappings: ReadonlyMap<
       SubmissionAction.FieldId,
@@ -17,9 +20,11 @@ type Props = {
 };
 
 export default function ColumnToQuestionMapBlock({
+  defaultLanguage,
   airtableTable,
   entries,
   fieldMappings,
+  interview,
   onFieldMappingChange,
 }: Props): JSX.Element {
   const onMappingChange = (
@@ -61,6 +66,8 @@ export default function ColumnToQuestionMapBlock({
                   allowSpecialValues
                   emptyOptionText="Do not update"
                   entries={entries}
+                  interview={interview}
+                  defaultLanguage={defaultLanguage}
                   selectedEntryId={entryLookupConfig?.entryId}
                   selectedResponseFieldKey={entryLookupConfig?.responseFieldKey}
                   selectedSpecialValueType={entryLookupConfig?.specialValueType}

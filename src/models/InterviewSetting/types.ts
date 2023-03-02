@@ -6,7 +6,13 @@ export type AirtableField = {
   description?: string;
   id: string;
   name: string;
-  options?: Record<string, unknown>;
+  options?: {
+    choices?: ReadonlyArray<{
+      color?: string[];
+      id?: string;
+      name?: string;
+    }>;
+  };
   type?: string;
 };
 
@@ -34,13 +40,11 @@ export type AirtableSettings = {
 type InterviewSetting = {
   readonly id: string;
   readonly interviewId: string;
-  readonly settings: ReadonlyMap<InterviewSettingType, AirtableSettings>;
+  readonly settings: AirtableSettings;
   readonly type: InterviewSettingType;
 };
 
-type InterviewSettingCreate = Omit<InterviewSetting, 'id' | 'settings'> & {
-  readonly settings: Map<InterviewSettingType, AirtableSettings>;
-
+type InterviewSettingCreate = Omit<InterviewSetting, 'id'> & {
   /**
    * A temp id used only for identification purposes in the frontend (e.g.
    * for React keys)

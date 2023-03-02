@@ -72,7 +72,7 @@ export default class LocalInterviewService
     ): Promise<Interview.T> => {
       // generate id and createdDate
       const serializedInterview: Interview.SerializedT = {
-        ...interview,
+        ...Interview.serialize(interview),
         id: uuidv4(),
         createdDate: new Date().toISOString(),
       };
@@ -84,6 +84,7 @@ export default class LocalInterviewService
         isInStartingState: true,
         startingStateOrder: 1,
         title: 'Stage 1',
+        defaultLanguage: serializedInterview.defaultLanguage,
       });
 
       // start the interview with 1 screen by default
@@ -307,6 +308,11 @@ export default class LocalInterviewService
         .toArray();
 
       return actions;
+    },
+
+    updateScreensOrder: async (): Promise<Interview.WithScreensAndActions> => {
+      // TODO: implement this
+      throw new Error('not implemented yet');
     },
   };
 

@@ -27,6 +27,7 @@ export default function OnSubmitCard({
   interview,
   onInterviewChange,
 }: Props): JSX.Element {
+  const { defaultLanguage } = interview;
   const interviewService = useInterviewService();
   const { data: entries } = useQuery({
     queryKey: ['interview', interview.id, 'entries'],
@@ -72,19 +73,23 @@ export default function OnSubmitCard({
       case SubmissionAction.ActionType.EDIT_ROW:
         return (
           <EditRowActionBlock
+            defaultLanguage={defaultLanguage}
             action={action}
             entries={entries ?? []}
             onActionChange={onActionChange}
             actionConfig={action.config}
+            interview={interview}
           />
         );
       case SubmissionAction.ActionType.INSERT_ROW:
         return (
           <InsertRowActionBlock
+            defaultLanguage={defaultLanguage}
             action={action}
             entries={entries ?? []}
             actionConfig={action.config}
             onActionChange={onActionChange}
+            interview={interview}
           />
         );
       default:

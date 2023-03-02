@@ -5,13 +5,18 @@ import { useParams } from 'react-router-dom';
 import InputText from '../ui/InputText';
 import Form from '../ui/Form';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
+import * as Interview from '../../models/Interview';
+import * as InterviewSetting from '../../models/InterviewSetting';
 import assertUnreachable from '../../util/assertUnreachable';
 import useAirtableQuery from '../../hooks/useAirtableQuery';
 import LabelWrapper from '../ui/LabelWrapper';
 import { useDebouncedState } from '../../hooks/useDebounce';
 
 type Props = {
+  defaultLanguage: string;
   entry: InterviewScreenEntry.T;
+  interview: Interview.WithScreensAndActions;
+  selectedLanguage: string;
 };
 
 const AIRTABLE_QUERY_DELAY_MS = 500;
@@ -19,11 +24,13 @@ const AIRTABLE_QUERY_DELAY_MS = 500;
 /**
  * A single entry in an interview screen in the runner (e.g. a form input,
  * or radio group).
- *
- * @param entry
- * @returns
  */
-export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
+export default function InterviewRunnerEntry({
+  entry,
+  selectedLanguage,
+  defaultLanguage,
+  interview,
+}: Props): JSX.Element {
   const { interviewId } = useParams();
   const airtableHiddenInputRef = React.useRef<HTMLInputElement | null>(null);
   const [airtableQuery, setAirtableQuery] = useDebouncedState<string>(
@@ -34,7 +41,22 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
   const { isError, isLoading, isSuccess, responseData } = useAirtableQuery(
     airtableQuery,
     interviewId,
-    entry.responseTypeOptions,
+    entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
+      ? entry.responseTypeOptions
+      : undefined,
+  );
+
+  const interviewSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+  );
+  const airtableSettings = interviewSetting?.settings;
+
+  const allAirtableFields = React.useMemo(
+    () =>
+      airtableSettings?.bases?.flatMap(base =>
+        base.tables?.flatMap(table => table.fields),
+      ),
+    [airtableSettings?.bases],
   );
 
   const [rowData, setRowData] = React.useState();
@@ -44,39 +66,40 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
   // when new airtable response data comes in, reset the table headers
   // and data
   React.useEffect(() => {
-    if (!responseData || responseData.length < 1) return;
-    // collect superset of all fields from all results
-    const allFields: string[] = [];
-    const seenFields: Set<string> = new Set();
-    responseData.forEach((row: { fields: Record<string, string> }) => {
-      const fieldNames: string[] = Object.keys(row.fields);
-      fieldNames.forEach(fieldName => {
-        if (!seenFields.has(fieldName)) {
-          seenFields.add(fieldName);
-          allFields.push(fieldName);
-        }
-      });
-    });
+    if (!responseData || responseData.length < 1) {
+      return;
+    }
+    if (entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE) {
+      // set the subset of fields to display from the results
+      const fieldsToDisplayInTable: string[] =
+        entry.responseTypeOptions.selectedFields;
+      setColumnDefs(fieldsToDisplayInTable.map(f => ({ field: f })));
 
-    setColumnDefs(allFields.map(f => ({ field: f })));
-    setRowData(
-      responseData.map((d: any) => ({
-        id: d.id,
-        ...d.fields,
-      })),
-    );
-  }, [responseData]);
+      // row data should include all fields, even if we only display a subset
+      setRowData(
+        responseData.map((d: any) => ({
+          id: d.id,
+          ...d.fields,
+        })),
+      );
+    }
+  }, [responseData, entry]);
 
-  // TODO: whether or not something is required should be configurable
-  switch (entry.responseType) {
+  const { responseType } = entry;
+  const entryPrompt =
+    entry.prompt[selectedLanguage] || entry.prompt[defaultLanguage];
+  const entryHelperText =
+    entry.text[selectedLanguage] || entry.text[defaultLanguage];
+
+  switch (responseType) {
     case InterviewScreenEntry.ResponseType.TEXT:
       return (
         <Form.Input
           key={entry.id}
           name={entry.responseKey}
-          label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
-          helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
-          required={false}
+          label={entryPrompt}
+          helperText={entryHelperText}
+          required={entry.required}
         />
       );
     case InterviewScreenEntry.ResponseType.BOOLEAN:
@@ -84,9 +107,9 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
         <Form.Input
           type="radio"
           name={entry.responseKey}
-          label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
-          helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
-          required={false}
+          label={entryPrompt}
+          helperText={entryHelperText}
+          required={entry.required}
           options={[
             { value: 'Yes', displayValue: 'Yes' },
             { value: 'No', displayValue: 'No' },
@@ -99,9 +122,9 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           type="number"
           key={entry.id}
           name={entry.responseKey}
-          required={false}
-          label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
-          helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
+          required={entry.required}
+          label={entryPrompt}
+          helperText={entryHelperText}
         />
       );
     case InterviewScreenEntry.ResponseType.EMAIL:
@@ -110,18 +133,20 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           type="email"
           key={entry.id}
           name={entry.responseKey}
-          required={false}
-          label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
-          helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
+          required={entry.required}
+          label={entryPrompt}
+          helperText={entryHelperText}
         />
       );
     case InterviewScreenEntry.ResponseType.AIRTABLE:
       return (
         <div>
-          {/* TODO UI should support multiple language prompts rather than hardcoding english */}
-          <strong>{entry.prompt.en}</strong>
+          <strong>{entryPrompt}</strong>
           <LabelWrapper label="Search for record">
-            <InputText onChange={(val: string) => setAirtableQuery(val)} />
+            <InputText
+              required
+              onChange={(val: string) => setAirtableQuery(val)}
+            />
           </LabelWrapper>
           {isLoading && <p>Loading Airtable records...</p>}
           {isError && (
@@ -134,7 +159,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
             typeof responseData !== 'string' &&
             responseData.length > 0 && (
               <div
-                className="ag-theme-alpine"
+                className="ag-theme-alpine mt-4"
                 style={{ width: '100%', height: 250 }}
               >
                 <input
@@ -150,6 +175,17 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
                       );
                     }
                   }}
+                  headerHeight={50}
+                  rowHeight={50}
+                  defaultColDef={{
+                    headerClass: 'bg-gray-200',
+                    cellStyle: {
+                      display: 'flex',
+                      height: '100%',
+                      alignItems: 'center',
+                    },
+                  }}
+                  className="text-lg"
                   rowSelection="single"
                   rowData={rowData}
                   columnDefs={columnDefs}
@@ -158,7 +194,7 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
             )}
           {isSuccess &&
             typeof responseData !== 'string' &&
-            responseData.length < 1 && <p>No matches found</p>}
+            responseData.length < 1 && <p className="mt-2">No matches found</p>}
         </div>
       );
     case InterviewScreenEntry.ResponseType.PHONE_NUMBER:
@@ -167,17 +203,42 @@ export default function InterviewRunnerEntry({ entry }: Props): JSX.Element {
           type="tel"
           key={entry.id}
           name={entry.responseKey}
-          label={entry.prompt.en} // TODO UI should support multiple language prompts rather than hardcoding english
-          helperText={entry.text.en} // TODO UI should support multiple language prompts rather than hardcoding english
+          label={entryPrompt}
+          required={entry.required}
+          helperText={entryHelperText}
         />
       );
+    case InterviewScreenEntry.ResponseType.SINGLE_SELECT: {
+      const { responseTypeOptions, required, responseKey } = entry;
+      const { airtableConfig, options: manualOptions } = responseTypeOptions;
+
+      // if an airtable config is given then we pull the options from there
+      const options =
+        airtableConfig !== undefined
+          ? allAirtableFields
+              ?.find(field => field?.name === airtableConfig.selectedFields[0])
+              ?.options?.choices?.map(opt => opt.name ?? '') ?? []
+          : manualOptions.map(opt => opt.value);
+
+      return (
+        <Form.Dropdown
+          label={entryPrompt}
+          required={required}
+          name={responseKey}
+          options={options.map(optValue => ({
+            displayValue: optValue,
+            value: optValue,
+          }))}
+          helperText={entryHelperText}
+          placeholder="Select one"
+        />
+      );
+    }
     default:
-      assertUnreachable(entry.responseType, { throwError: false });
+      assertUnreachable(responseType, { throwError: false });
       return (
         <div>
-          <em>
-            Response type &quot;{entry.responseType}&quot; not implemented.
-          </em>
+          <em>Response type &quot;{responseType}&quot; not implemented.</em>
         </div>
       );
   }

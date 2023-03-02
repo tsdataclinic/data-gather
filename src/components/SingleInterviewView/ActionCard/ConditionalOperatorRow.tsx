@@ -1,43 +1,64 @@
 import * as React from 'react';
 import { Calendar } from 'primereact/calendar';
 import { useParams } from 'react-router-dom';
-import Dropdown from '../../ui/Dropdown';
 import InputText from '../../ui/InputText';
 import * as ConditionalAction from '../../../models/ConditionalAction';
-import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import type { EditableAction } from '../types';
+import type { EditableAction, EditableEntryWithScreen } from '../types';
 import useInterview from '../../../hooks/useInterview';
-import { InterviewSettingType } from '../../../api';
+import Dropdown, { type DropdownOption } from '../../ui/Dropdown';
+import * as InterviewSetting from '../../../models/InterviewSetting';
+import * as InterviewScreen from '../../../models/InterviewScreen';
+import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
+import LabelWrapper from '../../ui/LabelWrapper';
+import InfoIcon from '../../ui/InfoIcon';
 
 type Props = {
   action: EditableAction;
-  allEntries: readonly InterviewScreenEntry.WithScreenT[];
+  allInterviewEntries: readonly EditableEntryWithScreen[];
+  defaultLanguage: string;
   onConditionalOperationChange: (action: EditableAction) => void;
 };
 
-// remove 'ALWAYS_EXECUTE' from being one of the options in the dropdown
-// because this operator is handled separately
-const OPERATOR_OPTIONS = ConditionalAction.CONDITIONAL_OPERATORS.filter(
-  operator => operator !== ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE,
-).map(operator => ({
-  displayValue: ConditionalAction.operatorToDisplayString(operator),
-  value: operator,
-}));
+function getOperatorDropdownOptions(
+  groupType: ConditionalAction.ConditionalOperatorGroupType,
+): Array<DropdownOption<ConditionalAction.ConditionalOperator>> {
+  return ConditionalAction.CONDITIONAL_OPERATORS.filter(op =>
+    ConditionalAction.isOperatorOfGroupType(op, groupType),
+  ).map(operator => ({
+    displayValue: ConditionalAction.operatorToDisplayString(operator),
+    value: operator,
+  }));
+}
+
+const OPERATOR_OPTIONS = [
+  {
+    label: 'Generic comparisons',
+    options: getOperatorDropdownOptions('generic'),
+  },
+  {
+    label: 'Date comparisons',
+    options: getOperatorDropdownOptions('date'),
+  },
+  {
+    label: 'Numeric comparisons',
+    options: getOperatorDropdownOptions('number'),
+  },
+];
 
 // The conditionalOperatorRow doesn't use Form.Input or other Form
 // subcomponents because we need more control over how it renders
 export default function ConditionalOperatorRow({
   action,
-  allEntries,
+  allInterviewEntries,
   onConditionalOperationChange,
+  defaultLanguage,
 }: Props): JSX.Element {
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
   const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === InterviewSettingType.AIRTABLE,
+    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
   );
-  const settings = interviewSetting?.settings;
-  const airtableSettings = settings?.get(InterviewSettingType.AIRTABLE);
+  const airtableSettings = interviewSetting?.settings;
   const bases = airtableSettings?.bases;
   const allAirtableTables = React.useMemo(
     () => bases && bases.flatMap(base => base.tables),
@@ -45,30 +66,47 @@ export default function ConditionalOperatorRow({
   );
 
   const selectedEntry = React.useMemo(
-    () => allEntries.find(entry => entry.responseKey === action.responseKey),
-    [allEntries, action],
+    () =>
+      allInterviewEntries.find(
+        entry => entry.responseKey === action.responseKey,
+      ),
+    [allInterviewEntries, action],
   );
 
   // TODO: this is only looking at entries. We also need to look at Skip actions.
   const allResponseKeyOptions = React.useMemo(
     () =>
-      allEntries.map(entry => ({
-        displayValue: `${entry.screen.title} - ${entry.name}`,
+      allInterviewEntries.map(entry => ({
+        displayValue: `${InterviewScreen.getTitle(
+          entry.screen,
+          defaultLanguage,
+        )} - ${entry.name}`,
         value: entry.responseKey,
       })),
-    [allEntries],
+    [allInterviewEntries, defaultLanguage],
   );
 
-  // TODO: have to connect <ActionCard> to `entry` for responseKeyColumns to
-  // change before 'Save' is clicked
   const allResponseKeyFieldOptions = React.useMemo(() => {
+    // if the selected entry is an Airtable response, then we need to get the
+    // table it links to so that we can get all the available fields
     const airtableTable =
       allAirtableTables &&
       allAirtableTables.find(
         table =>
           table &&
+          selectedEntry?.responseType ===
+            InterviewScreenEntry.ResponseType.AIRTABLE &&
           table.id === selectedEntry?.responseTypeOptions.selectedTable,
       );
+
+    // if we couldn't find a table, but the response type is set to 'airtable'
+    // then still return an empty array rather than undefined
+    if (
+      airtableTable === undefined &&
+      selectedEntry?.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
+    ) {
+      return [];
+    }
 
     return (
       airtableTable?.fields &&
@@ -122,15 +160,20 @@ export default function ConditionalOperatorRow({
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
-        <p className="w-20">Condition</p>
-        <Dropdown
-          onChange={onResponseKeyChange}
-          placeholder="Response variable"
-          value={action.responseKey}
-          options={allResponseKeyOptions}
-        />
-        {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
-        {allResponseKeyFieldOptions && allResponseKeyFieldOptions.length > 0 ? (
+        <LabelWrapper
+          inline
+          label="If..."
+          labelTextClassName="w-20"
+          inlineContainerStyles={{ position: 'relative', top: 1 }}
+        >
+          <Dropdown
+            onChange={onResponseKeyChange}
+            placeholder="Select a response"
+            value={action.responseKey}
+            options={allResponseKeyOptions}
+          />
+        </LabelWrapper>
+        {allResponseKeyFieldOptions ? (
           <Dropdown
             onChange={onResponseKeyFieldChange}
             placeholder="Column name"
@@ -147,26 +190,37 @@ export default function ConditionalOperatorRow({
         />
 
         {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
-        {ConditionalAction.isTimeOperator(action.conditionalOperator) ? (
-          <Calendar
-            placeholder="Date"
-            onChange={e => {
-              if (e.value instanceof Date) {
-                onConditionalValueChange(e.value.toISOString());
-              }
-              if (typeof e.value === 'string') {
-                onConditionalValueChange(e.value);
-              }
-            }}
-            value={action.value ? new Date(action.value) : ''}
-          />
-        ) : (
-          <InputText
-            placeholder="Value"
-            onChange={onConditionalValueChange}
-            value={action.value ?? ''}
-          />
-        )}
+        {(ConditionalAction.isDateOperator(action.conditionalOperator) && (
+          <>
+            <Calendar
+              placeholder="Date"
+              inputClassName="py-1.5 border border-gray-400"
+              onChange={e => {
+                if (e.value instanceof Date) {
+                  onConditionalValueChange(e.value.toISOString());
+                }
+                if (typeof e.value === 'string') {
+                  onConditionalValueChange(e.value);
+                }
+              }}
+              value={action.value ? new Date(action.value) : ''}
+            />
+            <InfoIcon
+              tooltip={`An empty date field in the source data will be treated as ${
+                process.env.NULL_DATE_OVERRIDE || '1970-01-01'
+              }`}
+            />
+          </>
+        )) ||
+          (ConditionalAction.doesOperatorRequireValue(
+            action.conditionalOperator,
+          ) && (
+            <InputText
+              placeholder="Value"
+              onChange={onConditionalValueChange}
+              value={action.value ?? ''}
+            />
+          ))}
       </div>
     </div>
   );

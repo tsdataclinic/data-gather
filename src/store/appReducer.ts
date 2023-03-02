@@ -1,31 +1,10 @@
-// import * as AirtableAPISetting from '../models/settings/AirtableAPISetting';
 import * as ConditionalAction from '../models/ConditionalAction';
 import * as Interview from '../models/Interview';
 import * as InterviewScreen from '../models/InterviewScreen';
 import * as InterviewScreenEntry from '../models/InterviewScreenEntry';
 import assertUnreachable from '../util/assertUnreachable';
-import getEnvConfig, { EnvVar } from '../util/getEnvConfig';
-
-export type AirtableTableConfig = {
-  fields: ReadonlyArray<{
-    fieldID: string;
-    fieldName: string;
-  }>;
-  key: string;
-  name: string;
-};
-
-export type AirtableSettings = {
-  apiKey: string;
-  bases: ReadonlyArray<{
-    key: string;
-    name: string;
-    tables: readonly AirtableTableConfig[];
-  }>;
-};
 
 export type AppGlobalState = {
-  airtableSettings: AirtableSettings;
   /**
    * A map of all interview conditional actions we have loaded so far.
    * Maps action id to ConditionalAction object.
@@ -49,20 +28,21 @@ export type AppGlobalState = {
    * Maps interview id to Interview object.
    */
   loadedInterviews: ReadonlyMap<string, Interview.WithScreensAndActions>;
-  // settings: {
-  //   airtableAPISettings: AirtableAPISetting.T;
-  // };
+
+  /**
+   * The current language we are editing an interview in.
+   * If undefined, we should default to whichever langauge the interview is
+   * configured to use as the default.
+   */
+  selectedLanguageCode: string | undefined;
 };
 
 export const DEFAULT_APP_STATE: AppGlobalState = {
+  selectedLanguageCode: undefined,
   loadedConditionalActions: new Map(),
   loadedInterviewScreenEntries: new Map(),
   loadedInterviewScreens: new Map(),
   loadedInterviews: new Map(),
-  airtableSettings: JSON.parse(getEnvConfig(EnvVar.AirtableConfigJSON)),
-  // settings: {
-  //   airtableAPISettings: AirtableAPISetting.create(),
-  // },
 };
 
 export type AppAction =
@@ -81,26 +61,10 @@ export type AppAction =
       screenEntries: InterviewScreenEntry.T[];
       type: 'SCREEN_ENTRIES_UPDATE';
     }
-  /** Update a single interview screen */
   | {
-      screen: InterviewScreen.WithChildrenT;
-      type: 'SCREEN_UPDATE';
-    }
-  /** Update a bunch of interview screens */
-  | {
-      screens: InterviewScreen.WithChildrenT[];
-      type: 'SCREENS_UPDATE';
+      languageCode: string;
+      type: 'SELECTED_LANGUAGE_UPDATE';
     };
-// /** Create a new setting */
-// | {
-//     setting: AirtableAPISetting.T;
-//     type: 'SETTING_CREATE';
-//   }
-// /** Update a setting */
-// | {
-//     setting: AirtableAPISetting.T;
-//     type: 'SETTING_UPDATE';
-//   };
 
 function cloneMap<K, V>(map: ReadonlyMap<K, V>): Map<K, V> {
   return new Map(Array.from(map.entries()));
@@ -138,7 +102,6 @@ export default function appReducer(
     loadedConditionalActions,
     loadedInterviews,
     loadedInterviewScreenEntries,
-    loadedInterviewScreens,
     // settings,
   } = state;
 
@@ -174,43 +137,11 @@ export default function appReducer(
         ),
       };
 
-    case 'SCREEN_UPDATE':
+    case 'SELECTED_LANGUAGE_UPDATE':
       return {
         ...state,
-        loadedInterviewScreens: setMap(
-          loadedInterviewScreens,
-          action.screen.id,
-          action.screen,
-        ),
+        selectedLanguageCode: action.languageCode,
       };
-
-    case 'SCREENS_UPDATE':
-      return {
-        ...state,
-        loadedInterviewScreens: setMapMultiple(
-          loadedInterviewScreens,
-          action.screens,
-          screen => screen.id,
-        ),
-      };
-
-    // case 'SETTING_CREATE':
-    //   return {
-    //     ...state,
-    //     settings: {
-    //       ...settings,
-    //       airtableAPISettings: action.setting,
-    //     },
-    //   };
-
-    // case 'SETTING_UPDATE':
-    //   return {
-    //     ...state,
-    //     settings: {
-    //       ...settings,
-    //       airtableAPISettings: action.setting,
-    //     },
-    //   };
 
     default:
       return assertUnreachable(action);
