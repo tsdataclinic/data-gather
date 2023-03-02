@@ -3,6 +3,7 @@ import { DateTime } from 'luxon';
 import { v4 as uuidv4 } from 'uuid';
 import * as User from '../../models/User';
 import * as SubmissionAction from '../../models/SubmissionAction';
+import * as InterviewSetting from '../../models/InterviewSetting';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
@@ -25,6 +26,8 @@ export default class LocalInterviewService
 
   private submissionActions!: Table<SubmissionAction.SerializedT>;
 
+  private interviewSettings!: Table<InterviewSetting.SerializedT>;
+
   private interviews!: Table<Interview.SerializedT>;
 
   private interviewScreens!: Table<InterviewScreen.SerializedT>;
@@ -38,6 +41,7 @@ export default class LocalInterviewService
     this.version(1).stores({
       conditionalActions: '++id, screenId',
       submissionActions: '++id, interviewId',
+      interviewSettings: '++id, interviewId',
       interviewScreenEntries: '++id, screenId',
       interviewScreens: '++id, interviewId',
       interviews: '++id, vanityUrl',
@@ -104,10 +108,15 @@ export default class LocalInterviewService
         interview.submissionActions.map(action => action.id),
       );
 
+      // delete the interview settings
+      const deleteInterviewSettingsPromise = this.interviewSettings.bulkDelete(
+        interview.interviewSettings.map(setting => setting.id),
+      );
+
       await Promise.all([
         deleteScreensPromise,
         deleteSubmissionActionsPromise,
-
+        deleteInterviewSettingsPromise,
         // now delete the interview itself
         this.interviews.delete(interviewId),
       ]);
@@ -152,10 +161,15 @@ export default class LocalInterviewService
         const submissionActions =
           await this.interviewAPI.getSubmissionActionsOfInterview(interviewId);
 
+        // get interview settings
+        const interviewSettings =
+          await this.interviewAPI.getInterviewSettingsOfInterview(interviewId);
+
         return Interview.deserialize({
           ...interview,
           screens,
           submissionActions,
+          interviewSettings,
         });
       }
       throw new Error(`Could not find an interview with id '${interviewId}'`);
@@ -173,7 +187,7 @@ export default class LocalInterviewService
     ): Promise<Interview.T> => {
       const interviewExists = !!(await this.interviews.get(interviewId));
       if (interviewExists) {
-        const { submissionActions, ...serializedInterview } =
+        const { submissionActions, interviewSettings, ...serializedInterview } =
           Interview.serialize(interview);
         await this.interviews.put(serializedInterview);
 
@@ -195,10 +209,29 @@ export default class LocalInterviewService
         // set them all into the db
         await this.submissionActions.bulkPut(actionsToSet);
 
+        // delete existing settings
+        const oldSettings = await this.interviewSettings
+          .where({ interviewId })
+          .toArray();
+        await this.interviewSettings.bulkDelete(
+          oldSettings.map(setting => setting.id),
+        );
+
+        // make sure all settings have an id if they don't
+        const settingsToSet: InterviewSetting.SerializedT[] =
+          interviewSettings.map(setting => ({
+            ...setting,
+            id: setting.id ?? uuidv4(),
+          }));
+
+        // set them all into the db
+        await this.interviewSettings.bulkPut(settingsToSet);
+
         // now return the deserialized model
         const fullModel = {
           ...serializedInterview,
           actions: actionsToSet,
+          settings: settingsToSet,
         };
 
         return Interview.deserialize(fullModel);
@@ -263,6 +296,17 @@ export default class LocalInterviewService
         .where({ interviewId })
         .toArray();
       actions.sort((act1, act2) => act1.order - act2.order);
+      return actions;
+    },
+
+    getInterviewSettingsOfInterview: async (
+      interviewId: string,
+    ): Promise<InterviewSetting.SerializedT[]> => {
+      // get submission actions for this interview
+      const actions = await this.interviewSettings
+        .where({ interviewId })
+        .toArray();
+
       return actions;
     },
 

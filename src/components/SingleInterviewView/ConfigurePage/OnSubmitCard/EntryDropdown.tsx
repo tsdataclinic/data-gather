@@ -1,9 +1,10 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import * as InterviewScreen from '../../../../models/InterviewScreen';
+import * as InterviewSetting from '../../../../models/InterviewSetting';
+import * as Interview from '../../../../models/Interview';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import Dropdown from '../../../ui/Dropdown';
-import useAppState from '../../../../hooks/useAppState';
 
 type Props = {
   allowSpecialValues?: boolean;
@@ -11,6 +12,7 @@ type Props = {
   emptyIsAnOption?: boolean;
   emptyOptionText?: string;
   entries: readonly InterviewScreenEntry.WithScreenT[];
+  interview: Interview.UpdateT;
   onChangeEntrySelection: (
     entryId: InterviewScreenEntry.Id | undefined,
   ) => void;
@@ -54,6 +56,7 @@ export default function EntryDropdown({
   emptyIsAnOption = false,
   emptyOptionText = 'No selection',
   selectedSpecialValueType,
+  interview,
 }: Props): JSX.Element {
   const [isEmptyValueSelected, setIsEmptyValueSelected] = React.useState(
     selectedEntryId === undefined && selectedSpecialValueType === undefined,
@@ -62,8 +65,10 @@ export default function EntryDropdown({
     selectedSpecialValueType !== undefined,
   );
 
-  const { airtableSettings } = useAppState();
-  const { bases } = airtableSettings;
+  const interviewSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+  );
+  const airtableSettings = interviewSetting?.settings;
 
   const selectedEntry = React.useMemo(
     () => entries.find(entry => entry.id === selectedEntryId),
@@ -111,19 +116,19 @@ export default function EntryDropdown({
       selectedEntry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
     ) {
       const { selectedTable } = selectedEntry.responseTypeOptions;
-      const airtableFields = bases
-        .flatMap(base => base.tables)
-        .find(table => table.key === selectedTable)?.fields;
+      const airtableFields = airtableSettings?.bases
+        ?.flatMap(base => base.tables)
+        .find(table => table?.id === selectedTable)?.fields;
       return airtableFields?.map(field => ({
-        displayValue: field.fieldName,
+        displayValue: field.name,
         // interestingly, airtable seems to key the fields by their name
         // rather than ID
-        value: field.fieldName,
+        value: field.name,
       }));
     }
 
     return undefined;
-  }, [bases, selectedEntry]);
+  }, [airtableSettings, selectedEntry]);
 
   let entryIdToDisplay = selectedEntryId;
   if (isSpecialValueSelected) {

@@ -47,6 +47,9 @@ class Interview(InterviewBase, table=True):
     submission_actions: list["SubmissionAction"] = Relationship(
         back_populates="interview"
     )
+    interview_settings: list["InterviewSetting"] = Relationship(
+        back_populates="interview"
+    )
     owner: "User" = Relationship(back_populates="interviews")
 
     @validates("published")
@@ -82,6 +85,7 @@ class InterviewReadWithScreensAndActions(InterviewRead):
 
     screens: list["InterviewScreenRead"] = []
     submission_actions: list["SubmissionActionRead"] = []
+    interview_settings: list["InterviewSettingRead"] = []
 
 
 class InterviewUpdate(InterviewRead):
@@ -90,9 +94,11 @@ class InterviewUpdate(InterviewRead):
     """
 
     submission_actions: list[Union["SubmissionActionRead", "SubmissionActionCreate"]]
+    interview_settings: list[Union["InterviewSettingRead", "InterviewSettingCreate"]]
 
 
 # Handle circular imports
+from server.models.interview_setting import InterviewSetting, InterviewSettingCreate, InterviewSettingRead
 from server.models.interview_screen import InterviewScreen, InterviewScreenRead
 from server.models.submission_action import (
     SubmissionAction,

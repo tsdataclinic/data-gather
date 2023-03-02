@@ -1,14 +1,19 @@
 import * as React from 'react';
+import { useParams } from 'react-router-dom';
 import Form from '../../ui/Form';
 import LabelWrapper from '../../ui/LabelWrapper';
 import MultiSelect from '../../ui/MultiSelect';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import useAppState from '../../../hooks/useAppState';
-import type { AirtableField } from '../../../store/appReducer';
+import * as InterviewSetting from '../../../models/InterviewSetting';
+import useInterview from '../../../hooks/useInterview';
 
 type Props = {
   airtableConfig: InterviewScreenEntry.AirtableOptions;
-  fieldFilterFn?: (airtableField: AirtableField) => boolean;
+  /**
+   * Pass a way to filter the fields to show so that the UI doesn't show
+   * all fields
+   */
+  fieldFilterFn?: (airtableField: InterviewSetting.AirtableField) => boolean;
   fieldSelectorLabel?: string;
   onAirtableConfigurationChange: (
     newConfig: InterviewScreenEntry.AirtableOptions,
@@ -23,17 +28,22 @@ export default function AirtableFieldSelector({
   useSingleField = false,
   fieldFilterFn,
 }: Props): JSX.Element {
-  const { airtableSettings } = useAppState();
-  const { bases } = airtableSettings;
+  const { interviewId } = useParams();
+  const interview = useInterview(interviewId);
+  const interviewSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+  );
+  const airtableSettings = interviewSetting?.settings;
+  const bases = airtableSettings?.bases;
   const { selectedBase, selectedTable, selectedFields } = airtableConfig;
 
   const availableTables = React.useMemo(() => {
-    if (bases && selectedBase) {
+    if (selectedBase && bases) {
       const tables = bases
         .find(b => b.name === selectedBase)
-        ?.tables.map(t => ({
+        ?.tables?.map(t => ({
           displayValue: t.name,
-          value: t.key,
+          value: t.id,
         }));
 
       if (tables) {
@@ -47,11 +57,11 @@ export default function AirtableFieldSelector({
     if (bases && selectedBase && selectedTable) {
       const fields = bases
         .find(b => b.name === selectedBase)
-        ?.tables.find(b => b.key === selectedTable)
-        ?.fields.filter(field => (fieldFilterFn ? fieldFilterFn(field) : true))
+        ?.tables?.find(b => b.id === selectedTable)
+        ?.fields?.filter(field => (fieldFilterFn ? fieldFilterFn(field) : true))
         .map(f => ({
-          displayValue: f.fieldName,
-          value: f.fieldName,
+          displayValue: f.name,
+          value: f.name,
         }));
       if (fields) {
         return fields;
@@ -101,21 +111,23 @@ export default function AirtableFieldSelector({
 
   return (
     <div className="flex space-x-2">
-      <Form.Dropdown
-        label="Airtable base"
-        name="airtableBase"
-        value={selectedBase}
-        onChange={(newVal: string) => {
-          onAirtableConfigurationChange({
-            ...airtableConfig,
-            selectedBase: newVal,
-          });
-        }}
-        options={bases.map(b => ({
-          displayValue: b.name,
-          value: b.name,
-        }))}
-      />
+      {bases && (
+        <Form.Dropdown
+          label="Airtable base"
+          name="airtableBase"
+          value={selectedBase}
+          onChange={(newVal: string) => {
+            onAirtableConfigurationChange({
+              ...airtableConfig,
+              selectedBase: newVal,
+            });
+          }}
+          options={bases.map(b => ({
+            displayValue: b.name ?? '',
+            value: b.name ?? '',
+          }))}
+        />
+      )}
       {selectedBase && (
         <Form.Dropdown
           label="Airtable table"

@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as R from 'remeda';
 import { Reorder } from 'framer-motion';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
+import * as Interview from '../../models/Interview';
 import Button from '../ui/Button';
 import EntryCard from './EntryCard';
 import type { EditableEntry } from './types';
@@ -12,6 +13,7 @@ import InfoIcon from '../ui/InfoIcon';
 
 type Props = {
   entries: readonly EditableEntry[];
+  interview: Interview.WithScreensAndActions;
   onEntryChange: (
     entryToReplace: EditableEntry,
     newEntry: EditableEntry,
@@ -32,6 +34,7 @@ function BaseEntriesSection(
     onEntryDelete,
     onNewEntryClick,
     onEntryOrderChange,
+    interview,
   }: Props,
   forwardedRef: React.ForwardedRef<EntriesSectionAPI>,
 ): JSX.Element {
@@ -93,6 +96,7 @@ function BaseEntriesSection(
                 onEntryChange={onEntryChange}
                 onEntryDelete={onEntryDelete}
                 scrollOnMount={InterviewScreenEntry.isCreateType(entry)}
+                interview={interview}
               />
             </Reorder.Item>
           );

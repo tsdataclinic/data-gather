@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import * as InterviewScreen from './InterviewScreen';
 import * as SubmissionAction from './SubmissionAction';
+import * as InterviewSettings from './InterviewSetting';
 import { SerializedInterviewRead } from '../api/models/SerializedInterviewRead';
 import { SerializedInterviewCreate } from '../api/models/SerializedInterviewCreate';
 import { SerializedInterviewUpdate } from '../api/models/SerializedInterviewUpdate';
@@ -24,13 +25,16 @@ type Interview = {
   readonly vanityUrl?: string;
 };
 
+// TODO: change name to WithSettingsScreensAndActions or just
+// 'FullInterview' or something
 /**
  * Interview model with its associated screens loaded.
  */
-type InterviewWithScreensAndActions = Interview & {
+interface InterviewWithScreensAndActions extends Interview {
+  readonly interviewSettings: readonly InterviewSettings.T[];
   readonly screens: readonly InterviewScreen.T[];
   readonly submissionActions: readonly SubmissionAction.T[];
-};
+}
 
 /**
  * The Interview model used during creation.
@@ -43,6 +47,10 @@ type InterviewCreate = Omit<Interview, 'id' | 'createdDate'>;
  * updating nested actions but screens are not included in this model.
  */
 type InterviewUpdate = Interview & {
+  readonly interviewSettings: ReadonlyArray<
+    InterviewSettings.T | InterviewSettings.CreateT
+  >;
+
   /**
    * Allow the `submissionActions` to include either fully specified actions
    * or the "Create" variants which still don't have an assigned id.
@@ -129,7 +137,6 @@ export function deserialize(
     | SerializedInterviewReadWithScreensAndActions,
 ): Interview | InterviewWithScreensAndActions {
   const datetime = DateTime.fromISO(rawObj.createdDate);
-
   if ('screens' in rawObj) {
     return {
       ...rawObj,
@@ -137,6 +144,9 @@ export function deserialize(
       screens: rawObj.screens?.map(InterviewScreen.deserialize),
       submissionActions: rawObj.submissionActions?.map(
         SubmissionAction.deserialize,
+      ),
+      interviewSettings: rawObj.interviewSettings?.map(
+        InterviewSettings.deserialize,
       ),
       allowedLanguages: rawObj.allowedLanguages.split(LANGUAGE_DELIMITER),
     };
@@ -166,6 +176,11 @@ export function serialize(
         'tempId' in action
           ? SubmissionAction.serializeCreate(action)
           : SubmissionAction.serialize(action),
+      ),
+      interviewSettings: interview.interviewSettings.map(setting =>
+        'tempId' in setting
+          ? InterviewSettings.serializeCreate(setting)
+          : InterviewSettings.serialize(setting),
       ),
       createdDate: interview.createdDate?.toISO(),
       allowedLanguages: interview.allowedLanguages.join(LANGUAGE_DELIMITER),

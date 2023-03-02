@@ -1,18 +1,21 @@
 import * as React from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
+import { useParams } from 'react-router-dom';
 import InputText from '../ui/InputText';
 import Form from '../ui/Form';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
+import * as Interview from '../../models/Interview';
+import * as InterviewSetting from '../../models/InterviewSetting';
 import assertUnreachable from '../../util/assertUnreachable';
 import useAirtableQuery from '../../hooks/useAirtableQuery';
 import LabelWrapper from '../ui/LabelWrapper';
 import { useDebouncedState } from '../../hooks/useDebounce';
-import useAppState from '../../hooks/useAppState';
 
 type Props = {
   defaultLanguage: string;
   entry: InterviewScreenEntry.T;
+  interview: Interview.WithScreensAndActions;
   selectedLanguage: string;
 };
 
@@ -26,7 +29,9 @@ export default function InterviewRunnerEntry({
   entry,
   selectedLanguage,
   defaultLanguage,
+  interview,
 }: Props): JSX.Element {
+  const { interviewId } = useParams();
   const airtableHiddenInputRef = React.useRef<HTMLInputElement | null>(null);
   const [airtableQuery, setAirtableQuery] = useDebouncedState<string>(
     '',
@@ -35,17 +40,23 @@ export default function InterviewRunnerEntry({
 
   const { isError, isLoading, isSuccess, responseData } = useAirtableQuery(
     airtableQuery,
+    interviewId,
     entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
       ? entry.responseTypeOptions
       : undefined,
   );
-  const { airtableSettings } = useAppState();
+
+  const interviewSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+  );
+  const airtableSettings = interviewSetting?.settings;
+
   const allAirtableFields = React.useMemo(
     () =>
-      airtableSettings.bases.flatMap(base =>
-        base.tables.flatMap(table => table.fields),
+      airtableSettings?.bases?.flatMap(base =>
+        base.tables?.flatMap(table => table.fields),
       ),
-    [airtableSettings.bases],
+    [airtableSettings?.bases],
   );
 
   const [rowData, setRowData] = React.useState();
@@ -204,9 +215,9 @@ export default function InterviewRunnerEntry({
       // if an airtable config is given then we pull the options from there
       const options =
         airtableConfig !== undefined
-          ? allAirtableFields.find(
-              field => field.fieldName === airtableConfig.selectedFields[0],
-            )?.options ?? []
+          ? allAirtableFields
+              ?.find(field => field?.name === airtableConfig.selectedFields[0])
+              ?.options?.choices?.map(opt => opt.name ?? '') ?? []
           : manualOptions.map(opt => opt.value);
 
       return (

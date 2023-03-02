@@ -1,14 +1,16 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
+import * as Interview from '../../../../models/Interview';
+import { AirtableTable } from '../../../../models/InterviewSetting';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
-import { AirtableTableConfig } from '../../../../store/appReducer';
 import EntryDropdown from './EntryDropdown';
 
 type Props = {
-  airtableTable: AirtableTableConfig;
+  airtableTable: AirtableTable;
   defaultLanguage: string;
   entries: readonly InterviewScreenEntry.WithScreenT[];
   fieldMappings: SubmissionAction.T['fieldMappings'];
+  interview: Interview.UpdateT;
   onFieldMappingChange: (
     newMappings: ReadonlyMap<
       SubmissionAction.FieldId,
@@ -22,6 +24,7 @@ export default function ColumnToQuestionMapBlock({
   airtableTable,
   entries,
   fieldMappings,
+  interview,
   onFieldMappingChange,
 }: Props): JSX.Element {
   const onMappingChange = (
@@ -51,18 +54,19 @@ export default function ColumnToQuestionMapBlock({
         <div>Column</div>
         <div className="col-span-3">Response</div>
         {fields.map(field => {
-          const fieldID = field.fieldID as SubmissionAction.FieldId;
+          const fieldID = field.id as SubmissionAction.FieldId;
           const entryLookupConfig = fieldMappings.get(fieldID);
 
           return (
             <React.Fragment key={fieldID}>
-              <div>{field.fieldName}</div>
+              <div>{field.name}</div>
               <div className="col-span-3">
                 <EntryDropdown
                   emptyIsAnOption
                   allowSpecialValues
                   emptyOptionText="Do not update"
                   entries={entries}
+                  interview={interview}
                   defaultLanguage={defaultLanguage}
                   selectedEntryId={entryLookupConfig?.entryId}
                   selectedResponseFieldKey={entryLookupConfig?.responseFieldKey}

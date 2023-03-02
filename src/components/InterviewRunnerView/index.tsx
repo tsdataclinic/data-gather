@@ -65,6 +65,7 @@ function BaseInterviewRunnerView({
       api.airtable.updateAirtableRecord(
         data.tableId,
         data.recordId,
+        interviewId,
         data.fields,
       ),
   });
@@ -73,7 +74,8 @@ function BaseInterviewRunnerView({
     mutationFn: (data: {
       fields: { [fieldName: string]: string };
       tableId: string;
-    }) => api.airtable.createAirtableRecord(data.tableId, data.fields),
+    }) =>
+      api.airtable.createAirtableRecord(data.tableId, interviewId, data.fields),
   });
 
   const onInterviewComplete = React.useCallback(

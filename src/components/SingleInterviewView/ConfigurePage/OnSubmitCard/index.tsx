@@ -78,6 +78,7 @@ export default function OnSubmitCard({
             entries={entries ?? []}
             onActionChange={onActionChange}
             actionConfig={action.config}
+            interview={interview}
           />
         );
       case SubmissionAction.ActionType.INSERT_ROW:
@@ -88,6 +89,7 @@ export default function OnSubmitCard({
             entries={entries ?? []}
             actionConfig={action.config}
             onActionChange={onActionChange}
+            interview={interview}
           />
         );
       default:

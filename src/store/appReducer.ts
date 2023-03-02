@@ -1,35 +1,10 @@
-// import * as AirtableAPISetting from '../models/settings/AirtableAPISetting';
 import * as ConditionalAction from '../models/ConditionalAction';
 import * as Interview from '../models/Interview';
 import * as InterviewScreen from '../models/InterviewScreen';
 import * as InterviewScreenEntry from '../models/InterviewScreenEntry';
 import assertUnreachable from '../util/assertUnreachable';
-import getEnvConfig, { EnvVar } from '../util/getEnvConfig';
-
-export type AirtableField = {
-  fieldID: string;
-  fieldName: string;
-  options?: string[];
-};
-
-export type AirtableTableConfig = {
-  fields: readonly AirtableField[];
-  key: string;
-  name: string;
-};
-
-export type AirtableSettings = {
-  apiKey: string;
-  bases: ReadonlyArray<{
-    key: string;
-    name: string;
-    tables: readonly AirtableTableConfig[];
-  }>;
-};
 
 export type AppGlobalState = {
-  airtableSettings: AirtableSettings;
-
   /**
    * A map of all interview conditional actions we have loaded so far.
    * Maps action id to ConditionalAction object.
@@ -60,9 +35,6 @@ export type AppGlobalState = {
    * configured to use as the default.
    */
   selectedLanguageCode: string | undefined;
-  // settings: {
-  //   airtableAPISettings: AirtableAPISetting.T;
-  // };
 };
 
 export const DEFAULT_APP_STATE: AppGlobalState = {
@@ -71,7 +43,6 @@ export const DEFAULT_APP_STATE: AppGlobalState = {
   loadedInterviewScreenEntries: new Map(),
   loadedInterviewScreens: new Map(),
   loadedInterviews: new Map(),
-  airtableSettings: JSON.parse(getEnvConfig(EnvVar.AirtableConfigJSON)),
 };
 
 export type AppAction =
@@ -171,24 +142,6 @@ export default function appReducer(
         ...state,
         selectedLanguageCode: action.languageCode,
       };
-
-    // case 'SETTING_CREATE':
-    //   return {
-    //     ...state,
-    //     settings: {
-    //       ...settings,
-    //       airtableAPISettings: action.setting,
-    //     },
-    //   };
-
-    // case 'SETTING_UPDATE':
-    //   return {
-    //     ...state,
-    //     settings: {
-    //       ...settings,
-    //       airtableAPISettings: action.setting,
-    //     },
-    //   };
 
     default:
       return assertUnreachable(action);

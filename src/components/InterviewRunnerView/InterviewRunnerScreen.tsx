@@ -15,7 +15,7 @@ import { useToast } from '../ui/Toast';
 
 type Props = {
   entries: InterviewScreenEntry.T[];
-  interview: Interview.T;
+  interview: Interview.WithScreensAndActions;
   onInterviewReset: () => void;
   responseConsumer: ResponseConsumer;
   screen: InterviewScreen.T;
@@ -138,6 +138,7 @@ export default function InterviewRunnerScreen({
             defaultLanguage={defaultLanguage}
             key={entry.id}
             entry={entry}
+            interview={interview}
           />
         ))}
         <div className="flex justify-between">

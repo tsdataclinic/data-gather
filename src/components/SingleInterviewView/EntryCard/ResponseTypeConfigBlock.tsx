@@ -1,11 +1,13 @@
 import type { EditableEntry } from '../types';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
+import * as Interview from '../../../models/Interview';
 import assertUnreachable from '../../../util/assertUnreachable';
 import AirtableFieldSelector from './AirtableFieldSelector';
 import SingleSelectEditor from './SingleSelectEditor';
 
 type Props = {
   entry: EditableEntry;
+  interview: Interview.WithScreensAndActions;
   onEntryChange: (
     entryToReplace: EditableEntry,
     newEntry: EditableEntry,
@@ -15,6 +17,7 @@ type Props = {
 export default function ResponseTypeConfigBlock({
   entry,
   onEntryChange,
+  interview,
 }: Props): JSX.Element | null {
   const { responseType, responseTypeOptions } = entry;
   switch (responseType) {
@@ -36,6 +39,7 @@ export default function ResponseTypeConfigBlock({
     case InterviewScreenEntry.ResponseType.SINGLE_SELECT:
       return (
         <SingleSelectEditor
+          interview={interview}
           selectionConfig={responseTypeOptions}
           onSelectionConfigurationChange={(
             newConfig: InterviewScreenEntry.SingleSelectOptions,

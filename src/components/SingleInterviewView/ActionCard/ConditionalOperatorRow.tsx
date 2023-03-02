@@ -1,14 +1,16 @@
 import * as React from 'react';
 import { Calendar } from 'primereact/calendar';
-import Dropdown, { type DropdownOption } from '../../ui/Dropdown';
+import { useParams } from 'react-router-dom';
 import InputText from '../../ui/InputText';
 import * as ConditionalAction from '../../../models/ConditionalAction';
-import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
+import type { EditableAction, EditableEntryWithScreen } from '../types';
+import useInterview from '../../../hooks/useInterview';
+import Dropdown, { type DropdownOption } from '../../ui/Dropdown';
+import * as InterviewSetting from '../../../models/InterviewSetting';
 import * as InterviewScreen from '../../../models/InterviewScreen';
-import useAppState from '../../../hooks/useAppState';
+import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import LabelWrapper from '../../ui/LabelWrapper';
 import InfoIcon from '../../ui/InfoIcon';
-import type { EditableAction, EditableEntryWithScreen } from '../types';
 
 type Props = {
   action: EditableAction;
@@ -51,10 +53,15 @@ export default function ConditionalOperatorRow({
   onConditionalOperationChange,
   defaultLanguage,
 }: Props): JSX.Element {
-  const { airtableSettings } = useAppState();
-  const { bases } = airtableSettings;
+  const { interviewId } = useParams();
+  const interview = useInterview(interviewId);
+  const interviewSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+  );
+  const airtableSettings = interviewSetting?.settings;
+  const bases = airtableSettings?.bases;
   const allAirtableTables = React.useMemo(
-    () => bases.flatMap(base => base.tables),
+    () => bases && bases.flatMap(base => base.tables),
     [bases],
   );
 
@@ -82,12 +89,15 @@ export default function ConditionalOperatorRow({
   const allResponseKeyFieldOptions = React.useMemo(() => {
     // if the selected entry is an Airtable response, then we need to get the
     // table it links to so that we can get all the available fields
-    const airtableTable = allAirtableTables.find(
-      table =>
-        selectedEntry?.responseType ===
-          InterviewScreenEntry.ResponseType.AIRTABLE &&
-        table.key === selectedEntry.responseTypeOptions.selectedTable,
-    );
+    const airtableTable =
+      allAirtableTables &&
+      allAirtableTables.find(
+        table =>
+          table &&
+          selectedEntry?.responseType ===
+            InterviewScreenEntry.ResponseType.AIRTABLE &&
+          table.id === selectedEntry?.responseTypeOptions.selectedTable,
+      );
 
     // if we couldn't find a table, but the response type is set to 'airtable'
     // then still return an empty array rather than undefined
@@ -98,10 +108,13 @@ export default function ConditionalOperatorRow({
       return [];
     }
 
-    return airtableTable?.fields.map(field => ({
-      displayValue: field.fieldName,
-      value: field.fieldName,
-    }));
+    return (
+      airtableTable?.fields &&
+      airtableTable?.fields.map(field => ({
+        displayValue: field.name,
+        value: field.name,
+      }))
+    );
   }, [selectedEntry, allAirtableTables]);
 
   const onOperatorChange = React.useCallback(

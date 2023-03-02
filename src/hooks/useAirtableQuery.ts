@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import * as InterviewScreenEntry from '../models/InterviewScreenEntry';
 
+// TODO - add support for other API functions
 /**
  * Hook to access Airtable Records API
  */
-// TODO - add support for other API functions
 export default function useAirtableQuery(
   queryString: string,
+  interviewId: string | undefined,
   queryOptions: InterviewScreenEntry.AirtableOptions | undefined,
 ): {
   isError: boolean;
@@ -24,7 +25,7 @@ export default function useAirtableQuery(
     queryKey: ['airtableQuery', queryString],
     queryFn: async () => {
       // fetch all based on Base and Table
-      if (queryString && queryOptions) {
+      if (queryString && interviewId && queryOptions) {
         const { selectedFields, selectedTable } = queryOptions;
         const searchParams = new URLSearchParams();
         selectedFields.forEach(field => {
@@ -33,7 +34,7 @@ export default function useAirtableQuery(
 
         // TODO: replace this with a function call using the API service class
         const res = await fetch(
-          `/api/airtable-records/${selectedTable}?${searchParams.toString()}`,
+          `/api/airtable-records/${interviewId}/${selectedTable}?${searchParams.toString()}`,
         );
         return res.json();
       }

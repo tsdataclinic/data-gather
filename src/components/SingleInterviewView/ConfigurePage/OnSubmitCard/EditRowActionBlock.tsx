@@ -1,8 +1,9 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
+import * as Interview from '../../../../models/Interview';
+import * as InterviewSetting from '../../../../models/InterviewSetting';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import FieldToQuestionBlock from './FieldToQuestionBlock';
-import useAppState from '../../../../hooks/useAppState';
 import type { EditableAction } from './types';
 import EntryDropdown from './EntryDropdown';
 import InfoIcon from '../../../ui/InfoIcon';
@@ -12,6 +13,7 @@ type Props = {
   actionConfig: SubmissionAction.WithPartialPayload<SubmissionAction.EditRowActionConfig>;
   defaultLanguage: string;
   entries: readonly InterviewScreenEntry.WithScreenT[];
+  interview: Interview.UpdateT;
   onActionChange: (
     actionToReplace: EditableAction,
     newAction: EditableAction,
@@ -23,11 +25,18 @@ export default function EditRowActionBlock({
   actionConfig,
   defaultLanguage,
   entries,
+  interview,
   onActionChange,
 }: Props): JSX.Element {
-  const { airtableSettings } = useAppState();
+  const interviewSetting = interview.interviewSettings.find(
+    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+  );
+  const airtableSettings = interviewSetting?.settings;
   const allTables = React.useMemo(
-    () => airtableSettings.bases.flatMap(base => base.tables),
+    () =>
+      airtableSettings && airtableSettings?.bases
+        ? airtableSettings?.bases?.flatMap(base => base.tables)
+        : [],
     [airtableSettings],
   );
 
@@ -43,7 +52,8 @@ export default function EditRowActionBlock({
       table =>
         selectedEntry?.responseType ===
           InterviewScreenEntry.ResponseType.AIRTABLE &&
-        table.key === selectedEntry.responseTypeOptions.selectedTable,
+        table &&
+        table.id === selectedEntry?.responseTypeOptions.selectedTable,
     );
   }, [entries, allTables, actionConfig]);
 
@@ -99,6 +109,7 @@ export default function EditRowActionBlock({
           </p>
           <div className="flex items-center">
             <EntryDropdown
+              interview={interview}
               entries={entriesWithAirtableLookup}
               onChangeEntrySelection={onChangeRowTarget}
               selectedEntryId={actionConfig.payload.entryId}
@@ -128,6 +139,7 @@ export default function EditRowActionBlock({
             used.
           </p>
           <FieldToQuestionBlock
+            interview={interview}
             entries={entries}
             airtableTable={selectedTable}
             fieldMappings={action.fieldMappings}

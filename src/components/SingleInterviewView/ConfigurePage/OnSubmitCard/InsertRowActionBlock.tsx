@@ -1,10 +1,11 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
+import * as InterviewSetting from '../../../../models/InterviewSetting';
+import * as Interview from '../../../../models/Interview';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import Dropdown from '../../../ui/Dropdown';
 import LabelWrapper from '../../../ui/LabelWrapper';
 import FieldToQuestionBlock from './FieldToQuestionBlock';
-import useAppState from '../../../../hooks/useAppState';
 import type { EditableAction } from './types';
 
 type Props = {
@@ -12,6 +13,7 @@ type Props = {
   actionConfig: SubmissionAction.WithPartialPayload<SubmissionAction.InsertRowActionConfig>;
   defaultLanguage: string;
   entries: readonly InterviewScreenEntry.WithScreenT[];
+  interview: Interview.UpdateT;
   onActionChange: (
     actionToReplace: EditableAction,
     newAction: EditableAction,
@@ -23,25 +25,33 @@ export default function EditRowActionBlock({
   actionConfig,
   defaultLanguage,
   entries,
+  interview,
   onActionChange,
 }: Props): JSX.Element {
-  const { airtableSettings } = useAppState();
+  const interviewSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+  );
+  const airtableSettings = interviewSetting?.settings;
+
   const allTables = React.useMemo(
-    () => airtableSettings.bases.flatMap(base => base.tables),
+    () =>
+      airtableSettings && airtableSettings.bases
+        ? airtableSettings?.bases?.flatMap(base => base.tables)
+        : [],
     [airtableSettings],
   );
 
   const selectedTable = React.useMemo(
     () =>
-      allTables.find(table => table.key === actionConfig.payload.tableTarget),
+      allTables.find(table => table?.id === actionConfig.payload.tableTarget),
     [allTables, actionConfig],
   );
 
   const tableOptions = React.useMemo(
     () =>
       allTables.map(table => ({
-        value: table.key,
-        displayValue: table.name,
+        value: table ? table.id : '',
+        displayValue: table ? table.name : '',
       })),
     [allTables],
   );
@@ -49,7 +59,11 @@ export default function EditRowActionBlock({
   const onChangeTableTarget = (tableId: string): void => {
     const newConfig = {
       type: actionConfig.type,
-      payload: { tableTarget: tableId },
+      payload: {
+        ...action.config.payload,
+        baseTarget: '',
+        tableTarget: tableId,
+      },
     };
 
     onActionChange(action, { ...action, config: newConfig });
@@ -83,6 +97,7 @@ export default function EditRowActionBlock({
             fieldMappings={action.fieldMappings}
             onFieldMappingChange={onFieldMappingChange}
             defaultLanguage={defaultLanguage}
+            interview={interview}
           />
         </>
       )}

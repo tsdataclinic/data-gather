@@ -19,7 +19,7 @@ type Props = {
   defaultActions: readonly ConditionalAction.T[];
   defaultEntries: readonly InterviewScreenEntry.T[];
   defaultScreen: InterviewScreen.WithChildrenT;
-  interview: Interview.T;
+  interview: Interview.WithScreensAndActions;
   setUnsavedChanges: (unsavedChanges: boolean) => void;
   unsavedChanges: boolean;
 };
@@ -271,6 +271,7 @@ export default function ScreenPage({
             onEntryDelete={onEntryDelete}
             onNewEntryClick={onNewEntryClick}
             onEntryOrderChange={onEntriesOrderChange}
+            interview={interview}
           />
           <ConditionalActionsSection
             ref={actionsSectionRef}

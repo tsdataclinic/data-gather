@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as Scroll from 'react-scroll';
 import Form from '../../ui/Form';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
+import * as Interview from '../../../models/Interview';
 import EditableName from './EditableName';
 import type { EditableEntry } from '../types';
 import Button from '../../ui/Button';
@@ -13,12 +14,13 @@ import SelectedLanguageContext from '../SelectedLanguageContext';
 
 type Props = {
   entry: EditableEntry;
+  interview: Interview.WithScreensAndActions;
   onEntryChange: (
     entryToReplace: EditableEntry,
     newEntry: EditableEntry,
   ) => void;
-  onEntryDelete: (entryToDelete: EditableEntry) => void;
 
+  onEntryDelete: (entryToDelete: EditableEntry) => void;
   /** Should we scroll to this card when it mounts? */
   scrollOnMount: boolean;
 };
@@ -31,7 +33,7 @@ const ENTRY_RESPONSE_TYPE_OPTIONS = InterviewScreenEntry.RESPONSE_TYPES.map(
 );
 
 function EntryCard(
-  { entry, onEntryChange, onEntryDelete, scrollOnMount }: Props,
+  { entry, onEntryChange, onEntryDelete, scrollOnMount, interview }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
   const selectedLanguageCode = React.useContext(SelectedLanguageContext);
@@ -124,6 +126,7 @@ function EntryCard(
           <ResponseTypeConfigBlock
             entry={entry}
             onEntryChange={onEntryChange}
+            interview={interview}
           />
           <LabelWrapper
             inline

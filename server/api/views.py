@@ -21,25 +21,18 @@ from server.engine import create_fk_constraint_engine
 from server.init_db import SQLITE_DB_PATH
 from server.models.common import OrderedModel
 from server.models.conditional_action import ConditionalAction
-from server.models.interview import (
-    Interview,
-    InterviewCreate,
-    InterviewRead,
-    InterviewReadWithScreensAndActions,
-    InterviewUpdate,
-    ValidationError,
-)
-from server.models.interview_screen import (
-    InterviewScreen,
-    InterviewScreenCreate,
-    InterviewScreenRead,
-    InterviewScreenReadWithChildren,
-    InterviewScreenUpdate,
-)
+from server.models.interview import (Interview, InterviewCreate, InterviewRead,
+                                     InterviewReadWithScreensAndActions,
+                                     InterviewUpdate, ValidationError)
+from server.models.interview_screen import (InterviewScreen,
+                                            InterviewScreenCreate,
+                                            InterviewScreenRead,
+                                            InterviewScreenReadWithChildren,
+                                            InterviewScreenUpdate)
 from server.models.interview_screen_entry import (
-    InterviewScreenEntry,
-    InterviewScreenEntryReadWithScreen,
-)
+    InterviewScreenEntry, InterviewScreenEntryReadWithScreen)
+from server.models.interview_setting import (InterviewSetting,
+                                             InterviewSettingType)
 from server.models.submission_action import SubmissionAction
 from server.models.user import User, UserRead
 
@@ -51,7 +44,8 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
+# TODO - get api key from a given interview
+# airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 
 
 class Settings(BaseSettings):
@@ -269,7 +263,6 @@ def update_interview(
         raise HTTPException(
             status_code=404, detail=f"Interview with id {interview_id} not found"
         )
-
     # update the nested submission actions
     _reset_object_order(interview.submission_actions)
     actions_to_set, actions_to_delete = _diff_model_lists(
@@ -280,13 +273,27 @@ def update_interview(
     # set the updated actions
     db_interview.submission_actions = actions_to_set
 
+    # get settings to update and delete
+    settings_to_set, settings_to_delete = _diff_model_lists(
+        db_interview.interview_settings,
+        [InterviewSetting.from_orm(setting) for setting in interview.interview_settings],
+    )
+
+    # set the updated settings
+    db_interview.interview_settings = settings_to_set
+
     # now update the top-level db_interview
-    _update_model_diff(db_interview, interview.copy(exclude={"submission_actions"}))
+    _update_model_diff(db_interview, interview.copy(exclude={"submission_actions", "interview_settings"}))
     session.add(db_interview)
 
     # delete the necessary actions
     for action in actions_to_delete:
         session.delete(action)
+
+    
+    # delete the necessary settings
+    for setting in settings_to_delete:
+        session.delete(setting)
 
     try:
         session.commit()
@@ -586,7 +593,7 @@ def _update_model_diff(existing_model: SQLModel, new_model: SQLModel):
 
 
 TInterviewChild = TypeVar(
-    "TInterviewChild", ConditionalAction, InterviewScreenEntry, SubmissionAction
+    "TInterviewChild", ConditionalAction, InterviewScreenEntry, SubmissionAction, InterviewSetting
 )
 
 
@@ -679,44 +686,103 @@ def _adjust_screen_order(
     return (db_screen, sorted_screens + [db_screen])
 
 
-@app.get("/api/airtable-records/{table_name}", tags=["airtable"])
-def get_airtable_records(table_name, request: Request) -> list[Record]:
+@app.get("/api/airtable-records/{interview_id}/{table_name}", tags=["airtable"])
+def get_airtable_records(
+    table_name,
+    request: Request,
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
+) -> list[Record]:
     """
     Fetch records from an airtable table. Filtering can be performed
     by adding query parameters to the URL, keyed by column name.
     """
+    airtable_settings = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_client = AirtableAPI(airtable_settings)
     start_time = time.time()
-
     query = dict(request.query_params)
     results = airtable_client.search_records(table_name, query)
-
     end_time = time.time()
     LOG.info(f"Completed airtable search in {round(end_time - start_time, 3)} seconds")
     return results
 
 
-@app.get("/api/airtable-records/{table_name}/{record_id}", tags=["airtable"])
-def get_airtable_record(table_name: str, record_id: str) -> Record:
+@app.get("/api/airtable-records/{interview_id}/{table_name}/{record_id}", tags=["airtable"])
+def get_airtable_record(
+    table_name: str,
+    record_id: str,
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
+    session: Session = Depends(get_session),
+) -> Record:
     """
     Fetch record with a particular id from a table in airtable.
     """
+    airtable_settings = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_client = AirtableAPI(airtable_settings)
     return airtable_client.fetch_record(table_name, record_id)
 
+@app.get("/api/airtable-schema/{interview_id}", tags=["airtable"])
+def get_airtable_schema(
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
+    session: Session = Depends(get_session),
+) -> Record:
+    """
+    Given an interview object, fetch the list of bases + schema for each base
+    for its given Airtable access key.
+    Combine the schema into a single JSON object.
+    Update a given Interview object with that schema.
+    """
+    interview = interview_service.get_interview_by_id(interview_id)
+    new_interview = InterviewUpdate.from_orm(interview)
+    update_interview_setting_index = 0
+    update_interview_setting = InterviewSetting()
 
-@app.post("/api/airtable-records/{table_name}", tags=["airtable"])
-async def create_airtable_record(table_name: str, record: Record = Body(...)) -> Record:
+    # look for the airtable setting
+    airtableSetting = {}
+    for index, interview_setting in enumerate(interview.interview_settings):
+        if interview_setting.settings and interview_setting.type == InterviewSettingType.AIRTABLE:
+            update_interview_setting_index = index
+            update_interview_setting = interview_setting
+            airtableSetting = interview_setting.settings
+    
+    airtable_client = AirtableAPI(airtableSetting)
+    new_airtable_settings = airtable_client.fetch_schema(airtableSetting)
+
+    update_interview_setting.settings.update(new_airtable_settings)
+    new_interview.interview_settings[update_interview_setting_index] = update_interview_setting
+    
+    return update_interview(interview_id, new_interview, session)
+
+@app.post("/api/airtable-records/{interview_id}/{table_name}", tags=["airtable"])
+async def create_airtable_record(
+    table_name: str, 
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
+    session: Session = Depends(get_session),
+    record: Record = Body(...),
+) -> Record:
     """
     Create an airtable record in a table.
     """
-    print(record)
+    airtable_settings = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_client = AirtableAPI(airtable_settings)
     return airtable_client.create_record(table_name, record)
 
 
-@app.put("/api/airtable-records/{table_name}/{record_id}", tags=["airtable"])
+@app.put("/api/airtable-records/{interview_id}/{table_name}/{record_id}", tags=["airtable"])
 async def update_airtable_record(
-    table_name: str, record_id: str, update: PartialRecord = Body(...)
+    table_name: str,
+    record_id: str,
+    interview_id: str,
+    interview_service: InterviewService = Depends(get_interview_service),
+    session: Session = Depends(get_session),
+    update: PartialRecord = Body(...)
 ) -> Record:
     """
     Update an airtable record in a table.
     """
+    airtable_settings = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_client = AirtableAPI(airtable_settings)
     return airtable_client.update_record(table_name, record_id, update)

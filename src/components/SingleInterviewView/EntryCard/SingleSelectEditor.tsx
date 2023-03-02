@@ -2,44 +2,54 @@ import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { v4 as uuidv4 } from 'uuid';
+import * as InterviewSetting from '../../../models/InterviewSetting';
+import * as Interview from '../../../models/Interview';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import InputText from '../../ui/InputText';
 import Button from '../../ui/Button';
 import LabelWrapper from '../../ui/LabelWrapper';
-import useAppState from '../../../hooks/useAppState';
 import AirtableFieldSelector from './AirtableFieldSelector';
-import type { AirtableField } from '../../../store/appReducer';
 
 type Props = {
+  interview: Interview.WithScreensAndActions;
   onSelectionConfigurationChange: (
     newConfig: InterviewScreenEntry.SingleSelectOptions,
   ) => void;
   selectionConfig: InterviewScreenEntry.SingleSelectOptions;
 };
 
-function doesAirtableFieldHaveOptions(airtableField: AirtableField): boolean {
+function doesAirtableFieldHaveOptions(
+  airtableField: InterviewSetting.AirtableField,
+): boolean {
   return (
     airtableField.options !== undefined &&
-    airtableField.options.length > 0 &&
-    airtableField.options.every(option => option !== '' && option !== undefined)
+    !!airtableField.options?.choices &&
+    airtableField.options.choices.length > 0 &&
+    airtableField.options.choices.every(
+      choice => choice?.name !== '' && choice?.name !== undefined,
+    )
   );
 }
 
 export default function SingleSelectEditor({
   onSelectionConfigurationChange,
   selectionConfig,
+  interview,
 }: Props): JSX.Element {
   const { airtableConfig, options } = selectionConfig;
   const [optionToAdd, setOptionToAdd] = React.useState<string>('');
-  const { airtableSettings } = useAppState();
+  const interviewSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+  );
+  const airtableSettings = interviewSetting?.settings;
   const showAirtableConfig = selectionConfig.airtableConfig !== undefined;
 
   const allAirtableFields = React.useMemo(
     () =>
-      airtableSettings.bases.flatMap(base =>
-        base.tables.flatMap(table => table.fields),
+      airtableSettings?.bases?.flatMap(base =>
+        base.tables?.flatMap(table => table.fields),
       ),
-    [airtableSettings.bases],
+    [airtableSettings?.bases],
   );
 
   const selectedAirtableField = React.useMemo(() => {
@@ -48,8 +58,8 @@ export default function SingleSelectEditor({
       airtableConfig.selectedFields &&
       airtableConfig.selectedFields.length > 0
     ) {
-      return allAirtableFields.find(
-        field => field.fieldName === airtableConfig.selectedFields[0],
+      return allAirtableFields?.find(
+        field => field?.name === airtableConfig.selectedFields[0],
       );
     }
     return undefined;
@@ -69,7 +79,7 @@ export default function SingleSelectEditor({
 
   return (
     <div className="space-y-2">
-      {airtableSettings.bases.length > 0 ? (
+      {airtableSettings?.bases && airtableSettings.bases.length > 0 ? (
         <LabelWrapper
           inline
           label="Use options from an Airtable field?"
@@ -163,8 +173,8 @@ export default function SingleSelectEditor({
           />
           {selectedAirtableField ? (
             <ul className="ml-8 list-disc">
-              {(selectedAirtableField.options ?? []).map(opt => (
-                <li key={opt}>{opt}</li>
+              {(selectedAirtableField.options?.choices ?? []).map(opt => (
+                <li key={opt.id}>{opt.name}</li>
               ))}
             </ul>
           ) : null}
