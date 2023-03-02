@@ -125,11 +125,9 @@ export class AirtableFastAPIService {
 
   /**
    * Get Airtable Schema
-   * Interview must have an associated InterviewSettings object
-   * List bases given an interview ID
-   * For each base -
-   * Fetch base schema
-   * call interview update after?
+   * Given an interview object, fetch the list of bases + schema for each base for its given Airtable access key.
+   * Combine the schema into a single JSON object.
+   * Update a given Interview object with that schema.
    * @param interviewId
    * @returns any Successful Response
    * @throws ApiError
