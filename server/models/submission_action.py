@@ -17,6 +17,7 @@ class EditRowPayload(BaseModel):
 
 
 class InsertRowPayload(BaseModel):
+    baseTarget: str
     tableTarget: str
 
 

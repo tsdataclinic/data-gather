@@ -12,19 +12,22 @@ export class AirtableFastAPIService {
    * Get Airtable Records
    * Fetch records from an airtable table. Filtering can be performed
    * by adding query parameters to the URL, keyed by column name.
+   * @param baseId
    * @param tableName
    * @param interviewId
    * @returns any Successful Response
    * @throws ApiError
    */
   public getAirtableRecords(
+    baseId: any,
     tableName: any,
     interviewId: string,
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'GET',
-      url: '/api/airtable-records/{interview_id}/{table_name}',
+      url: '/api/airtable-records/{interview_id}/{base_id}/{table_name}',
       path: {
+        'base_id': baseId,
         'table_name': tableName,
         'interview_id': interviewId,
       },
@@ -37,6 +40,7 @@ export class AirtableFastAPIService {
   /**
    * Create Airtable Record
    * Create an airtable record in a table.
+   * @param baseId
    * @param tableName
    * @param interviewId
    * @param requestBody
@@ -44,14 +48,16 @@ export class AirtableFastAPIService {
    * @throws ApiError
    */
   public createAirtableRecord(
+    baseId: string,
     tableName: string,
     interviewId: string,
     requestBody: any,
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'POST',
-      url: '/api/airtable-records/{interview_id}/{table_name}',
+      url: '/api/airtable-records/{interview_id}/{base_id}/{table_name}',
       path: {
+        'base_id': baseId,
         'table_name': tableName,
         'interview_id': interviewId,
       },
@@ -79,7 +85,7 @@ export class AirtableFastAPIService {
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'GET',
-      url: '/api/airtable-records/{interview_id}/{table_name}/{record_id}',
+      url: '/api/airtable-records/{interview_id}/{base_id}/{table_name}/{record_id}',
       path: {
         'table_name': tableName,
         'record_id': recordId,
@@ -94,6 +100,7 @@ export class AirtableFastAPIService {
   /**
    * Update Airtable Record
    * Update an airtable record in a table.
+   * @param baseId
    * @param tableName
    * @param recordId
    * @param interviewId
@@ -102,6 +109,7 @@ export class AirtableFastAPIService {
    * @throws ApiError
    */
   public updateAirtableRecord(
+    baseId: string,
     tableName: string,
     recordId: string,
     interviewId: string,
@@ -109,8 +117,9 @@ export class AirtableFastAPIService {
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'PUT',
-      url: '/api/airtable-records/{interview_id}/{table_name}/{record_id}',
+      url: '/api/airtable-records/{interview_id}/{base_id}/{table_name}/{record_id}',
       path: {
+        'base_id': baseId,
         'table_name': tableName,
         'record_id': recordId,
         'interview_id': interviewId,
@@ -125,7 +134,8 @@ export class AirtableFastAPIService {
 
   /**
    * Get Airtable Schema
-   * Given an interview object, fetch the list of bases + schema for each base for its given Airtable access key.
+   * Given an interview object, fetch the list of bases + schema for each base
+   * for its given Airtable access key.
    * Combine the schema into a single JSON object.
    * Update a given Interview object with that schema.
    * @param interviewId
