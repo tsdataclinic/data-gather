@@ -703,7 +703,9 @@ def get_airtable_records(
     query = dict(request.query_params)
     results = airtable_client.search_records(table_name, query)
     end_time = time.time()
-    LOG.info(f"Completed airtable search in {round(end_time - start_time, 3)} seconds")
+
+    search_term = list(query.values())[0]
+    LOG.info(f"Completed airtable search for '{search_term}' in {round(end_time - start_time, 3)} seconds")
     return results
 
 
