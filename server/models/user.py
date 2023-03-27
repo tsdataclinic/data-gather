@@ -18,18 +18,11 @@ class UserBase(APIModel):
     )
 
 
-class User(APIModel, table=True):
+class User(UserBase, table=True):
     """The User model as a database table."""
 
     __tablename__: str = "user"
     id: Optional[str] = Field(primary_key=True, nullable=False)
-    email: str
-    identity_provider: str
-    family_name: str
-    given_name: str
-    created_date: Optional[datetime] = Field(
-        default_factory=datetime.utcnow, nullable=False
-    )
 
     # relationships
     interviews: list["Interview"] = Relationship(back_populates="owner")
