@@ -58,7 +58,7 @@ class InterviewService(BaseService):
         output = {}
         for interview_setting in interview.interview_settings:
             if interview_setting.type == interview_setting_type:
-                output = interview_setting.settings
+                output = interview_setting
         if output == {}:
             raise HTTPException(status_code=404, detail="Airtable setting not found for interview {interview_id}")
 

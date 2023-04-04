@@ -710,7 +710,9 @@ def get_airtable_records(
     Fetch records from an airtable table. Filtering can be performed
     by adding query parameters to the URL, keyed by column name.
     """
-    airtable_settings = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_settings = airtable_setting_container.settings
+
     airtable_client = AirtableAPI(airtable_settings)
     start_time = time.time()
     query = dict(request.query_params)
@@ -731,7 +733,9 @@ def get_airtable_record(
     """
     Fetch record with a particular id from a table in airtable.
     """
-    airtable_settings = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_settings = airtable_setting_container.settings
+
     airtable_client = AirtableAPI(airtable_settings)
     return airtable_client.fetch_record(table_name, record_id)
 
@@ -779,7 +783,9 @@ async def create_airtable_record(
     """
     Create an airtable record in a table.
     """
-    airtable_settings = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_settings = airtable_setting_container.settings
+
     airtable_client = AirtableAPI(airtable_settings)
     return airtable_client.create_record(table_name, record)
 
@@ -796,7 +802,9 @@ async def update_airtable_record(
     """
     Update an airtable record in a table.
     """
-    airtable_settings = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
+    airtable_settings = airtable_setting_container.settings
+
     airtable_client = AirtableAPI(airtable_settings)
     return airtable_client.update_record(table_name, record_id, update)
 
