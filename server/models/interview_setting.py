@@ -10,7 +10,7 @@ from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy_utils import StringEncryptedType
 from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
-from sqlalchemy_json import NestedMutableJson, mutable_json_type
+from sqlalchemy_json import mutable_json_type
 
 
 from pydantic import BaseModel, validator
