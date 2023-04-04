@@ -58,11 +58,13 @@ function BaseInterviewRunnerView({
   const entries = useInterviewScreenEntries(interviewId);
   const { mutate: airtableUpdateRecord } = useMutation({
     mutationFn: (data: {
+      baseId: string;
       fields: { [fieldName: string]: string };
       recordId: string;
       tableId: string;
     }) =>
       api.airtable.updateAirtableRecord(
+        data.baseId,
         data.tableId,
         data.recordId,
         interviewId,
@@ -72,10 +74,16 @@ function BaseInterviewRunnerView({
 
   const { mutate: airtableCreateRecord } = useMutation({
     mutationFn: (data: {
+      baseId: string;
       fields: { [fieldName: string]: string };
       tableId: string;
     }) =>
-      api.airtable.createAirtableRecord(data.tableId, interviewId, data.fields),
+      api.airtable.createAirtableRecord(
+        data.baseId,
+        data.tableId,
+        interviewId,
+        data.fields,
+      ),
   });
 
   const onInterviewComplete = React.useCallback(
@@ -104,6 +112,7 @@ function BaseInterviewRunnerView({
                 entryTarget.responseType ===
                   InterviewScreenEntry.ResponseType.AIRTABLE
               ) {
+                const baseId = entryTarget.responseTypeOptions.selectedBase;
                 const tableId = entryTarget.responseTypeOptions.selectedTable;
                 const airtableRecordId = ConfigurableScript.getResponseValue(
                   responseData,
@@ -143,6 +152,7 @@ function BaseInterviewRunnerView({
                   );
 
                   airtableUpdateRecord({
+                    baseId,
                     tableId,
                     fields,
                     recordId: airtableRecordId,
@@ -153,7 +163,7 @@ function BaseInterviewRunnerView({
             }
 
             case SubmissionAction.ActionType.INSERT_ROW: {
-              const { tableTarget } = actionConfig.payload;
+              const { baseTarget, tableTarget } = actionConfig.payload;
 
               // collect all field values
               // TODO: this is duplicate code from the EDIT_ROW section. We
@@ -188,6 +198,7 @@ function BaseInterviewRunnerView({
 
               airtableCreateRecord({
                 fields,
+                baseId: baseTarget,
                 tableId: tableTarget,
               });
               break;

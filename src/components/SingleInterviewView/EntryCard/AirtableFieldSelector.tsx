@@ -40,7 +40,7 @@ export default function AirtableFieldSelector({
   const availableTables = React.useMemo(() => {
     if (selectedBase && bases) {
       const tables = bases
-        .find(b => b.name === selectedBase)
+        .find(b => b.id === selectedBase)
         ?.tables?.map(t => ({
           displayValue: t.name,
           value: t.id,
@@ -56,7 +56,7 @@ export default function AirtableFieldSelector({
   const availableFields = React.useMemo(() => {
     if (bases && selectedBase && selectedTable) {
       const fields = bases
-        .find(b => b.name === selectedBase)
+        .find(b => b.id === selectedBase)
         ?.tables?.find(b => b.id === selectedTable)
         ?.fields?.filter(field => (fieldFilterFn ? fieldFilterFn(field) : true))
         .map(f => ({
@@ -124,7 +124,7 @@ export default function AirtableFieldSelector({
           }}
           options={bases.map(b => ({
             displayValue: b.name ?? '',
-            value: b.name ?? '',
+            value: b.id ?? '',
           }))}
         />
       )}

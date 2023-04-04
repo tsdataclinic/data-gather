@@ -26,7 +26,7 @@ export default function useAirtableQuery(
     queryFn: async () => {
       // fetch all based on Base and Table
       if (queryString && interviewId && queryOptions) {
-        const { selectedFields, selectedTable } = queryOptions;
+        const { selectedBase, selectedFields, selectedTable } = queryOptions;
         const searchParams = new URLSearchParams();
         selectedFields.forEach(field => {
           searchParams.append(field, queryString);
@@ -34,7 +34,7 @@ export default function useAirtableQuery(
 
         // TODO: replace this with a function call using the API service class
         const res = await fetch(
-          `/api/airtable-records/${interviewId}/${selectedTable}?${searchParams.toString()}`,
+          `/api/airtable-records/${interviewId}/${selectedBase}/${selectedTable}?${searchParams.toString()}`,
         );
         return res.json();
       }
