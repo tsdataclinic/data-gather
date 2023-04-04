@@ -703,8 +703,9 @@ def _adjust_screen_order(
     return (db_screen, sorted_screens + [db_screen])
 
 
-@app.get("/api/airtable-records/{interview_id}/{table_name}", tags=["airtable"])
+@app.get("/api/airtable-records/{interview_id}/{base_id}/{table_name}", tags=["airtable"])
 def get_airtable_records(
+    base_id,
     table_name,
     request: Request,
     interview_id: str,
@@ -722,7 +723,7 @@ def get_airtable_records(
     airtable_client = AirtableAPI(airtable_settings)
     start_time = time.time()
     query = dict(request.query_params)
-    results = airtable_client.search_records(table_name, query)
+    results = airtable_client.search_records(base_id, table_name, query)
     end_time = time.time()
 
     search_term = list(query.values())[0]
@@ -732,10 +733,9 @@ def get_airtable_records(
     return results
 
 
-@app.get(
-    "/api/airtable-records/{interview_id}/{table_name}/{record_id}", tags=["airtable"]
-)
+@app.get("/api/airtable-records/{interview_id}/{base_id}/{table_name}/{record_id}", tags=["airtable"])
 def get_airtable_record(
+    base_id: str,
     table_name: str,
     record_id: str,
     interview_id: str,
@@ -751,7 +751,7 @@ def get_airtable_record(
         )
     )
     airtable_client = AirtableAPI(airtable_settings)
-    return airtable_client.fetch_record(table_name, record_id)
+    return airtable_client.fetch_record(base_id, table_name, record_id)
 
 
 @app.get("/api/airtable-schema/{interview_id}", tags=["airtable"])
@@ -792,10 +792,10 @@ def get_airtable_schema(
 
     return update_interview(interview_id, new_interview, session)
 
-
 @app.post("/api/airtable-records/{interview_id}/{table_name}", tags=["airtable"])
 async def create_airtable_record(
-    table_name: str,
+    base_id: str,
+    table_name: str, 
     interview_id: str,
     interview_service: InterviewService = Depends(get_interview_service),
     session: Session = Depends(get_session),
@@ -810,13 +810,12 @@ async def create_airtable_record(
         )
     )
     airtable_client = AirtableAPI(airtable_settings)
-    return airtable_client.create_record(table_name, record)
+    return airtable_client.create_record(base_id, table_name, record)
 
 
-@app.put(
-    "/api/airtable-records/{interview_id}/{table_name}/{record_id}", tags=["airtable"]
-)
+@app.put("/api/airtable-records/{interview_id}/{base_id}/{table_name}/{record_id}", tags=["airtable"])
 async def update_airtable_record(
+    base_id: str,
     table_name: str,
     record_id: str,
     interview_id: str,
@@ -833,4 +832,4 @@ async def update_airtable_record(
         )
     )
     airtable_client = AirtableAPI(airtable_settings)
-    return airtable_client.update_record(table_name, record_id, update)
+    return airtable_client.update_record(base_id, table_name, record_id, update)

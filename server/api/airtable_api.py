@@ -81,7 +81,7 @@ class AirtableAPI:
         self.base_id = airtableSettings['bases'][0]['id'] if 'bases' in airtableSettings else None
 
     @airtable_errors_wrapped
-    def fetch_record(self, table_name: str, id: str) -> Record:
+    def fetch_record(self, base_id: str, table_name: str, id: str) -> Record:
         """
         Fetch a record with a particular id from a table on Airtable.
 
@@ -92,10 +92,10 @@ class AirtableAPI:
         Returns: An Airtable record
         """
         logger.debug(f"Fetching record {id} in {table_name}")
-        return self.api.get(self.base_id, table_name, id)
+        return self.api.get(base_id, table_name, id)
 
     @airtable_errors_wrapped
-    def search_records(self, table_name: str, query: PartialRecord) -> list[Record]:
+    def search_records(self, base_id: str, table_name: str, query: PartialRecord) -> list[Record]:
         """
         Fetch all records from a table on Airtable that partially match a
         particular query. If query is empty, all the records in the table are
@@ -108,18 +108,18 @@ class AirtableAPI:
         Returns: A list of records matching that query
         """
         logger.debug(
-            f"Fetching records in base: {self.base_id} table: {table_name}" + (f"with {query = }" if query else "")
+            f"Fetching records in base: {base_id} table: {table_name}" + (f"with {query = }" if query else "")
         )
         find_statements = [
             FIND(LOWER(STR_VALUE(query_val)), LOWER(FIELD(field_name)))
             for field_name, query_val in query.items()
         ]
         find_formula = OR(*find_statements)
-        results = self.api.all(self.base_id, table_name, formula=find_formula)
+        results = self.api.all(base_id, table_name, formula=find_formula)
         return results
 
     @airtable_errors_wrapped
-    def create_record(self, table_name: str, record: Record) -> Record:
+    def create_record(self, base_id: str, table_name: str, record: Record) -> Record:
         """
         Create a record in an airtable table
 
@@ -130,10 +130,10 @@ class AirtableAPI:
         Returns: The new record
         """
         logger.debug(f"Creating new record in base: {self.base_id} table: {table_name}: {record}")
-        return self.api.create(self.base_id, table_name, record, typecast=True)
+        return self.api.create(base_id, table_name, record, typecast=True)
 
     @airtable_errors_wrapped
-    def update_record(self, table_name: str, id: str, update: PartialRecord) -> Record:
+    def update_record(self, base_id: str, table_name: str, id: str, update: PartialRecord) -> Record:
         """
         Update a record with a specific id in an airtable table
 
@@ -145,11 +145,11 @@ class AirtableAPI:
         Returns:
         - The updated response
         """
-        logger.debug(f"Updating record {id} in base: {self.base_id} table: {table_name}: {update}")
+        logger.debug(f"Updating record {id} in base: {base_id} table: {table_name}: {update}")
         return cast(
             dict,
             self.api.update(
-                base_id=self.base_id,
+                base_id=base_id,
                 table_name=table_name,
                 record_id=id,
                 fields=update,

@@ -99,7 +99,12 @@ export function serializeCreate(
         payload.tableTarget,
         'Table target is missing in Insert Row configuration',
       );
+      invariant(
+        payload.baseTarget,
+        'base target is missing in Insert Row configuration',
+      );
       validPayload = {
+        baseTarget: payload.baseTarget,
         tableTarget: payload.tableTarget,
       };
       break;
