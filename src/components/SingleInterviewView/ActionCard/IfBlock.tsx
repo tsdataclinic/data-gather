@@ -26,7 +26,6 @@ export default function IfBlock({
 
   const onConditionGroupChange = React.useCallback(
     (newConditionGroup: ConditionalAction.ConditionGroup): void => {
-      console.log('on condition group change', newConditionGroup);
       onIfClauseChange({
         ...ifClause,
         conditionGroup: newConditionGroup,
