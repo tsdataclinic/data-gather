@@ -202,17 +202,21 @@ export function createDefaultActionConfig(
   }
 }
 
+export function createDefaultIfClause(): IfClause {
+  return {
+    id: uuidv4(),
+    action: createDefaultActionConfig(ActionType.PUSH),
+    conditionGroup: createDefaultConditionGroup(),
+    elseClause: createDefaultActionConfig(ActionType.PUSH),
+  };
+}
+
 export function create(vals: {
   order: number;
   screenId: string;
 }): ConditionalActionCreate {
   return {
-    ifClause: {
-      id: uuidv4(),
-      action: createDefaultActionConfig(ActionType.PUSH),
-      conditionGroup: createDefaultConditionGroup(),
-      elseClause: createDefaultActionConfig(ActionType.PUSH),
-    },
+    ifClause: createDefaultIfClause(),
     screenId: vals.screenId,
     order: vals.order,
     tempId: uuidv4(),

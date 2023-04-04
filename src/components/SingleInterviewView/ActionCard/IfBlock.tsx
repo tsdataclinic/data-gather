@@ -5,6 +5,7 @@ import * as InterviewScreen from '../../../models/InterviewScreen';
 import ConditionGroupBlock from './ConditionGroupBlock';
 import ActionConfigEditor from './ActionConfigEditor';
 import type { EditableEntryWithScreen } from '../types';
+import AddConditionButtons from './AddConditionButtons';
 
 type Props = {
   allInterviewEntries: readonly EditableEntryWithScreen[];
@@ -64,6 +65,13 @@ export default function IfBlock({
     [ifClause, onIfClauseChange],
   );
 
+  const onCreateElseCondition = React.useCallback(() => {
+    onIfClauseChange({
+      ...ifClause,
+      elseClause: ConditionalAction.createDefaultIfClause(),
+    });
+  }, [onIfClauseChange, ifClause]);
+
   return (
     <div className="space-y-2">
       <h3>If...</h3>
@@ -73,8 +81,7 @@ export default function IfBlock({
         defaultLanguage={interview.defaultLanguage}
         onConditionGroupChange={onConditionGroupChange}
       />
-
-      <h3>Then...</h3>
+      <h3>Then do the following action</h3>
       {/* TODO: we need to correctly detect if ALWAYS_EXECUTE is selected
       in the top-level if-clause */}
       <ActionConfigEditor
@@ -84,23 +91,30 @@ export default function IfBlock({
         interviewScreen={interviewScreen}
         isAlwaysExecuteChecked={false}
       />
-
-      <h3>Otherwise...</h3>
+      <h3>Otherwise, do the following...</h3>
       {ConditionalAction.isIfClause(elseClause) ? (
-        <IfBlock
-          allInterviewEntries={allInterviewEntries}
-          interview={interview}
-          interviewScreen={interviewScreen}
-          ifClause={elseClause}
-          onIfClauseChange={onElseClauseChange}
-        />
+        <div className="ml-3 rounded border border-dashed border-gray-400 p-3">
+          <IfBlock
+            allInterviewEntries={allInterviewEntries}
+            interview={interview}
+            interviewScreen={interviewScreen}
+            ifClause={elseClause}
+            onIfClauseChange={onElseClauseChange}
+          />
+        </div>
       ) : (
-        <ActionConfigEditor
-          actionConfig={elseClause}
-          onActionConfigChange={onElseActionChange}
-          interview={interview}
-          interviewScreen={interviewScreen}
-        />
+        <>
+          <AddConditionButtons
+            hideConditionGroupButton
+            onAddCondition={onCreateElseCondition}
+          />
+          <ActionConfigEditor
+            actionConfig={elseClause}
+            onActionConfigChange={onElseActionChange}
+            interview={interview}
+            interviewScreen={interviewScreen}
+          />
+        </>
       )}
     </div>
   );
