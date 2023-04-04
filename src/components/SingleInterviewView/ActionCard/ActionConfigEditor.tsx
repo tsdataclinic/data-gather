@@ -68,7 +68,7 @@ export default function ActionConfigEditor({
     [screens, interviewScreen, isAlwaysExecuteChecked, defaultLanguage],
   );
 
-  const renderEditor = (): JSX.Element | null => {
+  const renderConfigEditor = (): JSX.Element | null => {
     switch (actionConfig.type) {
       case ConditionalAction.ActionType.END_INTERVIEW:
         return null;
@@ -123,7 +123,7 @@ export default function ActionConfigEditor({
 
   // TODO: replace these with Form.Dropdown and other controls
   return (
-    <>
+    <div className="ml-4 space-y-2 rounded border border-gray-300 bg-gray-200 p-3">
       <LabelWrapper inline label="Action" labelTextClassName="w-20">
         <Dropdown
           onChange={onActionTypeChange}
@@ -133,7 +133,7 @@ export default function ActionConfigEditor({
         />
       </LabelWrapper>
 
-      {renderEditor()}
-    </>
+      {renderConfigEditor()}
+    </div>
   );
 }
