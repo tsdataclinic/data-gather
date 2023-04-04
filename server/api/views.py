@@ -56,9 +56,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-# TODO - get api key from a given interview
-# airtable_client = AirtableAPI(AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
-
+AIRTABLE_AUTH_TIMEOUT_BUFFER_MS = 360000
 
 class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = ["http://localhost:3000"]
@@ -700,11 +698,12 @@ def _adjust_screen_order(
 
 
 @app.get("/api/airtable-records/{interview_id}/{table_name}", tags=["airtable"])
-def get_airtable_records(
+async def get_airtable_records(
     table_name,
     request: Request,
     interview_id: str,
     interview_service: InterviewService = Depends(get_interview_service),
+    session: Session = Depends(get_session),
 ) -> list[Record]:
     """
     Fetch records from an airtable table. Filtering can be performed
@@ -712,6 +711,9 @@ def get_airtable_records(
     """
     airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
     airtable_settings = airtable_setting_container.settings
+
+    if (is_airtable_token_expired(airtable_settings, 3599999)):
+        await refresh_and_update_airtable_auth(interview_id, interview_service, session)
 
     airtable_client = AirtableAPI(airtable_settings)
     start_time = time.time()
@@ -905,10 +907,15 @@ async def airtable_callback(request: Request):
     return RedirectResponse(redirect_to, status_code=302)
 
 
-def is_airtable_token_expired(airtable_settings: AirtableSettings):
+def is_airtable_token_expired(airtable_settings: AirtableSettings, buffer=AIRTABLE_AUTH_TIMEOUT_BUFFER_MS):
+    """
+        Checks to see if the token expiry time (minus a buffer) has passed.
+    """
     # time is stored in miliseconds, but python wants seconds
-    token_expiry_time = datetime.fromtimestamp(airtable_settings['authSettings']['accessTokenExpires']//1000)
-    if (datetime.now() > token_expiry_time):
+    token_expiry_time = datetime.fromtimestamp(airtable_settings['authSettings']['accessTokenExpires']//1000) - timedelta(milliseconds=buffer)
+    now = datetime.now()
+    if (now > token_expiry_time):
+        LOG.info(f"Token expired | Current time: {now} | Token expiry time: {token_expiry_time}")
         return True
     return False
 
@@ -955,11 +962,11 @@ def refresh_airtable_auth(airtable_settings: AirtableSettings):
 
 @app.get("/api/refresh-and-update-airtable-auth", tags=["airtable"])
 async def refresh_and_update_airtable_auth(
-    request: Request,
     interview_id: str,
     interview_service: InterviewService = Depends(get_interview_service),
     session: Session = Depends(get_session),
 ):
+    LOG.info("Refreshing Airtable auth token")
     interview = interview_service.get_interview_by_id(interview_id)
     new_interview = InterviewUpdate.from_orm(interview)
     update_interview_setting_index = 0
