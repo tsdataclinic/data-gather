@@ -9,23 +9,25 @@ import { Element as ScrollableElement } from 'react-scroll';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
 import * as InterviewScreen from '../../../models/InterviewScreen';
+import IfBlock from './IfBlock';
+/*
 import LabelWrapper from '../../ui/LabelWrapper';
-import ActionConfigEditor from './ActionConfigEditor';
+import SingleConditionRow from './SingleConditionRow';
+*/
 import Form from '../../ui/Form';
-import ConditionalOperatorRow from './ConditionalOperatorRow';
 import Button from '../../ui/Button';
 import type { EditableAction, EditableEntryWithScreen } from '../types';
 
 type Props = {
-  action: EditableAction;
   allInterviewEntries: readonly EditableEntryWithScreen[];
+  conditionalAction: EditableAction;
   interview: Interview.T;
   interviewScreen: InterviewScreen.T;
-  onActionChange: (
+  onConditionalActionChange: (
     actionToReplace: EditableAction,
     newAction: EditableAction,
   ) => void;
-  onActionDelete: (actionToDelete: EditableAction) => void;
+  onConditionalActionDelete: (actionToDelete: EditableAction) => void;
 
   /** Should we scroll to this card when it mounts? */
   scrollOnMount: boolean;
@@ -33,52 +35,66 @@ type Props = {
 
 function ActionCard(
   {
-    action,
+    conditionalAction,
     allInterviewEntries,
     interview,
-    onActionChange,
-    onActionDelete,
+    onConditionalActionChange,
+    onConditionalActionDelete,
     scrollOnMount,
     interviewScreen,
   }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
-  // TODO: when interview is a nested model we won't need these sub-queries
-  const actionId = 'id' in action ? action.id : action.tempId;
+  const { ifClause } = conditionalAction;
+  const actionId = ConditionalAction.isCreateType(conditionalAction)
+    ? conditionalAction.tempId
+    : conditionalAction.id;
 
+  const onIfClauseChange = React.useCallback(
+    (newIfClause: ConditionalAction.IfClause) => {
+      onConditionalActionChange(conditionalAction, {
+        ...conditionalAction,
+        ifClause: newIfClause,
+      });
+    },
+    [conditionalAction, onConditionalActionChange],
+  );
+
+  /*
   const onAlwaysExecuteChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>): void => {
       const isChecked = event.target.checked;
-      onActionChange(action, {
-        ...action,
+      onConditionalActionChange(conditionalAction, {
+        ...conditionalAction,
         conditionalOperator: isChecked
           ? ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
           : ConditionalAction.ConditionalOperator.EQ,
       });
     },
-    [action, onActionChange],
+    [conditionalAction, onConditionalActionChange],
   );
 
   const onConditionalOperationChange = React.useCallback(
     (newAction: EditableAction) => {
-      onActionChange(action, newAction);
+      onConditionalActionChange(conditionalAction, newAction);
     },
-    [action, onActionChange],
+    [conditionalAction, onConditionalActionChange],
   );
 
   const onActionConfigChange = React.useCallback(
     (newActionConfig: ConditionalAction.T['actionConfig']) => {
-      onActionChange(action, {
-        ...action,
+      onConditionalActionChange(conditionalAction, {
+        ...conditionalAction,
         actionConfig: newActionConfig,
       });
     },
-    [action, onActionChange],
+    [conditionalAction, onConditionalActionChange],
   );
 
   const isAlwaysExecuteChecked =
-    action.conditionalOperator ===
+    conditionalAction.conditionalOperator ===
     ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE;
+  */
 
   // on mount, scroll to this component
   React.useEffect(() => {
@@ -102,11 +118,10 @@ function ActionCard(
           icon={IconType.faGripVertical}
         />
       </span>
-
       <Button
         unstyled
         className="absolute top-4 right-4"
-        onClick={() => onActionDelete(action)}
+        onClick={() => onConditionalActionDelete(conditionalAction)}
       >
         <FontAwesomeIcon
           aria-label="Delete"
@@ -114,21 +129,30 @@ function ActionCard(
           icon={IconType.faX}
         />
       </Button>
+      <Form ref={forwardedRef} className="col-span-3 space-y-4">
+        <IfBlock
+          allInterviewEntries={allInterviewEntries}
+          interview={interview}
+          interviewScreen={interviewScreen}
+          ifClause={ifClause}
+          onIfClauseChange={onIfClauseChange}
+        />
+      </Form>
+    </ScrollableElement>
 
-      {
-        // TODO: create a Form.Checkbox control
-      }
+    //      {/* TODO: create a Form.Checkbox control */}
+    /*
       <Form ref={forwardedRef} className="col-span-3 space-y-4">
         <ActionConfigEditor
-          action={action}
+          conditionalAction={conditionalAction}
           onActionConfigChange={onActionConfigChange}
           interview={interview}
           interviewScreen={interviewScreen}
           isAlwaysExecuteChecked={isAlwaysExecuteChecked}
         />
         {!isAlwaysExecuteChecked && (
-          <ConditionalOperatorRow
-            action={action}
+          <SingleConditionRow
+            conditionalAction={conditionalAction}
             allInterviewEntries={allInterviewEntries}
             onConditionalOperationChange={onConditionalOperationChange}
             defaultLanguage={interview.defaultLanguage}
@@ -143,6 +167,7 @@ function ActionCard(
         </LabelWrapper>
       </Form>
     </ScrollableElement>
+   */
   );
 }
 

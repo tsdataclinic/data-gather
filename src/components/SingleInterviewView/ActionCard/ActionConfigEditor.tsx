@@ -24,14 +24,12 @@ const ACTION_TYPE_OPTIONS = ConditionalAction.ACTION_TYPES.filter(
   value: actionType,
 }));
 
-type ActionConfig = ConditionalAction.T['actionConfig'];
-
 type Props = {
-  action: ConditionalAction.T | ConditionalAction.CreateT;
+  actionConfig: ConditionalAction.ActionConfig;
   interview: Interview.T;
   interviewScreen: InterviewScreen.T;
-  isAlwaysExecuteChecked: boolean;
-  onActionConfigChange: (actionConfig: ActionConfig) => void;
+  isAlwaysExecuteChecked?: boolean;
+  onActionConfigChange: (actionConfig: ConditionalAction.ActionConfig) => void;
 };
 
 /**
@@ -39,14 +37,13 @@ type Props = {
  * It renders differently based off of what the action type is
  */
 export default function ActionConfigEditor({
-  action,
+  actionConfig,
   onActionConfigChange,
   interview,
   interviewScreen,
-  isAlwaysExecuteChecked,
+  isAlwaysExecuteChecked = false,
 }: Props): JSX.Element {
   const { id: interviewId, defaultLanguage } = interview;
-  const { actionConfig } = action;
   const screens = useInterviewScreens(interviewId);
   const onActionTypeChange = (
     newActionType: ConditionalAction.ActionType,
@@ -76,13 +73,14 @@ export default function ActionConfigEditor({
       case ConditionalAction.ActionType.END_INTERVIEW:
         return null;
       case ConditionalAction.ActionType.PUSH:
-        // TODO: we only allow a single screen to be pushed for now. This needs
-        // to be updated once we have a multi-select dropdown component.
+        // NOTE: we only allow a single action to be pushed because 'PUSH' is
+        // being used here as 'Go to next stage'
         return (
           <LabelWrapper inline label="Next stage" labelTextClassName="w-20">
             <Dropdown
               onChange={newScreenId =>
                 onActionConfigChange({
+                  id: actionConfig.id,
                   type: ConditionalAction.ActionType.PUSH,
                   payload: [newScreenId],
                 })

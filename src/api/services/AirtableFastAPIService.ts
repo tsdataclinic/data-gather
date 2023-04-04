@@ -125,7 +125,8 @@ export class AirtableFastAPIService {
 
   /**
    * Get Airtable Schema
-   * Given an interview object, fetch the list of bases + schema for each base for its given Airtable access key.
+   * Given an interview object, fetch the list of bases + schema for each base
+   * for its given Airtable access key.
    * Combine the schema into a single JSON object.
    * Update a given Interview object with that schema.
    * @param interviewId

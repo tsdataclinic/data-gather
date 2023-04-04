@@ -102,9 +102,9 @@ function BaseConditionalActionsSection(
                 key={actionId}
                 allInterviewEntries={allInterviewEntries}
                 ref={formRefs.get(actionId)}
-                action={action}
-                onActionChange={onActionChange}
-                onActionDelete={onActionDelete}
+                conditionalAction={action}
+                onConditionalActionChange={onActionChange}
+                onConditionalActionDelete={onActionDelete}
                 scrollOnMount={ConditionalAction.isCreateType(action)}
                 interview={interview}
                 interviewScreen={interviewScreen}

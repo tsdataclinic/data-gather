@@ -1,12 +1,17 @@
+import * as R from 'remeda';
 import invariant from 'invariant';
 import { v4 as uuidv4 } from 'uuid';
 import assertUnreachable from '../util/assertUnreachable';
-import nullsToUndefined from '../util/nullsToUndefined';
 import { ActionType } from '../api/models/ActionType';
 import { ConditionalOperator } from '../api/models/ConditionalOperator';
 import { SerializedConditionalActionRead } from '../api/models/SerializedConditionalActionRead';
 import { SerializedConditionalActionCreate } from '../api/models/SerializedConditionalActionCreate';
 import { ResponseData } from '../script/types';
+import { SerializedIfClause } from '../api/models/SerializedIfClause';
+import { SerializedActionConfig } from '../api/models/SerializedActionConfig';
+import { SerializedConditionGroup } from '../api/models/SerializedConditionGroup';
+import { ConditionGroupType } from '../api/models/ConditionGroupType';
+import { SerializedSingleCondition } from '../api';
 
 const PUSH_ACTION_DELIMITER = ';';
 
@@ -25,10 +30,104 @@ export const ACTION_TYPES: readonly ActionType[] = Object.values(ActionType);
 
 export type ConditionalOperatorGroupType = 'generic' | 'date' | 'number';
 
+export type SingleCondition = {
+  /** Which operation to use for the comparison */
+  readonly conditionalOperator: ConditionalOperator;
+
+  /** An id to identify this condition */
+  readonly id: string;
+
+  /**
+   * The key within the response data which maps to the datum being compared.
+   * While the `id` is fixed and not exposed to the user, this `responseKey` is
+   * exposed to the user and can be changed.
+   *
+   * If the `conditionalOperator` is ALWAYS_EXECUTE then there is no
+   * `responseKey` that is needed, so this field is undefined.
+   */
+  readonly responseKey?: string;
+
+  /**
+   * For a given responseKey, an optionally associated lookup field. If the
+   * response associated to the responseKey holds an object, then we take the
+   * `responseKeyLookupField` from that object.
+   */
+  readonly responseKeyLookupField?: string;
+
+  /**
+   * The value to compare the response datum to.
+   *
+   * If the `conditionalOperator` is ALWAYS_EXECUTE then there is no
+   * `value` that is needed, so this field is undefined.
+   * */
+  readonly value?: string;
+};
+
+export type ConditionGroup = AndGroup | OrGroup;
+export type AndGroup = {
+  readonly conditions: ReadonlyArray<ConditionGroup | SingleCondition>;
+
+  /** An id to identify this condition group */
+  readonly id: string;
+  readonly type: ConditionGroupType.AND;
+};
+export type OrGroup = {
+  readonly conditions: ReadonlyArray<ConditionGroup | SingleCondition>;
+
+  /** An id to identify this condition group */
+  readonly id: string;
+  readonly type: ConditionGroupType.OR;
+};
+
+export type IfClause = {
+  readonly action: ActionConfig;
+  readonly conditionGroup: ConditionGroup;
+  readonly elseClause: ElseClause;
+
+  /** An id to identify this clause */
+  readonly id: string;
+};
+
+export type ElseClause = ActionConfig | IfClause;
+
+/** The action to do if the condition evaluates to true */
+export type ActionConfig = {
+  /**
+   * An id to identify this individual config, because a ConditionalAction
+   * may actually consist of many actions (e.g. an action if True and an
+   * action if False)
+   */
+  id: string;
+} & (
+  | {
+      /** End the interview */
+      type: ActionType.END_INTERVIEW;
+    }
+  | {
+      /** Push some entries on to the stack */
+      payload: readonly string[];
+      type: ActionType.PUSH;
+    }
+  | {
+      /**
+       * Skip the next screen and add response data in place of the user
+       */
+      payload: Readonly<ResponseData>;
+      type: ActionType.SKIP;
+    }
+  | {
+      /**
+       * Add a checkpoint, restore a checkpoint, or declare a milestone to be
+       * passed
+       */
+      payload: string;
+      type: ActionType.CHECKPOINT | ActionType.RESTORE | ActionType.MILESTONE;
+    }
+);
+
 /**
- * An action which may be executed after some response data is collected,
- * if a given condition is true (or, if the condition is 'ALWAYS_EXECUTE',
- * then always execute).
+ * An action which may be executed after some response data is collected.
+ * The `ifClause` is evaluated to determine which action to execute.
  *
  * Different values of the actionConfig field imply different datatypes
  * for the value of the payload field (e.g. a 'push' action takes a list
@@ -37,60 +136,15 @@ export type ConditionalOperatorGroupType = 'generic' | 'date' | 'number';
  * This is the serialized type as it is used on the frontend.
  */
 interface ConditionalAction {
-  /** The action to do if the condition evaluates to true */
-  readonly actionConfig:
-    | {
-        /** End the interview */
-        type: ActionType.END_INTERVIEW;
-      }
-    | {
-        /** Push some entries on to the stack */
-        payload: readonly string[];
-        type: ActionType.PUSH;
-      }
-    | {
-        /**
-         * Skip the next screen and add response data in place of the user
-         */
-        payload: Readonly<ResponseData>;
-        type: ActionType.SKIP;
-      }
-    | {
-        /**
-         * Add a checkpoint, restore a checkpoint, or declare a milestone to be
-         * passed
-         */
-        payload: string;
-        type: ActionType.CHECKPOINT | ActionType.RESTORE | ActionType.MILESTONE;
-      };
-
-  /** Which operation to use for the comparison */
-  readonly conditionalOperator: ConditionalOperator;
-
+  /** The id to represent the entire conditional action */
   readonly id: string;
+  readonly ifClause: IfClause;
 
   /** The index of this action in the screen */
   readonly order: number;
 
-  /**
-   * The key within the response data which maps to the datum being compared.
-   * While the `id` is fixed and not exposed to the user, this `responseKey` is
-   * exposed to the user and can be changed.
-   */
-  readonly responseKey?: string;
-
-  /**
-   * For a given responseKey, an optionally associated lookup field. If the
-   * response associated to the responseKey holds an object, then we take the
-   * `responseKeyField` from that object.
-   */
-  readonly responseKeyField?: string;
-
   /** The screen that this action belongs to */
   readonly screenId: string;
-
-  /** The value to compare the response datum to. */
-  readonly value?: string;
 }
 
 type ConditionalActionCreate = Omit<ConditionalAction, 'id'> & {
@@ -106,12 +160,28 @@ export function create(vals: {
   screenId: string;
 }): ConditionalActionCreate {
   return {
-    actionConfig: { payload: [], type: ActionType.PUSH },
-    conditionalOperator: ConditionalOperator.EQ,
-    responseKey: undefined,
-    responseKeyField: undefined,
+    ifClause: {
+      id: uuidv4(),
+      action: { id: uuidv4(), payload: [], type: ActionType.PUSH },
+      conditionGroup: {
+        id: uuidv4(),
+        type: ConditionGroupType.AND,
+        conditions: [
+          {
+            id: uuidv4(),
+            conditionalOperator: ConditionalOperator.EQ,
+            responseKey: undefined,
+            value: undefined,
+          },
+        ],
+      },
+      elseClause: {
+        id: uuidv4(),
+        payload: [],
+        type: ActionType.PUSH,
+      },
+    },
     screenId: vals.screenId,
-    value: undefined,
     order: vals.order,
     tempId: uuidv4(),
   };
@@ -155,6 +225,95 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
   }
 }
 
+export function isSingleCondition(
+  condition: SerializedSingleCondition | SerializedConditionGroup,
+): condition is SerializedSingleCondition;
+export function isSingleCondition(
+  condition: SingleCondition | ConditionGroup,
+): condition is SingleCondition;
+export function isSingleCondition(
+  condition:
+    | SingleCondition
+    | ConditionGroup
+    | SerializedSingleCondition
+    | SerializedConditionGroup,
+): condition is SingleCondition {
+  return 'conditionalOperator' in condition;
+}
+
+export function isCreateType(
+  action: ConditionalAction | ConditionalActionCreate,
+): action is ConditionalActionCreate {
+  return 'tempId' in action;
+}
+
+export function isIfClause(
+  obj: SerializedActionConfig | SerializedIfClause,
+): obj is SerializedIfClause;
+export function isIfClause(obj: ActionConfig | IfClause): obj is IfClause;
+export function isIfClause(
+  obj: ActionConfig | IfClause | SerializedActionConfig | SerializedIfClause,
+): obj is IfClause {
+  return 'conditionGroup' in obj;
+}
+
+export function traverseConditionGroup(
+  conditionGroup: ConditionGroup,
+  callbacks: {
+    processConditionGroup?: (conditionGroup: ConditionGroup) => unknown;
+    processSingleCondition?: (condition: SingleCondition) => unknown;
+  },
+): void {
+  const { processConditionGroup, processSingleCondition } = callbacks;
+  if (processConditionGroup) {
+    processConditionGroup(conditionGroup);
+  }
+  conditionGroup.conditions.forEach(condition => {
+    if (isSingleCondition(condition)) {
+      if (processSingleCondition) {
+        processSingleCondition(condition);
+      }
+    } else {
+      traverseConditionGroup(condition, callbacks);
+    }
+  });
+}
+
+export function traverseIfClause(
+  ifClause: IfClause,
+  callbacks: {
+    processAction?: (actionConfig: ActionConfig) => unknown;
+    processConditionGroup?: (conditionGroup: ConditionGroup) => unknown;
+    processIfClause?: (ifClause: IfClause) => unknown;
+    processSingleCondition?: (condition: SingleCondition) => unknown;
+  },
+): void {
+  const {
+    processAction,
+    processConditionGroup,
+    processSingleCondition,
+    processIfClause,
+  } = callbacks;
+
+  if (processIfClause) {
+    processIfClause(ifClause);
+  }
+  if (processAction) {
+    processAction(ifClause.action);
+  }
+
+  traverseConditionGroup(ifClause.conditionGroup, {
+    processConditionGroup,
+    processSingleCondition,
+  });
+
+  if (isIfClause(ifClause.elseClause)) {
+    traverseIfClause(ifClause.elseClause, callbacks);
+  } else if (processAction) {
+    processAction(ifClause.elseClause);
+  }
+}
+
 /**
  * Validate if a conditional action is valid to be saved.
  * @returns {[boolean, string]} A tuple of whether or not validation passed,
@@ -163,37 +322,161 @@ export function operatorToDisplayString(operator: ConditionalOperator): string {
 export function validate(
   action: ConditionalAction | ConditionalActionCreate,
 ): [boolean, string] {
-  const { value, conditionalOperator, actionConfig, responseKey } = action;
+  const { ifClause } = action;
 
-  // if we're **not** using the ALWAYS_EXECUTE operator then don't allow an
-  // empty `responseKey` or an empty `value`
-  if (conditionalOperator !== ConditionalOperator.ALWAYS_EXECUTE) {
-    const operatorName = operatorToDisplayString(conditionalOperator);
-    if (responseKey === undefined || responseKey === '') {
-      return [
-        false,
-        `A '${operatorName}' condition must select a response to compare to`,
-      ];
-    }
+  // collect all actions and conditions to validate each of them
+  const allActions: ActionConfig[] = [];
+  const allConditions: SingleCondition[] = [];
+  traverseIfClause(ifClause, {
+    processAction: actionConfig => allActions.push(actionConfig),
+    processSingleCondition: condition => allConditions.push(condition),
+  });
 
-    if (
-      value === undefined &&
-      conditionalOperator !== ConditionalOperator.IS_NOT_EMPTY &&
-      conditionalOperator !== ConditionalOperator.IS_EMPTY
-    ) {
-      return [false, `A '${operatorName}' condition must have a value`];
-    }
+  // first, validate the use of ALWAYS_EXECUTE:
+  // - only the first condition can be ALWAYS_EXECUTE
+  // - if it is, it should be the *only* condition
+  const [firstCondition, ...restOfConditions] = allConditions;
+  if (
+    restOfConditions.some(
+      condition =>
+        condition.conditionalOperator === ConditionalOperator.ALWAYS_EXECUTE,
+    )
+  ) {
+    return [
+      false,
+      'Only the top-level condition should be configurable to always execute.',
+    ];
+  }
+  if (
+    firstCondition.conditionalOperator === ConditionalOperator.ALWAYS_EXECUTE &&
+    restOfConditions.length > 1
+  ) {
+    return [
+      false,
+      'If the first condition is always executable then there should be no other conditions.',
+    ];
   }
 
-  // do not allow Push actions to have an empty payload
-  if (
-    actionConfig.type === ActionType.PUSH &&
-    actionConfig.payload.length === 0
-  ) {
-    return [false, 'A Push action cannot have an empty payload'];
+  // now evaluate that all conditions are fully specified
+  const errorValidatingCondition = R.pipe(
+    allConditions,
+    R.map((condition: SingleCondition): [boolean, string] | undefined => {
+      const { conditionalOperator, responseKey, value } = condition;
+      // if we're **not** using the ALWAYS_EXECUTE operator then don't allow an
+      // empty `responseKey` or an empty `value`
+      if (conditionalOperator !== ConditionalOperator.ALWAYS_EXECUTE) {
+        const operatorName = operatorToDisplayString(conditionalOperator);
+        if (responseKey === undefined || responseKey === '') {
+          return [
+            false,
+            `A '${operatorName}' condition must select a response to compare to`,
+          ];
+        }
+        if (
+          value === undefined &&
+          conditionalOperator !== ConditionalOperator.IS_NOT_EMPTY &&
+          conditionalOperator !== ConditionalOperator.IS_EMPTY
+        ) {
+          return [false, `A '${operatorName}' condition must have a value`];
+        }
+      }
+      return undefined;
+    }),
+    R.compact,
+    R.first(),
+  );
+
+  // now evaluate that all actions are fully specified
+  const errorValidatingAction = R.pipe(
+    allActions,
+    R.map((actionConfig: ActionConfig): [boolean, string] | undefined => {
+      // do not allow Push actions to have an empty payload
+      if (
+        actionConfig.type === ActionType.PUSH &&
+        actionConfig.payload.length === 0
+      ) {
+        return [false, 'A Push action cannot have an empty payload'];
+      }
+      return undefined;
+    }),
+    R.compact,
+    R.first(),
+  );
+
+  if (errorValidatingCondition) {
+    return errorValidatingCondition;
+  }
+
+  if (errorValidatingAction) {
+    return errorValidatingAction;
   }
 
   return [true, ''];
+}
+
+function deserializeActionConfig(
+  serializedActionConfig: SerializedActionConfig,
+): ActionConfig {
+  const { id, payload, type } = serializedActionConfig;
+  const actionPayload = payload ?? '';
+
+  switch (type) {
+    case ActionType.END_INTERVIEW:
+      return { id, type };
+    case ActionType.PUSH:
+      return {
+        id,
+        type,
+        payload: actionPayload.split(PUSH_ACTION_DELIMITER),
+      };
+    case ActionType.SKIP:
+      return {
+        id,
+        type,
+        payload: JSON.parse(actionPayload),
+      };
+    case ActionType.CHECKPOINT:
+    case ActionType.RESTORE:
+    case ActionType.MILESTONE:
+      invariant(
+        typeof actionPayload === 'string',
+        `[ConditionalAction] Deserialization error. 'payload' must be a string.`,
+      );
+      return {
+        id,
+        type,
+        payload: actionPayload,
+      };
+    default:
+      return assertUnreachable(type);
+  }
+}
+
+function deserializeConditionGroup(
+  serializedConditionGroup: SerializedConditionGroup,
+): ConditionGroup {
+  const { id, type, conditions } = serializedConditionGroup;
+  return {
+    id,
+    type,
+    conditions: conditions.map(serializedCondition =>
+      isSingleCondition(serializedCondition)
+        ? serializedCondition
+        : deserializeConditionGroup(serializedConditionGroup),
+    ),
+  };
+}
+
+function deserializeIfClause(serializedIfClause: SerializedIfClause): IfClause {
+  const { id, action, conditionGroup, elseClause } = serializedIfClause;
+  return {
+    id,
+    action: deserializeActionConfig(action),
+    conditionGroup: deserializeConditionGroup(conditionGroup),
+    elseClause: isIfClause(elseClause)
+      ? deserializeIfClause(elseClause)
+      : deserializeActionConfig(elseClause),
+  };
 }
 
 /**
@@ -204,52 +487,11 @@ export function validate(
 export function deserialize(
   rawObj: SerializedConditionalActionRead,
 ): ConditionalAction {
-  const {
-    actionPayload: payload,
-    actionType,
-    ...condition
-  } = nullsToUndefined(rawObj);
-  const actionPayload = payload ?? '';
-
-  switch (actionType) {
-    case ActionType.END_INTERVIEW:
-      return {
-        ...condition,
-        actionConfig: { type: actionType },
-      };
-    case ActionType.PUSH:
-      return {
-        ...condition,
-        actionConfig: {
-          payload: actionPayload.split(PUSH_ACTION_DELIMITER),
-          type: actionType,
-        },
-      };
-    case ActionType.SKIP:
-      return {
-        ...condition,
-        actionConfig: {
-          payload: JSON.parse(actionPayload),
-          type: actionType,
-        },
-      };
-    case ActionType.CHECKPOINT:
-    case ActionType.RESTORE:
-    case ActionType.MILESTONE:
-      invariant(
-        typeof actionPayload === 'string',
-        `[ConditionalAction] Deserialization error. 'payload' must be a string.`,
-      );
-      return {
-        ...condition,
-        actionConfig: {
-          payload: actionPayload,
-          type: actionType,
-        },
-      };
-    default:
-      return assertUnreachable(actionType);
-  }
+  const { ifClause, ...restOfAction } = rawObj;
+  return {
+    ...restOfAction,
+    ifClause: deserializeIfClause(ifClause),
+  };
 }
 
 function serializeActionPayload(
@@ -262,6 +504,47 @@ function serializeActionPayload(
     return JSON.stringify(payload);
   }
   return payload;
+}
+
+function serializeActionConfig(
+  actionConfig: ActionConfig,
+): SerializedActionConfig {
+  const { id, type } = actionConfig;
+  return {
+    id,
+    type,
+    payload:
+      'payload' in actionConfig
+        ? serializeActionPayload(actionConfig.payload)
+        : undefined,
+  };
+}
+
+function serializeConditionGroup(
+  conditionGroup: ConditionGroup,
+): SerializedConditionGroup {
+  const { id, type, conditions } = conditionGroup;
+  return {
+    id,
+    type,
+    conditions: conditions.map(condition =>
+      isSingleCondition(condition)
+        ? condition
+        : serializeConditionGroup(condition),
+    ),
+  };
+}
+
+function serializeIfClause(ifClause: IfClause): SerializedIfClause {
+  const { id, action, conditionGroup, elseClause } = ifClause;
+  return {
+    id,
+    action: serializeActionConfig(action),
+    conditionGroup: serializeConditionGroup(conditionGroup),
+    elseClause: isIfClause(elseClause)
+      ? serializeIfClause(elseClause)
+      : serializeActionConfig(elseClause),
+  };
 }
 
 export function serialize(
@@ -280,14 +563,10 @@ export function serialize(
   const [isValid, errorMsg] = validate(action);
   invariant(isValid, errorMsg);
 
-  const { actionConfig, ...conditionalAction } = action;
+  const { ifClause, ...restOfAction } = action;
   return {
-    ...conditionalAction,
-    actionPayload:
-      'payload' in actionConfig
-        ? serializeActionPayload(actionConfig.payload)
-        : undefined,
-    actionType: actionConfig.type,
+    ...restOfAction,
+    ifClause: serializeIfClause(ifClause),
   };
 }
 
@@ -410,30 +689,27 @@ export function actionTypeToDisplayString(
  */
 export function createDefaultActionConfig(
   actionType: ActionType,
-): ConditionalAction['actionConfig'] {
+): ActionConfig {
+  const id = uuidv4();
+
   switch (actionType) {
     case ActionType.END_INTERVIEW:
-      return { type: actionType };
+      return { id, type: actionType };
     case ActionType.PUSH:
-      return { payload: [], type: actionType };
+      return { id, payload: [], type: actionType };
     case ActionType.SKIP:
-      return { payload: {}, type: actionType };
+      return { id, payload: {}, type: actionType };
     case ActionType.CHECKPOINT:
     case ActionType.RESTORE:
     case ActionType.MILESTONE:
       return {
+        id,
         payload: '',
         type: actionType,
       };
     default:
       return assertUnreachable(actionType);
   }
-}
-
-export function isCreateType(
-  action: ConditionalAction | ConditionalActionCreate,
-): action is ConditionalActionCreate {
-  return 'tempId' in action;
 }
 
 export function getId(
@@ -453,3 +729,4 @@ export type { ConditionalActionCreate as CreateT };
 export type { SerializedConditionalActionRead as SerializedT };
 export { ConditionalOperator };
 export { ActionType };
+export { ConditionGroupType };
