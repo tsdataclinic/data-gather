@@ -1,7 +1,7 @@
 import argparse
 import logging
 
-from server.init_db import initialize_dev_db
+from server.db import initialize_dev_db
 
 logging.basicConfig(level=logging.INFO)
 
