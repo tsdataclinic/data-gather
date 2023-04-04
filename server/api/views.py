@@ -56,7 +56,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-AIRTABLE_AUTH_TIMEOUT_BUFFER_MS = 360000
+AIRTABLE_AUTH_TIMEOUT_BUFFER_MS = 600000
 
 class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[Union[str, AnyHttpUrl]] = ["http://localhost:3000"]
@@ -712,7 +712,7 @@ async def get_airtable_records(
     airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
     airtable_settings = airtable_setting_container.settings
 
-    if (is_airtable_token_expired(airtable_settings, 3599999)):
+    if (is_airtable_token_expired(airtable_settings)):
         await refresh_and_update_airtable_auth(interview_id, interview_service, session)
 
     airtable_client = AirtableAPI(airtable_settings)
