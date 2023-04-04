@@ -155,6 +155,53 @@ type ConditionalActionCreate = Omit<ConditionalAction, 'id'> & {
   readonly tempId: string;
 };
 
+export function createDefaultSingleCondition(): SingleCondition {
+  return {
+    id: uuidv4(),
+    conditionalOperator: ConditionalOperator.EQ,
+    responseKey: undefined,
+    value: undefined,
+  };
+}
+
+export function createDefaultConditionGroup(
+  groupType: ConditionGroupType = ConditionGroupType.AND,
+): ConditionGroup {
+  return {
+    id: uuidv4(),
+    type: groupType,
+    conditions: [createDefaultSingleCondition()],
+  };
+}
+
+/**
+ * Create a default action config (with a default payload) given an `actionType`
+ */
+export function createDefaultActionConfig(
+  actionType: ActionType,
+): ActionConfig {
+  const id = uuidv4();
+
+  switch (actionType) {
+    case ActionType.END_INTERVIEW:
+      return { id, type: actionType };
+    case ActionType.PUSH:
+      return { id, payload: [], type: actionType };
+    case ActionType.SKIP:
+      return { id, payload: {}, type: actionType };
+    case ActionType.CHECKPOINT:
+    case ActionType.RESTORE:
+    case ActionType.MILESTONE:
+      return {
+        id,
+        payload: '',
+        type: actionType,
+      };
+    default:
+      return assertUnreachable(actionType);
+  }
+}
+
 export function create(vals: {
   order: number;
   screenId: string;
@@ -162,24 +209,9 @@ export function create(vals: {
   return {
     ifClause: {
       id: uuidv4(),
-      action: { id: uuidv4(), payload: [], type: ActionType.PUSH },
-      conditionGroup: {
-        id: uuidv4(),
-        type: ConditionGroupType.AND,
-        conditions: [
-          {
-            id: uuidv4(),
-            conditionalOperator: ConditionalOperator.EQ,
-            responseKey: undefined,
-            value: undefined,
-          },
-        ],
-      },
-      elseClause: {
-        id: uuidv4(),
-        payload: [],
-        type: ActionType.PUSH,
-      },
+      action: createDefaultActionConfig(ActionType.PUSH),
+      conditionGroup: createDefaultConditionGroup(),
+      elseClause: createDefaultActionConfig(ActionType.PUSH),
     },
     screenId: vals.screenId,
     order: vals.order,
@@ -679,34 +711,6 @@ export function actionTypeToDisplayString(
     case ActionType.MILESTONE:
       // capitalize first letter
       return actionType[0].toUpperCase() + actionType.substring(1);
-    default:
-      return assertUnreachable(actionType);
-  }
-}
-
-/**
- * Create a default action config (with a default payload) given an `actionType`
- */
-export function createDefaultActionConfig(
-  actionType: ActionType,
-): ActionConfig {
-  const id = uuidv4();
-
-  switch (actionType) {
-    case ActionType.END_INTERVIEW:
-      return { id, type: actionType };
-    case ActionType.PUSH:
-      return { id, payload: [], type: actionType };
-    case ActionType.SKIP:
-      return { id, payload: {}, type: actionType };
-    case ActionType.CHECKPOINT:
-    case ActionType.RESTORE:
-    case ActionType.MILESTONE:
-      return {
-        id,
-        payload: '',
-        type: actionType,
-      };
     default:
       return assertUnreachable(actionType);
   }
