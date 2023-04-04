@@ -125,7 +125,8 @@ export class AirtableFastAPIService {
 
   /**
    * Get Airtable Schema
-   * Given an interview object, fetch the list of bases + schema for each base for its given Airtable access key.
+   * Given an interview object, fetch the list of bases + schema for each base
+   * for its given Airtable access key.
    * Combine the schema into a single JSON object.
    * Update a given Interview object with that schema.
    * @param interviewId
@@ -139,6 +140,68 @@ export class AirtableFastAPIService {
       method: 'GET',
       url: '/api/airtable-schema/{interview_id}',
       path: {
+        'interview_id': interviewId,
+      },
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Airtable Auth
+   * Since Airtable API doesn't yet support CORS requests to create tokens from the browser,
+   * this function helps the browser complete the OAuth request.
+   * - App => click 'connect to airtable', redirects to this endpoint
+   * - This function sends 302 Redirect to Airtable OAuth screen -> user confirms
+   * - On confirm, Airtable setup to redirectd back to callback App URL
+   * - UI takes response data and continues handling auth from there.
+   *
+   * Most of this follows: https://github.com/Airtable/oauth-example
+   * @param state
+   * @returns any Successful Response
+   * @throws ApiError
+   */
+  public airtableAuth(
+    state: string,
+  ): CancelablePromise<any> {
+    return this.httpRequest.request({
+      method: 'GET',
+      url: '/api/airtable-auth',
+      query: {
+        'state': state,
+      },
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Airtable Callback
+   * @returns string Successful Response
+   * @throws ApiError
+   */
+  public airtableCallback(): CancelablePromise<string> {
+    return this.httpRequest.request({
+      method: 'GET',
+      url: '/api/airtable-callback',
+    });
+  }
+
+  /**
+   * Refresh And Update Airtable Auth
+   * @param interviewId
+   * @returns any Successful Response
+   * @throws ApiError
+   */
+  public refreshAndUpdateAirtableAuth(
+    interviewId: string,
+  ): CancelablePromise<any> {
+    return this.httpRequest.request({
+      method: 'GET',
+      url: '/api/refresh-and-update-airtable-auth',
+      query: {
         'interview_id': interviewId,
       },
       errors: {
