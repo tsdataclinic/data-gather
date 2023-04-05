@@ -303,6 +303,8 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
       case ConditionalAction.ActionType.END_INTERVIEW:
         router.complete();
         break;
+      case ConditionalAction.ActionType.DO_NOTHING:
+        break;
       case ConditionalAction.ActionType.PUSH:
         this.pushInReverseOrder(actionConfig.payload, router);
         break;

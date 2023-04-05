@@ -7,6 +7,7 @@
  */
 export enum ActionType {
   CHECKPOINT = 'checkpoint',
+  DO_NOTHING = 'do_nothing',
   MILESTONE = 'milestone',
   PUSH = 'push',
   RESTORE = 'restore',

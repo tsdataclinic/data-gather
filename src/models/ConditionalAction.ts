@@ -104,6 +104,10 @@ export type ActionConfig = {
       type: ActionType.END_INTERVIEW;
     }
   | {
+      /** Do nothing */
+      type: ActionType.DO_NOTHING;
+    }
+  | {
       /** Push some entries on to the stack */
       payload: readonly string[];
       type: ActionType.PUSH;
@@ -183,8 +187,6 @@ export function createDefaultActionConfig(
   const id = uuidv4();
 
   switch (actionType) {
-    case ActionType.END_INTERVIEW:
-      return { id, type: actionType };
     case ActionType.PUSH:
       return { id, payload: [], type: actionType };
     case ActionType.SKIP:
@@ -197,6 +199,9 @@ export function createDefaultActionConfig(
         payload: '',
         type: actionType,
       };
+    case ActionType.END_INTERVIEW:
+    case ActionType.DO_NOTHING:
+      return { id, type: actionType };
     default:
       return assertUnreachable(actionType);
   }
@@ -458,6 +463,7 @@ function deserializeActionConfig(
 
   switch (type) {
     case ActionType.END_INTERVIEW:
+    case ActionType.DO_NOTHING:
       return { id, type };
     case ActionType.PUSH:
       return {
@@ -707,6 +713,8 @@ export function actionTypeToDisplayString(
   switch (actionType) {
     case ActionType.END_INTERVIEW:
       return 'End interview';
+    case ActionType.DO_NOTHING:
+      return 'Do nothing';
     case ActionType.PUSH:
       return 'Go to stage';
     case ActionType.SKIP:

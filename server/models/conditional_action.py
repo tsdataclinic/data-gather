@@ -38,6 +38,7 @@ class ActionType(str, enum.Enum):
     """The different action types a ConditionalAction can be"""
 
     CHECKPOINT = "checkpoint"
+    DO_NOTHING = "do_nothing"
     MILESTONE = "milestone"
     PUSH = "push"
     RESTORE = "restore"

@@ -60,42 +60,6 @@ function ActionCard(
     [conditionalAction, onConditionalActionChange],
   );
 
-  /*
-  const onAlwaysExecuteChange = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>): void => {
-      const isChecked = event.target.checked;
-      onConditionalActionChange(conditionalAction, {
-        ...conditionalAction,
-        conditionalOperator: isChecked
-          ? ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
-          : ConditionalAction.ConditionalOperator.EQ,
-      });
-    },
-    [conditionalAction, onConditionalActionChange],
-  );
-
-  const onConditionalOperationChange = React.useCallback(
-    (newAction: EditableAction) => {
-      onConditionalActionChange(conditionalAction, newAction);
-    },
-    [conditionalAction, onConditionalActionChange],
-  );
-
-  const onActionConfigChange = React.useCallback(
-    (newActionConfig: ConditionalAction.T['actionConfig']) => {
-      onConditionalActionChange(conditionalAction, {
-        ...conditionalAction,
-        actionConfig: newActionConfig,
-      });
-    },
-    [conditionalAction, onConditionalActionChange],
-  );
-
-  const isAlwaysExecuteChecked =
-    conditionalAction.conditionalOperator ===
-    ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE;
-  */
-
   // on mount, scroll to this component
   React.useEffect(() => {
     if (scrollOnMount) {
@@ -139,35 +103,6 @@ function ActionCard(
         />
       </Form>
     </ScrollableElement>
-
-    //      {/* TODO: create a Form.Checkbox control */}
-    /*
-      <Form ref={forwardedRef} className="col-span-3 space-y-4">
-        <ActionConfigEditor
-          conditionalAction={conditionalAction}
-          onActionConfigChange={onActionConfigChange}
-          interview={interview}
-          interviewScreen={interviewScreen}
-          isAlwaysExecuteChecked={isAlwaysExecuteChecked}
-        />
-        {!isAlwaysExecuteChecked && (
-          <SingleConditionRow
-            conditionalAction={conditionalAction}
-            allInterviewEntries={allInterviewEntries}
-            onConditionalOperationChange={onConditionalOperationChange}
-            defaultLanguage={interview.defaultLanguage}
-          />
-        )}
-        <LabelWrapper inline labelAfter label="Always execute this action">
-          <input
-            type="checkbox"
-            checked={isAlwaysExecuteChecked}
-            onChange={onAlwaysExecuteChange}
-          />
-        </LabelWrapper>
-      </Form>
-    </ScrollableElement>
-   */
   );
 }
 

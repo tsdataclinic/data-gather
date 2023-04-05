@@ -71,6 +71,7 @@ export default function ActionConfigEditor({
   const renderConfigEditor = (): JSX.Element | null => {
     switch (actionConfig.type) {
       case ConditionalAction.ActionType.END_INTERVIEW:
+      case ConditionalAction.ActionType.DO_NOTHING:
         return null;
       case ConditionalAction.ActionType.PUSH:
         // NOTE: we only allow a single action to be pushed because 'PUSH' is
