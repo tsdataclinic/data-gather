@@ -1,4 +1,6 @@
 import * as React from 'react';
+import * as IconType from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
 import * as InterviewScreen from '../../../models/InterviewScreen';
@@ -7,6 +9,7 @@ import ActionConfigEditor from './ActionConfigEditor';
 import type { EditableEntryWithScreen } from '../types';
 import AddConditionButtons from './AddConditionButtons';
 import LabelWrapper from '../../ui/LabelWrapper';
+import Button from '../../ui/Button';
 
 type Props = {
   allInterviewEntries: readonly EditableEntryWithScreen[];
@@ -14,7 +17,9 @@ type Props = {
   ifClause: ConditionalAction.IfClause;
   interview: Interview.T;
   interviewScreen: InterviewScreen.T;
+  onDeleteIfClause?: () => void;
   onIfClauseChange: (newIfClause: ConditionalAction.IfClause) => void;
+  showDeleteIfClauseButton?: boolean;
 };
 
 export default function IfBlock({
@@ -23,6 +28,8 @@ export default function IfBlock({
   interview,
   interviewScreen,
   onIfClauseChange,
+  onDeleteIfClause,
+  showDeleteIfClauseButton = false,
   hideAlwaysExecuteOption = false,
 }: Props): JSX.Element {
   const { action, conditionGroup, elseClause } = ifClause;
@@ -84,6 +91,16 @@ export default function IfBlock({
     });
   }, [onIfClauseChange, ifClause]);
 
+  // if an else clause is deleted we default it back to be a DO_NOTHING action
+  const onDeleteElseCondition = React.useCallback(() => {
+    onIfClauseChange({
+      ...ifClause,
+      elseClause: ConditionalAction.createDefaultActionConfig(
+        ConditionalAction.ActionType.DO_NOTHING,
+      ),
+    });
+  }, [onIfClauseChange, ifClause]);
+
   const onAlwaysExecuteChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const isChecked = event.target.checked;
@@ -102,7 +119,7 @@ export default function IfBlock({
           ],
         },
         elseClause: ConditionalAction.createDefaultActionConfig(
-          ConditionalAction.ActionType.DO_NOTHING,
+          ConditionalAction.ActionType.PUSH,
         ),
       });
     },
@@ -111,8 +128,23 @@ export default function IfBlock({
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-between">
+      <div className="relative flex justify-between">
+        {showDeleteIfClauseButton ? (
+          <Button
+            unstyled
+            className="absolute right-0 top-[-0.33rem]"
+            onClick={onDeleteIfClause}
+          >
+            <FontAwesomeIcon
+              aria-label="Delete"
+              className="h-4 w-4 text-slate-400 transition-colors duration-200 hover:text-red-500"
+              icon={IconType.faX}
+            />
+          </Button>
+        ) : null}
+
         <h3>If...</h3>
+
         {/* TODO: create a Form.Checkbox control */}
         {hideAlwaysExecuteOption ? null : (
           <LabelWrapper inline labelAfter label="Always execute this action">
@@ -147,12 +179,14 @@ export default function IfBlock({
           {ConditionalAction.isIfClause(elseClause) ? (
             <div className="ml-3 rounded border border-dashed border-gray-400 p-3">
               <IfBlock
+                showDeleteIfClauseButton
                 hideAlwaysExecuteOption
                 allInterviewEntries={allInterviewEntries}
                 interview={interview}
                 interviewScreen={interviewScreen}
                 ifClause={elseClause}
                 onIfClauseChange={onElseClauseChange}
+                onDeleteIfClause={onDeleteElseCondition}
               />
             </div>
           ) : (

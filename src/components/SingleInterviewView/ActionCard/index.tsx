@@ -4,6 +4,7 @@ import 'primeicons/primeicons.css';
 import * as React from 'react';
 import * as Scroll from 'react-scroll';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
+import { Reorder, useDragControls } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Element as ScrollableElement } from 'react-scroll';
 import * as ConditionalAction from '../../../models/ConditionalAction';
@@ -41,6 +42,7 @@ function ActionCard(
   }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
+  const dragControls = useDragControls();
   const { ifClause } = conditionalAction;
   const actionId = ConditionalAction.isCreateType(conditionalAction)
     ? conditionalAction.tempId
@@ -67,38 +69,48 @@ function ActionCard(
   }, [actionId, scrollOnMount]);
 
   return (
-    <ScrollableElement
-      name={actionId}
-      className="relative flex w-full flex-row rounded border border-gray-300 bg-gray-50 px-8 py-6 text-slate-800"
+    <Reorder.Item
+      value={conditionalAction}
+      dragControls={dragControls}
+      dragListener={false}
     >
-      <span className="absolute top-2 left-2 flex">
-        <FontAwesomeIcon
-          size="1x"
-          className="cursor-grab pr-2.5 text-slate-500 transition-transform hover:scale-110"
-          icon={IconType.faGripVertical}
-        />
-      </span>
-      <Button
-        unstyled
-        className="absolute top-4 right-4"
-        onClick={() => onConditionalActionDelete(conditionalAction)}
+      <ScrollableElement
+        name={actionId}
+        className="relative flex w-full flex-row rounded border border-gray-300 bg-gray-50 px-8 py-6 text-slate-800"
       >
-        <FontAwesomeIcon
-          aria-label="Delete"
-          className="h-5 w-5 text-slate-400 transition-colors duration-200 hover:text-red-500"
-          icon={IconType.faX}
-        />
-      </Button>
-      <Form ref={forwardedRef} className="col-span-3 space-y-4">
-        <IfBlock
-          allInterviewEntries={allInterviewEntries}
-          interview={interview}
-          interviewScreen={interviewScreen}
-          ifClause={ifClause}
-          onIfClauseChange={onIfClauseChange}
-        />
-      </Form>
-    </ScrollableElement>
+        <span className="absolute top-2 left-2 flex">
+          <FontAwesomeIcon
+            size="1x"
+            className="cursor-grab pr-2.5 text-slate-500 transition-transform hover:scale-125 hover:text-slate-600"
+            icon={IconType.faGripVertical}
+            onPointerDown={e => {
+              dragControls.start(e);
+              e.preventDefault();
+            }}
+          />
+        </span>
+        <Button
+          unstyled
+          className="absolute top-4 right-4"
+          onClick={() => onConditionalActionDelete(conditionalAction)}
+        >
+          <FontAwesomeIcon
+            aria-label="Delete"
+            className="h-5 w-5 text-slate-400 transition-colors duration-200 hover:text-red-500"
+            icon={IconType.faX}
+          />
+        </Button>
+        <Form ref={forwardedRef} className="w-full pr-12">
+          <IfBlock
+            allInterviewEntries={allInterviewEntries}
+            interview={interview}
+            interviewScreen={interviewScreen}
+            ifClause={ifClause}
+            onIfClauseChange={onIfClauseChange}
+          />
+        </Form>
+      </ScrollableElement>
+    </Reorder.Item>
   );
 }
 

@@ -22,6 +22,9 @@ type Props = {
   onConditionDelete: (
     conditionToDelete: ConditionalAction.SingleCondition,
   ) => void;
+
+  /** Called when the drag handle is clicked */
+  onDragHandleClick: (event: React.PointerEvent) => void;
 };
 
 function getOperatorDropdownOptions(
@@ -58,6 +61,7 @@ export default function SingleConditionRow({
   onConditionChange,
   onConditionDelete,
   defaultLanguage,
+  onDragHandleClick,
 }: Props): JSX.Element {
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
@@ -235,6 +239,12 @@ export default function SingleConditionRow({
             icon={IconType.faX}
           />
         </Button>
+        <FontAwesomeIcon
+          size="1x"
+          className="cursor-grab pr-2.5 text-slate-400 transition-transform hover:scale-110 hover:text-slate-600"
+          icon={IconType.faGripVertical}
+          onPointerDown={onDragHandleClick}
+        />
       </div>
     </div>
   );
