@@ -10,10 +10,6 @@ import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import IfBlock from './IfBlock';
-/*
-import LabelWrapper from '../../ui/LabelWrapper';
-import SingleConditionRow from './SingleConditionRow';
-*/
 import Form from '../../ui/Form';
 import Button from '../../ui/Button';
 import type { EditableAction, EditableEntryWithScreen } from '../types';

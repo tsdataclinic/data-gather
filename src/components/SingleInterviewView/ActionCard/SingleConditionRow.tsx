@@ -1,5 +1,7 @@
 import * as React from 'react';
+import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { Calendar } from 'primereact/calendar';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useParams } from 'react-router-dom';
 import InputText from '../../ui/InputText';
 import * as ConditionalAction from '../../../models/ConditionalAction';
@@ -10,12 +12,16 @@ import * as InterviewSetting from '../../../models/InterviewSetting';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import InfoIcon from '../../ui/InfoIcon';
+import Button from '../../ui/Button';
 
 type Props = {
   allInterviewEntries: readonly EditableEntryWithScreen[];
   condition: ConditionalAction.SingleCondition;
   defaultLanguage: string;
   onConditionChange: (newCondition: ConditionalAction.SingleCondition) => void;
+  onConditionDelete: (
+    conditionToDelete: ConditionalAction.SingleCondition,
+  ) => void;
 };
 
 function getOperatorDropdownOptions(
@@ -50,6 +56,7 @@ export default function SingleConditionRow({
   condition,
   allInterviewEntries,
   onConditionChange,
+  onConditionDelete,
   defaultLanguage,
 }: Props): JSX.Element {
   const { interviewId } = useParams();
@@ -156,6 +163,47 @@ export default function SingleConditionRow({
     [condition, onConditionChange],
   );
 
+  const renderValueEditor = (): JSX.Element | null => {
+    if (ConditionalAction.isDateOperator(condition.conditionalOperator)) {
+      return (
+        <>
+          <Calendar
+            placeholder="Date"
+            inputClassName="py-1.5 border border-gray-400"
+            onChange={e => {
+              if (e.value instanceof Date) {
+                onConditionalValueChange(e.value.toISOString());
+              }
+              if (typeof e.value === 'string') {
+                onConditionalValueChange(e.value);
+              }
+            }}
+            value={condition.value ? new Date(condition.value) : ''}
+          />
+          <InfoIcon
+            tooltip={`An empty date field in the source data will be treated as ${
+              process.env.NULL_DATE_OVERRIDE || '1970-01-01'
+            }`}
+          />
+        </>
+      );
+    }
+
+    if (
+      ConditionalAction.doesOperatorRequireValue(condition.conditionalOperator)
+    ) {
+      return (
+        <InputText
+          placeholder="Value"
+          onChange={onConditionalValueChange}
+          value={condition.value ?? ''}
+        />
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
@@ -179,38 +227,14 @@ export default function SingleConditionRow({
           value={condition.conditionalOperator}
           options={OPERATOR_OPTIONS}
         />
-        {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
-        {(ConditionalAction.isDateOperator(condition.conditionalOperator) && (
-          <>
-            <Calendar
-              placeholder="Date"
-              inputClassName="py-1.5 border border-gray-400"
-              onChange={e => {
-                if (e.value instanceof Date) {
-                  onConditionalValueChange(e.value.toISOString());
-                }
-                if (typeof e.value === 'string') {
-                  onConditionalValueChange(e.value);
-                }
-              }}
-              value={condition.value ? new Date(condition.value) : ''}
-            />
-            <InfoIcon
-              tooltip={`An empty date field in the source data will be treated as ${
-                process.env.NULL_DATE_OVERRIDE || '1970-01-01'
-              }`}
-            />
-          </>
-        )) ||
-          (ConditionalAction.doesOperatorRequireValue(
-            condition.conditionalOperator,
-          ) && (
-            <InputText
-              placeholder="Value"
-              onChange={onConditionalValueChange}
-              value={condition.value ?? ''}
-            />
-          ))}
+        {renderValueEditor()}
+        <Button unstyled onClick={() => onConditionDelete(condition)}>
+          <FontAwesomeIcon
+            aria-label="Delete"
+            className="text-slate-400 transition-colors duration-200 hover:text-red-500"
+            icon={IconType.faX}
+          />
+        </Button>
       </div>
     </div>
   );

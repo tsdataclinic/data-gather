@@ -2,7 +2,7 @@ import enum
 import uuid
 from typing import Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from sqlalchemy.dialects.sqlite import JSON
 from sqlmodel import Column, Field, Relationship
 
@@ -95,6 +95,12 @@ class ConditionalActionBase(OrderedModel):
 
     if_clause: IfClause = Field(sa_column=Column(JSON))
     screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
+
+    @validator("if_clause")
+    def validate_if_clause(cls, value: IfClause) -> dict:
+        # hacky use of validator to allow Pydantic models to be stored as JSON
+        # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
+        return value.dict()
 
 
 class ConditionalAction(ConditionalActionBase, table=True):

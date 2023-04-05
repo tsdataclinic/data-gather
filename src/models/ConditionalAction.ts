@@ -368,12 +368,20 @@ export function validate(
   // collect all actions and conditions to validate each of them
   const allActions: ActionConfig[] = [];
   const allConditions: SingleCondition[] = [];
+  const allConditionGroups: ConditionGroup[] = [];
   traverseIfClause(ifClause, {
     processAction: actionConfig => allActions.push(actionConfig),
+    processConditionGroup: conditionGroup =>
+      allConditionGroups.push(conditionGroup),
     processSingleCondition: condition => allConditions.push(condition),
   });
 
-  // first, validate the use of ALWAYS_EXECUTE:
+  // first, validate that there are no empty condition groups
+  if (allConditionGroups.some(group => group.conditions.length === 0)) {
+    return [false, 'You cannot have a condition group with 0 conditions'];
+  }
+
+  // next, validate the use of ALWAYS_EXECUTE:
   // - only the first condition can be ALWAYS_EXECUTE
   // - if it is, it should be the *only* condition
   const [firstCondition, ...restOfConditions] = allConditions;
@@ -385,7 +393,7 @@ export function validate(
   ) {
     return [
       false,
-      'Only the top-level condition should be configurable to always execute.',
+      'Only the top-level condition should be configurable to always execute',
     ];
   }
   if (
@@ -394,7 +402,7 @@ export function validate(
   ) {
     return [
       false,
-      'If the first condition is always executable then there should be no other conditions.',
+      'If the first condition is always executable then there should be no other conditions',
     ];
   }
 
@@ -410,7 +418,7 @@ export function validate(
         if (responseKey === undefined || responseKey === '') {
           return [
             false,
-            `A '${operatorName}' condition must select a response to compare to`,
+            `A '${operatorName}' condition must select a question to compare to`,
           ];
         }
         if (

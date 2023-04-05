@@ -10,8 +10,12 @@ type Props = {
   allInterviewEntries: readonly EditableEntryWithScreen[];
   conditionGroup: ConditionalAction.ConditionGroup;
   defaultLanguage: string;
+  hideDeleteGroupButton?: boolean;
   onConditionGroupChange: (
     newConditionGroup: ConditionalAction.ConditionGroup,
+  ) => void;
+  onConditionGroupDelete?: (
+    conditionGroupToDelete: ConditionalAction.ConditionGroup,
   ) => void;
 };
 
@@ -48,10 +52,18 @@ export default function ConditionGroupBlock({
   conditionGroup,
   defaultLanguage,
   onConditionGroupChange,
+  onConditionGroupDelete,
+  hideDeleteGroupButton = false,
 }: Props): JSX.Element {
   const { type, conditions } = conditionGroup;
 
-  const onGroupTypeChange = React.useCallback(
+  const onDeleteThisConditionGroup = React.useCallback(() => {
+    if (onConditionGroupDelete) {
+      onConditionGroupDelete(conditionGroup);
+    }
+  }, [conditionGroup, onConditionGroupDelete]);
+
+  const onConditionGroupTypeChange = React.useCallback(
     (newGroupType: ConditionalAction.ConditionGroupType) => {
       onConditionGroupChange({
         ...conditionGroup,
@@ -61,8 +73,12 @@ export default function ConditionGroupBlock({
     [conditionGroup, onConditionGroupChange],
   );
 
-  const onSingleConditionChange = React.useCallback(
-    (newCondition: ConditionalAction.SingleCondition): void => {
+  const onNestedConditionChange = React.useCallback(
+    (
+      newCondition:
+        | ConditionalAction.SingleCondition
+        | ConditionalAction.ConditionGroup,
+    ): void => {
       onConditionGroupChange({
         ...conditionGroup,
         conditions: conditionGroup.conditions.map(condition =>
@@ -73,12 +89,16 @@ export default function ConditionGroupBlock({
     [conditionGroup, onConditionGroupChange],
   );
 
-  const onNestedConditionGroupChange = React.useCallback(
-    (newConditionGroup: ConditionalAction.ConditionGroup) => {
+  const onNestedConditionDelete = React.useCallback(
+    (
+      conditionToDelete:
+        | ConditionalAction.SingleCondition
+        | ConditionalAction.ConditionGroup,
+    ) => {
       onConditionGroupChange({
         ...conditionGroup,
-        conditions: conditionGroup.conditions.map(condition =>
-          condition.id === newConditionGroup.id ? newConditionGroup : condition,
+        conditions: conditionGroup.conditions.filter(
+          condition => condition.id !== conditionToDelete.id,
         ),
       });
     },
@@ -123,7 +143,7 @@ export default function ConditionGroupBlock({
             <ConditionalGroupTypeDisplay
               isEditable={idx === 1}
               conditionGroupType={conditionGroup.type}
-              onConditionGroupTypeChange={onGroupTypeChange}
+              onConditionGroupTypeChange={onConditionGroupTypeChange}
             />
           )}
         </div>
@@ -137,14 +157,16 @@ export default function ConditionGroupBlock({
             condition={condition}
             allInterviewEntries={allInterviewEntries}
             defaultLanguage={defaultLanguage}
-            onConditionChange={onSingleConditionChange}
+            onConditionChange={onNestedConditionChange}
+            onConditionDelete={onNestedConditionDelete}
           />
         ) : (
           <ConditionGroupBlock
             allInterviewEntries={allInterviewEntries}
             conditionGroup={condition}
             defaultLanguage={defaultLanguage}
-            onConditionGroupChange={onNestedConditionGroupChange}
+            onConditionGroupChange={onNestedConditionChange}
+            onConditionGroupDelete={onNestedConditionDelete}
           />
         )}
       </div>
@@ -162,11 +184,15 @@ export default function ConditionGroupBlock({
 
   return (
     <div className="space-y-2 rounded border border-gray-300 bg-gray-100 p-3">
+      {conditions.length === 0 ? <em>No conditions have been added.</em> : null}
+
       {groupDescriptor}
       <div className="space-y-2">{conditionElts}</div>
       <AddConditionButtons
+        hideRemoveConditionGroupButton={hideDeleteGroupButton}
         onAddCondition={onAddSingleCondition}
         onAddConditionGroup={onAddConditionGroup}
+        onDeleteConditionGroup={onDeleteThisConditionGroup}
       />
     </div>
   );

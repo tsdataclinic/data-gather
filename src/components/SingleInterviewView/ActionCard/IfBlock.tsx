@@ -126,6 +126,7 @@ export default function IfBlock({
       </div>
       {isAlwaysExecuteChecked ? null : (
         <ConditionGroupBlock
+          hideDeleteGroupButton
           allInterviewEntries={allInterviewEntries}
           conditionGroup={conditionGroup}
           defaultLanguage={interview.defaultLanguage}
