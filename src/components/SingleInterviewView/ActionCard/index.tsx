@@ -4,28 +4,27 @@ import 'primeicons/primeicons.css';
 import * as React from 'react';
 import * as Scroll from 'react-scroll';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
+import { Reorder, useDragControls } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Element as ScrollableElement } from 'react-scroll';
 import * as ConditionalAction from '../../../models/ConditionalAction';
 import * as Interview from '../../../models/Interview';
 import * as InterviewScreen from '../../../models/InterviewScreen';
-import LabelWrapper from '../../ui/LabelWrapper';
-import ActionConfigEditor from './ActionConfigEditor';
+import IfBlock from './IfBlock';
 import Form from '../../ui/Form';
-import ConditionalOperatorRow from './ConditionalOperatorRow';
 import Button from '../../ui/Button';
 import type { EditableAction, EditableEntryWithScreen } from '../types';
 
 type Props = {
-  action: EditableAction;
   allInterviewEntries: readonly EditableEntryWithScreen[];
+  conditionalAction: EditableAction;
   interview: Interview.T;
   interviewScreen: InterviewScreen.T;
-  onActionChange: (
+  onConditionalActionChange: (
     actionToReplace: EditableAction,
     newAction: EditableAction,
   ) => void;
-  onActionDelete: (actionToDelete: EditableAction) => void;
+  onConditionalActionDelete: (actionToDelete: EditableAction) => void;
 
   /** Should we scroll to this card when it mounts? */
   scrollOnMount: boolean;
@@ -33,52 +32,31 @@ type Props = {
 
 function ActionCard(
   {
-    action,
+    conditionalAction,
     allInterviewEntries,
     interview,
-    onActionChange,
-    onActionDelete,
+    onConditionalActionChange,
+    onConditionalActionDelete,
     scrollOnMount,
     interviewScreen,
   }: Props,
   forwardedRef: React.ForwardedRef<HTMLFormElement>,
 ): JSX.Element {
-  // TODO: when interview is a nested model we won't need these sub-queries
-  const actionId = 'id' in action ? action.id : action.tempId;
+  const dragControls = useDragControls();
+  const { ifClause } = conditionalAction;
+  const actionId = ConditionalAction.isCreateType(conditionalAction)
+    ? conditionalAction.tempId
+    : conditionalAction.id;
 
-  const onAlwaysExecuteChange = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>): void => {
-      const isChecked = event.target.checked;
-      onActionChange(action, {
-        ...action,
-        conditionalOperator: isChecked
-          ? ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
-          : ConditionalAction.ConditionalOperator.EQ,
+  const onIfClauseChange = React.useCallback(
+    (newIfClause: ConditionalAction.IfClause) => {
+      onConditionalActionChange(conditionalAction, {
+        ...conditionalAction,
+        ifClause: newIfClause,
       });
     },
-    [action, onActionChange],
+    [conditionalAction, onConditionalActionChange],
   );
-
-  const onConditionalOperationChange = React.useCallback(
-    (newAction: EditableAction) => {
-      onActionChange(action, newAction);
-    },
-    [action, onActionChange],
-  );
-
-  const onActionConfigChange = React.useCallback(
-    (newActionConfig: ConditionalAction.T['actionConfig']) => {
-      onActionChange(action, {
-        ...action,
-        actionConfig: newActionConfig,
-      });
-    },
-    [action, onActionChange],
-  );
-
-  const isAlwaysExecuteChecked =
-    action.conditionalOperator ===
-    ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE;
 
   // on mount, scroll to this component
   React.useEffect(() => {
@@ -91,58 +69,48 @@ function ActionCard(
   }, [actionId, scrollOnMount]);
 
   return (
-    <ScrollableElement
-      name={actionId}
-      className="relative flex w-full flex-row rounded border border-gray-300 bg-gray-50 px-8 py-6 text-slate-800"
+    <Reorder.Item
+      value={conditionalAction}
+      dragControls={dragControls}
+      dragListener={false}
     >
-      <span className="absolute top-2 left-2 flex">
-        <FontAwesomeIcon
-          size="1x"
-          className="cursor-grab pr-2.5 text-slate-500 transition-transform hover:scale-110"
-          icon={IconType.faGripVertical}
-        />
-      </span>
-
-      <Button
-        unstyled
-        className="absolute top-4 right-4"
-        onClick={() => onActionDelete(action)}
+      <ScrollableElement
+        name={actionId}
+        className="relative flex w-full flex-row rounded border border-gray-300 bg-gray-50 px-8 py-6 text-slate-800"
       >
-        <FontAwesomeIcon
-          aria-label="Delete"
-          className="h-5 w-5 text-slate-400 transition-colors duration-200 hover:text-red-500"
-          icon={IconType.faX}
-        />
-      </Button>
-
-      {
-        // TODO: create a Form.Checkbox control
-      }
-      <Form ref={forwardedRef} className="col-span-3 space-y-4">
-        <ActionConfigEditor
-          action={action}
-          onActionConfigChange={onActionConfigChange}
-          interview={interview}
-          interviewScreen={interviewScreen}
-          isAlwaysExecuteChecked={isAlwaysExecuteChecked}
-        />
-        {!isAlwaysExecuteChecked && (
-          <ConditionalOperatorRow
-            action={action}
+        <span className="absolute top-2 left-2 flex">
+          <FontAwesomeIcon
+            size="1x"
+            className="cursor-grab pr-2.5 text-slate-500 transition-transform hover:scale-125 hover:text-slate-600"
+            icon={IconType.faGripVertical}
+            onPointerDown={e => {
+              dragControls.start(e);
+              e.preventDefault();
+            }}
+          />
+        </span>
+        <Button
+          unstyled
+          className="absolute top-4 right-4"
+          onClick={() => onConditionalActionDelete(conditionalAction)}
+        >
+          <FontAwesomeIcon
+            aria-label="Delete"
+            className="h-5 w-5 text-slate-400 transition-colors duration-200 hover:text-red-500"
+            icon={IconType.faX}
+          />
+        </Button>
+        <Form ref={forwardedRef} className="w-full pr-12">
+          <IfBlock
             allInterviewEntries={allInterviewEntries}
-            onConditionalOperationChange={onConditionalOperationChange}
-            defaultLanguage={interview.defaultLanguage}
+            interview={interview}
+            interviewScreen={interviewScreen}
+            ifClause={ifClause}
+            onIfClauseChange={onIfClauseChange}
           />
-        )}
-        <LabelWrapper inline labelAfter label="Always execute this action">
-          <input
-            type="checkbox"
-            checked={isAlwaysExecuteChecked}
-            onChange={onAlwaysExecuteChange}
-          />
-        </LabelWrapper>
-      </Form>
-    </ScrollableElement>
+        </Form>
+      </ScrollableElement>
+    </Reorder.Item>
   );
 }
 

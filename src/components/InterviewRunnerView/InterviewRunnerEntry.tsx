@@ -139,7 +139,11 @@ export default function InterviewRunnerEntry({
     case InterviewScreenEntry.ResponseType.AIRTABLE:
       return (
         <div>
-          <strong>{entryPrompt}</strong>
+          <div className="pb-4">
+            <strong>{entryPrompt}</strong>
+            <br />
+            <text>{entryHelperText}</text>
+          </div>
           <LabelWrapper label="Search for record">
             <InputText
               required

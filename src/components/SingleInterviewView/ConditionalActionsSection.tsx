@@ -97,19 +97,17 @@ function BaseConditionalActionsSection(
         {actions.map(action => {
           const actionId = ConditionalAction.getId(action);
           return (
-            <Reorder.Item key={actionId} value={action}>
-              <ActionCard
-                key={actionId}
-                allInterviewEntries={allInterviewEntries}
-                ref={formRefs.get(actionId)}
-                action={action}
-                onActionChange={onActionChange}
-                onActionDelete={onActionDelete}
-                scrollOnMount={ConditionalAction.isCreateType(action)}
-                interview={interview}
-                interviewScreen={interviewScreen}
-              />
-            </Reorder.Item>
+            <ActionCard
+              key={actionId}
+              allInterviewEntries={allInterviewEntries}
+              ref={formRefs.get(actionId)}
+              conditionalAction={action}
+              onConditionalActionChange={onActionChange}
+              onConditionalActionDelete={onActionDelete}
+              scrollOnMount={ConditionalAction.isCreateType(action)}
+              interview={interview}
+              interviewScreen={interviewScreen}
+            />
           );
         })}
       </Reorder.Group>

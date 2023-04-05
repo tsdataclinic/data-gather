@@ -1,8 +1,10 @@
 import enum
 import uuid
-from typing import Optional
+from typing import Optional, Union
 
-from sqlmodel import Field, Relationship
+from pydantic import BaseModel, validator
+from sqlalchemy.dialects.sqlite import JSON
+from sqlmodel import Column, Field, Relationship
 
 from server.models.common import OrderedModel
 from server.models_util import update_module_forward_refs
@@ -20,7 +22,6 @@ class ConditionalOperator(str, enum.Enum):
     BEFORE_OR_EQUAL = "before_or_equal"
 
     # numeric operators
-    ALWAYS_EXECUTE = "always_execute"
     EQUALS = "eq"
     GREATER_THAN = "gt"
     GREATER_THAN_OR_EQUAL = "gte"
@@ -28,6 +29,7 @@ class ConditionalOperator(str, enum.Enum):
     LESS_THAN_OR_EQUAL = "lte"
 
     # generic operators
+    ALWAYS_EXECUTE = "always_execute"
     IS_EMPTY = "is_empty"
     IS_NOT_EMPTY = "is_not_empty"
 
@@ -36,6 +38,7 @@ class ActionType(str, enum.Enum):
     """The different action types a ConditionalAction can be"""
 
     CHECKPOINT = "checkpoint"
+    DO_NOTHING = "do_nothing"
     MILESTONE = "milestone"
     PUSH = "push"
     RESTORE = "restore"
@@ -43,17 +46,61 @@ class ActionType(str, enum.Enum):
     END_INTERVIEW = "end_interview"
 
 
+class SingleCondition(BaseModel):
+    conditionalOperator: ConditionalOperator
+    responseKey: Optional[str]
+    responseKeyLookupField: Optional[str]
+    value: Optional[str]
+    id: str
+
+
+class ConditionGroupType(str, enum.Enum):
+    AND = "and"
+    OR = "or"
+
+
+class ConditionGroup(BaseModel):
+    type: ConditionGroupType
+    conditions: list[Union["ConditionGroup", SingleCondition]]
+    id: str
+
+
+class ActionConfig(BaseModel):
+    # TODO: change the payload to be an optional JSON blob
+    payload: Optional[str]
+    type: ActionType
+    id: str
+
+
+class IfClause(BaseModel):
+    """An IfClause represents the following logic:
+    if (condition) then `action`
+    else `action`
+
+    The else clause could nest another IfClause in it
+    recursively.
+
+    In other words, every IfClause executes an action if true, otherwise
+    it executes a different action or it evaluates another IfClause.
+    """
+
+    action: ActionConfig
+    conditionGroup: ConditionGroup
+    elseClause: Union[ActionConfig, "IfClause"]
+    id: str
+
+
 class ConditionalActionBase(OrderedModel):
     """The base ConditionalAction model"""
 
-    # TODO: change the payload to be an optional JSON blob
-    action_payload: Optional[str]
-    action_type: ActionType
-    conditional_operator: ConditionalOperator
-    response_key: Optional[str]
-    response_key_field: Optional[str]
+    if_clause: IfClause = Field(sa_column=Column(JSON))
     screen_id: uuid.UUID = Field(foreign_key="interview_screen.id")
-    value: Optional[str]
+
+    @validator("if_clause")
+    def validate_if_clause(cls, value: IfClause) -> dict:
+        # hacky use of validator to allow Pydantic models to be stored as JSON
+        # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
+        return value.dict()
 
 
 class ConditionalAction(ConditionalActionBase, table=True):

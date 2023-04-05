@@ -1,22 +1,30 @@
 import * as React from 'react';
+import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { Calendar } from 'primereact/calendar';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useParams } from 'react-router-dom';
 import InputText from '../../ui/InputText';
 import * as ConditionalAction from '../../../models/ConditionalAction';
-import type { EditableAction, EditableEntryWithScreen } from '../types';
+import type { EditableEntryWithScreen } from '../types';
 import useInterview from '../../../hooks/useInterview';
 import Dropdown, { type DropdownOption } from '../../ui/Dropdown';
 import * as InterviewSetting from '../../../models/InterviewSetting';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import LabelWrapper from '../../ui/LabelWrapper';
 import InfoIcon from '../../ui/InfoIcon';
+import Button from '../../ui/Button';
 
 type Props = {
-  action: EditableAction;
   allInterviewEntries: readonly EditableEntryWithScreen[];
+  condition: ConditionalAction.SingleCondition;
   defaultLanguage: string;
-  onConditionalOperationChange: (action: EditableAction) => void;
+  onConditionChange: (newCondition: ConditionalAction.SingleCondition) => void;
+  onConditionDelete: (
+    conditionToDelete: ConditionalAction.SingleCondition,
+  ) => void;
+
+  /** Called when the drag handle is clicked */
+  onDragHandleClick: (event: React.PointerEvent) => void;
 };
 
 function getOperatorDropdownOptions(
@@ -45,13 +53,15 @@ const OPERATOR_OPTIONS = [
   },
 ];
 
-// The conditionalOperatorRow doesn't use Form.Input or other Form
+// The SingleConditionRow doesn't use Form.Input or other Form
 // subcomponents because we need more control over how it renders
-export default function ConditionalOperatorRow({
-  action,
+export default function SingleConditionRow({
+  condition,
   allInterviewEntries,
-  onConditionalOperationChange,
+  onConditionChange,
+  onConditionDelete,
   defaultLanguage,
+  onDragHandleClick,
 }: Props): JSX.Element {
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
@@ -68,9 +78,9 @@ export default function ConditionalOperatorRow({
   const selectedEntry = React.useMemo(
     () =>
       allInterviewEntries.find(
-        entry => entry.responseKey === action.responseKey,
+        entry => entry.responseKey === condition.responseKey,
       ),
-    [allInterviewEntries, action],
+    [allInterviewEntries, condition],
   );
 
   // TODO: this is only looking at entries. We also need to look at Skip actions.
@@ -119,108 +129,122 @@ export default function ConditionalOperatorRow({
 
   const onOperatorChange = React.useCallback(
     (newOperator: ConditionalAction.ConditionalOperator) => {
-      onConditionalOperationChange({
-        ...action,
+      onConditionChange({
+        ...condition,
         conditionalOperator: newOperator,
       });
     },
-    [action, onConditionalOperationChange],
+    [condition, onConditionChange],
   );
 
   const onResponseKeyChange = React.useCallback(
     (newResponseKey: string) => {
-      onConditionalOperationChange({
-        ...action,
+      onConditionChange({
+        ...condition,
         responseKey: newResponseKey,
       });
     },
-    [action, onConditionalOperationChange],
+    [condition, onConditionChange],
   );
 
   const onResponseKeyFieldChange = React.useCallback(
-    (newResponseKeyField: string) => {
-      onConditionalOperationChange({
-        ...action,
-        responseKeyField: newResponseKeyField,
+    (newResponseKeyLookupField: string) => {
+      onConditionChange({
+        ...condition,
+        responseKeyLookupField: newResponseKeyLookupField,
       });
     },
-    [action, onConditionalOperationChange],
+    [condition, onConditionChange],
   );
 
   const onConditionalValueChange = React.useCallback(
     (newValue: string) => {
-      onConditionalOperationChange({
-        ...action,
+      onConditionChange({
+        ...condition,
         value: newValue,
       });
     },
-    [action, onConditionalOperationChange],
+    [condition, onConditionChange],
   );
+
+  const renderValueEditor = (): JSX.Element | null => {
+    if (ConditionalAction.isDateOperator(condition.conditionalOperator)) {
+      return (
+        <>
+          <Calendar
+            placeholder="Date"
+            inputClassName="py-1.5 border border-gray-400"
+            onChange={e => {
+              if (e.value instanceof Date) {
+                onConditionalValueChange(e.value.toISOString());
+              }
+              if (typeof e.value === 'string') {
+                onConditionalValueChange(e.value);
+              }
+            }}
+            value={condition.value ? new Date(condition.value) : ''}
+          />
+          <InfoIcon
+            tooltip={`An empty date field in the source data will be treated as ${
+              process.env.NULL_DATE_OVERRIDE || '1970-01-01'
+            }`}
+          />
+        </>
+      );
+    }
+
+    if (
+      ConditionalAction.doesOperatorRequireValue(condition.conditionalOperator)
+    ) {
+      return (
+        <InputText
+          placeholder="Value"
+          onChange={onConditionalValueChange}
+          value={condition.value ?? ''}
+        />
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
-        <LabelWrapper
-          inline
-          label="If..."
-          labelTextClassName="w-20"
-          inlineContainerStyles={{ position: 'relative', top: 1 }}
-        >
-          <Dropdown
-            onChange={onResponseKeyChange}
-            placeholder="Select a response"
-            value={action.responseKey}
-            options={allResponseKeyOptions}
-          />
-        </LabelWrapper>
+        <Dropdown
+          onChange={onResponseKeyChange}
+          placeholder="Select a question"
+          value={condition.responseKey}
+          options={allResponseKeyOptions}
+        />
         {allResponseKeyFieldOptions ? (
           <Dropdown
             onChange={onResponseKeyFieldChange}
             placeholder="Column name"
-            value={action.responseKeyField}
+            value={condition.responseKeyLookupField}
             options={allResponseKeyFieldOptions}
           />
         ) : null}
-
         <Dropdown
           onChange={onOperatorChange}
           placeholder="Operator"
-          value={action.conditionalOperator}
+          value={condition.conditionalOperator}
           options={OPERATOR_OPTIONS}
         />
-
-        {/* TODO - connect up to `entry` state object and condition on ResponseType.AIRTABLE instead of this approach */}
-        {(ConditionalAction.isDateOperator(action.conditionalOperator) && (
-          <>
-            <Calendar
-              placeholder="Date"
-              inputClassName="py-1.5 border border-gray-400"
-              onChange={e => {
-                if (e.value instanceof Date) {
-                  onConditionalValueChange(e.value.toISOString());
-                }
-                if (typeof e.value === 'string') {
-                  onConditionalValueChange(e.value);
-                }
-              }}
-              value={action.value ? new Date(action.value) : ''}
-            />
-            <InfoIcon
-              tooltip={`An empty date field in the source data will be treated as ${
-                process.env.NULL_DATE_OVERRIDE || '1970-01-01'
-              }`}
-            />
-          </>
-        )) ||
-          (ConditionalAction.doesOperatorRequireValue(
-            action.conditionalOperator,
-          ) && (
-            <InputText
-              placeholder="Value"
-              onChange={onConditionalValueChange}
-              value={action.value ?? ''}
-            />
-          ))}
+        {renderValueEditor()}
+        <Button unstyled onClick={() => onConditionDelete(condition)}>
+          <FontAwesomeIcon
+            aria-label="Delete"
+            className="text-slate-400 transition-colors duration-200 hover:text-red-500"
+            icon={IconType.faX}
+          />
+        </Button>
+        <FontAwesomeIcon
+          size="1x"
+          className="cursor-grab pr-2.5 text-slate-400 transition-transform hover:scale-110 hover:text-slate-600"
+          icon={IconType.faGripVertical}
+          onPointerDown={onDragHandleClick}
+        />
       </div>
     </div>
   );
