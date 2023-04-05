@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as R from 'remeda';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import * as InterviewSetting from '../../../../models/InterviewSetting';
 import * as Interview from '../../../../models/Interview';
@@ -41,6 +42,17 @@ export default function EditRowActionBlock({
     [airtableSettings],
   );
 
+  const tableToBaseIdLookup = React.useMemo(
+    () =>
+      R.pipe(
+        airtableSettings?.bases ?? [],
+        R.flatMapToObj(base =>
+          (base.tables ?? []).map(table => [table.id, base.id]),
+        ),
+      ),
+    [airtableSettings],
+  );
+
   const selectedTable = React.useMemo(
     () =>
       allTables.find(table => table?.id === actionConfig.payload.tableTarget),
@@ -61,7 +73,7 @@ export default function EditRowActionBlock({
       type: actionConfig.type,
       payload: {
         ...action.config.payload,
-        baseTarget: '',
+        baseTarget: tableToBaseIdLookup[tableId],
         tableTarget: tableId,
       },
     };
