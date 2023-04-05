@@ -16,7 +16,9 @@ export function create(
   return {
     interviewId: values.interviewId,
     tempId: uuidv4(),
-    settings: { apiKey: '' },
+    settings: { 
+      authSettings: {}
+    },
     type: values.type,
   };
 }

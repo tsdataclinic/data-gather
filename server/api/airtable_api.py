@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import logging
 import sys
@@ -69,12 +70,12 @@ class AirtableAPI:
     """
 
     def __init__(self, airtableSettings: AirtableSettings):
-        if not airtableSettings['apiKey']:
+        if not airtableSettings['authSettings']['accessToken']:
             logger.warn(
                 "**No Airtable API key set. Airtable endpoints will not function.**"
             )
 
-        self.api = Api(airtableSettings['apiKey'])
+        self.api = Api(airtableSettings['authSettings']['accessToken'])
 
         # for now, default to first base (implication is there can only be one base)
         # TODO - make this selectable from the UI 
@@ -194,7 +195,7 @@ class AirtableAPI:
         curl "https://api.airtable.com/v0/meta/bases" \
         -H "Authorization: Bearer YOUR_TOKEN"
         """
-        r = requests.get('https://api.airtable.com/v0/meta/bases', headers={'Authorization' : f'Bearer {airtableSettings.get("apiKey")}'})
+        r = requests.get('https://api.airtable.com/v0/meta/bases', headers={'Authorization' : f'Bearer {airtableSettings["authSettings"]["accessToken"]}'})
         if r.status_code != 200:
             raise HTTPException(status_code=r.status_code, detail=r.reason)
         o = r.json()
@@ -206,7 +207,7 @@ class AirtableAPI:
         curl "https://api.airtable.com/v0/meta/bases/{baseId}/tables"
         -H "Authorization: Bearer YOUR_TOKEN
         """
-        r = requests.get(f'https://api.airtable.com/v0/meta/bases/{baseId}/tables', headers={'Authorization' : f'Bearer {airtableSettings.get("apiKey")}'})
+        r = requests.get(f'https://api.airtable.com/v0/meta/bases/{baseId}/tables', headers={'Authorization' : f'Bearer {airtableSettings["authSettings"]["accessToken"]}'})
         if r.status_code != 200:
             raise HTTPException(status_code=r.status_code, detail=r.reason)
         o = r.json()

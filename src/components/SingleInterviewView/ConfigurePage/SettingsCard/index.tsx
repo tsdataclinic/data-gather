@@ -1,15 +1,16 @@
 import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import forge from 'node-forge';
 import * as Interview from '../../../../models/Interview';
 import * as InterviewSettings from '../../../../models/InterviewSetting';
 import Button from '../../../ui/Button';
 import LabelWrapper from '../../../ui/LabelWrapper';
 import Dropdown from '../../../ui/Dropdown';
 import { InterviewSettingType } from '../../../../api/models/InterviewSettingType';
-import InputText from '../../../ui/InputText';
 import { FastAPIService } from '../../../../api/FastAPIService';
+
 
 const api = new FastAPIService();
 
@@ -24,10 +25,13 @@ const SETTING_TYPE_OPTIONS = InterviewSettings.SETTING_TYPES.map(
 type Props = {
   interview: Interview.UpdateT;
   onInterviewChange: (interview: Interview.UpdateT) => void;
+  onSaveClick?: () => void;
 };
 
 function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const onAddClick = (): void => {
     onInterviewChange({
       ...interview,
@@ -39,6 +43,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
       ),
     });
   };
+
   const onSettingRemove = (settingToRemove: EditableSetting): void => {
     onInterviewChange({
       ...interview,
@@ -51,10 +56,21 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     settingToReplace: EditableSetting,
     newSetting: EditableSetting,
   ): void => {
+
     onInterviewChange({
       ...interview,
       interviewSettings: interview.interviewSettings.map(setting =>
         setting === settingToReplace ? newSetting : setting,
+      ),
+    });
+  };
+  const insertNewSetting = (
+    newSetting: EditableSetting,
+  ): void => {
+    onInterviewChange({
+      ...interview,
+      interviewSettings: interview.interviewSettings.concat(
+        newSetting,
       ),
     });
   };
@@ -64,24 +80,83 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     navigate(0);
   };
 
+  const handleRefreshAirtableTokens = async () : Promise<void> => {
+    await api.airtable.refreshAndUpdateAirtableAuth(interview.id);
+    navigate(0);
+  }
+
+  const handleAuthenticateWithAirtable = () : void => {
+    const buffer = forge.random.getBytesSync(100);
+    let state = forge.util.encode64(buffer);
+    state = state.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    localStorage.setItem(state, interview.id);
+    window.location.href = `${process.env.REACT_APP_SERVER_URI}/api/airtable-auth?state=${state}`;
+  }
+
+  React.useEffect(() => {
+    const handleAirtableAuthentication = () : void => {
+      /*
+        Connecting to Airtable via OAuth will route back to this component (via AllInterviewsView) with some URL query params.
+        This takes those parameters after render, uses them to create a new interview settings object and saves. 
+        It then redirects back to the same page, but without query params.
+
+        TODO - handle saving the updating setting automatically
+      */
+      const searchParams = new URLSearchParams(location.search);
+      if (searchParams) {
+        const id = searchParams.get('id');
+        const state = searchParams.get('state');
+        if (id === 'airtable' && state && localStorage.getItem(state)) {
+          const now = new Date();
+          const accessToken = searchParams.get('access_token') ?? undefined;
+          const refreshToken = searchParams.get('refresh_token') ?? undefined;
+          const accessTokenExpiryParam = searchParams.get('access_token_expires_in');
+          let accessTokenExpiresInSeconds = '3600';
+          if (accessTokenExpiryParam) {
+            accessTokenExpiresInSeconds = accessTokenExpiryParam;
+          }
+          const accessTokenExpires = new Date(now.getTime() + (Number.parseInt(accessTokenExpiresInSeconds, 10) * 1000)).getTime();
+          
+          const refreshTokenExpiryParam = searchParams.get('refresh_token_expires_in');
+          let refreshTokenExpiresInSeconds = '5184000';
+          if (refreshTokenExpiryParam) {
+            refreshTokenExpiresInSeconds = refreshTokenExpiryParam;
+          }
+          const refreshTokenExpires = new Date(now.getTime() + (Number.parseInt(refreshTokenExpiresInSeconds, 10) * 1000)).getTime();
+
+          const scope = searchParams.get('scope') ?? undefined;
+  
+          const newAirtableSetting = InterviewSettings.create({
+            interviewId: interview.id,
+            type: InterviewSettingType.AIRTABLE,
+          });
+      
+          newAirtableSetting.settings.authSettings = {
+            accessToken,
+            refreshToken,
+            accessTokenExpires,
+            refreshTokenExpires,
+            scope,
+          }
+
+          // create new setting from query params
+          insertNewSetting(newAirtableSetting);
+          const path = location.pathname;
+          navigate(path);
+        }
+      }
+    }
+
+    handleAirtableAuthentication();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const renderSettingBlock = (setting: EditableSetting): JSX.Element => {
     switch (setting.type) {
       case InterviewSettings.SettingType.AIRTABLE: {
         const airtableSettings = setting.settings;
         return (
-          <div key={`_${airtableSettings.apiKey}`} className="space-y-4">
-            <LabelWrapper label="Airtable Personal Access Token">
-              <InputText
-                onChange={(apiKey: string) => {
-                  onSettingChange(setting, {
-                    ...setting,
-                    settings: { apiKey },
-                  });
-                }}
-                defaultValue={airtableSettings.apiKey}
-                placeholder="Enter Airtable personal access token..."
-              />
-            </LabelWrapper>
+          <div key={`_${airtableSettings}`} className="space-y-4">
             {airtableSettings.bases?.flatMap(base => (
               <>
                 <div>Base: {base.name}</div>
@@ -96,9 +171,36 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
                 ))}
               </>
             ))}
-            <Button onClick={handleUpdateAirtableSchema}>
-              Update Airtable schema
-            </Button>
+            <div>
+              <Button
+                aria-label='Refresh Airtable tokens'
+                onClick={handleRefreshAirtableTokens}>
+                Refresh Airtable tokens
+              </Button>
+            </div>
+            <div>
+              <Button
+                aria-label='Get Airtable base schema'
+                onClick={handleUpdateAirtableSchema}>
+                Get Airtable schema
+              </Button>
+            </div>
+            <div>
+            {
+              airtableSettings.authSettings?.accessToken ?
+              <span>
+                Interview is authenticated to Airtable. 
+                { airtableSettings.authSettings?.refreshTokenExpires && 
+                ` Connection will expire on ${new Date(airtableSettings.authSettings?.refreshTokenExpires).toDateString()} if unused.`
+                }
+              </span>
+              : 
+              <Button 
+                onClick={handleAuthenticateWithAirtable}>
+                Connect to Airtable
+              </Button>
+            }
+            </div>
           </div>
         );
       }

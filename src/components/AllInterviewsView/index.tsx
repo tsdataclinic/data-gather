@@ -1,12 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../ui/Button';
 import InterviewCard from './InterviewCard';
 import NewInterviewModal from './NewInterviewModal';
 import useInterviewService from '../../hooks/useInterviewService';
 import * as Interview from '../../models/Interview';
+import { useToast } from '../ui/Toast';
 
 export default function AllInterviewsView(): JSX.Element {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const toaster = useToast();
   const interviewService = useInterviewService();
   const { data: allInterviews = [], isError } = useQuery({
     queryKey: Interview.QueryKeys.allInterviews,
@@ -14,6 +19,23 @@ export default function AllInterviewsView(): JSX.Element {
   });
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  
+  const searchParams = new URLSearchParams(location.search);
+  const id = searchParams.get('id');
+  const state = searchParams.get('state') ;
+  const queryParams = searchParams;
+  if (state && id === 'airtable') {
+    const interviewId = localStorage.getItem(state);
+    if (interviewId) {
+      navigate(`/interview/${interviewId}/configure?${queryParams.toString()}`)
+    } else {
+      // no oauth state in localstorage, show an error
+      toaster.notifyError(
+        'Airtable authentication failed',
+        'Could not connect to Airtable. Please try again.'
+      )
+    }
+  }
 
   return (
     <div className="container mx-auto space-y-8 px-4 pt-8 sm:px-8">

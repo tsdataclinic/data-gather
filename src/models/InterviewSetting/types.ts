@@ -29,8 +29,18 @@ export type AirtableBase = {
   tables?: AirtableTable[];
 };
 
+export type AirtableAuthSettings = {
+  accessToken?: string;
+  accessTokenExpires?: number;
+  refreshToken?: string;
+  refreshTokenExpires?: number;
+  scope?: string;
+  tokenType?: string;
+};
+
 export type AirtableSettings = {
-  apiKey: string;
+  apiKey?: string;
+  authSettings?: AirtableAuthSettings
   bases?: AirtableBase[];
 };
 
