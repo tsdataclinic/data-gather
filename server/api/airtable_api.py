@@ -77,10 +77,6 @@ class AirtableAPI:
 
         self.api = Api(airtableSettings['authSettings']['accessToken'])
 
-        # for now, default to first base (implication is there can only be one base)
-        # TODO - make this selectable from the UI 
-        self.base_id = airtableSettings['bases'][0]['id'] if 'bases' in airtableSettings else None
-
     @airtable_errors_wrapped
     def fetch_record(self, base_id: str, table_name: str, id: str) -> Record:
         """
@@ -130,7 +126,7 @@ class AirtableAPI:
 
         Returns: The new record
         """
-        logger.debug(f"Creating new record in base: {self.base_id} table: {table_name}: {record}")
+        logger.debug(f"Creating new record in base: {base_id} table: {table_name}: {record}")
         return self.api.create(base_id, table_name, record, typecast=True)
 
     @airtable_errors_wrapped

@@ -796,7 +796,7 @@ def get_airtable_schema(
 
     return update_interview(interview_id, new_interview, session)
 
-@app.post("/api/airtable-records/{interview_id}/{table_name}", tags=["airtable"])
+@app.post("/api/airtable-records/{interview_id}/{base_id}/{table_name}", tags=["airtable"])
 async def create_airtable_record(
     base_id: str,
     table_name: str, 
