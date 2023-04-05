@@ -118,9 +118,13 @@ export default function IfBlock({
             },
           ],
         },
-        elseClause: ConditionalAction.createDefaultActionConfig(
-          ConditionalAction.ActionType.PUSH,
-        ),
+        elseClause: isChecked
+          ? ConditionalAction.createDefaultActionConfig(
+              ConditionalAction.ActionType.DO_NOTHING,
+            )
+          : ConditionalAction.createDefaultActionConfig(
+              ConditionalAction.ActionType.PUSH,
+            ),
       });
     },
     [onIfClauseChange, ifClause, conditionGroup, firstCondition],
