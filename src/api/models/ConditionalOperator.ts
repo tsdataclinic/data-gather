@@ -12,12 +12,12 @@ export enum ConditionalOperator {
   EQUALS_DATE = 'equals_date',
   BEFORE = 'before',
   BEFORE_OR_EQUAL = 'before_or_equal',
-  ALWAYS_EXECUTE = 'always_execute',
   EQ = 'eq',
   GT = 'gt',
   GTE = 'gte',
   LT = 'lt',
   LTE = 'lte',
+  ALWAYS_EXECUTE = 'always_execute',
   IS_EMPTY = 'is_empty',
   IS_NOT_EMPTY = 'is_not_empty',
 }

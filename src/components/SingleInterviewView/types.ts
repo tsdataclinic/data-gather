@@ -10,4 +10,5 @@ export type EditableEntryWithScreen = EditableEntry & {
   readonly screen: InterviewScreen.T;
 };
 
+// TODO: do we still need this?
 export type EditableAction = ConditionalAction.T | ConditionalAction.CreateT;

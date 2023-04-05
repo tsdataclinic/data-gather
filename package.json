@@ -58,7 +58,7 @@
     "api": "PYTHONPATH=. uvicorn views:app --log-config ./api-log-config.json --reload --reload-dir server --app-dir server/api",
     "build": "react-scripts build",
     "eject": "react-scripts eject",
-    "setup-database": "rm -f db.sqlite && PYTHONPATH=. python3 scripts/db_setup.py db.sqlite && yarn db-upgrade",
+    "setup-database": "rm -f db.sqlite && PYTHONPATH=. python3 scripts/db_setup.py db.sqlite",
     "db": "sqlite3 db.sqlite",
     "db-migration": "./scripts/new_db_migration.sh",
     "db-upgrade": "python -m alembic upgrade head",

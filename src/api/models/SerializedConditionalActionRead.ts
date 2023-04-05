@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ActionType } from './ActionType';
-import type { ConditionalOperator } from './ConditionalOperator';
+import type { SerializedIfClause } from './SerializedIfClause';
 
 /**
  * The ConditionalAction model used in HTTP responses when reading
@@ -15,13 +14,8 @@ import type { ConditionalOperator } from './ConditionalOperator';
  */
 export type SerializedConditionalActionRead = {
   order: number;
-  actionPayload?: string;
-  actionType: ActionType;
-  conditionalOperator: ConditionalOperator;
-  responseKey?: string;
-  responseKeyField?: string;
+  ifClause: SerializedIfClause;
   screenId: string;
-  value?: string;
   id: string;
 };
 
