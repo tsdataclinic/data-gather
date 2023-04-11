@@ -11,9 +11,12 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 
 export { ActionType } from './models/ActionType';
 export { ConditionalOperator } from './models/ConditionalOperator';
+export { ConditionGroupType } from './models/ConditionGroupType';
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export { InterviewSettingType } from './models/InterviewSettingType';
 export { ResponseType } from './models/ResponseType';
+export type { SerializedAirtableAuthSettings } from './models/SerializedAirtableAuthSettings';
+export type { SerializedActionConfig } from './models/SerializedActionConfig';
 export type { SerializedAirtableBase } from './models/SerializedAirtableBase';
 export type { SerializedAirtableField } from './models/SerializedAirtableField';
 export type { SerializedAirtableOptions } from './models/SerializedAirtableOptions';
@@ -21,8 +24,10 @@ export type { SerializedAirtableSettings } from './models/SerializedAirtableSett
 export type { SerializedAirtableTable } from './models/SerializedAirtableTable';
 export type { SerializedConditionalActionCreate } from './models/SerializedConditionalActionCreate';
 export type { SerializedConditionalActionRead } from './models/SerializedConditionalActionRead';
+export type { SerializedConditionGroup } from './models/SerializedConditionGroup';
 export type { SerializedEditRowPayload } from './models/SerializedEditRowPayload';
 export type { SerializedEntryResponseLookupConfig } from './models/SerializedEntryResponseLookupConfig';
+export type { SerializedIfClause } from './models/SerializedIfClause';
 export type { SerializedInsertRowPayload } from './models/SerializedInsertRowPayload';
 export type { SerializedInterviewCreate } from './models/SerializedInterviewCreate';
 export type { SerializedInterviewRead } from './models/SerializedInterviewRead';
@@ -38,6 +43,7 @@ export type { SerializedInterviewSettingCreate } from './models/SerializedInterv
 export type { SerializedInterviewSettingRead } from './models/SerializedInterviewSettingRead';
 export type { SerializedInterviewUpdate } from './models/SerializedInterviewUpdate';
 export type { SerializedSelectableOption } from './models/SerializedSelectableOption';
+export type { SerializedSingleCondition } from './models/SerializedSingleCondition';
 export type { SerializedSingleSelectOptions } from './models/SerializedSingleSelectOptions';
 export type { SerializedSubmissionActionCreate } from './models/SerializedSubmissionActionCreate';
 export type { SerializedSubmissionActionRead } from './models/SerializedSubmissionActionRead';

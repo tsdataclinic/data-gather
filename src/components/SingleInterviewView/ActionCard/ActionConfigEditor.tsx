@@ -24,14 +24,12 @@ const ACTION_TYPE_OPTIONS = ConditionalAction.ACTION_TYPES.filter(
   value: actionType,
 }));
 
-type ActionConfig = ConditionalAction.T['actionConfig'];
-
 type Props = {
-  action: ConditionalAction.T | ConditionalAction.CreateT;
+  actionConfig: ConditionalAction.ActionConfig;
   interview: Interview.T;
   interviewScreen: InterviewScreen.T;
-  isAlwaysExecuteChecked: boolean;
-  onActionConfigChange: (actionConfig: ActionConfig) => void;
+  isAlwaysExecuteChecked?: boolean;
+  onActionConfigChange: (actionConfig: ConditionalAction.ActionConfig) => void;
 };
 
 /**
@@ -39,14 +37,13 @@ type Props = {
  * It renders differently based off of what the action type is
  */
 export default function ActionConfigEditor({
-  action,
+  actionConfig,
   onActionConfigChange,
   interview,
   interviewScreen,
-  isAlwaysExecuteChecked,
+  isAlwaysExecuteChecked = false,
 }: Props): JSX.Element {
   const { id: interviewId, defaultLanguage } = interview;
-  const { actionConfig } = action;
   const screens = useInterviewScreens(interviewId);
   const onActionTypeChange = (
     newActionType: ConditionalAction.ActionType,
@@ -71,18 +68,20 @@ export default function ActionConfigEditor({
     [screens, interviewScreen, isAlwaysExecuteChecked, defaultLanguage],
   );
 
-  const renderEditor = (): JSX.Element | null => {
+  const renderConfigEditor = (): JSX.Element | null => {
     switch (actionConfig.type) {
       case ConditionalAction.ActionType.END_INTERVIEW:
+      case ConditionalAction.ActionType.DO_NOTHING:
         return null;
       case ConditionalAction.ActionType.PUSH:
-        // TODO: we only allow a single screen to be pushed for now. This needs
-        // to be updated once we have a multi-select dropdown component.
+        // NOTE: we only allow a single action to be pushed because 'PUSH' is
+        // being used here as 'Go to next stage'
         return (
           <LabelWrapper inline label="Next stage" labelTextClassName="w-20">
             <Dropdown
               onChange={newScreenId =>
                 onActionConfigChange({
+                  id: actionConfig.id,
                   type: ConditionalAction.ActionType.PUSH,
                   payload: [newScreenId],
                 })
@@ -125,7 +124,7 @@ export default function ActionConfigEditor({
 
   // TODO: replace these with Form.Dropdown and other controls
   return (
-    <>
+    <div className="space-y-2 rounded border border-gray-300 bg-gray-200 p-3">
       <LabelWrapper inline label="Action" labelTextClassName="w-20">
         <Dropdown
           onChange={onActionTypeChange}
@@ -135,7 +134,7 @@ export default function ActionConfigEditor({
         />
       </LabelWrapper>
 
-      {renderEditor()}
-    </>
+      {renderConfigEditor()}
+    </div>
   );
 }

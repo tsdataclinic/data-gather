@@ -94,6 +94,7 @@ export default function ConfigurePage({
           />
           <SettingsCard
             interview={interview}
+            onSaveClick={onSaveClick}
             onInterviewChange={setInterview}
           />
           <OnSubmitCard

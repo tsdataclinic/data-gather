@@ -25,6 +25,7 @@ export type InsertRowActionConfig = {
    * into.
    */
   payload: {
+    baseTarget: string;
     tableTarget: string;
   };
   type: SubmissionActionType.INSERT_ROW;

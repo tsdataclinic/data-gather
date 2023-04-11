@@ -89,16 +89,15 @@ function BaseEntriesSection(
         {entries.map(entry => {
           const entryId = InterviewScreenEntry.getId(entry);
           return (
-            <Reorder.Item key={entryId} value={entry}>
-              <EntryCard
-                ref={formRefs.get(entryId)}
-                entry={entry}
-                onEntryChange={onEntryChange}
-                onEntryDelete={onEntryDelete}
-                scrollOnMount={InterviewScreenEntry.isCreateType(entry)}
-                interview={interview}
-              />
-            </Reorder.Item>
+            <EntryCard
+              key={entryId}
+              ref={formRefs.get(entryId)}
+              entry={entry}
+              onEntryChange={onEntryChange}
+              onEntryDelete={onEntryDelete}
+              scrollOnMount={InterviewScreenEntry.isCreateType(entry)}
+              interview={interview}
+            />
           );
         })}
       </Reorder.Group>

@@ -122,7 +122,9 @@ export default function ScreenLink({
                 onClick={() => setSelectedEntry(action.id)}
               >
                 <FontAwesomeIcon size="1x" icon={IconType.faLocationArrow} />
-                Action: {actionTypeToDisplayString(action.actionConfig.type)}
+                {/* TODO: replace this with a reference name for an action
+                once that feature is implemented */}
+                Action: {actionTypeToDisplayString(action.ifClause.action.type)}
               </Scroll.Link>
             ))}
           </motion.div>

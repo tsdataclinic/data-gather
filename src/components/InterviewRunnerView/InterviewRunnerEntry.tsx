@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
-import { useParams } from 'react-router-dom';
 import InputText from '../ui/InputText';
 import Form from '../ui/Form';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
@@ -31,7 +30,6 @@ export default function InterviewRunnerEntry({
   defaultLanguage,
   interview,
 }: Props): JSX.Element {
-  const { interviewId } = useParams();
   const airtableHiddenInputRef = React.useRef<HTMLInputElement | null>(null);
   const [airtableQuery, setAirtableQuery] = useDebouncedState<string>(
     '',
@@ -40,7 +38,7 @@ export default function InterviewRunnerEntry({
 
   const { isError, isLoading, isSuccess, responseData } = useAirtableQuery(
     airtableQuery,
-    interviewId,
+    interview.id,
     entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
       ? entry.responseTypeOptions
       : undefined,
@@ -141,7 +139,11 @@ export default function InterviewRunnerEntry({
     case InterviewScreenEntry.ResponseType.AIRTABLE:
       return (
         <div>
-          <strong>{entryPrompt}</strong>
+          <div className="pb-4">
+            <strong>{entryPrompt}</strong>
+            <br />
+            <text>{entryHelperText}</text>
+          </div>
           <LabelWrapper label="Search for record">
             <InputText
               required

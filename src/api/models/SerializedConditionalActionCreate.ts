@@ -2,8 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ActionType } from './ActionType';
-import type { ConditionalOperator } from './ConditionalOperator';
+import type { SerializedIfClause } from './SerializedIfClause';
 
 /**
  * The ConditionalAction model used when creating a new model.
@@ -11,13 +10,8 @@ import type { ConditionalOperator } from './ConditionalOperator';
  */
 export type SerializedConditionalActionCreate = {
   order: number;
-  actionPayload?: string;
-  actionType: ActionType;
-  conditionalOperator: ConditionalOperator;
-  responseKey?: string;
-  responseKeyField?: string;
+  ifClause: SerializedIfClause;
   screenId: string;
-  value?: string;
   id?: string;
 };
 
