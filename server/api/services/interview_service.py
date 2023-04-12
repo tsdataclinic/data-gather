@@ -23,7 +23,6 @@ class InterviewService(BaseService):
             add_models=[db_interview],
             refresh_models=True,
         )
-
         # Now that we committed, the db_interview should have an id
         if db_interview.id:
             db_interview.screens = [

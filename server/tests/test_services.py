@@ -132,7 +132,7 @@ class TestInterviewService(TestCase):
         self.fake_db.get.return_value = self.fake_db_interview
         self.fake_db_interview.interview_settings = [setting]
         self.assertEqual(
-            self.fake_interview_service.get_interview_setting_by_interview_id_and_type("asdf", setting_type),
+            self.fake_interview_service.get_interview_setting_by_interview_id_and_type("asdf", setting_type).settings,
             airtable_settings
         )
     

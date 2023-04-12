@@ -150,7 +150,6 @@ def get_current_user(
     session.commit()
     return new_user
 
-
 def get_interview_service(session: Session = Depends(get_session)) -> InterviewService:
     return InterviewService(db=session)
 
