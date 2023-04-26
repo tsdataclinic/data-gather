@@ -84,6 +84,6 @@ class InterviewService(BaseService):
         for screen in interview.screens:
             self.interview_screen_service.delete_interview_screen(screen)
 
-        # delete all submission actions and the interview itself
-        models_to_delete = interview.submission_actions + [interview]
+        # delete all submission actions, interview settings and the interview itself
+        models_to_delete = interview.submission_actions + interview.interview_settings + [interview]
         self.commit(delete_models=models_to_delete)
