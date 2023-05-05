@@ -952,7 +952,8 @@ async def airtable_callback(
         airtable_client = AirtableAPI(airtable_setting)
         airtable_settings_with_schema = airtable_client.fetch_schema(airtable_setting)
         # make object assignments
-        new_interview_setting.settings = airtable_settings_with_schema
+        airtable_setting.update(airtable_settings_with_schema)
+        new_interview_setting.settings = airtable_setting
         new_interview.interview_settings.append(new_interview_setting)
         # commit to db
         update_interview(interview_id, new_interview, session)
