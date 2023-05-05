@@ -123,30 +123,32 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
               </>
             ))}
             <div>
-              <Button
-                aria-label="Refresh Airtable tokens"
-                onClick={handleRefreshAirtableTokens}
-              >
-                Refresh Airtable tokens
-              </Button>
-            </div>
-            <div>
-              <Button
-                aria-label="Get Airtable base schema"
-                onClick={handleUpdateAirtableSchema}
-              >
-                Get Airtable schema
-              </Button>
-            </div>
-            <div>
               {airtableSettings.authSettings?.accessToken ? (
-                <span>
-                  Interview is authenticated to Airtable.
-                  {airtableSettings.authSettings?.refreshTokenExpires &&
-                    ` Connection will expire on ${new Date(
-                      airtableSettings.authSettings?.refreshTokenExpires,
-                    ).toDateString()} if unused.`}
-                </span>
+                <>
+                  <div>
+                    <Button
+                      aria-label="Refresh Airtable tokens"
+                      onClick={handleRefreshAirtableTokens}
+                    >
+                      Refresh Airtable tokens
+                    </Button>
+                  </div>
+                  <div>
+                    <Button
+                      aria-label="Get Airtable base schema"
+                      onClick={handleUpdateAirtableSchema}
+                    >
+                      Refresh Airtable schema
+                    </Button>
+                  </div>
+                  <span>
+                    Interview is authenticated to Airtable.
+                    {airtableSettings.authSettings?.refreshTokenExpires &&
+                      ` Connection will expire on ${new Date(
+                        airtableSettings.authSettings?.refreshTokenExpires,
+                      ).toDateString()} if unused.`}
+                  </span>
+                </>
               ) : (
                 <Button onClick={handleAuthenticateWithAirtable}>
                   Connect to Airtable
