@@ -50,7 +50,7 @@ class AirtableAuthSettings(BaseModel):
     )
     accessTokenExpires: int = Field(
         sa_column=Column(DateTime),
-        default=(datetime.now() + timedelta(minutes=59)).isoformat()
+        default=(datetime.now() + timedelta(minutes=59)).timestamp()*1000
     )
     refreshToken: str = Field(sa_column=Column(
         StringEncryptedType(
@@ -64,7 +64,7 @@ class AirtableAuthSettings(BaseModel):
     )
     refreshTokenExpires: int = Field(
         sa_column=Column(DateTime),
-        default=(datetime.now() + timedelta(days=59)).isoformat()
+        default=(datetime.now() + timedelta(days=59)).timestamp()*1000
     )
     tokenType: Optional[str]
     scope: Optional[str]
