@@ -3,6 +3,8 @@ import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useLocation } from 'react-router-dom';
 import forge from 'node-forge';
+import { AgGridReact } from 'ag-grid-react';
+import 'ag-grid-community/styles/ag-grid.css';
 import * as Interview from '../../../../models/Interview';
 import * as InterviewSettings from '../../../../models/InterviewSetting';
 import Button from '../../../ui/Button';
@@ -106,26 +108,63 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const renderAirtableBaseTable = (
+    bases: InterviewSettings.AirtableBase[],
+  ): JSX.Element => {
+    const rowDefs = bases.flatMap(base => {
+      const output: any[] = [];
+      // eslint-disable-next-line array-callback-return
+      base.tables?.flatMap(table => {
+        // eslint-disable-next-line array-callback-return
+        table.fields?.map(field => {
+          output.push({
+            baseName: base.name,
+            tableName: table.name,
+            fieldName: field.name,
+            fieldOptions: field.options,
+            fieldType: field.type,
+          });
+        });
+      });
+      return output;
+    });
+    const columnDefs = [
+      { field: 'baseName' },
+      { field: 'tableName' },
+      { field: 'fieldName' },
+      { field: 'fieldType' },
+    ];
+
+    return (
+      <div style={{ height: '350px' }}>
+        <AgGridReact
+          headerHeight={50}
+          rowHeight={50}
+          defaultColDef={{
+            headerClass: 'bg-gray-200',
+            cellStyle: {
+              display: 'flex',
+              height: '100%',
+              alignItems: 'center',
+            },
+          }}
+          className="text-lg"
+          rowSelection="single"
+          rowData={rowDefs}
+          columnDefs={columnDefs}
+        />
+      </div>
+    );
+  };
+
   const renderSettingBlock = (setting: EditableSetting): JSX.Element => {
     switch (setting.type) {
       case InterviewSettings.SettingType.AIRTABLE: {
         const airtableSettings = setting.settings;
         return (
           <div key={`_${airtableSettings}`} className="space-y-4">
-            {airtableSettings.bases?.flatMap(base => (
-              <>
-                <div>Base: {base.name}</div>
-                {base.tables?.map(table => (
-                  <div key={`${table}`}>
-                    Table: {table.name}
-                    <div>Fields:</div>
-                    {table.fields?.map(field => (
-                      <li key={`${field}`}>{field.name}</li>
-                    ))}
-                  </div>
-                ))}
-              </>
-            ))}
+            {airtableSettings.bases &&
+              renderAirtableBaseTable(airtableSettings.bases)}
             <div>
               {airtableSettings.authSettings?.accessToken ? (
                 <>
@@ -210,7 +249,14 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
             {renderSettingBlock(setting)}
           </div>
         ))}
-        <Button intent="primary" onClick={onAddClick}>
+        <Button
+          intent="primary"
+          onClick={onAddClick}
+          // Quick way to disallow multiple Airtable settings => TODO: change this when adding more SettingTypes
+          disabled={interview.interviewSettings.some(
+            setting => setting.type === InterviewSettings.SettingType.AIRTABLE,
+          )}
+        >
           + Add setting
         </Button>
       </div>
