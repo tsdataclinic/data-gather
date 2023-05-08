@@ -931,15 +931,17 @@ async def airtable_callback(
         token_type=response_json['token_type']
         scope=response_json['scope']
 
-        # populate interview_settings obj with AirtableSettings
-        airtable_setting = {} # AirtableSettings()
-        airtable_setting['authSettings'] = {} # AirtableAuthSettings()
-        airtable_setting['authSettings']['scope'] = scope
-        airtable_setting['authSettings']['tokenType'] = token_type
-        airtable_setting['authSettings']['accessToken'] = access_token
-        airtable_setting['authSettings']['refreshToken'] = refresh_token
-        airtable_setting['authSettings']['accessTokenExpires'] = (datetime.now() + timedelta(seconds=access_token_expires_in)).timestamp()*1000
-        airtable_setting['authSettings']['refreshTokenExpires'] = (datetime.now() + timedelta(seconds=refresh_token_expires_in)).timestamp()*1000
+        # populate interview_settings obj with AirtableSettings()
+        airtable_setting = {
+            'authSettings': {
+                'scope': scope,
+                'tokenType': token_type,
+                'accessToken': access_token,
+                'refreshToken': refresh_token,
+                'accessTokenExpires': (datetime.now() + timedelta(seconds=access_token_expires_in)).timestamp()*1000,
+                'refreshTokenExpires': (datetime.now() + timedelta(seconds=refresh_token_expires_in)).timestamp()*1000
+            }
+        } 
 
         # create empty interview_settings object
         interview = interview_service.get_interview_by_id(interview_id)
