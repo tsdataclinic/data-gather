@@ -75,8 +75,12 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
 
   const handleAuthenticateWithAirtable = (): void => {
     const buffer = forge.random.getBytesSync(100);
-    let state = forge.util.encode64(buffer);
-    state = state.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    // https://github.com/Airtable/oauth-example/blob/main/index.js#L55
+    const state = forge.util
+      .encode64(buffer)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
     localStorage.setItem(state, interview.id);
     window.location.href = `${process.env.REACT_APP_SERVER_URI}/api/airtable-auth?state=${state}&interview_id=${interview.id}`;
   };
