@@ -7,7 +7,7 @@ from typing import Any, cast
 import requests
 from fastapi import HTTPException
 from pyairtable import Api
-from pyairtable.formulas import FIELD, FIND, LOWER, OR, STR_VALUE
+from pyairtable.formulas import FIND, LOWER, OR, STR_VALUE
 
 from server.models.interview_setting import AirtableBase, AirtableField, AirtableSettings, AirtableTable
 
@@ -101,14 +101,17 @@ class AirtableAPI:
         Arguments:
         - table_name: The name of the table to be queried
         - query: a dictionary from query keys to query terms
+            - expects any quotes in field_names to be properly escaped
 
         Returns: A list of records matching that query
         """
         logger.debug(
             f"Fetching records in base: {base_id} table: {table_name}" + (f"with {query = }" if query else "")
         )
+        # we do NOT use pyairtable.FIELD (which is : "{%s}" % escape_quotes(name) ) 
+        # because it re-escaped single quotes that were already escaped
         find_statements = [
-            FIND(LOWER(STR_VALUE(query_val)), LOWER(FIELD(field_name)))
+            FIND(LOWER(STR_VALUE(query_val)), LOWER("{%s}" % field_name))
             for field_name, query_val in query.items()
         ]
         find_formula = OR(*find_statements)
