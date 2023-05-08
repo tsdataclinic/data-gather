@@ -293,7 +293,6 @@ def update_interview(
             for setting in interview.interview_settings
         ],
     )
-
     # set the updated settings
     db_interview.interview_settings = settings_to_set
 
@@ -630,6 +629,9 @@ def _diff_model_lists(
     The model types must have an `id` member for this to work since that is
     the field this function uses to compare them.
 
+    NOTE: If there are 0 db_models and more than 0 request_models,
+      will pass through all request_models as models_to_create.
+
     Args:
         db_models: The existing list of models in the db
         request_models: The list of models coming in from a request which we
@@ -638,10 +640,14 @@ def _diff_model_lists(
     Returns:
         A tuple of: list of models to set and list of models to delete
     """
+    # case where db_models is empty and request_models isn't => pass through all request_models
+    if (len(db_models) == 0 and len(request_models) > 0):
+        return (request_models, [])
+    
     # create map of id to request_model (i.e. the models not in the db)
     db_models_dict = {model.id: model for model in db_models}
     request_model_ids = set(req_model.id for req_model in request_models)
-
+    
     # figure out which models are new and which ones have to be updated
     models_to_create = []
     models_to_update = []
@@ -835,7 +841,11 @@ async def update_airtable_record(
     return airtable_client.update_record(base_id, table_name, record_id, update)
 
 @app.get("/api/airtable-auth", tags=["airtable"])
-async def airtable_auth(request: Request, state: str):
+async def airtable_auth(
+    request: Request,
+    state: str,
+    interview_id: str
+):
     """
     Since Airtable API doesn't yet support CORS requests to create tokens from the browser,
     this function helps the browser complete the OAuth request.
@@ -846,6 +856,7 @@ async def airtable_auth(request: Request, state: str):
 
     Most of this follows: https://github.com/Airtable/oauth-example 
     """
+    print('airtable_auth | ', state, interview_id)
     code_verifier_bytes = get_random_bytes(96)
     code_verifier = base64.urlsafe_b64encode(code_verifier_bytes).rstrip(b'=').decode()
     code_challenge_method = "S256"
@@ -862,12 +873,19 @@ async def airtable_auth(request: Request, state: str):
         "code_challenge": code_challenge,
         "code_challenge_method": code_challenge_method,
     }
-    oauth_cache[state] = code_verifier
+    oauth_cache[state] = { 
+        'code_verifier' : code_verifier,
+        'interview_id': interview_id
+    }
     redirect_to = f"""{AIRTABLE_AUTH_URL}?{urllib.parse.urlencode(params)}"""
     return RedirectResponse(redirect_to, status_code=302)
 
 @app.get("/api/airtable-callback", tags=["airtable"], response_class=HTMLResponse)
-async def airtable_callback(request: Request):
+async def airtable_callback(
+    request: Request,
+    interview_service: InterviewService = Depends(get_interview_service),
+    session: Session = Depends(get_session),
+):
     
     if (request.query_params.get('error')):
         return Response('Error: ' + request.query_params.get('error'))
@@ -877,7 +895,8 @@ async def airtable_callback(request: Request):
     state = request.query_params.get("state")
 
     # This is a safety check pulled from the Airtable example https://github.com/Airtable/oauth-example
-    cached = oauth_cache[state]
+    cached = oauth_cache[state]['code_verifier']
+    interview_id = oauth_cache[state]['interview_id']
     oauth_cache[state] = ''
     
     credentials = f"{AIRTABLE_CLIENT_ID}:{AIRTABLE_CLIENT_SECRET}".encode('utf-8')
@@ -910,14 +929,38 @@ async def airtable_callback(request: Request):
         refresh_token_expires_in = response_json['refresh_expires_in']
         token_type=response_json['token_type']
         scope=response_json['scope']
+
+        # populate interview_settings obj with AirtableSettings()
+        airtable_setting = {
+            'authSettings': {
+                'scope': scope,
+                'tokenType': token_type,
+                'accessToken': access_token,
+                'refreshToken': refresh_token,
+                'accessTokenExpires': (datetime.now() + timedelta(seconds=access_token_expires_in)).timestamp()*1000,
+                'refreshTokenExpires': (datetime.now() + timedelta(seconds=refresh_token_expires_in)).timestamp()*1000
+            }
+        } 
+
+        # create empty interview_settings object
+        interview = interview_service.get_interview_by_id(interview_id)
+        new_interview = InterviewUpdate.from_orm(interview)
+        new_interview_setting = InterviewSetting()
+        new_interview_setting.type = InterviewSettingType.AIRTABLE
+        new_interview_setting.interview_id = interview_id
+        
+        # fetch airtable schema
+        airtable_client = AirtableAPI(airtable_setting)
+        airtable_settings_with_schema = airtable_client.fetch_schema(airtable_setting)
+        # make object assignments
+        airtable_setting.update(airtable_settings_with_schema)
+        new_interview_setting.settings = airtable_setting
+        new_interview.interview_settings.append(new_interview_setting)
+        # commit to db
+        update_interview(interview_id, new_interview, session)
+
         params = {
             'id': 'airtable',
-            'access_token': access_token,
-            'refresh_token': refresh_token,
-            'access_token_expires_in': access_token_expires_in,
-            'refresh_token_expires_in': refresh_token_expires_in,
-            'token_type': token_type,
-            'scope': scope,
             'state': state
         }
         redirect_to = f"""{REACT_APP_CLIENT_URI}/?{urllib.parse.urlencode(params)}"""

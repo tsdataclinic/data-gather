@@ -72,6 +72,7 @@ export class AirtableFastAPIService {
   /**
    * Get Airtable Record
    * Fetch record with a particular id from a table in airtable.
+   * @param baseId
    * @param tableName
    * @param recordId
    * @param interviewId
@@ -79,6 +80,7 @@ export class AirtableFastAPIService {
    * @throws ApiError
    */
   public getAirtableRecord(
+    baseId: string,
     tableName: string,
     recordId: string,
     interviewId: string,
@@ -87,6 +89,7 @@ export class AirtableFastAPIService {
       method: 'GET',
       url: '/api/airtable-records/{interview_id}/{base_id}/{table_name}/{record_id}',
       path: {
+        'base_id': baseId,
         'table_name': tableName,
         'record_id': recordId,
         'interview_id': interviewId,
@@ -168,17 +171,20 @@ export class AirtableFastAPIService {
    *
    * Most of this follows: https://github.com/Airtable/oauth-example
    * @param state
+   * @param interviewId
    * @returns any Successful Response
    * @throws ApiError
    */
   public airtableAuth(
     state: string,
+    interviewId: string,
   ): CancelablePromise<any> {
     return this.httpRequest.request({
       method: 'GET',
       url: '/api/airtable-auth',
       query: {
         'state': state,
+        'interview_id': interviewId,
       },
       errors: {
         422: `Validation Error`,
