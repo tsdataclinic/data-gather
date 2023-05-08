@@ -723,7 +723,7 @@ async def get_airtable_records(
     airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
     airtable_settings = airtable_setting_container.settings
 
-    if (is_airtable_token_expired(airtable_settings)):
+    if (is_airtable_access_token_expired(airtable_settings)):
         await refresh_and_update_airtable_auth(interview_id, interview_service, session)
 
     airtable_client = AirtableAPI(airtable_settings)
@@ -931,7 +931,7 @@ async def airtable_callback(request: Request):
     return RedirectResponse(redirect_to, status_code=302)
 
 
-def is_airtable_token_expired(airtable_settings: AirtableSettings, buffer=AIRTABLE_AUTH_TIMEOUT_BUFFER_MS):
+def is_airtable_access_token_expired(airtable_settings: AirtableSettings, buffer=AIRTABLE_AUTH_TIMEOUT_BUFFER_MS):
     """
         Checks to see if the token expiry time (minus a buffer) has passed.
     """
@@ -941,6 +941,19 @@ def is_airtable_token_expired(airtable_settings: AirtableSettings, buffer=AIRTAB
     if (now > token_expiry_time):
         LOG.info(f"Token expired | Current time: {now} | Token expiry time: {token_expiry_time}")
         return True
+    return False
+
+def is_airtable_refresh_token_expired(airtable_settings: AirtableSettings, buffer):
+    """
+        Checks to see if the token expiry time (minus a buffer) has passed.
+    """
+    # time is stored in miliseconds, but python wants seconds
+    token_expiry_time = datetime.fromtimestamp(airtable_settings['authSettings']['refreshTokenExpires']//1000) - timedelta(milliseconds=buffer)
+    now = datetime.now()
+    if (now > token_expiry_time):
+        LOG.info(f"Refresh token expired | Current time: {now} | Refresh token expiry time: {token_expiry_time}")
+        return True
+    LOG.info(f"Refresh token NOT expired | Current time: {now} | Refresh token expiry time: {token_expiry_time}")
     return False
 
 # TODO - Run this on a schedule or on certain Airtable API calls
@@ -1008,3 +1021,63 @@ async def refresh_and_update_airtable_auth(
     new_interview.interview_settings[update_interview_setting_index] = update_interview_setting
     
     return update_interview(interview_id, new_interview, session)
+
+@app.get("/api/get-expiring-airtable-refresh-tokens", tags=["airtable"])
+async def get_expiring_airtable_refresh_tokens():
+    """
+    Checks every interview in the DB for an associated Airtable settings.
+    If there is one, checks to see if the authorization refresh token will expire within the next week.
+    Returns an object of the following shape:
+    {
+        <interview.id>: {
+            "interview": {
+                "name": str,
+                "refreshTokenExpires": num (date in seconds)
+            },
+            "owner": {
+                "id": str,
+                "email": str
+            }
+        }
+    }
+     
+    The consumer of this API can act on that response by, for example, 
+    sending an email to the owner of the interview alerting them.
+    """
+    LOG.info('Getting interviews with Airtable refresh tokens expiring in < 1 week')
+    ONE_WEEK_MS=604800000
+
+    session = Session(engine)
+    interview_service = InterviewService(session)
+
+    interview_result = session.exec(
+        select(Interview)
+    )
+    output = {}
+    for interview in interview_result:
+        try:
+            airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview.id, InterviewSettingType.AIRTABLE)
+            if (airtable_setting_container and airtable_setting_container.settings and airtable_setting_container.settings['authSettings']): 
+                airtable_settings = airtable_setting_container.settings
+                if (is_airtable_refresh_token_expired(airtable_settings, ONE_WEEK_MS)):
+                    user_owner = session.exec(
+                        select(User)
+                        .where(User.id == interview.owner_id)
+                    )
+                    owner = user_owner.first()
+                    output[interview.id] = {
+                        'interview': {
+                            'name': interview.name if interview.name else '',
+                            'refreshTokenExpires': airtable_settings['authSettings']['refreshTokenExpires'],
+                        },
+                        'owner': { 
+                            'id': owner.id,
+                            'email': owner.email
+                        }
+                    }
+                    
+        except Exception as e:
+            # if there's no interview_setting an exception will be thrown by interview_service
+            continue
+
+    return output
