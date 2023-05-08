@@ -111,23 +111,17 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
   const renderAirtableBaseTable = (
     bases: InterviewSettings.AirtableBase[],
   ): JSX.Element => {
-    const rowDefs = bases.flatMap(base => {
-      const output: any[] = [];
-      // eslint-disable-next-line array-callback-return
-      base.tables?.flatMap(table => {
-        // eslint-disable-next-line array-callback-return
-        table.fields?.map(field => {
-          output.push({
-            baseName: base.name,
-            tableName: table.name,
-            fieldName: field.name,
-            fieldOptions: field.options,
-            fieldType: field.type,
-          });
-        });
-      });
-      return output;
-    });
+    const rowDefs = bases.flatMap(base =>
+      base.tables?.flatMap(table =>
+        table.fields?.map(field => ({
+          baseName: base.name,
+          tableName: table.name,
+          fieldName: field.name,
+          fieldOptions: field.options,
+          fieldType: field.type,
+        })),
+      ),
+    );
     const columnDefs = [
       { field: 'baseName' },
       { field: 'tableName' },
