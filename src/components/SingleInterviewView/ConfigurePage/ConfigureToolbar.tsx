@@ -48,41 +48,33 @@ export default function ConfigureToolbar({
       </Toolbar.Root>
       {isDeleteModalOpen && (
         <Modal
+          useConfirmButton
+          confirmIsDangerous
           title={`Delete ${interview.name}`}
           isOpen={isDeleteModalOpen}
           onDismiss={() => setIsDeleteModalOpen(false)}
+          onConfirmClick={() => {
+            deleteInterview(interview.id, {
+              onSuccess: () => {
+                navigate(Interview.ALL_INTERVIEWS_URL);
+                toaster.notifySuccess(
+                  'Deleted interview',
+                  `Interview '${interview.name}' has been deleted`,
+                );
+              },
+              onError: error => {
+                if (error instanceof Error) {
+                  toaster.notifyError(
+                    'Error deleting interview',
+                    error.message,
+                  );
+                }
+              },
+            });
+          }}
         >
-          <div className="space-y-4">
-            <div className="text-xl">
-              Are you sure you want to delete this interview?
-            </div>
-            <div className="space-x-4 text-center">
-              <Button
-                intent="danger"
-                onClick={() => {
-                  deleteInterview(interview.id, {
-                    onSuccess: () => {
-                      navigate(Interview.ALL_INTERVIEWS_URL);
-                      toaster.notifySuccess(
-                        'Deleted interview',
-                        `Interview '${interview.name}' has been deleted`,
-                      );
-                    },
-                    onError: error => {
-                      if (error instanceof Error) {
-                        toaster.notifyError(
-                          'Error deleting interview',
-                          error.message,
-                        );
-                      }
-                    },
-                  });
-                }}
-              >
-                Yes
-              </Button>
-              <Button onClick={() => setIsDeleteModalOpen(false)}>No</Button>
-            </div>
+          <div className="text-xl">
+            Are you sure you want to delete this interview?
           </div>
         </Modal>
       )}

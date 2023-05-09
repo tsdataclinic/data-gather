@@ -45,7 +45,12 @@ export default function NewInterviewModal({
   );
 
   return (
-    <Modal title="New interview" isOpen={isOpen} onDismiss={onDismiss}>
+    <Modal
+      hideFooterButtons
+      title="New interview"
+      isOpen={isOpen}
+      onDismiss={onDismiss}
+    >
       <Form onSubmit={onSubmit}>
         <Form.Input name="name" label="Name" />
         <Form.Input name="description" label="Description" />

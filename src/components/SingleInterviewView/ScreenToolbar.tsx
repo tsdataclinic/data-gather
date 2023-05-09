@@ -104,35 +104,25 @@ export default function ScreenToolbar({
       </Toolbar.Root>
       {isDeleteModalOpen && (
         <Modal
+          useConfirmButton
+          confirmIsDangerous
           title={`Delete ${InterviewScreen.getTitle(
             screen,
             interview.defaultLanguage,
           )}`}
           isOpen={isDeleteModalOpen}
           onDismiss={() => setIsDeleteModalOpen(false)}
+          onConfirmClick={() => {
+            deleteInterview(screen.id, {
+              onSuccess: () => {
+                setIsDeleteModalOpen(false);
+                navigate(Interview.getConfigurePageURL(screen.interviewId));
+              },
+            });
+          }}
         >
-          <div className="space-y-4">
-            <div className="text-xl">
-              Are you sure you want to delete this stage?
-            </div>
-            <div className="space-x-4 text-center">
-              <Button
-                intent="danger"
-                onClick={() => {
-                  deleteInterview(screen.id, {
-                    onSuccess: () => {
-                      setIsDeleteModalOpen(false);
-                      navigate(
-                        Interview.getConfigurePageURL(screen.interviewId),
-                      );
-                    },
-                  });
-                }}
-              >
-                Yes
-              </Button>
-              <Button onClick={() => setIsDeleteModalOpen(false)}>No</Button>
-            </div>
+          <div className="text-xl">
+            Are you sure you want to delete this stage?
           </div>
         </Modal>
       )}

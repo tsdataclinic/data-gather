@@ -15,6 +15,7 @@ type Props = {
    */
   confirmIsDangerous?: boolean;
   confirmText?: React.ReactNode;
+  hideFooterButtons?: boolean;
   isOpen: boolean;
   onConfirmClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onDismiss: () => void;
@@ -47,7 +48,7 @@ const StyledOverlay = styled(Dialog.Overlay)`
   background-color: rgba(0, 0, 0, 0.33);
   position: fixed;
   inset: 0;
-  // z-index: 999;
+  z-index: 999;
   @media (prefers-reduced-motion: no-preference) {
     animation: ${overlayShow} 400ms cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -65,6 +66,7 @@ const StyledModalContent = styled(Dialog.Content)`
   position: fixed;
   top: 50%;
   transform: translate(-50%, -50%);
+  z-index: 1000;
 
   &:focus {
     outline: none;
@@ -114,6 +116,7 @@ export default function Modal({
   confirmIsDangerous = false,
   useConfirmButton = false,
   centerFooter = false,
+  hideFooterButtons = false,
 }: Props): JSX.Element {
   const onOpenChange = React.useCallback(
     (open: boolean) => {
@@ -137,19 +140,21 @@ export default function Modal({
               <div className={className}>{children}</div>
             </div>
           </StyledScrollArea>
-          <StyledFooter centerContent={centerFooter}>
-            {useConfirmButton ? (
-              <Button
-                intent={confirmIsDangerous ? 'danger' : 'primary'}
-                onClick={onConfirmClick}
-              >
-                {confirmText}
-              </Button>
-            ) : null}
-            <Dialog.Close asChild>
-              <Button>Close</Button>
-            </Dialog.Close>
-          </StyledFooter>
+          {hideFooterButtons ? null : (
+            <StyledFooter centerContent={centerFooter}>
+              {useConfirmButton ? (
+                <Button
+                  intent={confirmIsDangerous ? 'danger' : 'primary'}
+                  onClick={onConfirmClick}
+                >
+                  {confirmText}
+                </Button>
+              ) : null}
+              <Dialog.Close asChild>
+                <Button>Close</Button>
+              </Dialog.Close>
+            </StyledFooter>
+          )}
         </StyledModalContent>
       </Dialog.Portal>
     </Dialog.Root>
