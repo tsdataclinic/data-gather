@@ -161,8 +161,15 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
               renderAirtableBaseTable(airtableSettings.bases)}
             <div>
               {airtableSettings.authSettings?.accessToken ? (
-                <>
-                  <div>
+                <div className="space-y-2">
+                  <div className="flex space-x-2">
+                    <Button
+                      aria-label="Get Airtable base schema"
+                      onClick={handleUpdateAirtableSchema}
+                      intent="primary"
+                    >
+                      Refresh Airtable schema
+                    </Button>
                     <Button
                       aria-label="Refresh Airtable tokens"
                       onClick={handleRefreshAirtableTokens}
@@ -170,24 +177,19 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
                       Refresh Airtable tokens
                     </Button>
                   </div>
-                  <div>
-                    <Button
-                      aria-label="Get Airtable base schema"
-                      onClick={handleUpdateAirtableSchema}
-                    >
-                      Refresh Airtable schema
-                    </Button>
-                  </div>
-                  <span>
+                  <p>
                     Interview is authenticated to Airtable.
                     {airtableSettings.authSettings?.refreshTokenExpires &&
                       ` Connection will expire on ${new Date(
                         airtableSettings.authSettings?.refreshTokenExpires,
                       ).toDateString()} if unused.`}
-                  </span>
-                </>
+                  </p>
+                </div>
               ) : (
-                <Button onClick={handleAuthenticateWithAirtable}>
+                <Button
+                  intent="primary"
+                  onClick={handleAuthenticateWithAirtable}
+                >
                   Connect to Airtable
                 </Button>
               )}
