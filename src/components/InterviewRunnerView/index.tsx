@@ -21,6 +21,7 @@ import type { ResponseData } from '../../script/types';
 import { useToast } from '../ui/Toast';
 import useHTTPErrorToast from '../../hooks/useHTTPErrorToast';
 import InterviewCompletionScreen from './InterviewCompletionScreen';
+import Modal from '../ui/Modal';
 
 const api = new FastAPIService();
 
@@ -317,15 +318,22 @@ export function InterviewRunnerView(props: {
 }): JSX.Element | null {
   const { interviewId } = props;
   const toaster = useToast();
+  const [isResetConfirmationModalOpen, setIsResetConfirmationModalOpen] =
+    React.useState(false);
 
   // keep track of a counter just to reset the interview easily by resetting its key
   const [resetCounter, setResetCounter] = React.useState(1);
-  const onInterviewReset = React.useCallback(() => {
+  const onInterviewResetRequest = React.useCallback(() => {
+    setIsResetConfirmationModalOpen(true);
+  }, []);
+
+  const onInterviewResetConfirm = React.useCallback(() => {
     setResetCounter(prev => prev + 1);
     toaster.notifySuccess(
       'Reset interview',
       'The interview has been restarted',
     );
+    setIsResetConfirmationModalOpen(false);
   }, [toaster]);
 
   const onStartNewInterview = React.useCallback(() => {
@@ -333,12 +341,27 @@ export function InterviewRunnerView(props: {
   }, []);
 
   return (
-    <BaseInterviewRunnerView
-      key={resetCounter}
-      interviewId={interviewId}
-      onInterviewReset={onInterviewReset}
-      onStartNewInterview={onStartNewInterview}
-    />
+    <>
+      <BaseInterviewRunnerView
+        key={resetCounter}
+        interviewId={interviewId}
+        onInterviewReset={onInterviewResetRequest}
+        onStartNewInterview={onStartNewInterview}
+      />
+      {isResetConfirmationModalOpen && (
+        <Modal
+          useConfirmButton
+          confirmIsDangerous
+          onConfirmClick={onInterviewResetConfirm}
+          isOpen={isResetConfirmationModalOpen}
+          onDismiss={() => setIsResetConfirmationModalOpen(false)}
+          title="Reset interview?"
+        >
+          Are you sure you want to reset this interview? Any current responses
+          will be lost.
+        </Modal>
+      )}
+    </>
   );
 }
 
