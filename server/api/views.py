@@ -1,31 +1,30 @@
-from datetime import datetime, timedelta
+import base64
 import logging
 import time
-import base64
+import urllib
+from datetime import datetime, timedelta
+from hashlib import sha256
 from typing import Sequence, TypeVar, Union
 
-from fastapi import Body, Depends, FastAPI, HTTPException, Request, Response, Security
+import httpx
+from Crypto.Random import get_random_bytes
+from fastapi import (Body, Depends, FastAPI, HTTPException, Request, Response,
+                     Security)
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.routing import APIRoute
 from fastapi_azure_auth import B2CMultiTenantAuthorizationCodeBearer
 from fastapi_azure_auth.user import User as AzureUser
 from pydantic import AnyHttpUrl, BaseSettings, Field
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import Session, SQLModel, select
-import httpx
-from Crypto.Random import get_random_bytes
-from hashlib import sha256
-import urllib
 
 from server.api.airtable_api import AirtableAPI, PartialRecord, Record
-from server.api.airtable_config import (AIRTABLE_AUTH_URL,
-                                    AIRTABLE_TOKEN_URL,
-                                    AIRTABLE_CLIENT_ID,
-                                    AIRTABLE_CLIENT_SECRET,
-                                    AIRTABLE_SCOPE,
-                                    REACT_APP_CLIENT_URI,
-                                    REACT_APP_SERVER_URI)
+from server.api.airtable_config import (AIRTABLE_AUTH_URL, AIRTABLE_CLIENT_ID,
+                                        AIRTABLE_CLIENT_SECRET, AIRTABLE_SCOPE,
+                                        AIRTABLE_TOKEN_URL,
+                                        REACT_APP_CLIENT_URI,
+                                        REACT_APP_SERVER_URI)
 from server.api.exceptions import InvalidOrder
 from server.api.services.interview_screen_service import InterviewScreenService
 from server.api.services.interview_service import InterviewService
@@ -42,10 +41,11 @@ from server.models.interview_screen import (InterviewScreen,
                                             InterviewScreenReadWithChildren,
                                             InterviewScreenUpdate)
 from server.models.interview_screen_entry import (
-    InterviewScreenEntry,
-    InterviewScreenEntryReadWithScreen,
-)
-from server.models.interview_setting import AirtableAuthSettings, AirtableSettings, InterviewSetting, InterviewSettingType
+    InterviewScreenEntry, InterviewScreenEntryReadWithScreen)
+from server.models.interview_setting import (AirtableAuthSettings,
+                                             AirtableSettings,
+                                             InterviewSetting,
+                                             InterviewSettingType)
 from server.models.submission_action import SubmissionAction
 from server.models.user import User, UserRead
 

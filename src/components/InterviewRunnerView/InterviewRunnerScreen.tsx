@@ -142,7 +142,7 @@ export default function InterviewRunnerScreen({
           />
         ))}
         <div className="flex justify-between">
-          <Form.SubmitButton />
+          <Form.SubmitButton>Next</Form.SubmitButton>
           <Button
             className="text-blue-800 underline underline-offset-4 transition-colors hover:text-blue-400"
             onClick={onInterviewReset}
