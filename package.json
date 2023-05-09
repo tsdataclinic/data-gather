@@ -68,7 +68,10 @@
     "db-downgrade": "python -m alembic downgrade -1",
     "start": "react-scripts start",
     "sync-types": "python scripts/openapi_processor.py && openapi --input openapi.json --output src/api --client fetch --indent 2 --name FastAPIService --postfix FastAPIService && rm -f openapi.json",
-    "test": "react-scripts test"
+    "test": "react-scripts test",
+    "pytest": "PYTHONPATH=. pytest",
+    "coverage-report": "PYTHONPATH=. coverage run --source . -m pytest && coverage report",
+    "coverage-html": "PYTHONPATH=. coverage run --source . -m pytest && coverage html"
   },
   "eslintConfig": {
     "extends": [
