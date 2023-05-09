@@ -18,8 +18,9 @@ import ConfigurableScript from '../../script/ConfigurableScript';
 import { FastAPIService } from '../../api/FastAPIService';
 import assertUnreachable from '../../util/assertUnreachable';
 import type { ResponseData } from '../../script/types';
-import Button from '../ui/Button';
 import { useToast } from '../ui/Toast';
+import useHTTPErrorToast from '../../hooks/useHTTPErrorToast';
+import InterviewCompletionScreen from './InterviewCompletionScreen';
 
 const api = new FastAPIService();
 
@@ -54,37 +55,45 @@ function BaseInterviewRunnerView({
   const [responseConsumer, setResponseConsumer] = React.useState<
     ResponseConsumer | undefined
   >(undefined);
-  const [complete, setComplete] = React.useState<boolean>(false);
+  const [completedResponseData, setCompletedResponseData] = React.useState<
+    ResponseData | undefined
+  >();
   const entries = useInterviewScreenEntries(interviewId);
-  const { mutate: airtableUpdateRecord } = useMutation({
-    mutationFn: (data: {
-      baseId: string;
-      fields: { [fieldName: string]: string };
-      recordId: string;
-      tableId: string;
-    }) =>
-      api.airtable.updateAirtableRecord(
-        data.baseId,
-        data.tableId,
-        data.recordId,
-        interviewId,
-        data.fields,
-      ),
-  });
+  const { mutate: airtableUpdateRecord, isLoading: isUpdatingAirtableRecord } =
+    useMutation({
+      mutationFn: (data: {
+        baseId: string;
+        fields: { [fieldName: string]: string };
+        recordId: string;
+        tableId: string;
+      }) =>
+        api.airtable.updateAirtableRecord(
+          data.baseId,
+          data.tableId,
+          data.recordId,
+          interviewId,
+          data.fields,
+        ),
+    });
 
-  const { mutate: airtableCreateRecord } = useMutation({
-    mutationFn: (data: {
-      baseId: string;
-      fields: { [fieldName: string]: string };
-      tableId: string;
-    }) =>
-      api.airtable.createAirtableRecord(
-        data.baseId,
-        data.tableId,
-        interviewId,
-        data.fields,
-      ),
-  });
+  const { mutate: airtableCreateRecord, isLoading: isCreatingAirtableRecord } =
+    useMutation({
+      mutationFn: (data: {
+        baseId: string;
+        fields: { [fieldName: string]: string };
+        tableId: string;
+      }) =>
+        api.airtable.createAirtableRecord(
+          data.baseId,
+          data.tableId,
+          interviewId,
+          data.fields,
+        ),
+    });
+  const raiseHTTPErrorToast = useHTTPErrorToast();
+  const [errorOnComplete, setErrorOnComplete] = React.useState<
+    { errorMessage: string; errorTitle: string } | undefined
+  >();
 
   const onInterviewComplete = React.useCallback(
     (responseData: ResponseData): void => {
@@ -151,12 +160,21 @@ function BaseInterviewRunnerView({
                     },
                   );
 
-                  airtableUpdateRecord({
-                    baseId,
-                    tableId,
-                    fields,
-                    recordId: airtableRecordId,
-                  });
+                  airtableUpdateRecord(
+                    {
+                      baseId,
+                      tableId,
+                      fields,
+                      recordId: airtableRecordId,
+                    },
+                    {
+                      onError: error => {
+                        const { errorMessage, errorTitle } =
+                          raiseHTTPErrorToast({ error });
+                        setErrorOnComplete({ errorMessage, errorTitle });
+                      },
+                    },
+                  );
                 }
               }
               break;
@@ -196,11 +214,21 @@ function BaseInterviewRunnerView({
                 },
               );
 
-              airtableCreateRecord({
-                fields,
-                baseId: baseTarget,
-                tableId: tableTarget,
-              });
+              airtableCreateRecord(
+                {
+                  fields,
+                  baseId: baseTarget,
+                  tableId: tableTarget,
+                },
+                {
+                  onError: error => {
+                    const { errorMessage, errorTitle } = raiseHTTPErrorToast({
+                      error,
+                    });
+                    setErrorOnComplete({ errorMessage, errorTitle });
+                  },
+                },
+              );
               break;
             }
             default:
@@ -209,7 +237,12 @@ function BaseInterviewRunnerView({
         });
       }
     },
-    [interview, airtableUpdateRecord, airtableCreateRecord],
+    [
+      interview,
+      airtableUpdateRecord,
+      airtableCreateRecord,
+      raiseHTTPErrorToast,
+    ],
   );
 
   // Construct and run an interview on component load.
@@ -245,20 +278,23 @@ function BaseInterviewRunnerView({
       moderator,
     );
     engine.run((result: ResponseData) => {
-      setComplete(true);
+      setCompletedResponseData(result);
       onInterviewComplete(result);
     });
   }, [interview, screens, actions, onInterviewComplete]);
 
   return (
     <div>
-      {complete ? (
-        <div className="m-16 flex flex-col items-center space-y-8">
-          <h1 className="text-2xl">Done!</h1>
-          <Button onClick={onStartNewInterview} intent="primary">
-            Start a new interview
-          </Button>
-        </div>
+      {completedResponseData && interview ? (
+        <InterviewCompletionScreen
+          interview={interview}
+          isUpdatingBackend={
+            isUpdatingAirtableRecord || isCreatingAirtableRecord
+          }
+          onStartNewInterview={onStartNewInterview}
+          error={errorOnComplete}
+          responseData={completedResponseData}
+        />
       ) : (
         <div>
           {interview && currentScreen && entries && responseConsumer && (
