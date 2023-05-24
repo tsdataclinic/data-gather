@@ -66,6 +66,7 @@
     "db-migration": "./scripts/new_db_migration.sh",
     "db-upgrade": "python -m alembic upgrade head",
     "db-downgrade": "python -m alembic downgrade -1",
+    "jobs-refresh-token-notif": "python -m server.jobs.refresh_token_email_notification",
     "start": "react-scripts start",
     "sync-types": "python scripts/openapi_processor.py && openapi --input openapi.json --output src/api --client fetch --indent 2 --name FastAPIService --postfix FastAPIService && rm -f openapi.json",
     "test": "react-scripts test"
