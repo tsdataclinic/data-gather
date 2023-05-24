@@ -17,7 +17,7 @@ data = response.json()
 
 if __name__ == '__main__':
     # Iterate over the interviews and send the emails
-    for interview_id, interview_data in test_data.items():
+    for interview_id, interview_data in data.items():
         email = interview_data['owner']['email']
         name = interview_data['interview']['name']
         expires = interview_data['interview']['refreshTokenExpires']
