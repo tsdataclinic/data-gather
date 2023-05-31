@@ -58,7 +58,7 @@ export default function InterviewRunnerScreen({
       }
       const formResponses: ResponseData = {};
 
-      // check if any form is an airtable lookup and is missing data
+      // check if any form is a required airtable lookup and is missing data
       const invalidAirtableSelection = [...formData.entries()].some(
         ([key, value]) => {
           const entry = entriesMap.get(key);
@@ -69,7 +69,7 @@ export default function InterviewRunnerScreen({
           if (
             entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
           ) {
-            return value === undefined || value === '';
+            return entry.required ? value === undefined || value === '' : false;
           }
           return false;
         },
@@ -86,6 +86,13 @@ export default function InterviewRunnerScreen({
       formData.forEach((value, key) => {
         const entry = entriesMap.get(key);
         if (entry) {
+          // If there was not a selection from the Airtable lookup don't sent to the response consumer
+          if (
+            entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE &&
+            (value === undefined || value === '')
+          ) {
+            return;
+          }
           formResponses[key] = {
             entry,
             response:
