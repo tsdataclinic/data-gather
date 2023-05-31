@@ -444,7 +444,7 @@ export function validate(
         actionConfig.type === ActionType.PUSH &&
         actionConfig.payload.length === 0
       ) {
-        return [false, 'A Push action cannot have an empty payload'];
+        return [false, 'Missing next stage for action'];
       }
       return undefined;
     }),
