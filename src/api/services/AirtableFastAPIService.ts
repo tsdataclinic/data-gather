@@ -166,7 +166,7 @@ export class AirtableFastAPIService {
    * this function helps the browser complete the OAuth request.
    * - App => click 'connect to airtable', redirects to this endpoint
    * - This function sends 302 Redirect to Airtable OAuth screen -> user confirms
-   * - On confirm, Airtable setup to redirectd back to callback App URL
+   * - On confirm, Airtable setup to redirected back to callback App URL
    * - UI takes response data and continues handling auth from there.
    *
    * Most of this follows: https://github.com/Airtable/oauth-example

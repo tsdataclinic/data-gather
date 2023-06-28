@@ -689,7 +689,7 @@ def _adjust_screen_order(
     Return the newly created screen and the new list of ordered screens.
     """
     sorted_screens = sorted(existing_screens, key=lambda x: x.order)
-    # If an order was not speficied for the new screen add it to the end
+    # If an order was not specified for the new screen add it to the end
     if new_screen.order == None:
         new_screen.order = sorted_screens[-1].order + 1
     else:
@@ -851,7 +851,7 @@ async def airtable_auth(
     this function helps the browser complete the OAuth request.
     - App => click 'connect to airtable', redirects to this endpoint
     - This function sends 302 Redirect to Airtable OAuth screen -> user confirms
-    - On confirm, Airtable setup to redirectd back to callback App URL
+    - On confirm, Airtable setup to redirected back to callback App URL
     - UI takes response data and continues handling auth from there.
 
     Most of this follows: https://github.com/Airtable/oauth-example 
@@ -978,7 +978,7 @@ def is_airtable_access_token_expired(airtable_settings: AirtableSettings, buffer
     """
         Checks to see if the token expiry time (minus a buffer) has passed.
     """
-    # time is stored in miliseconds, but python wants seconds
+    # time is stored in milliseconds, but python wants seconds
     token_expiry_time = datetime.fromtimestamp(airtable_settings['authSettings']['accessTokenExpires']//1000) - timedelta(milliseconds=buffer)
     now = datetime.now()
     if (now > token_expiry_time):
@@ -990,7 +990,7 @@ def is_airtable_refresh_token_expired(airtable_settings: AirtableSettings, buffe
     """
         Checks to see if the token expiry time (minus a buffer) has passed.
     """
-    # time is stored in miliseconds, but python wants seconds
+    # time is stored in milliseconds, but python wants seconds
     token_expiry_time = datetime.fromtimestamp(airtable_settings['authSettings']['refreshTokenExpires']//1000) - timedelta(milliseconds=buffer)
     now = datetime.now()
     if (now > token_expiry_time):
