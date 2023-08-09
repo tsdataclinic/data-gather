@@ -225,4 +225,34 @@ export class AirtableFastAPIService {
     });
   }
 
-}
+  /**
+   * Get Expiring Airtable Refresh Tokens
+   * Checks every interview in the DB for an associated Airtable settings.
+   * If there is one, checks to see if the authorization refresh token will expire within the next week.
+   * Returns an object of the following shape:
+   * {
+     * <interview.id>: {
+       * "interview": {
+         * "name": str,
+         * "refreshTokenExpires": num (date in seconds)
+         * },
+         * "owner": {
+           * "id": str,
+           * "email": str
+           * }
+           * }
+           * }
+           *
+           * The consumer of this API can act on that response by, for example,
+           * sending an email to the owner of the interview alerting them.
+           * @returns any Successful Response
+           * @throws ApiError
+           */
+          public getExpiringAirtableRefreshTokens(): CancelablePromise<any> {
+            return this.httpRequest.request({
+              method: 'GET',
+              url: '/api/get-expiring-airtable-refresh-tokens',
+            });
+          }
+
+        }
