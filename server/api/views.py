@@ -282,6 +282,10 @@ def update_interview(
         [SubmissionAction.from_orm(action) for action in interview.submission_actions],
     )
 
+    # delete the necessary actions
+    for action in actions_to_delete:
+        session.delete(action)
+
     # set the updated actions
     db_interview.submission_actions = actions_to_set
 
@@ -293,23 +297,21 @@ def update_interview(
             for setting in interview.interview_settings
         ],
     )
-    # set the updated settings
-    db_interview.interview_settings = settings_to_set
-
-    # now update the top-level db_interview
-    _update_model_diff(
-        db_interview,
-        interview.copy(exclude={"submission_actions", "interview_settings"}),
-    )
-    session.add(db_interview)
-
-    # delete the necessary actions
-    for action in actions_to_delete:
-        session.delete(action)
 
     # delete the necessary settings
     for setting in settings_to_delete:
         session.delete(setting)
+
+    # set the updated settings
+    db_interview.interview_settings = settings_to_set
+
+    # now update the top-level db_interview values
+    _update_model_diff(
+        db_interview,
+        interview.copy(exclude={"submission_actions", "interview_settings"}),
+    )
+
+    session.add(db_interview)
 
     try:
         session.commit()
