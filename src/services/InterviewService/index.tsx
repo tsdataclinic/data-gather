@@ -82,7 +82,7 @@ export class InterviewServiceImpl implements InterviewServiceAPI {
       interviewId: string,
       newScreenOrder: readonly string[],
     ): Promise<Interview.WithScreensAndActions> =>
-      this.getStore().interviewAPI.updateInterviewStartingState(
+      this.getStore().interviewAPI.updateScreensOrder(
         interviewId,
         newScreenOrder,
       ),
