@@ -17,7 +17,7 @@ export default function Header(): JSX.Element {
 
   return (
     <>
-      <header className="z-50 flex h-12 w-full items-center bg-slate-800 py-2 px-8 text-white">
+      <header className="z-50 flex h-12 w-full items-center space-x-3 bg-slate-800 py-2 px-8 text-white">
         <div className="flex-1">
           <Link to="/">
             <span className="text-2xl font-bold tracking-wide">
@@ -25,6 +25,12 @@ export default function Header(): JSX.Element {
             </span>
             <span className="pl-2 text-xs">by Data Clinic</span>
           </Link>
+        </div>
+        <div>
+          <Link to="/terms-of-use">Terms of Use</Link>
+        </div>
+        <div>
+          <Link to="/privacy-policy">Privacy Policy</Link>
         </div>
         <Button
           unstyled
