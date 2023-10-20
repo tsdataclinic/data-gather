@@ -20,7 +20,9 @@ export default function Header(): JSX.Element {
       <header className="z-50 flex h-12 w-full items-center bg-slate-800 py-2 px-8 text-white">
         <div className="flex-1">
           <Link to="/">
-            <span className="text-2xl font-bold tracking-wide">Interview</span>
+            <span className="text-2xl font-bold tracking-wide">
+              Data Gather
+            </span>
             <span className="pl-2 text-xs">by Data Clinic</span>
           </Link>
         </div>
