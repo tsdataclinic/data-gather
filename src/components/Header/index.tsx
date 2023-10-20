@@ -41,6 +41,7 @@ export default function Header(): JSX.Element {
             <span className="pl-2 text-xs">by Data Clinic</span>
           </Link>
         </div>
+        <HoverableLink to="/about">About</HoverableLink>
         <HoverableLink to="/terms-of-use">Terms of Use</HoverableLink>
         <HoverableLink to="/privacy-policy">Privacy Policy</HoverableLink>
         <Button

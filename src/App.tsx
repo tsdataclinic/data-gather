@@ -11,6 +11,7 @@ import AuthProvider from './auth/AuthProvider';
 import { ToastManager } from './components/ui/Toast';
 import TermsOfUseView from './components/TermsOfUseView';
 import PrivacyPolicyView from './components/PrivacyPolicyView';
+import AboutPageView from './components/AboutPageView';
 import LegalConfirmationModal from './components/LegalConfirmationModal';
 
 const QUERY_CLIENT = new QueryClient();
@@ -42,6 +43,7 @@ export default function App(): JSX.Element {
                     path="/privacy-policy"
                     element={<PrivacyPolicyView />}
                   />
+                  <Route path="/about" element={<AboutPageView />} />
 
                   <Route
                     path="/interview/:interviewId/run"
