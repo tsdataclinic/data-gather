@@ -1,6 +1,6 @@
 # Data Gather
 
-An app to create interactive question-and-answer data collection experiences.
+An data entry app builder.
 
 ## Developing
 
