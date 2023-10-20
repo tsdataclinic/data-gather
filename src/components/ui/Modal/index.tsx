@@ -15,6 +15,7 @@ type Props = {
    */
   confirmIsDangerous?: boolean;
   confirmText?: React.ReactNode;
+  hideCancelButton?: boolean;
   hideFooterButtons?: boolean;
   isOpen: boolean;
   onConfirmClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
@@ -117,6 +118,7 @@ export default function Modal({
   useConfirmButton = false,
   centerFooter = false,
   hideFooterButtons = false,
+  hideCancelButton = false,
 }: Props): JSX.Element {
   const onOpenChange = React.useCallback(
     (open: boolean) => {
@@ -150,9 +152,11 @@ export default function Modal({
                   {confirmText}
                 </Button>
               ) : null}
-              <Dialog.Close asChild>
-                <Button>Close</Button>
-              </Dialog.Close>
+              {hideCancelButton ? null : (
+                <Dialog.Close asChild>
+                  <Button>Close</Button>
+                </Dialog.Close>
+              )}
             </StyledFooter>
           )}
         </StyledModalContent>

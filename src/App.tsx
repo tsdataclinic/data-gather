@@ -9,6 +9,9 @@ import InterviewService from './services/InterviewService';
 import { AppState, AppDispatch, useAppReducer } from './store/appState';
 import AuthProvider from './auth/AuthProvider';
 import { ToastManager } from './components/ui/Toast';
+import TermsOfUseView from './components/TermsOfUseView';
+import PrivacyPolicyView from './components/PrivacyPolicyView';
+import LegalConfirmationModal from './components/LegalConfirmationModal';
 
 const QUERY_CLIENT = new QueryClient();
 const INTERVIEW_API_CLIENT = new InterviewService.API();
@@ -24,6 +27,7 @@ export default function App(): JSX.Element {
             <AppDispatch.Provider value={dispatch}>
               <div className="flex h-screen flex-col bg-gray-50 text-slate-900">
                 <Header />
+                <LegalConfirmationModal />
                 <Routes>
                   <Route
                     path="/"
@@ -33,6 +37,12 @@ export default function App(): JSX.Element {
                       </InterviewService.Provider>
                     }
                   />
+                  <Route path="/terms-of-use" element={<TermsOfUseView />} />
+                  <Route
+                    path="/privacy-policy"
+                    element={<PrivacyPolicyView />}
+                  />
+
                   <Route
                     path="/interview/:interviewId/run"
                     element={
