@@ -1,6 +1,10 @@
 # Data Gather
 
-An data entry app builder.
+A data entry app builder that supports:
+
+- Complex conditional logic
+- Connecting to Airtable as a 3rd party data store (Google Sheets integration coming soon!)
+- Read, update, and insert operations
 
 ## Developing
 

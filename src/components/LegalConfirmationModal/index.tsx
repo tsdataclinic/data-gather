@@ -7,7 +7,9 @@ const CACHE_KEY = 'legalModalHasBeenSeen';
 export default function LegalConfirmationModal(): JSX.Element {
   const urlPath = useLocation().pathname;
   const isInLegalPage =
-    urlPath === '/terms-of-use' || urlPath === '/privacy-policy';
+    urlPath === '/terms-of-use' ||
+    urlPath === '/privacy-policy' ||
+    urlPath === '/about';
 
   const [isModalOpen, setIsModalOpen] = React.useState(
     !isInLegalPage && localStorage.getItem(CACHE_KEY) !== 'true',
@@ -37,7 +39,7 @@ export default function LegalConfirmationModal(): JSX.Element {
       <p>
         I agree that my use is subject to the{' '}
         <Link className="text-blue-600" to="/terms-of-use">
-          terms and conditions
+          terms of use
         </Link>{' '}
         and the{' '}
         <Link className="text-blue-600" to="privacy-policy">

@@ -36,7 +36,6 @@ export const P = styled.p`
 export default function TermsOfUseView(): JSX.Element {
   return (
     <Section>
-      <P>Legal Disclosure</P>
       <H1>Terms of use of the Two Sigma Investments, LP Web Site</H1>
       <P>
         Your use of the web sites on which these terms reside as well as any

@@ -18,8 +18,8 @@ export default function PrivacyPolicyView(): JSX.Element {
       <P>
         This Privacy Policy describes how Two Sigma Investments, LP and its
         affiliates (“Two Sigma”, “we”, “our” or “us”) treat personal
-        information, including personal information collected on
-        <a href="https://datagather.tsdataclinic.com">
+        information, including personal information collected on{' '}
+        <a className="text-blue-600" href="https://datagather.tsdataclinic.com">
           datagather.tsdataclinic.com
         </a>{' '}
         where this Privacy Policy is located or other features, tools, services
