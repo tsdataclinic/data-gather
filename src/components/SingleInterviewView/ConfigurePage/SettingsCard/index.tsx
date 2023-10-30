@@ -21,7 +21,12 @@ const SETTING_TYPE_OPTIONS = InterviewSettings.SETTING_TYPES.map(
     displayValue: InterviewSettings.settingTypeToDisplayName(settingType),
     value: settingType,
   }),
-);
+).concat([
+  {
+    displayValue: 'Google Sheets',
+    value: 'google-sheets' as any,
+  },
+]);
 
 type Props = {
   interview: Interview.UpdateT;

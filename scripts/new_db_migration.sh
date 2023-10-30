@@ -1,4 +1,5 @@
 #!/bin/bash
+# This script generates a new db migration script in the `migrations/` directory
 if [ $# -eq 0 ];
 then
   echo 'Requires a single argument as the migration title'
