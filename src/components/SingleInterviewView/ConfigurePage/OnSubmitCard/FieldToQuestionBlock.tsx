@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import * as Interview from '../../../../models/Interview';
-import { AirtableTable } from '../../../../models/InterviewSetting';
+import { AirtableTable } from '../../../../models/DataStoreSetting';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import EntryDropdown from './EntryDropdown';
 

@@ -6,20 +6,20 @@ import forge from 'node-forge';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import * as Interview from '../../../../models/Interview';
-import * as InterviewSettings from '../../../../models/InterviewSetting';
+import * as DataStoreSettings from '../../../../models/DataStoreSetting';
 import Button from '../../../ui/Button';
 import LabelWrapper from '../../../ui/LabelWrapper';
 import Dropdown from '../../../ui/Dropdown';
-import { InterviewSettingType } from '../../../../api/models/InterviewSettingType';
+import { DataStoreType } from '../../../../api/models/DataStoreType';
 import { FastAPIService } from '../../../../api/FastAPIService';
 
 const api = new FastAPIService();
 
-type EditableSetting = InterviewSettings.T | InterviewSettings.CreateT;
-const SETTING_TYPE_OPTIONS = InterviewSettings.SETTING_TYPES.map(
-  settingType => ({
-    displayValue: InterviewSettings.settingTypeToDisplayName(settingType),
-    value: settingType,
+type EditableSetting = DataStoreSettings.T | DataStoreSettings.CreateT;
+const SETTING_TYPE_OPTIONS = DataStoreSettings.SETTING_TYPES.map(
+  dataStoreType => ({
+    displayValue: DataStoreSettings.dataStoreTypeToDisplayName(dataStoreType),
+    value: dataStoreType,
   }),
 ).concat([
   {
@@ -42,9 +42,9 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     onInterviewChange({
       ...interview,
       interviewSettings: interview.interviewSettings.concat(
-        InterviewSettings.create({
+        DataStoreSettings.create({
           interviewId: interview.id,
-          type: InterviewSettings.SettingType.AIRTABLE,
+          type: DataStoreSettings.DataStoreType.AIRTABLE,
         }),
       ),
     });
@@ -114,7 +114,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
   }, []);
 
   const renderAirtableBaseTable = (
-    bases: InterviewSettings.AirtableBase[],
+    bases: DataStoreSettings.AirtableBase[],
   ): JSX.Element => {
     const rowDefs = bases.flatMap(base =>
       base.tables?.flatMap(table =>
@@ -158,7 +158,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
 
   const renderSettingBlock = (setting: EditableSetting): JSX.Element => {
     switch (setting.type) {
-      case InterviewSettings.SettingType.AIRTABLE: {
+      case DataStoreSettings.DataStoreType.AIRTABLE: {
         const airtableSettings = setting.settings;
         return (
           <div key={`_${airtableSettings}`} className="space-y-4">
@@ -211,7 +211,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     <div className="grid h-auto grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg">
       <div className="flex h-fit items-center space-x-3">
         <FontAwesomeIcon size="1x" icon={IconType.faGear} />
-        <h2>Interview settings</h2>
+        <h2>Datastore Settings</h2>
       </div>
       <div className="col-span-3 space-y-4">
         {interview.interviewSettings.map(setting => (
@@ -231,16 +231,16 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
                 icon={IconType.faX}
               />
             </Button>
-            <LabelWrapper className="mb-4" label="Setting type">
+            <LabelWrapper className="mb-4" label="Data Store">
               <Dropdown
                 value={setting.type}
                 options={SETTING_TYPE_OPTIONS}
-                onChange={settingType => {
+                onChange={dataStoreType => {
                   // reuse the same id so that we edit the existing setting
                   onSettingChange(
                     setting,
-                    InterviewSettings.create({
-                      type: settingType as InterviewSettingType,
+                    DataStoreSettings.create({
+                      type: dataStoreType as DataStoreType,
                       interviewId: setting.interviewId,
                     }),
                   );
@@ -253,12 +253,14 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
         <Button
           intent="primary"
           onClick={onAddClick}
-          // Quick way to disallow multiple Airtable settings => TODO: change this when adding more SettingTypes
+          // Quick way to disallow multiple Airtable settings
+          // TODO: change this when adding more DataStoreTypes
           disabled={interview.interviewSettings.some(
-            setting => setting.type === InterviewSettings.SettingType.AIRTABLE,
+            setting =>
+              setting.type === DataStoreSettings.DataStoreType.AIRTABLE,
           )}
         >
-          + Add setting
+          + Add Data Store
         </Button>
       </div>
     </div>

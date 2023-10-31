@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Optional, Union
+from typing import Union
 
 from sqlalchemy.orm import validates
 from sqlmodel import Field, Relationship, UniqueConstraint
@@ -18,7 +18,7 @@ class InterviewBase(APIModel):
     description: str
     name: str
     notes: str
-    vanity_url: Optional[str]
+    vanity_url: str | None
     published: bool
     owner_id: str = Field(foreign_key="user.id")
     default_language: str
@@ -32,10 +32,10 @@ class Interview(InterviewBase, table=True):
 
     __tablename__: str = "interview"
     __table_args__ = (UniqueConstraint("vanity_url"),)
-    id: Optional[uuid.UUID] = Field(
+    id: uuid.UUID | None = Field(
         default_factory=uuid.uuid4, primary_key=True, nullable=False
     )
-    created_date: Optional[datetime] = Field(
+    created_date: datetime | None = Field(
         default_factory=datetime.utcnow, nullable=False
     )
 
@@ -47,7 +47,7 @@ class Interview(InterviewBase, table=True):
     submission_actions: list["SubmissionAction"] = Relationship(
         back_populates="interview"
     )
-    interview_settings: list["InterviewSetting"] = Relationship(
+    interview_settings: list["DataStoreSetting"] = Relationship(
         back_populates="interview"
     )
     owner: "User" = Relationship(back_populates="interviews")
@@ -63,8 +63,8 @@ class InterviewCreate(InterviewBase):
     `id` and `created_date` are optional because these are set by the database.
     """
 
-    id: Optional[uuid.UUID]
-    created_date: Optional[datetime]
+    id: uuid.UUID | None
+    created_date: datetime | None
 
 
 class InterviewRead(InterviewBase):
@@ -85,7 +85,7 @@ class InterviewReadWithScreensAndActions(InterviewRead):
 
     screens: list["InterviewScreenRead"] = []
     submission_actions: list["SubmissionActionRead"] = []
-    interview_settings: list["InterviewSettingRead"] = []
+    interview_settings: list["DataStoreSettingRead"] = []
 
 
 class InterviewUpdate(InterviewRead):
@@ -93,12 +93,16 @@ class InterviewUpdate(InterviewRead):
     the nested submissionActions.
     """
 
-    submission_actions: list[Union["SubmissionActionRead", "SubmissionActionCreate"]]
-    interview_settings: list[Union["InterviewSettingRead", "InterviewSettingCreate"]]
+    submission_actions: list["SubmissionActionRead | SubmissionActionCreate"]
+    interview_settings: list["DataStoreSettingRead | DataStoreSettingCreate"]
 
 
 # Handle circular imports
-from server.models.interview_setting import InterviewSetting, InterviewSettingCreate, InterviewSettingRead
+from server.models.data_store_setting import (
+    DataStoreSetting,
+    DataStoreSettingCreate,
+    DataStoreSettingRead,
+)
 from server.models.interview_screen import InterviewScreen, InterviewScreenRead
 from server.models.submission_action import (
     SubmissionAction,

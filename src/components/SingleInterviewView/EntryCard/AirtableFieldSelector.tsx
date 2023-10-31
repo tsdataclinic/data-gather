@@ -4,7 +4,7 @@ import Form from '../../ui/Form';
 import LabelWrapper from '../../ui/LabelWrapper';
 import MultiSelect from '../../ui/MultiSelect';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
-import * as InterviewSetting from '../../../models/InterviewSetting';
+import * as DataStoreSetting from '../../../models/DataStoreSetting';
 import useInterview from '../../../hooks/useInterview';
 
 type Props = {
@@ -13,7 +13,7 @@ type Props = {
    * Pass a way to filter the fields to show so that the UI doesn't show
    * all fields
    */
-  fieldFilterFn?: (airtableField: InterviewSetting.AirtableField) => boolean;
+  fieldFilterFn?: (airtableField: DataStoreSetting.AirtableField) => boolean;
   fieldSelectorLabel?: string;
   onAirtableConfigurationChange: (
     newConfig: InterviewScreenEntry.AirtableOptions,
@@ -31,7 +31,7 @@ export default function AirtableFieldSelector({
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
   const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
   );
   const airtableSettings = interviewSetting?.settings;
   const bases = airtableSettings?.bases;

@@ -30,8 +30,10 @@ from server.api.services.interview_screen_service import InterviewScreenService
 from server.api.services.interview_service import InterviewService
 from server.db import SQLITE_DB_PATH
 from server.engine import create_fk_constraint_engine
+from server.models.airtable_settings import AirtableSettings
 from server.models.common import OrderedModel
 from server.models.conditional_action import ConditionalAction
+from server.models.data_store_setting import DataStoreSetting, DataStoreType
 from server.models.interview import (Interview, InterviewCreate, InterviewRead,
                                      InterviewReadWithScreensAndActions,
                                      InterviewUpdate, ValidationError)
@@ -42,10 +44,6 @@ from server.models.interview_screen import (InterviewScreen,
                                             InterviewScreenUpdate)
 from server.models.interview_screen_entry import (
     InterviewScreenEntry, InterviewScreenEntryReadWithScreen)
-from server.models.interview_setting import (AirtableAuthSettings,
-                                             AirtableSettings,
-                                             InterviewSetting,
-                                             InterviewSettingType)
 from server.models.submission_action import SubmissionAction
 from server.models.user import User, UserRead
 
@@ -293,7 +291,7 @@ def update_interview(
     settings_to_set, settings_to_delete = _diff_model_lists(
         db_interview.interview_settings,
         [
-            InterviewSetting.from_orm(setting)
+            DataStoreSetting.from_orm(setting)
             for setting in interview.interview_settings
         ],
     )
@@ -615,7 +613,7 @@ TInterviewChild = TypeVar(
     ConditionalAction,
     InterviewScreenEntry,
     SubmissionAction,
-    InterviewSetting,
+    DataStoreSetting,
 )
 
 
@@ -728,8 +726,7 @@ async def get_airtable_records(
     Fetch records from an airtable table. Filtering can be performed
     by adding query parameters to the URL, keyed by column name.
     """
-    airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
-    airtable_settings = airtable_setting_container.settings
+    airtable_settings = interview_service.get_airtable_settings(interview_id)
 
     if (is_airtable_access_token_expired(airtable_settings)):
         await refresh_and_update_airtable_auth(interview_id, interview_service, session)
@@ -759,9 +756,7 @@ def get_airtable_record(
     """
     Fetch record with a particular id from a table in airtable.
     """
-    airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
-    airtable_settings = airtable_setting_container.settings
-
+    airtable_settings = interview_service.get_airtable_settings(interview_id)
     airtable_client = AirtableAPI(airtable_settings)
     return airtable_client.fetch_record(base_id, table_name, record_id)
 
@@ -781,14 +776,14 @@ def get_airtable_schema(
     interview = interview_service.get_interview_by_id(interview_id)
     new_interview = InterviewUpdate.from_orm(interview)
     update_interview_setting_index = 0
-    update_interview_setting = InterviewSetting()
+    update_interview_setting = DataStoreSetting()
 
     # look for the airtable setting
     airtableSetting = {}
     for index, interview_setting in enumerate(interview.interview_settings):
         if (
             interview_setting.settings
-            and interview_setting.type == InterviewSettingType.AIRTABLE
+            and interview_setting.type == DataStoreType.AIRTABLE
         ):
             update_interview_setting_index = index
             update_interview_setting = interview_setting
@@ -816,9 +811,7 @@ async def create_airtable_record(
     """
     Create an airtable record in a table.
     """
-    airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
-    airtable_settings = airtable_setting_container.settings
-
+    airtable_settings = interview_service.get_airtable_settings(interview_id)
     airtable_client = AirtableAPI(airtable_settings)
     return airtable_client.create_record(base_id, table_name, record)
 
@@ -836,9 +829,7 @@ async def update_airtable_record(
     """
     Update an airtable record in a table.
     """
-    airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview_id, InterviewSettingType.AIRTABLE)
-    airtable_settings = airtable_setting_container.settings
-
+    airtable_settings = interview_service.get_airtable_settings(interview_id)
     airtable_client = AirtableAPI(airtable_settings)
     return airtable_client.update_record(base_id, table_name, record_id, update)
 
@@ -890,7 +881,8 @@ async def airtable_callback(
 ):
     
     if (request.query_params.get('error')):
-        return Response('Error: ' + request.query_params.get('error'))
+        error_str = request.query_params.get('error')
+        return Response(f"Error: {error_str}")
 
     redirect_uri=f"{REACT_APP_SERVER_URI}/api/airtable-callback" # move to Env
     code = request.query_params.get("code")
@@ -947,8 +939,8 @@ async def airtable_callback(
         # create empty interview_settings object
         interview = interview_service.get_interview_by_id(interview_id)
         new_interview = InterviewUpdate.from_orm(interview)
-        new_interview_setting = InterviewSetting()
-        new_interview_setting.type = InterviewSettingType.AIRTABLE
+        new_interview_setting = DataStoreSetting()
+        new_interview_setting.type = DataStoreType.AIRTABLE
         new_interview_setting.interview_id = interview_id
         
         # fetch airtable schema
@@ -981,11 +973,12 @@ def is_airtable_access_token_expired(airtable_settings: AirtableSettings, buffer
         Checks to see if the token expiry time (minus a buffer) has passed.
     """
     # time is stored in miliseconds, but python wants seconds
-    token_expiry_time = datetime.fromtimestamp(airtable_settings['authSettings']['accessTokenExpires']//1000) - timedelta(milliseconds=buffer)
-    now = datetime.now()
-    if (now > token_expiry_time):
-        LOG.info(f"Token expired | Current time: {now} | Token expiry time: {token_expiry_time}")
-        return True
+    if airtable_settings.authSettings:
+        token_expiry_time = datetime.fromtimestamp(airtable_settings.authSettings.accessTokenExpires //1000) - timedelta(milliseconds=buffer)
+        now = datetime.now()
+        if (now > token_expiry_time):
+            LOG.info(f"Token expired | Current time: {now} | Token expiry time: {token_expiry_time}")
+            return True
     return False
 
 def is_airtable_refresh_token_expired(airtable_settings: AirtableSettings, buffer):
@@ -993,16 +986,20 @@ def is_airtable_refresh_token_expired(airtable_settings: AirtableSettings, buffe
         Checks to see if the token expiry time (minus a buffer) has passed.
     """
     # time is stored in miliseconds, but python wants seconds
-    token_expiry_time = datetime.fromtimestamp(airtable_settings['authSettings']['refreshTokenExpires']//1000) - timedelta(milliseconds=buffer)
-    now = datetime.now()
-    if (now > token_expiry_time):
-        LOG.info(f"Refresh token expired | Current time: {now} | Refresh token expiry time: {token_expiry_time}")
-        return True
-    LOG.info(f"Refresh token NOT expired | Current time: {now} | Refresh token expiry time: {token_expiry_time}")
+    if airtable_settings.authSettings:
+        token_expiry_time = datetime.fromtimestamp(airtable_settings.authSettings.refreshTokenExpires//1000) - timedelta(milliseconds=buffer)
+        now = datetime.now()
+        if (now > token_expiry_time):
+            LOG.info(f"Refresh token expired | Current time: {now} | Refresh token expiry time: {token_expiry_time}")
+            return True
+        LOG.info(f"Refresh token NOT expired | Current time: {now} | Refresh token expiry time: {token_expiry_time}")
     return False
 
 # TODO - Run this on a schedule or on certain Airtable API calls
 def refresh_airtable_auth(airtable_settings: AirtableSettings):
+    if airtable_settings.authSettings is None:
+        return
+
     credentials = f"{AIRTABLE_CLIENT_ID}:{AIRTABLE_CLIENT_SECRET}".encode('utf-8')
     encoded_credentials = base64.b64encode(credentials).decode('utf-8')
     authorizationHeader = f"Basic {encoded_credentials}"
@@ -1013,7 +1010,7 @@ def refresh_airtable_auth(airtable_settings: AirtableSettings):
     params = {
         'client_id': AIRTABLE_CLIENT_ID,
         'grant_type': "refresh_token",
-        'refresh_token': airtable_settings['authSettings']['refreshToken'],
+        'refresh_token': airtable_settings.authSettings.refreshToken,
     }
     response = httpx.post(url=AIRTABLE_TOKEN_URL,
         headers=headers,
@@ -1034,11 +1031,10 @@ def refresh_airtable_auth(airtable_settings: AirtableSettings):
     refresh_token_expires_timestamp = (refresh_token_expires.timestamp())*1000
     output['refresh_expires_in'] = refresh_token_expires_timestamp
 
-    airtable_settings['authSettings']['accessToken'] = output['access_token']
-    airtable_settings['authSettings']['refreshToken'] = output['refresh_token']
-    airtable_settings['authSettings']['accessTokenExpires'] = output['expires_in']
-    airtable_settings['authSettings']['refreshTokenExpires'] = output['refresh_expires_in']
-
+    airtable_settings.authSettings.accessToken = output['access_token']
+    airtable_settings.authSettings.refreshToken = output['refresh_token']
+    airtable_settings.authSettings.accessTokenExpires = output['expires_in']
+    airtable_settings.authSettings.refreshTokenExpires = output['refresh_expires_in']
     return airtable_settings
 
 
@@ -1056,7 +1052,7 @@ async def refresh_and_update_airtable_auth(
     # look for the airtable setting
     airtableSetting = {}
     for index, interview_setting in enumerate(interview.interview_settings):
-        if interview_setting.settings and interview_setting.type == InterviewSettingType.AIRTABLE:
+        if interview_setting.settings and interview_setting.type == DataStoreType.AIRTABLE:
             update_interview_setting_index = index
             update_interview_setting = interview_setting
             airtableSetting = interview_setting.settings
@@ -1101,25 +1097,26 @@ async def get_expiring_airtable_refresh_tokens():
     output = {}
     for interview in interview_result:
         try:
-            airtable_setting_container = interview_service.get_interview_setting_by_interview_id_and_type(interview.id, InterviewSettingType.AIRTABLE)
-            if (airtable_setting_container and airtable_setting_container.settings and airtable_setting_container.settings['authSettings']): 
-                airtable_settings = airtable_setting_container.settings
+            airtable_settings = interview_service.get_airtable_settings(str(interview.id))
+
+            if airtable_settings.authSettings: 
                 if (is_airtable_refresh_token_expired(airtable_settings, ONE_WEEK_MS)):
                     user_owner = session.exec(
                         select(User)
                         .where(User.id == interview.owner_id)
                     )
                     owner = user_owner.first()
-                    output[interview.id] = {
-                        'interview': {
-                            'name': interview.name if interview.name else '',
-                            'refreshTokenExpires': airtable_settings['authSettings']['refreshTokenExpires'],
-                        },
-                        'owner': { 
-                            'id': owner.id,
-                            'email': owner.email
+                    if owner is not None:
+                        output[interview.id] = {
+                            'interview': {
+                                'name': interview.name if interview.name else '',
+                                'refreshTokenExpires': airtable_settings.authSettings.refreshTokenExpires,
+                            },
+                            'owner': { 
+                                'id': owner.id,
+                                'email': owner.email
+                            }
                         }
-                    }
                     
         except Exception as e:
             # if there's no interview_setting an exception will be thrown by interview_service

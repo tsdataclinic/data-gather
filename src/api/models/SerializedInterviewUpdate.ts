@@ -2,8 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SerializedInterviewSettingCreate } from './SerializedInterviewSettingCreate';
-import type { SerializedInterviewSettingRead } from './SerializedInterviewSettingRead';
+import type { SerializedDataStoreSettingCreate } from './SerializedDataStoreSettingCreate';
+import type { SerializedDataStoreSettingRead } from './SerializedDataStoreSettingRead';
 import type { SerializedSubmissionActionCreate } from './SerializedSubmissionActionCreate';
 import type { SerializedSubmissionActionRead } from './SerializedSubmissionActionRead';
 
@@ -23,6 +23,6 @@ export type SerializedInterviewUpdate = {
   id: string;
   createdDate: string;
   submissionActions: Array<(SerializedSubmissionActionRead | SerializedSubmissionActionCreate)>;
-  interviewSettings: Array<(SerializedInterviewSettingRead | SerializedInterviewSettingCreate)>;
+  interviewSettings: Array<(SerializedDataStoreSettingRead | SerializedDataStoreSettingCreate)>;
 };
 

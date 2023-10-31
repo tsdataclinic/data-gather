@@ -5,7 +5,7 @@ import InputText from '../ui/InputText';
 import Form from '../ui/Form';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import * as Interview from '../../models/Interview';
-import * as InterviewSetting from '../../models/InterviewSetting';
+import * as DataStoreSetting from '../../models/DataStoreSetting';
 import assertUnreachable from '../../util/assertUnreachable';
 import useAirtableQuery from '../../hooks/useAirtableQuery';
 import LabelWrapper from '../ui/LabelWrapper';
@@ -44,10 +44,10 @@ export default function InterviewRunnerEntry({
       : undefined,
   );
 
-  const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+  const dataStoreSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
   );
-  const airtableSettings = interviewSetting?.settings;
+  const airtableSettings = dataStoreSetting?.settings;
 
   const allAirtableFields = React.useMemo(
     () =>

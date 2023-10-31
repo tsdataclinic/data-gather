@@ -1,4 +1,3 @@
-from datetime import datetime
 import json
 import logging
 import sys
@@ -9,7 +8,7 @@ from fastapi import HTTPException
 from pyairtable import Api
 from pyairtable.formulas import FIND, LOWER, OR, STR_VALUE
 
-from server.models.interview_setting import AirtableBase, AirtableField, AirtableSettings, AirtableTable
+from server.models.airtable_settings import AirtableSettings
 
 # https://pyairtable.readthedocs.io/en/latest/api.html
 
@@ -70,12 +69,12 @@ class AirtableAPI:
     """
 
     def __init__(self, airtableSettings: AirtableSettings):
-        if not airtableSettings['authSettings']['accessToken']:
+        if airtableSettings.authSettings and airtableSettings.authSettings.accessToken:
+            self.api = Api(airtableSettings.authSettings.accessToken)
+        else:
             logger.warn(
                 "**No Airtable API key set. Airtable endpoints will not function.**"
             )
-
-        self.api = Api(airtableSettings['authSettings']['accessToken'])
 
     @airtable_errors_wrapped
     def fetch_record(self, base_id: str, table_name: str, id: str) -> Record:
@@ -92,7 +91,9 @@ class AirtableAPI:
         return self.api.get(base_id, table_name, id)
 
     @airtable_errors_wrapped
-    def search_records(self, base_id: str, table_name: str, query: PartialRecord) -> list[Record]:
+    def search_records(
+        self, base_id: str, table_name: str, query: PartialRecord
+    ) -> list[Record]:
         """
         Fetch all records from a table on Airtable that partially match a
         particular query. If query is empty, all the records in the table are
@@ -106,9 +107,10 @@ class AirtableAPI:
         Returns: A list of records matching that query
         """
         logger.debug(
-            f"Fetching records in base: {base_id} table: {table_name}" + (f"with {query = }" if query else "")
+            f"Fetching records in base: {base_id} table: {table_name}"
+            + (f"with {query = }" if query else "")
         )
-        # we do NOT use pyairtable.FIELD (which is : "{%s}" % escape_quotes(name) ) 
+        # we do NOT use pyairtable.FIELD (which is : "{%s}" % escape_quotes(name) )
         # because it re-escaped single quotes that were already escaped
         find_statements = [
             FIND(LOWER(STR_VALUE(query_val)), LOWER("{%s}" % field_name))
@@ -129,11 +131,15 @@ class AirtableAPI:
 
         Returns: The new record
         """
-        logger.debug(f"Creating new record in base: {base_id} table: {table_name}: {record}")
+        logger.debug(
+            f"Creating new record in base: {base_id} table: {table_name}: {record}"
+        )
         return self.api.create(base_id, table_name, record, typecast=True)
 
     @airtable_errors_wrapped
-    def update_record(self, base_id: str, table_name: str, id: str, update: PartialRecord) -> Record:
+    def update_record(
+        self, base_id: str, table_name: str, id: str, update: PartialRecord
+    ) -> Record:
         """
         Update a record with a specific id in an airtable table
 
@@ -145,7 +151,9 @@ class AirtableAPI:
         Returns:
         - The updated response
         """
-        logger.debug(f"Updating record {id} in base: {base_id} table: {table_name}: {update}")
+        logger.debug(
+            f"Updating record {id} in base: {base_id} table: {table_name}: {update}"
+        )
         return cast(
             dict,
             self.api.update(
@@ -159,34 +167,40 @@ class AirtableAPI:
 
     def fetch_schema(self, airtableSettings: AirtableSettings):
         new_airtable_settings = {}
-        new_airtable_settings['bases'] = []
+        new_airtable_settings["bases"] = []
 
         basesResponse = self.fetch_bases(airtableSettings)
-        for base in basesResponse['bases']:
+        for base in basesResponse["bases"]:
             base_to_append = {}
-            base_to_append['id'] = base['id']
-            base_to_append['name'] = base['name']
-            base_to_append['tables'] = []
+            base_to_append["id"] = base["id"]
+            base_to_append["name"] = base["name"]
+            base_to_append["tables"] = []
 
-            baseSchema = self.fetch_base_schema(airtableSettings, base['id'])
-            for table in baseSchema['tables']:
+            baseSchema = self.fetch_base_schema(airtableSettings, base["id"])
+            for table in baseSchema["tables"]:
                 table_to_append = {}
-                table_to_append['id'] = table['id']
-                table_to_append['name'] = table['name']
-                table_to_append['description'] = table['description'] if 'description' in table  else ''
-                table_to_append['fields'] = []
+                table_to_append["id"] = table["id"]
+                table_to_append["name"] = table["name"]
+                table_to_append["description"] = (
+                    table["description"] if "description" in table else ""
+                )
+                table_to_append["fields"] = []
 
-                for field in table['fields']:
+                for field in table["fields"]:
                     field_to_append = {}
-                    field_to_append['id'] = field['id']
-                    field_to_append['name'] = field['name']
-                    field_to_append['description'] = field['description'] if "description" in field  else ''
-                    field_to_append['options'] = field['options'] if "options" in field   else []
-                    field_to_append['type'] = field['type'] if "type" in field  else ''
-                    
-                    table_to_append['fields'].append(field_to_append)
-                base_to_append['tables'].append(table_to_append)
-            new_airtable_settings['bases'].append(base_to_append)
+                    field_to_append["id"] = field["id"]
+                    field_to_append["name"] = field["name"]
+                    field_to_append["description"] = (
+                        field["description"] if "description" in field else ""
+                    )
+                    field_to_append["options"] = (
+                        field["options"] if "options" in field else []
+                    )
+                    field_to_append["type"] = field["type"] if "type" in field else ""
+
+                    table_to_append["fields"].append(field_to_append)
+                base_to_append["tables"].append(table_to_append)
+            new_airtable_settings["bases"].append(base_to_append)
         return new_airtable_settings
 
     def fetch_bases(self, airtableSettings: AirtableSettings):
@@ -194,19 +208,28 @@ class AirtableAPI:
         curl "https://api.airtable.com/v0/meta/bases" \
         -H "Authorization: Bearer YOUR_TOKEN"
         """
-        r = requests.get('https://api.airtable.com/v0/meta/bases', headers={'Authorization' : f'Bearer {airtableSettings["authSettings"]["accessToken"]}'})
+        r = requests.get(
+            "https://api.airtable.com/v0/meta/bases",
+            headers={
+                "Authorization": f'Bearer {airtableSettings["authSettings"]["accessToken"]}'
+            },
+        )
         if r.status_code != 200:
             raise HTTPException(status_code=r.status_code, detail=r.reason)
         o = r.json()
         return o
-
 
     def fetch_base_schema(self, airtableSettings: AirtableSettings, baseId: str):
         """
         curl "https://api.airtable.com/v0/meta/bases/{baseId}/tables"
         -H "Authorization: Bearer YOUR_TOKEN
         """
-        r = requests.get(f'https://api.airtable.com/v0/meta/bases/{baseId}/tables', headers={'Authorization' : f'Bearer {airtableSettings["authSettings"]["accessToken"]}'})
+        r = requests.get(
+            f"https://api.airtable.com/v0/meta/bases/{baseId}/tables",
+            headers={
+                "Authorization": f'Bearer {airtableSettings["authSettings"]["accessToken"]}'
+            },
+        )
         if r.status_code != 200:
             raise HTTPException(status_code=r.status_code, detail=r.reason)
         o = r.json()

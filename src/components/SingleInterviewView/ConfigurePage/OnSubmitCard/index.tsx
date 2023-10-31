@@ -101,7 +101,7 @@ export default function OnSubmitCard({
     <div className="grid grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg">
       <div className="flex h-fit items-center space-x-3">
         <FontAwesomeIcon size="1x" icon={IconType.faWrench} />
-        <h2>On submission</h2>
+        <h2>On Submission</h2>
       </div>
       <div className="col-span-3 space-y-4">
         {interview.submissionActions.map(action => (

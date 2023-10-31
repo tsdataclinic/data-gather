@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import * as Interview from '../../../../models/Interview';
-import * as InterviewSetting from '../../../../models/InterviewSetting';
+import * as DataStoreSetting from '../../../../models/DataStoreSetting';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import FieldToQuestionBlock from './FieldToQuestionBlock';
 import type { EditableAction } from './types';
@@ -29,7 +29,7 @@ export default function EditRowActionBlock({
   onActionChange,
 }: Props): JSX.Element {
   const interviewSetting = interview.interviewSettings.find(
-    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
   );
   const airtableSettings = interviewSetting?.settings;
   const allTables = React.useMemo(

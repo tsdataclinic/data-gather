@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import { v4 as uuidv4 } from 'uuid';
 import * as User from '../../models/User';
 import * as SubmissionAction from '../../models/SubmissionAction';
-import * as InterviewSetting from '../../models/InterviewSetting';
+import * as DataStoreSetting from '../../models/DataStoreSetting';
 import * as ConditionalAction from '../../models/ConditionalAction';
 import * as Interview from '../../models/Interview';
 import * as InterviewScreen from '../../models/InterviewScreen';
@@ -26,7 +26,7 @@ export default class LocalInterviewService
 
   private submissionActions!: Table<SubmissionAction.SerializedT>;
 
-  private interviewSettings!: Table<InterviewSetting.SerializedT>;
+  private interviewSettings!: Table<DataStoreSetting.SerializedT>;
 
   private interviews!: Table<Interview.SerializedT>;
 
@@ -109,14 +109,14 @@ export default class LocalInterviewService
       );
 
       // delete the interview settings
-      const deleteInterviewSettingsPromise = this.interviewSettings.bulkDelete(
+      const deleteDataStoreSettingsPromise = this.interviewSettings.bulkDelete(
         interview.interviewSettings.map(setting => setting.id),
       );
 
       await Promise.all([
         deleteScreensPromise,
         deleteSubmissionActionsPromise,
-        deleteInterviewSettingsPromise,
+        deleteDataStoreSettingsPromise,
         // now delete the interview itself
         this.interviews.delete(interviewId),
       ]);
@@ -163,7 +163,7 @@ export default class LocalInterviewService
 
         // get interview settings
         const interviewSettings =
-          await this.interviewAPI.getInterviewSettingsOfInterview(interviewId);
+          await this.interviewAPI.getDataStoreSettingsOfInterview(interviewId);
 
         return Interview.deserialize({
           ...interview,
@@ -218,7 +218,7 @@ export default class LocalInterviewService
         );
 
         // make sure all settings have an id if they don't
-        const settingsToSet: InterviewSetting.SerializedT[] =
+        const settingsToSet: DataStoreSetting.SerializedT[] =
           interviewSettings.map(setting => ({
             ...setting,
             id: setting.id ?? uuidv4(),
@@ -299,9 +299,9 @@ export default class LocalInterviewService
       return actions;
     },
 
-    getInterviewSettingsOfInterview: async (
+    getDataStoreSettingsOfInterview: async (
       interviewId: string,
-    ): Promise<InterviewSetting.SerializedT[]> => {
+    ): Promise<DataStoreSetting.SerializedT[]> => {
       // get submission actions for this interview
       const actions = await this.interviewSettings
         .where({ interviewId })

@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import * as InterviewScreen from './InterviewScreen';
 import * as SubmissionAction from './SubmissionAction';
-import * as InterviewSettings from './InterviewSetting';
+import * as DataStoreSettings from './DataStoreSetting';
 import { SerializedInterviewRead } from '../api/models/SerializedInterviewRead';
 import { SerializedInterviewCreate } from '../api/models/SerializedInterviewCreate';
 import { SerializedInterviewUpdate } from '../api/models/SerializedInterviewUpdate';
@@ -31,7 +31,7 @@ type Interview = {
  * Interview model with its associated screens loaded.
  */
 interface InterviewWithScreensAndActions extends Interview {
-  readonly interviewSettings: readonly InterviewSettings.T[];
+  readonly interviewSettings: readonly DataStoreSettings.T[];
   readonly screens: readonly InterviewScreen.T[];
   readonly submissionActions: readonly SubmissionAction.T[];
 }
@@ -48,7 +48,7 @@ type InterviewCreate = Omit<Interview, 'id' | 'createdDate'>;
  */
 type InterviewUpdate = Interview & {
   readonly interviewSettings: ReadonlyArray<
-    InterviewSettings.T | InterviewSettings.CreateT
+    DataStoreSettings.T | DataStoreSettings.CreateT
   >;
 
   /**
@@ -146,7 +146,7 @@ export function deserialize(
         SubmissionAction.deserialize,
       ),
       interviewSettings: rawObj.interviewSettings?.map(
-        InterviewSettings.deserialize,
+        DataStoreSettings.deserialize,
       ),
       allowedLanguages: rawObj.allowedLanguages.split(LANGUAGE_DELIMITER),
     };
@@ -179,8 +179,8 @@ export function serialize(
       ),
       interviewSettings: interview.interviewSettings.map(setting =>
         'tempId' in setting
-          ? InterviewSettings.serializeCreate(setting)
-          : InterviewSettings.serialize(setting),
+          ? DataStoreSettings.serializeCreate(setting)
+          : DataStoreSettings.serialize(setting),
       ),
       createdDate: interview.createdDate?.toISO(),
       allowedLanguages: interview.allowedLanguages.join(LANGUAGE_DELIMITER),

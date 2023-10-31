@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as IconType from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { v4 as uuidv4 } from 'uuid';
-import * as InterviewSetting from '../../../models/InterviewSetting';
+import * as DataStoreSetting from '../../../models/DataStoreSetting';
 import * as Interview from '../../../models/Interview';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import InputText from '../../ui/InputText';
@@ -19,7 +19,7 @@ type Props = {
 };
 
 function doesAirtableFieldHaveOptions(
-  airtableField: InterviewSetting.AirtableField,
+  airtableField: DataStoreSetting.AirtableField,
 ): boolean {
   return (
     airtableField.options !== undefined &&
@@ -39,7 +39,7 @@ export default function SingleSelectEditor({
   const { airtableConfig, options } = selectionConfig;
   const [optionToAdd, setOptionToAdd] = React.useState<string>('');
   const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
   );
   const airtableSettings = interviewSetting?.settings;
   const showAirtableConfig = selectionConfig.airtableConfig !== undefined;

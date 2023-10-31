@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import * as InterviewScreen from '../../../../models/InterviewScreen';
-import * as InterviewSetting from '../../../../models/InterviewSetting';
+import * as DataStoreSetting from '../../../../models/DataStoreSetting';
 import * as Interview from '../../../../models/Interview';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import Dropdown from '../../../ui/Dropdown';
@@ -66,7 +66,7 @@ export default function EntryDropdown({
   );
 
   const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
   );
   const airtableSettings = interviewSetting?.settings;
 

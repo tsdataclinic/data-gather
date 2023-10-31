@@ -8,6 +8,10 @@ A data entry app builder that supports:
 
 ## Developing
 
+### Pre-requisites
+
+1. Python version 3.10
+
 ### Setting Up Backend
 
 1. Initialize your venv

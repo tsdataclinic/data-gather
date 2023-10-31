@@ -8,7 +8,7 @@ import * as ConditionalAction from '../../../models/ConditionalAction';
 import type { EditableEntryWithScreen } from '../types';
 import useInterview from '../../../hooks/useInterview';
 import Dropdown, { type DropdownOption } from '../../ui/Dropdown';
-import * as InterviewSetting from '../../../models/InterviewSetting';
+import * as DataStoreSetting from '../../../models/DataStoreSetting';
 import * as InterviewScreen from '../../../models/InterviewScreen';
 import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import InfoIcon from '../../ui/InfoIcon';
@@ -66,7 +66,7 @@ export default function SingleConditionRow({
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
   const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === InterviewSetting.SettingType.AIRTABLE,
+    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
   );
   const airtableSettings = interviewSetting?.settings;
   const bases = airtableSettings?.bases;
