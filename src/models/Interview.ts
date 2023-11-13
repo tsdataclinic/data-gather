@@ -31,7 +31,7 @@ type Interview = {
  * Interview model with its associated screens loaded.
  */
 interface InterviewWithScreensAndActions extends Interview {
-  readonly interviewSettings: readonly DataStoreSettings.T[];
+  readonly dataStoreSettings: readonly DataStoreSettings.T[];
   readonly screens: readonly InterviewScreen.T[];
   readonly submissionActions: readonly SubmissionAction.T[];
 }
@@ -47,7 +47,7 @@ type InterviewCreate = Omit<Interview, 'id' | 'createdDate'>;
  * updating nested actions but screens are not included in this model.
  */
 type InterviewUpdate = Interview & {
-  readonly interviewSettings: ReadonlyArray<
+  readonly dataStoreSettings: ReadonlyArray<
     DataStoreSettings.T | DataStoreSettings.CreateT
   >;
 
@@ -145,7 +145,7 @@ export function deserialize(
       submissionActions: rawObj.submissionActions?.map(
         SubmissionAction.deserialize,
       ),
-      interviewSettings: rawObj.interviewSettings?.map(
+      dataStoreSettings: rawObj.dataStoreSettings?.map(
         DataStoreSettings.deserialize,
       ),
       allowedLanguages: rawObj.allowedLanguages.split(LANGUAGE_DELIMITER),
@@ -177,7 +177,7 @@ export function serialize(
           ? SubmissionAction.serializeCreate(action)
           : SubmissionAction.serialize(action),
       ),
-      interviewSettings: interview.interviewSettings.map(setting =>
+      dataStoreSettings: interview.dataStoreSettings.map(setting =>
         'tempId' in setting
           ? DataStoreSettings.serializeCreate(setting)
           : DataStoreSettings.serialize(setting),

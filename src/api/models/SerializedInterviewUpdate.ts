@@ -23,6 +23,6 @@ export type SerializedInterviewUpdate = {
   id: string;
   createdDate: string;
   submissionActions: Array<(SerializedSubmissionActionRead | SerializedSubmissionActionCreate)>;
-  interviewSettings: Array<(SerializedDataStoreSettingRead | SerializedDataStoreSettingCreate)>;
+  dataStoreSettings: Array<(SerializedDataStoreSettingRead | SerializedDataStoreSettingCreate)>;
 };
 

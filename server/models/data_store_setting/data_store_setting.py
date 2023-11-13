@@ -29,7 +29,7 @@ class DataStoreSettingBase(APIModel):
     interview_id: uuid.UUID = Field(foreign_key="interview.id")
 
     @validator("config")
-    def validate_settings(  # pylint: disable=no-self-argument
+    def validate_config(  # pylint: disable=no-self-argument
         cls, value: DataStoreConfig
     ) -> dict:
         # hacky use of validator to allow Pydantic models to be stored as JSON
@@ -46,7 +46,7 @@ class DataStoreSetting(DataStoreSettingBase, table=True):
     __tablename__: str = "data_store_setting"
 
     # relationships
-    interview: "Interview" = Relationship(back_populates="interview_settings")
+    interview: "Interview" = Relationship(back_populates="data_store_settings")
 
 
 class DataStoreSettingCreate(DataStoreSettingBase):

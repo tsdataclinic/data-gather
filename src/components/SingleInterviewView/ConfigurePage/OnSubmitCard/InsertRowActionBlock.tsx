@@ -28,10 +28,10 @@ export default function EditRowActionBlock({
   interview,
   onActionChange,
 }: Props): JSX.Element {
-  const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === 'airtable',
+  const dataStoreSetting = interview?.dataStoreSettings.find(
+    setting => setting.type === 'airtable',
   );
-  const dataStoreConfig = interviewSetting?.config;
+  const dataStoreConfig = dataStoreSetting?.config;
 
   const allTables = React.useMemo(() => {
     return dataStoreConfig &&

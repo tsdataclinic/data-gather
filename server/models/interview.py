@@ -46,7 +46,7 @@ class Interview(InterviewBase, table=True):
     submission_actions: list["SubmissionAction"] = Relationship(
         back_populates="interview"
     )
-    interview_settings: list["DataStoreSetting"] = Relationship(
+    data_store_settings: list["DataStoreSetting"] = Relationship(
         back_populates="interview"
     )
     owner: "User" = Relationship(back_populates="interviews")
@@ -84,7 +84,7 @@ class InterviewReadWithScreensAndActions(InterviewRead):
 
     screens: list["InterviewScreenRead"] = []
     submission_actions: list["SubmissionActionRead"] = []
-    interview_settings: list["DataStoreSettingRead"] = []
+    data_store_settings: list["DataStoreSettingRead"] = []
 
 
 class InterviewUpdate(InterviewRead):
@@ -93,7 +93,7 @@ class InterviewUpdate(InterviewRead):
     """
 
     submission_actions: list["SubmissionActionRead | SubmissionActionCreate"]
-    interview_settings: list["DataStoreSettingRead | DataStoreSettingCreate"]
+    data_store_settings: list["DataStoreSettingRead | DataStoreSettingCreate"]
 
 
 # Handle circular imports

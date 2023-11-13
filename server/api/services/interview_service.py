@@ -4,13 +4,23 @@ from sqlmodel import Session, select
 
 from server.api.services.base_service import BaseService
 from server.api.services.interview_screen_service import InterviewScreenService
-from server.api.services.util import (diff_model_lists, reset_object_order,
-                                      update_model_diff)
+from server.api.services.util import (
+    diff_model_lists,
+    reset_object_order,
+    update_model_diff,
+)
 from server.models.data_store_setting.airtable_config import AirtableConfig
 from server.models.data_store_setting.data_store_setting import (
-    DataStoreConfig, DataStoreSetting, DataStoreType)
-from server.models.interview import (Interview, InterviewCreate,
-                                     InterviewUpdate, ValidationError)
+    DataStoreConfig,
+    DataStoreSetting,
+    DataStoreType,
+)
+from server.models.interview import (
+    Interview,
+    InterviewCreate,
+    InterviewUpdate,
+    ValidationError,
+)
 from server.models.interview_screen import InterviewScreen
 from server.models.submission_action import SubmissionAction
 
@@ -68,7 +78,7 @@ class InterviewService(BaseService):
 
         output: DataStoreSetting | None = None
 
-        for data_store_setting in interview.interview_settings:
+        for data_store_setting in interview.data_store_settings:
             if data_store_setting.type == data_store_type:
                 output = data_store_setting
 
@@ -84,12 +94,11 @@ class InterviewService(BaseService):
         self, interview_id: str, new_data_store_config: DataStoreConfig
     ) -> Interview:
         new_interview = InterviewUpdate.from_orm(self.get_interview_by_id(interview_id))
-
         # find the setting for this data store type and update it
-        for idx, data_store_setting in enumerate(new_interview.interview_settings):
+        for idx, data_store_setting in enumerate(new_interview.data_store_settings):
             if data_store_setting.type == new_data_store_config.type:
-                data_store_setting.settings = new_data_store_config
-                new_interview.interview_settings[idx] = data_store_setting
+                data_store_setting.config = new_data_store_config
+                new_interview.data_store_settings[idx] = data_store_setting
                 break
 
         # now actually update the interview in the db
@@ -131,7 +140,7 @@ class InterviewService(BaseService):
 
         # delete all submission actions, interview settings and the interview itself
         models_to_delete = (
-            interview.submission_actions + interview.interview_settings + [interview]
+            interview.submission_actions + interview.data_store_settings + [interview]
         )
         self.commit(delete_models=models_to_delete)
 
@@ -159,10 +168,10 @@ class InterviewService(BaseService):
 
         # get settings to update and delete
         settings_to_set, settings_to_delete = diff_model_lists(
-            db_interview.interview_settings,
+            db_interview.data_store_settings,
             [
                 DataStoreSetting.from_orm(setting)
-                for setting in interview.interview_settings
+                for setting in interview.data_store_settings
             ],
         )
 
@@ -171,12 +180,12 @@ class InterviewService(BaseService):
             self.db.delete(setting)
 
         # set the updated settings
-        db_interview.interview_settings = settings_to_set
+        db_interview.data_store_settings = settings_to_set
 
         # now update the top-level db_interview values
         update_model_diff(
             db_interview,
-            interview.copy(exclude={"submission_actions", "interview_settings"}),
+            interview.copy(exclude={"submission_actions", "data_store_settings"}),
         )
 
         self.db.add(db_interview)
@@ -186,5 +195,7 @@ class InterviewService(BaseService):
         except IntegrityError as e:
             raise HTTPException(status_code=400, detail=str(e.orig)) from e
         except ValidationError as e:
-            raise HTTPException(status_code=400, detail="Error validating interview") from e
+            raise HTTPException(
+                status_code=400, detail="Error validating interview"
+            ) from e
         return db_interview

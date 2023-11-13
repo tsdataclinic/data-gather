@@ -26,7 +26,7 @@ export default class LocalInterviewService
 
   private submissionActions!: Table<SubmissionAction.SerializedT>;
 
-  private interviewSettings!: Table<DataStoreSetting.SerializedT>;
+  private dataStoreSettings!: Table<DataStoreSetting.SerializedT>;
 
   private interviews!: Table<Interview.SerializedT>;
 
@@ -41,7 +41,7 @@ export default class LocalInterviewService
     this.version(1).stores({
       conditionalActions: '++id, screenId',
       submissionActions: '++id, interviewId',
-      interviewSettings: '++id, interviewId',
+      dataStoreSettings: '++id, interviewId',
       interviewScreenEntries: '++id, screenId',
       interviewScreens: '++id, interviewId',
       interviews: '++id, vanityUrl',
@@ -109,8 +109,8 @@ export default class LocalInterviewService
       );
 
       // delete the interview settings
-      const deleteDataStoreSettingsPromise = this.interviewSettings.bulkDelete(
-        interview.interviewSettings.map(setting => setting.id),
+      const deleteDataStoreSettingsPromise = this.dataStoreSettings.bulkDelete(
+        interview.dataStoreSettings.map(setting => setting.id),
       );
 
       await Promise.all([
@@ -162,14 +162,14 @@ export default class LocalInterviewService
           await this.interviewAPI.getSubmissionActionsOfInterview(interviewId);
 
         // get interview settings
-        const interviewSettings =
+        const dataStoreSettings =
           await this.interviewAPI.getDataStoreSettingsOfInterview(interviewId);
 
         return Interview.deserialize({
           ...interview,
           screens,
           submissionActions,
-          interviewSettings,
+          dataStoreSettings,
         });
       }
       throw new Error(`Could not find an interview with id '${interviewId}'`);
@@ -187,7 +187,7 @@ export default class LocalInterviewService
     ): Promise<Interview.T> => {
       const interviewExists = !!(await this.interviews.get(interviewId));
       if (interviewExists) {
-        const { submissionActions, interviewSettings, ...serializedInterview } =
+        const { submissionActions, dataStoreSettings, ...serializedInterview } =
           Interview.serialize(interview);
         await this.interviews.put(serializedInterview);
 
@@ -210,22 +210,22 @@ export default class LocalInterviewService
         await this.submissionActions.bulkPut(actionsToSet);
 
         // delete existing settings
-        const oldSettings = await this.interviewSettings
+        const oldSettings = await this.dataStoreSettings
           .where({ interviewId })
           .toArray();
-        await this.interviewSettings.bulkDelete(
+        await this.dataStoreSettings.bulkDelete(
           oldSettings.map(setting => setting.id),
         );
 
         // make sure all settings have an id if they don't
         const settingsToSet: DataStoreSetting.SerializedT[] =
-          interviewSettings.map(setting => ({
+          dataStoreSettings.map(setting => ({
             ...setting,
             id: setting.id ?? uuidv4(),
           }));
 
         // set them all into the db
-        await this.interviewSettings.bulkPut(settingsToSet);
+        await this.dataStoreSettings.bulkPut(settingsToSet);
 
         // now return the deserialized model
         const fullModel = {
@@ -303,7 +303,7 @@ export default class LocalInterviewService
       interviewId: string,
     ): Promise<DataStoreSetting.SerializedT[]> => {
       // get submission actions for this interview
-      const actions = await this.interviewSettings
+      const actions = await this.dataStoreSettings
         .where({ interviewId })
         .toArray();
 

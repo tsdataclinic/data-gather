@@ -42,8 +42,8 @@ export default function InterviewRunnerEntry({
     entry.responseType === 'airtable' ? entry.responseTypeOptions : undefined,
   );
 
-  const dataStoreSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === 'airtable',
+  const dataStoreSetting = interview?.dataStoreSettings.find(
+    setting => setting.type === 'airtable',
   );
   const dataStoreConfig = dataStoreSetting?.config;
 

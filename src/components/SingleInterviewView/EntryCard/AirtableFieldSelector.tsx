@@ -30,8 +30,8 @@ export default function AirtableFieldSelector({
 }: Props): JSX.Element {
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
-  const dataStoreSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === 'airtable',
+  const dataStoreSetting = interview?.dataStoreSettings.find(
+    setting => setting.type === 'airtable',
   );
   const dataStoreConfig = dataStoreSetting?.config;
   const bases =

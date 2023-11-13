@@ -1,25 +1,20 @@
 ## TODO:
 
-3. Change `settings` column to `config`
-   E.g. `dataStoreSetting?.settings` should be `dataStoreSetting.config`
-4. Rename AirtableSetting to AirtableConfig and GoogleSheetsSettings to GoogleSheetsConfig
-5. Rename all instances of `interviewSetting` to `dataStoreSetting`
-6. Finish modeling the GoogleSheetsSettings classes
-7. Update the frontend model to expect this union
-8. Add the ability to authenticate with Google Sheets
-9. Load the schema
-10. Update the lookup config
-11. Update the submission actions config
-12. The frontend uses an AirtableService but instead we should
-    have a DataStoreService that calls lookup, update, and
-    insert, etc. and on the backend we send to the appropriate
-    service.
-13. On the backend, create a ExternalDataStoreConnector interface and create the AirtableService and GoogleSheetsService
-14. We should use a /lookup, /update, and /insert endpoints that receive a config
-    rather than a service specific (like /airtable-records) endpoint
-15. Change `interview.interviewSettings` to `interview.dataStoreSettings`. And take note of this migration in your notebook.
-16. In python, rename `AirtableSettings` and `GoogleSheetsSettings` to `AirtableConfig` and `GoogleSheetsConfig`
-17. `src/api/` to `src/api-gen`
+1. Finish modeling the GoogleSheetsSettings classes
+2. Update the frontend model to expect this union
+3. Add the ability to authenticate with Google Sheets
+4. Load the schema
+5. Update the lookup config
+6. Update the submission actions config
+7. The frontend uses an AirtableService but instead we should
+   have a DataStoreService that calls lookup, update, and
+   insert, etc. and on the backend we send to the appropriate
+   service.
+8. On the backend, create a ExternalDataStoreConnector interface and create the AirtableService and GoogleSheetsService
+9. We should use a /lookup, /update, and /insert endpoints that receive a config
+   rather than a service specific (like /airtable-records) endpoint
+10. In python, rename `AirtableSettings` and `GoogleSheetsSettings` to `AirtableConfig` and `GoogleSheetsConfig`
+11. `src/api/` to `src/api-gen`
 
 Places that need switch statement:
 
@@ -37,7 +32,7 @@ Places that need switch statement:
 Migrations:
 
 1. TABLE RENAME: `interview_setting` => `data_store_setting`
-2. Added `type` to the data_store_setting configs [missing]
+2. Added `type` to the data_store_setting configs
 3. COLUMN RENAME: `settings` => `config` in `data_store_setting` table
 
 upcoming:

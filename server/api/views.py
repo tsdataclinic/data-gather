@@ -299,10 +299,10 @@ def update_interview(
 
     # get settings to update and delete
     settings_to_set, settings_to_delete = diff_model_lists(
-        db_interview.interview_settings,
+        db_interview.data_store_settings,
         [
             DataStoreSetting.from_orm(setting)
-            for setting in interview.interview_settings
+            for setting in interview.data_store_settings
         ],
     )
 
@@ -311,12 +311,12 @@ def update_interview(
         session.delete(setting)
 
     # set the updated settings
-    db_interview.interview_settings = settings_to_set
+    db_interview.data_store_settings = settings_to_set
 
     # now update the top-level db_interview values
     update_model_diff(
         db_interview,
-        interview.copy(exclude={"submission_actions", "interview_settings"}),
+        interview.copy(exclude={"submission_actions", "data_store_settings"}),
     )
 
     session.add(db_interview)
@@ -836,7 +836,7 @@ async def airtable_callback(
         token_type=response_json['token_type']
         scope=response_json['scope']
 
-        # populate interview_settings obj with AirtableConfig
+        # populate data_store_settings obj with AirtableConfig
         airtable_config = AirtableConfig(
             type=DataStoreType.AIRTABLE,
             authSettings=AirtableAuthConfig(
@@ -855,7 +855,7 @@ async def airtable_callback(
                     )
                 )
 
-        # create empty interview_settings object
+        # create empty data_store_settings object
         interview = interview_service.get_interview_by_id(interview_id)
         new_interview = InterviewUpdate.from_orm(interview)
 
@@ -869,7 +869,7 @@ async def airtable_callback(
             interview_id=interview_id,
             config=airtable_config
         )
-        new_interview.interview_settings.append(
+        new_interview.data_store_settings.append(
                 DataStoreSettingCreate.from_orm(new_data_store_config))
 
         # commit to db
@@ -1044,6 +1044,6 @@ async def get_expiring_airtable_refresh_tokens():
                         }
                     }
         except Exception: # pylint: disable=broad-except
-            # if there's no interview_setting an exception will be thrown by interview_service
+            # if there's no data_store_setting an exception will be thrown by interview_service
             continue
     return output

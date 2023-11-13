@@ -23,8 +23,6 @@ class ResponseType(str, enum.Enum):
     SINGLE_SELECT = "single_select"
 
 
-# TODO: rename this, it sounds too similar to AirtableSettings from
-# interview_setting.py
 class AirtableOptions(BaseModel):
     selectedBase: str
     selectedFields: list[str]

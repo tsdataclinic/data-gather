@@ -35,7 +35,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
   const onAddClick = (): void => {
     onInterviewChange({
       ...interview,
-      interviewSettings: interview.interviewSettings.concat(
+      dataStoreSettings: interview.dataStoreSettings.concat(
         DataStoreSetting.create({
           interviewId: interview.id,
           type: 'airtable',
@@ -47,7 +47,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
   const onSettingRemove = (settingToRemove: EditableSetting): void => {
     onInterviewChange({
       ...interview,
-      interviewSettings: interview.interviewSettings.filter(
+      dataStoreSettings: interview.dataStoreSettings.filter(
         setting => setting !== settingToRemove,
       ),
     });
@@ -58,7 +58,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
   ): void => {
     onInterviewChange({
       ...interview,
-      interviewSettings: interview.interviewSettings.map(setting =>
+      dataStoreSettings: interview.dataStoreSettings.map(setting =>
         setting === settingToReplace ? newSetting : setting,
       ),
     });
@@ -210,7 +210,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
         <h2>Data Store Settings</h2>
       </div>
       <div className="col-span-3 space-y-4">
-        {interview.interviewSettings.map(setting => (
+        {interview.dataStoreSettings.map(setting => (
           <div
             key={'id' in setting ? setting.id : setting.tempId}
             className="relative rounded border border-gray-300 bg-gray-50 p-4 text-slate-800"
@@ -251,7 +251,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
           onClick={onAddClick}
           // Quick way to disallow multiple Airtable configs
           // TODO: change this when adding more DataStoreTypes
-          disabled={interview.interviewSettings.some(
+          disabled={interview.dataStoreSettings.some(
             setting => setting.type === 'airtable',
           )}
         >

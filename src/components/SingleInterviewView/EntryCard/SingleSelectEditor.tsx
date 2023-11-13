@@ -35,8 +35,8 @@ export default function SingleSelectEditor({
 }: Props): JSX.Element {
   const { airtableConfig, options } = selectionConfig;
   const [optionToAdd, setOptionToAdd] = React.useState<string>('');
-  const dataStoreSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === 'airtable',
+  const dataStoreSetting = interview?.dataStoreSettings.find(
+    setting => setting.type === 'airtable',
   );
   const dataStoreConfig = dataStoreSetting?.config;
   const showAirtableConfig = selectionConfig.airtableConfig !== undefined;

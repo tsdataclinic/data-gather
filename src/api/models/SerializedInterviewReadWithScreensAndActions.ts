@@ -22,6 +22,6 @@ export type SerializedInterviewReadWithScreensAndActions = {
   createdDate: string;
   screens?: Array<SerializedInterviewScreenRead>;
   submissionActions?: Array<SerializedSubmissionActionRead>;
-  interviewSettings?: Array<SerializedDataStoreSettingRead>;
+  dataStoreSettings?: Array<SerializedDataStoreSettingRead>;
 };
 
