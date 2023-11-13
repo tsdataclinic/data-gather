@@ -4,23 +4,13 @@ from sqlmodel import Session, select
 
 from server.api.services.base_service import BaseService
 from server.api.services.interview_screen_service import InterviewScreenService
-from server.api.services.util import (
-    diff_model_lists,
-    reset_object_order,
-    update_model_diff,
-)
+from server.api.services.util import (diff_model_lists, reset_object_order,
+                                      update_model_diff)
 from server.models.data_store_setting.airtable_config import AirtableConfig
 from server.models.data_store_setting.data_store_setting import (
-    DataStoreConfig,
-    DataStoreSetting,
-    DataStoreType,
-)
-from server.models.interview import (
-    Interview,
-    InterviewCreate,
-    InterviewUpdate,
-    ValidationError,
-)
+    DataStoreConfig, DataStoreSetting, DataStoreType)
+from server.models.interview import (Interview, InterviewCreate,
+                                     InterviewUpdate, ValidationError)
 from server.models.interview_screen import InterviewScreen
 from server.models.submission_action import SubmissionAction
 
@@ -109,7 +99,7 @@ class InterviewService(BaseService):
         data_store_setting = self._get_interview_setting_by_interview_id_and_type(
             interview_id, DataStoreType.AIRTABLE
         )
-        airtable_settings = AirtableConfig.parse_obj(data_store_setting.settings)
+        airtable_settings = AirtableConfig.parse_obj(data_store_setting.config)
 
         if isinstance(airtable_settings, AirtableConfig):
             return airtable_settings
@@ -127,11 +117,11 @@ class InterviewService(BaseService):
                 .where(Interview.vanity_url == vanity_url)
                 .where(Interview.published)
             ).one()
-        except NoResultFound:
+        except NoResultFound as e:
             raise HTTPException(
                 status_code=404,
                 detail=f"Interview not found with {vanity_url} vanity url",
-            )
+            ) from e
         return interview
 
     def delete_interview(self, interview: Interview) -> None:
@@ -194,7 +184,7 @@ class InterviewService(BaseService):
         try:
             self.db.commit()
         except IntegrityError as e:
-            raise HTTPException(status_code=400, detail=str(e.orig))
+            raise HTTPException(status_code=400, detail=str(e.orig)) from e
         except ValidationError as e:
-            raise HTTPException(status_code=400, detail="Error validating interview")
+            raise HTTPException(status_code=400, detail="Error validating interview") from e
         return db_interview

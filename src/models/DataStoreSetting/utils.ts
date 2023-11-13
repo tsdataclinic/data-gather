@@ -9,7 +9,7 @@ export const SETTING_TYPES: readonly DataStoreSetting.DataStoreType[] = [
 
 function createDefaultConfig(
   type: DataStoreSetting.DataStoreType,
-): DataStoreSetting.T['settings'] {
+): DataStoreSetting.T['config'] {
   switch (type) {
     case 'airtable':
       return {
@@ -29,14 +29,14 @@ function createDefaultConfig(
  * Create a new empty DataStoreSetting
  */
 export function create(
-  values: Omit<DataStoreSetting.T, 'id' | 'settings'> & {
+  values: Omit<DataStoreSetting.T, 'id' | 'config'> & {
     type: DataStoreSetting.DataStoreType;
   },
 ): DataStoreSetting.CreateT {
   return {
     interviewId: values.interviewId,
     tempId: uuidv4(),
-    settings: createDefaultConfig(values.type),
+    config: createDefaultConfig(values.type),
     type: values.type,
   };
 }

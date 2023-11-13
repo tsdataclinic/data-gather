@@ -16,7 +16,7 @@ import type { SerializedGoogleSheetsConfig } from './SerializedGoogleSheetsConfi
  */
 export type SerializedDataStoreSettingRead = {
   type: DataStoreType;
-  settings: (SerializedAirtableConfig | SerializedGoogleSheetsConfig);
+  config: (SerializedAirtableConfig | SerializedGoogleSheetsConfig);
   interviewId: string;
   id: string;
 };

@@ -615,7 +615,7 @@ def _adjust_screen_order(
     """
     sorted_screens = sorted(existing_screens, key=lambda x: x.order)
     # If an order was not speficied for the new screen add it to the end
-    if new_screen.order == None:
+    if new_screen.order is None:
         new_screen.order = sorted_screens[-1].order + 1
     else:
         # Screens shouldn't be created with an order that is
@@ -653,7 +653,7 @@ async def get_airtable_records(
     """
     airtable_config = interview_service.get_airtable_config(interview_id)
 
-    if (is_airtable_access_token_expired(airtable_config)):
+    if is_airtable_access_token_expired(airtable_config):
         await refresh_and_update_airtable_auth(interview_id, interview_service, session)
 
     airtable_client = AirtableAPI(airtable_config)
@@ -792,7 +792,7 @@ async def airtable_callback(
     if AIRTABLE_TOKEN_URL is None:
         LOG.error("AIRTABLE_TOKEN_URL environment variable is not set")
         return
-    if (request.query_params.get('error')):
+    if request.query_params.get('error'):
         error_str = request.query_params.get('error')
         return Response(f"Error: {error_str}")
 
@@ -845,9 +845,13 @@ async def airtable_callback(
                     accessToken= access_token,
                     refreshToken= refresh_token,
                     accessTokenExpires=int(
-                        (datetime.now() + timedelta(seconds=access_token_expires_in)).timestamp()*1000),
+                        (datetime.now() + timedelta(
+                            seconds=access_token_expires_in
+                        )).timestamp() * 1000),
                     refreshTokenExpires=int(
-                        (datetime.now() + timedelta(seconds=refresh_token_expires_in)).timestamp()*1000)
+                        (datetime.now() + timedelta(
+                            seconds=refresh_token_expires_in
+                        )).timestamp() * 1000)
                     )
                 )
 
@@ -863,8 +867,8 @@ async def airtable_callback(
         new_data_store_config = DataStoreSetting(
             type=DataStoreType.AIRTABLE,
             interview_id=interview_id,
-            settings=airtable_config
-                )
+            config=airtable_config
+        )
         new_interview.interview_settings.append(
                 DataStoreSettingCreate.from_orm(new_data_store_config))
 
@@ -886,9 +890,12 @@ async def airtable_callback(
     return RedirectResponse(redirect_to, status_code=302)
 
 
-def is_airtable_access_token_expired(airtable_config: AirtableConfig, buffer=AIRTABLE_AUTH_TIMEOUT_BUFFER_MS):
+def is_airtable_access_token_expired(
+    airtable_config: AirtableConfig,
+    buffer=AIRTABLE_AUTH_TIMEOUT_BUFFER_MS
+):
     """
-        Checks to see if the token expiry time (minus a buffer) has passed.
+    Checks to see if the token expiry time (minus a buffer) has passed.
     """
     # time is stored in miliseconds, but python wants seconds
     token_expiry_time = datetime.fromtimestamp(
@@ -949,7 +956,7 @@ def refresh_airtable_auth(airtable_config: AirtableConfig):
         headers=headers,
         data=params
     )
-    if (response.status_code == 400):
+    if response.status_code == 400:
         return airtable_config
     output = response.json()
     now = datetime.now()
@@ -1036,7 +1043,7 @@ async def get_expiring_airtable_refresh_tokens():
                             'email': owner.email
                         }
                     }
-        except Exception:
+        except Exception: # pylint: disable=broad-except
             # if there's no interview_setting an exception will be thrown by interview_service
             continue
     return output

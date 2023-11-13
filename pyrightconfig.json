@@ -1,6 +1,6 @@
 {
   "include": ["server", "scripts"],
-  "exclude": ["venv"],
+  "exclude": ["venv", "migrations"],
   "ignore": ["sqlmodel.sql"],
   "pythonVersion": "3.10",
   "reportTypeshedErrors": false,

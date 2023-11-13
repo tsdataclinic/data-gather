@@ -38,7 +38,7 @@ export default function SingleSelectEditor({
   const dataStoreSetting = interview?.interviewSettings.find(
     intSetting => intSetting.type === 'airtable',
   );
-  const dataStoreConfig = dataStoreSetting?.settings;
+  const dataStoreConfig = dataStoreSetting?.config;
   const showAirtableConfig = selectionConfig.airtableConfig !== undefined;
 
   const allAirtableFields = React.useMemo(() => {

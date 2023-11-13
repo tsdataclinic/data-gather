@@ -31,7 +31,7 @@ export default function EditRowActionBlock({
   const interviewSetting = interview?.interviewSettings.find(
     intSetting => intSetting.type === 'airtable',
   );
-  const dataStoreConfig = interviewSetting?.settings;
+  const dataStoreConfig = interviewSetting?.config;
 
   const allTables = React.useMemo(() => {
     return dataStoreConfig &&

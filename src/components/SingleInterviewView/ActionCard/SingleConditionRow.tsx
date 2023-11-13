@@ -66,7 +66,7 @@ export default function SingleConditionRow({
   const dataStoreSetting = interview?.interviewSettings.find(
     intSetting => intSetting.type === 'airtable',
   );
-  const dataStoreConfig = dataStoreSetting?.settings;
+  const dataStoreConfig = dataStoreSetting?.config;
   const bases =
     dataStoreConfig?.type === 'airtable' ? dataStoreConfig.bases : undefined;
   const allAirtableTables = React.useMemo(

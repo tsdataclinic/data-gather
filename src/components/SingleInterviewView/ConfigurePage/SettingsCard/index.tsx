@@ -153,7 +153,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
   const renderSettingBlock = (setting: EditableSetting): JSX.Element => {
     switch (setting.type) {
       case 'airtable': {
-        const dataStoreConfig = setting.settings;
+        const dataStoreConfig = setting.config;
         return (
           <div key={dataStoreConfig.type} className="space-y-4">
             {dataStoreConfig.type === 'airtable' &&
@@ -207,7 +207,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     <div className="grid h-auto grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg">
       <div className="flex h-fit items-center space-x-3">
         <FontAwesomeIcon size="1x" icon={IconType.faGear} />
-        <h2>Datastore Settings</h2>
+        <h2>Data Store Settings</h2>
       </div>
       <div className="col-span-3 space-y-4">
         {interview.interviewSettings.map(setting => (
@@ -249,7 +249,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
         <Button
           intent="primary"
           onClick={onAddClick}
-          // Quick way to disallow multiple Airtable settings
+          // Quick way to disallow multiple Airtable configs
           // TODO: change this when adding more DataStoreTypes
           disabled={interview.interviewSettings.some(
             setting => setting.type === 'airtable',

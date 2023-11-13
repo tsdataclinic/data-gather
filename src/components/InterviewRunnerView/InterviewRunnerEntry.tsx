@@ -45,7 +45,7 @@ export default function InterviewRunnerEntry({
   const dataStoreSetting = interview?.interviewSettings.find(
     intSetting => intSetting.type === 'airtable',
   );
-  const dataStoreConfig = dataStoreSetting?.settings;
+  const dataStoreConfig = dataStoreSetting?.config;
 
   const allAirtableFields = React.useMemo(() => {
     if (dataStoreConfig?.type === 'airtable') {

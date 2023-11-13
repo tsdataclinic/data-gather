@@ -7,9 +7,9 @@ import { DataStoreType } from '../../api';
  * An action that is executed on interview submission.
  */
 type DataStoreSetting = {
+  readonly config: SerializedAirtableConfig | SerializedGoogleSheetsConfig;
   readonly id: string;
   readonly interviewId: string;
-  readonly settings: SerializedAirtableConfig | SerializedGoogleSheetsConfig;
   readonly type: DataStoreType;
 };
 

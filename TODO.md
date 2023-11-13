@@ -1,6 +1,5 @@
 ## TODO:
 
-2. Add `type` to the DataStoreConfig
 3. Change `settings` column to `config`
    E.g. `dataStoreSetting?.settings` should be `dataStoreSetting.config`
 4. Rename AirtableSetting to AirtableConfig and GoogleSheetsSettings to GoogleSheetsConfig
@@ -20,6 +19,7 @@
     rather than a service specific (like /airtable-records) endpoint
 15. Change `interview.interviewSettings` to `interview.dataStoreSettings`. And take note of this migration in your notebook.
 16. In python, rename `AirtableSettings` and `GoogleSheetsSettings` to `AirtableConfig` and `GoogleSheetsConfig`
+17. `src/api/` to `src/api-gen`
 
 Places that need switch statement:
 
@@ -36,9 +36,10 @@ Places that need switch statement:
 
 Migrations:
 
-1. TABLE NAME: interview_setting-> data_store_setting
+1. TABLE RENAME: `interview_setting` => `data_store_setting`
+2. Added `type` to the data_store_setting configs [missing]
+3. COLUMN RENAME: `settings` => `config` in `data_store_setting` table
 
 upcoming:
 
-1. DataStoreConfigs now have a `type`
 2. DataStoreSetting `settings` to `config`

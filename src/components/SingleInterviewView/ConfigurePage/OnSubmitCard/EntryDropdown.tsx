@@ -70,7 +70,7 @@ export default function EntryDropdown({
   const dataStoreSetting = interview?.interviewSettings.find(
     intSetting => intSetting.type === 'airtable',
   );
-  const dataStoreConfig = dataStoreSetting?.settings;
+  const dataStoreConfig = dataStoreSetting?.config;
 
   const selectedEntry = React.useMemo(
     () => entries.find(entry => entry.id === selectedEntryId),

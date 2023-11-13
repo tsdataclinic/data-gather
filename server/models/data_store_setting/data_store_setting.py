@@ -1,6 +1,5 @@
-import enum
 import uuid
-from typing import Literal, Optional
+from typing import Optional
 
 from pydantic import validator
 from sqlalchemy import Column
@@ -23,13 +22,13 @@ class DataStoreSettingBase(APIModel):
 
     # mutable_json_type => for mutation tracking of JSON objects
     # https://amercader.net/blog/beware-of-json-fields-in-sqlalchemy/
-    settings: DataStoreConfig = Field(
+    config: DataStoreConfig = Field(
         sa_column=Column(mutable_json_type(dbtype=JSON, nested=True))
     )
 
     interview_id: uuid.UUID = Field(foreign_key="interview.id")
 
-    @validator("settings")
+    @validator("config")
     def validate_settings(  # pylint: disable=no-self-argument
         cls, value: DataStoreConfig
     ) -> dict:
