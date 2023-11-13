@@ -41,7 +41,7 @@ export default function OnSubmitCard({
         SubmissionAction.create({
           interviewId: interview.id,
           order: interview.submissionActions.length + 1,
-          type: SubmissionAction.ActionType.EDIT_ROW,
+          type: 'edit_row',
         }),
       ),
     });
@@ -70,7 +70,7 @@ export default function OnSubmitCard({
 
   const renderActionBlock = (action: EditableAction): JSX.Element => {
     switch (action.config.type) {
-      case SubmissionAction.ActionType.EDIT_ROW:
+      case 'edit_row':
         return (
           <EditRowActionBlock
             defaultLanguage={defaultLanguage}
@@ -81,7 +81,7 @@ export default function OnSubmitCard({
             interview={interview}
           />
         );
-      case SubmissionAction.ActionType.INSERT_ROW:
+      case 'insert_row':
         return (
           <InsertRowActionBlock
             defaultLanguage={defaultLanguage}

@@ -67,7 +67,7 @@ for schema in schemas:
 
 
 def update_refs():
-    # preform a dfs to go through entire OpenAPI JSON and
+    # perform a depth-first search to go through entire OpenAPI JSON and
     # find every object whose key is "$ref" and update it
     stack: deque[tuple[Union[str, int], Any, Any]] = deque(
         [(key, val, openapi_json) for key, val in openapi_json.items()]

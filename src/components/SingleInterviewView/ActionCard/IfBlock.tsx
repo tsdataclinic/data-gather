@@ -41,8 +41,7 @@ export default function IfBlock({
   const isAlwaysExecuteChecked =
     firstCondition &&
     ConditionalAction.isSingleCondition(firstCondition) &&
-    firstCondition.conditionalOperator ===
-      ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE;
+    firstCondition.conditionalOperator === 'always_execute';
 
   const onConditionGroupChange = React.useCallback(
     (newConditionGroup: ConditionalAction.ConditionGroup): void => {
@@ -95,9 +94,7 @@ export default function IfBlock({
   const onDeleteElseCondition = React.useCallback(() => {
     onIfClauseChange({
       ...ifClause,
-      elseClause: ConditionalAction.createDefaultActionConfig(
-        ConditionalAction.ActionType.DO_NOTHING,
-      ),
+      elseClause: ConditionalAction.createDefaultActionConfig('do_nothing'),
     });
   }, [onIfClauseChange, ifClause]);
 
@@ -112,19 +109,13 @@ export default function IfBlock({
           conditions: [
             {
               id: firstCondition.id,
-              conditionalOperator: isChecked
-                ? ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
-                : ConditionalAction.ConditionalOperator.EQ,
+              conditionalOperator: isChecked ? 'always_execute' : 'eq',
             },
           ],
         },
         elseClause: isChecked
-          ? ConditionalAction.createDefaultActionConfig(
-              ConditionalAction.ActionType.DO_NOTHING,
-            )
-          : ConditionalAction.createDefaultActionConfig(
-              ConditionalAction.ActionType.PUSH,
-            ),
+          ? ConditionalAction.createDefaultActionConfig('do_nothing')
+          : ConditionalAction.createDefaultActionConfig('push'),
       });
     },
     [onIfClauseChange, ifClause, conditionGroup, firstCondition],

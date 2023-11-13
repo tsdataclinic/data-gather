@@ -1,7 +1,6 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import * as InterviewScreen from '../../../../models/InterviewScreen';
-import * as DataStoreSetting from '../../../../models/DataStoreSetting';
 import * as Interview from '../../../../models/Interview';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import Dropdown from '../../../ui/Dropdown';
@@ -36,10 +35,13 @@ type Props = {
 const EMPTY_ENTRY_ID = '__EMPTY__';
 const SPECIAL_OPTION_ID = '__SPECIAL__';
 
-const SPECIAL_VALUE_OPTIONS = [
+const SPECIAL_VALUE_OPTIONS: Array<{
+  displayValue: string;
+  value: SubmissionAction.SpecialValueType;
+}> = [
   {
     displayValue: "Today's date",
-    value: SubmissionAction.SpecialValueType.NOW_DATE,
+    value: 'now_date',
   },
 ];
 
@@ -65,10 +67,10 @@ export default function EntryDropdown({
     selectedSpecialValueType !== undefined,
   );
 
-  const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
+  const dataStoreSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === 'airtable',
   );
-  const airtableSettings = interviewSetting?.settings;
+  const dataStoreConfig = dataStoreSetting?.settings;
 
   const selectedEntry = React.useMemo(
     () => entries.find(entry => entry.id === selectedEntryId),
@@ -113,10 +115,11 @@ export default function EntryDropdown({
   const airtableFieldOptions = React.useMemo(() => {
     if (
       selectedEntry &&
-      selectedEntry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
+      selectedEntry.responseType === 'airtable' &&
+      dataStoreConfig?.type === 'airtable'
     ) {
       const { selectedTable } = selectedEntry.responseTypeOptions;
-      const airtableFields = airtableSettings?.bases
+      const airtableFields = dataStoreConfig?.bases
         ?.flatMap(base => base.tables)
         .find(table => table?.id === selectedTable)?.fields;
       return airtableFields?.map(field => ({
@@ -128,7 +131,7 @@ export default function EntryDropdown({
     }
 
     return undefined;
-  }, [airtableSettings, selectedEntry]);
+  }, [dataStoreConfig, selectedEntry]);
 
   let entryIdToDisplay = selectedEntryId;
   if (isSpecialValueSelected) {

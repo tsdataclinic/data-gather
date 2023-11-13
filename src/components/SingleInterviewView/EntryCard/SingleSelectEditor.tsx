@@ -21,14 +21,11 @@ type Props = {
 function doesAirtableFieldHaveOptions(
   airtableField: DataStoreSetting.AirtableField,
 ): boolean {
-  return (
-    airtableField.options !== undefined &&
-    !!airtableField.options?.choices &&
-    airtableField.options.choices.length > 0 &&
-    airtableField.options.choices.every(
-      choice => choice?.name !== '' && choice?.name !== undefined,
-    )
-  );
+  const { success } =
+    DataStoreSetting.AirtableFieldOptionsSchemas.SingleSelect.safeParse(
+      airtableField,
+    );
+  return success;
 }
 
 export default function SingleSelectEditor({
@@ -38,19 +35,20 @@ export default function SingleSelectEditor({
 }: Props): JSX.Element {
   const { airtableConfig, options } = selectionConfig;
   const [optionToAdd, setOptionToAdd] = React.useState<string>('');
-  const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
+  const dataStoreSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === 'airtable',
   );
-  const airtableSettings = interviewSetting?.settings;
+  const dataStoreConfig = dataStoreSetting?.settings;
   const showAirtableConfig = selectionConfig.airtableConfig !== undefined;
 
-  const allAirtableFields = React.useMemo(
-    () =>
-      airtableSettings?.bases?.flatMap(base =>
+  const allAirtableFields = React.useMemo(() => {
+    if (dataStoreConfig?.type === 'airtable') {
+      return dataStoreConfig?.bases?.flatMap(base =>
         base.tables?.flatMap(table => table.fields),
-      ),
-    [airtableSettings?.bases],
-  );
+      );
+    }
+    return undefined;
+  }, [dataStoreConfig]);
 
   const selectedAirtableField = React.useMemo(() => {
     if (
@@ -64,6 +62,11 @@ export default function SingleSelectEditor({
     }
     return undefined;
   }, [airtableConfig, allAirtableFields]);
+
+  const singleSelectOptions = React.useMemo(
+    () => DataStoreSetting.getSingleSelectFieldOptions(selectedAirtableField),
+    [selectedAirtableField],
+  );
 
   const onAddOption = (): void => {
     const newOption = {
@@ -79,7 +82,9 @@ export default function SingleSelectEditor({
 
   return (
     <div className="space-y-2">
-      {airtableSettings?.bases && airtableSettings.bases.length > 0 ? (
+      {dataStoreConfig?.type === 'airtable' &&
+      dataStoreConfig?.bases &&
+      dataStoreConfig.bases.length > 0 ? (
         <LabelWrapper
           inline
           label="Use options from an Airtable field?"
@@ -171,9 +176,9 @@ export default function SingleSelectEditor({
             }
             fieldFilterFn={doesAirtableFieldHaveOptions}
           />
-          {selectedAirtableField ? (
+          {singleSelectOptions ? (
             <ul className="ml-8 list-disc">
-              {(selectedAirtableField.options?.choices ?? []).map(opt => (
+              {(singleSelectOptions.choices ?? []).map(opt => (
                 <li key={opt.id}>{opt.name}</li>
               ))}
             </ul>

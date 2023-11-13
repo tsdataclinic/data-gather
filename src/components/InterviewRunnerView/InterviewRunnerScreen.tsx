@@ -66,9 +66,7 @@ export default function InterviewRunnerScreen({
             return true;
           }
 
-          if (
-            entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
-          ) {
+          if (entry.responseType === 'airtable') {
             return entry.required ? value === undefined || value === '' : false;
           }
           return false;
@@ -88,7 +86,7 @@ export default function InterviewRunnerScreen({
         if (entry) {
           // If there was not a selection from the Airtable lookup don't sent to the response consumer
           if (
-            entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE &&
+            entry.responseType === 'airtable' &&
             (value === undefined || value === '')
           ) {
             return;
@@ -96,9 +94,7 @@ export default function InterviewRunnerScreen({
           formResponses[key] = {
             entry,
             response:
-              entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
-                ? JSON.parse(value)
-                : value,
+              entry.responseType === 'airtable' ? JSON.parse(value) : value,
           };
         }
       });

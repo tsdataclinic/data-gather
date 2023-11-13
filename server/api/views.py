@@ -1,13 +1,13 @@
 import base64
 import logging
 import time
-import urllib
 from datetime import datetime, timedelta
 from hashlib import sha256
-from typing import Sequence, TypeVar, Union
+from typing import Union
+from urllib.parse import urlencode
 
 import httpx
-from Crypto.Random import get_random_bytes
+from Crypto.Random import get_random_bytes  # pylint: disable=import-error
 from fastapi import (Body, Depends, FastAPI, HTTPException, Request, Response,
                      Security)
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +17,7 @@ from fastapi_azure_auth import B2CMultiTenantAuthorizationCodeBearer
 from fastapi_azure_auth.user import User as AzureUser
 from pydantic import AnyHttpUrl, BaseSettings, Field
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from sqlmodel import Session, SQLModel, select
+from sqlmodel import Session, select
 
 from server.api.airtable_api import AirtableAPI, PartialRecord, Record
 from server.api.airtable_config import (AIRTABLE_AUTH_URL, AIRTABLE_CLIENT_ID,
@@ -28,12 +28,15 @@ from server.api.airtable_config import (AIRTABLE_AUTH_URL, AIRTABLE_CLIENT_ID,
 from server.api.exceptions import InvalidOrder
 from server.api.services.interview_screen_service import InterviewScreenService
 from server.api.services.interview_service import InterviewService
+from server.api.services.util import (diff_model_lists, reset_object_order,
+                                      update_model_diff)
 from server.db import SQLITE_DB_PATH
 from server.engine import create_fk_constraint_engine
-from server.models.airtable_settings import AirtableSettings
-from server.models.common import OrderedModel
 from server.models.conditional_action import ConditionalAction
-from server.models.data_store_setting import DataStoreSetting, DataStoreType
+from server.models.data_store_setting.airtable_config import (
+    AirtableAuthConfig, AirtableConfig)
+from server.models.data_store_setting.data_store_setting import (
+    DataStoreSetting, DataStoreSettingCreate, DataStoreType)
 from server.models.interview import (Interview, InterviewCreate, InterviewRead,
                                      InterviewReadWithScreensAndActions,
                                      InterviewUpdate, ValidationError)
@@ -110,9 +113,15 @@ azure_scheme = B2CMultiTenantAuthorizationCodeBearer(
     scopes={
         f"https://{settings.AZURE_API_SCOPE}": "API Scope",
     },
-    openid_config_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/v2.0/.well-known/openid-configuration",
-    openapi_authorization_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/oauth2/v2.0/authorize",
-    openapi_token_url=f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}.onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/oauth2/v2.0/token",
+    openid_config_url=(
+        f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}"
+        f".onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/v2.0/.well-known/"
+        f"openid-configuration"
+    ),
+    openapi_authorization_url=(
+        f"https://{settings.AZURE_DOMAIN_NAME}.b2clogin.com/{settings.AZURE_DOMAIN_NAME}"
+        f".onmicrosoft.com/{settings.AZURE_POLICY_AUTH_NAME}/oauth2/v2.0/token"
+    ),
     validate_iss=False,
 )
 
@@ -265,17 +274,18 @@ def update_interview(
     interview: InterviewUpdate,
     session: Session = Depends(get_session),
 ) -> Interview:
+    # TODO: move this to interview_service
     try:
         db_interview = session.exec(
             select(Interview).where(Interview.id == interview_id)
         ).one()
-    except NoResultFound:
+    except NoResultFound as exc:
         raise HTTPException(
             status_code=404, detail=f"Interview with id {interview_id} not found"
-        )
+        ) from exc
     # update the nested submission actions
-    _reset_object_order(interview.submission_actions)
-    actions_to_set, actions_to_delete = _diff_model_lists(
+    reset_object_order(interview.submission_actions)
+    actions_to_set, actions_to_delete = diff_model_lists(
         db_interview.submission_actions,
         [SubmissionAction.from_orm(action) for action in interview.submission_actions],
     )
@@ -288,7 +298,7 @@ def update_interview(
     db_interview.submission_actions = actions_to_set
 
     # get settings to update and delete
-    settings_to_set, settings_to_delete = _diff_model_lists(
+    settings_to_set, settings_to_delete = diff_model_lists(
         db_interview.interview_settings,
         [
             DataStoreSetting.from_orm(setting)
@@ -304,7 +314,7 @@ def update_interview(
     db_interview.interview_settings = settings_to_set
 
     # now update the top-level db_interview values
-    _update_model_diff(
+    update_model_diff(
         db_interview,
         interview.copy(exclude={"submission_actions", "interview_settings"}),
     )
@@ -314,9 +324,9 @@ def update_interview(
     try:
         session.commit()
     except IntegrityError as e:
-        raise HTTPException(status_code=400, detail=str(e.orig))
+        raise HTTPException(status_code=400, detail=str(e.orig)) from e
     except ValidationError as e:
-        raise HTTPException(status_code=400, detail="Error validating interview")
+        raise HTTPException(status_code=400, detail="Error validating interview") from e
     return db_interview
 
 
@@ -419,7 +429,7 @@ def update_interview_starting_state(
         raise HTTPException(
             status_code=400,
             detail=str(e.orig),
-        )
+        ) from e
 
     db_interview = session.get(Interview, interview_id)
     if not db_interview:
@@ -501,7 +511,7 @@ def create_interview_screen(
             db_screen, ordered_screens = _adjust_screen_order(existing_screens, screen)
             session.add_all(ordered_screens)
         except InvalidOrder as e:
-            raise HTTPException(status_code=400, detail=str(e.message))
+            raise HTTPException(status_code=400, detail=str(e.message)) from e
 
     try:
         session.commit()
@@ -509,7 +519,7 @@ def create_interview_screen(
         raise HTTPException(
             status_code=400,
             detail=str(e.orig),
-        )
+        ) from e
 
     session.refresh(db_screen)
     return db_screen
@@ -550,24 +560,24 @@ def update_interview_screen(
         db_screen: InterviewScreen = (
             session.query(InterviewScreen).where(InterviewScreen.id == screen_id).one()
         )
-    except NoResultFound:
+    except NoResultFound as e:
         raise HTTPException(
             status_code=404, detail=f"Screen with id {screen_id} not found"
-        )
+        ) from e
 
     # update the top-level InterviewScreen model values
-    _update_model_diff(db_screen, screen.copy(exclude={"actions", "entries"}))
+    update_model_diff(db_screen, screen.copy(exclude={"actions", "entries"}))
 
     # validate that actions and entries have valid orders
-    _reset_object_order(screen.actions)
-    _reset_object_order(screen.entries)
+    reset_object_order(screen.actions)
+    reset_object_order(screen.entries)
 
     # update the InterviewScreen relationships (actions and entries)
-    actions_to_set, actions_to_delete = _diff_model_lists(
+    actions_to_set, actions_to_delete = diff_model_lists(
         db_screen.actions,
         [ConditionalAction.from_orm(action) for action in screen.actions],
     )
-    entries_to_set, entries_to_delete = _diff_model_lists(
+    entries_to_set, entries_to_delete = diff_model_lists(
         db_screen.entries,
         [InterviewScreenEntry.from_orm(entry) for entry in screen.entries],
     )
@@ -583,101 +593,16 @@ def update_interview_screen(
     for model in actions_to_delete + entries_to_delete:
         session.delete(model)
 
-    LOG.info(f"Making changes to screen:")
-    LOG.info(f"Additions {session.new}")
-    LOG.info(f"Deletions: {session.deleted}")
-    LOG.info(f"Updates: {session.dirty}")
+    LOG.info("Making changes to screen:")
+    LOG.info("Additions %s", session.new)
+    LOG.info("Deletions: %s", session.deleted)
+    LOG.info("Updates: %s", session.dirty)
 
     try:
         session.commit()
     except IntegrityError as e:
-        raise HTTPException(status_code=400, detail=str(e.orig))
+        raise HTTPException(status_code=400, detail=str(e.orig)) from e
     return db_screen
-
-
-def _update_model_diff(existing_model: SQLModel, new_model: SQLModel):
-    """
-    Update a model returned from the DB with any changes in the new
-    model.
-    """
-    for key in new_model.dict().keys():
-        new_val = getattr(new_model, key)
-        old_val = getattr(existing_model, key)
-        if old_val != new_val:
-            setattr(existing_model, key, new_val)
-    return existing_model
-
-
-TInterviewChild = TypeVar(
-    "TInterviewChild",
-    ConditionalAction,
-    InterviewScreenEntry,
-    SubmissionAction,
-    DataStoreSetting,
-)
-
-
-def _diff_model_lists(
-    db_models: list[TInterviewChild],
-    request_models: list[TInterviewChild],
-) -> tuple[list[TInterviewChild], list[TInterviewChild]]:
-    """
-    Given two list of models, diff them to come up with the list of models to
-    set in the db (which includes the models to update and the models to add)
-    and the list of models to delete.
-
-    The model types must have an `id` member for this to work since that is
-    the field this function uses to compare them.
-
-    NOTE: If there are 0 db_models and more than 0 request_models,
-      will pass through all request_models as models_to_create.
-
-    Args:
-        db_models: The existing list of models in the db
-        request_models: The list of models coming in from a request which we
-            wish to write.
-
-    Returns:
-        A tuple of: list of models to set and list of models to delete
-    """
-    # case where db_models is empty and request_models isn't => pass through all request_models
-    if (len(db_models) == 0 and len(request_models) > 0):
-        return (request_models, [])
-    
-    # create map of id to request_model (i.e. the models not in the db)
-    db_models_dict = {model.id: model for model in db_models}
-    request_model_ids = set(req_model.id for req_model in request_models)
-    
-    # figure out which models are new and which ones have to be updated
-    models_to_create = []
-    models_to_update = []
-    for request_model in request_models:
-        if request_model.id is None:
-            models_to_create.append(request_model)
-        else:
-            db_model = db_models_dict.get(request_model.id, None)
-            if db_model:
-                # if the model already exists in the database, then we update the
-                # db_model with the request_model data
-                models_to_update.append(_update_model_diff(db_model, request_model))
-
-    # figure out which models need to be deleted from the database
-    models_to_delete = []
-    for db_model in db_models:
-        if db_model.id not in request_model_ids:
-            models_to_delete.append(db_model)
-
-    models_to_set = models_to_create + models_to_update
-    return (models_to_set, models_to_delete)
-
-
-def _reset_object_order(request_models: Sequence[OrderedModel]):
-    """
-    Resets the order attribute of objects in given iterable to their index value
-    """
-    for index, ordered_model in enumerate(request_models):
-        ordered_model.order = index
-
 
 def _adjust_screen_order(
     existing_screens: list[InterviewScreen], new_screen: InterviewScreenCreate
@@ -726,12 +651,12 @@ async def get_airtable_records(
     Fetch records from an airtable table. Filtering can be performed
     by adding query parameters to the URL, keyed by column name.
     """
-    airtable_settings = interview_service.get_airtable_settings(interview_id)
+    airtable_config = interview_service.get_airtable_config(interview_id)
 
-    if (is_airtable_access_token_expired(airtable_settings)):
+    if (is_airtable_access_token_expired(airtable_config)):
         await refresh_and_update_airtable_auth(interview_id, interview_service, session)
 
-    airtable_client = AirtableAPI(airtable_settings)
+    airtable_client = AirtableAPI(airtable_config)
     start_time = time.time()
     query = dict(request.query_params)
     results = airtable_client.search_records(base_id, table_name, query)
@@ -739,7 +664,7 @@ async def get_airtable_records(
 
     search_term = list(query.values())[0]
     LOG.info(
-        f"Completed airtable search for '{search_term}' in {round(end_time - start_time, 3)} seconds"
+        "Completed airtable search for '%s' in %s seconds", search_term, round(end_time - start_time, 3)
     )
     return results
 
@@ -756,8 +681,8 @@ def get_airtable_record(
     """
     Fetch record with a particular id from a table in airtable.
     """
-    airtable_settings = interview_service.get_airtable_settings(interview_id)
-    airtable_client = AirtableAPI(airtable_settings)
+    airtable_config = interview_service.get_airtable_config(interview_id)
+    airtable_client = AirtableAPI(airtable_config)
     return airtable_client.fetch_record(base_id, table_name, record_id)
 
 
@@ -766,43 +691,25 @@ def get_airtable_schema(
     interview_id: str,
     interview_service: InterviewService = Depends(get_interview_service),
     session: Session = Depends(get_session),
-) -> Record:
+) -> Interview:
     """
     Given an interview object, fetch the list of bases + schema for each base
     for its given Airtable access key.
     Combine the schema into a single JSON object.
     Update a given Interview object with that schema.
     """
-    interview = interview_service.get_interview_by_id(interview_id)
-    new_interview = InterviewUpdate.from_orm(interview)
-    update_interview_setting_index = 0
-    update_interview_setting = DataStoreSetting()
+    airtable_config = interview_service.get_airtable_config(interview_id)
+    airtable_client = AirtableAPI(airtable_config)
+    airtable_config.bases = airtable_client.fetch_schema(airtable_config)
 
-    # look for the airtable setting
-    airtableSetting = {}
-    for index, interview_setting in enumerate(interview.interview_settings):
-        if (
-            interview_setting.settings
-            and interview_setting.type == DataStoreType.AIRTABLE
-        ):
-            update_interview_setting_index = index
-            update_interview_setting = interview_setting
-            airtableSetting = interview_setting.settings
+    return interview_service.update_data_store_config(
+            interview_id, airtable_config)
 
-    airtable_client = AirtableAPI(airtableSetting)
-    new_airtable_settings = airtable_client.fetch_schema(airtableSetting)
-
-    update_interview_setting.settings.update(new_airtable_settings)
-    new_interview.interview_settings[
-        update_interview_setting_index
-    ] = update_interview_setting
-
-    return update_interview(interview_id, new_interview, session)
 
 @app.post("/api/airtable-records/{interview_id}/{base_id}/{table_name}", tags=["airtable"])
 async def create_airtable_record(
     base_id: str,
-    table_name: str, 
+    table_name: str,
     interview_id: str,
     interview_service: InterviewService = Depends(get_interview_service),
     session: Session = Depends(get_session),
@@ -811,8 +718,8 @@ async def create_airtable_record(
     """
     Create an airtable record in a table.
     """
-    airtable_settings = interview_service.get_airtable_settings(interview_id)
-    airtable_client = AirtableAPI(airtable_settings)
+    airtable_config = interview_service.get_airtable_config(interview_id)
+    airtable_client = AirtableAPI(airtable_config)
     return airtable_client.create_record(base_id, table_name, record)
 
 
@@ -829,8 +736,8 @@ async def update_airtable_record(
     """
     Update an airtable record in a table.
     """
-    airtable_settings = interview_service.get_airtable_settings(interview_id)
-    airtable_client = AirtableAPI(airtable_settings)
+    airtable_config = interview_service.get_airtable_config(interview_id)
+    airtable_client = AirtableAPI(airtable_config)
     return airtable_client.update_record(base_id, table_name, record_id, update)
 
 @app.get("/api/airtable-auth", tags=["airtable"])
@@ -847,7 +754,7 @@ async def airtable_auth(
     - On confirm, Airtable setup to redirectd back to callback App URL
     - UI takes response data and continues handling auth from there.
 
-    Most of this follows: https://github.com/Airtable/oauth-example 
+    Most of this follows: https://github.com/Airtable/oauth-example
     """
     print('airtable_auth | ', state, interview_id)
     code_verifier_bytes = get_random_bytes(96)
@@ -866,11 +773,11 @@ async def airtable_auth(
         "code_challenge": code_challenge,
         "code_challenge_method": code_challenge_method,
     }
-    oauth_cache[state] = { 
+    oauth_cache[state] = {
         'code_verifier' : code_verifier,
         'interview_id': interview_id
     }
-    redirect_to = f"""{AIRTABLE_AUTH_URL}?{urllib.parse.urlencode(params)}"""
+    redirect_to = f"""{AIRTABLE_AUTH_URL}?{urlencode(params)}"""
     return RedirectResponse(redirect_to, status_code=302)
 
 @app.get("/api/airtable-callback", tags=["airtable"], response_class=HTMLResponse)
@@ -879,7 +786,12 @@ async def airtable_callback(
     interview_service: InterviewService = Depends(get_interview_service),
     session: Session = Depends(get_session),
 ):
-    
+    '''This is the callback that Airtable itself calls as part of the OAuth
+    protocol after authentication is completed.
+    '''
+    if AIRTABLE_TOKEN_URL is None:
+        LOG.error("AIRTABLE_TOKEN_URL environment variable is not set")
+        return
     if (request.query_params.get('error')):
         error_str = request.query_params.get('error')
         return Response(f"Error: {error_str}")
@@ -892,12 +804,12 @@ async def airtable_callback(
     cached = oauth_cache[state]['code_verifier']
     interview_id = oauth_cache[state]['interview_id']
     oauth_cache[state] = ''
-    
+
     credentials = f"{AIRTABLE_CLIENT_ID}:{AIRTABLE_CLIENT_SECRET}".encode('utf-8')
     encoded_credentials = base64.b64encode(credentials).decode('utf-8')
 
     authorizationHeader = f"Basic {encoded_credentials}"
-    
+
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': authorizationHeader
@@ -912,11 +824,11 @@ async def airtable_callback(
 
     response = httpx.post(url=AIRTABLE_TOKEN_URL,
         headers=headers,
-        data=urllib.parse.urlencode(params)
+        data=params
     )
     response_json = response.json()
     redirect_to = ''
-    if (response.status_code == 200):
+    if response.status_code == 200:
         access_token = response_json['access_token']
         refresh_token = response_json['refresh_token']
         access_token_expires_in = response_json['expires_in']
@@ -924,80 +836,101 @@ async def airtable_callback(
         token_type=response_json['token_type']
         scope=response_json['scope']
 
-        # populate interview_settings obj with AirtableSettings()
-        airtable_setting = {
-            'authSettings': {
-                'scope': scope,
-                'tokenType': token_type,
-                'accessToken': access_token,
-                'refreshToken': refresh_token,
-                'accessTokenExpires': (datetime.now() + timedelta(seconds=access_token_expires_in)).timestamp()*1000,
-                'refreshTokenExpires': (datetime.now() + timedelta(seconds=refresh_token_expires_in)).timestamp()*1000
-            }
-        } 
+        # populate interview_settings obj with AirtableConfig
+        airtable_config = AirtableConfig(
+            type=DataStoreType.AIRTABLE,
+            authSettings=AirtableAuthConfig(
+                    scope= scope,
+                    tokenType= token_type,
+                    accessToken= access_token,
+                    refreshToken= refresh_token,
+                    accessTokenExpires=int(
+                        (datetime.now() + timedelta(seconds=access_token_expires_in)).timestamp()*1000),
+                    refreshTokenExpires=int(
+                        (datetime.now() + timedelta(seconds=refresh_token_expires_in)).timestamp()*1000)
+                    )
+                )
 
         # create empty interview_settings object
         interview = interview_service.get_interview_by_id(interview_id)
         new_interview = InterviewUpdate.from_orm(interview)
-        new_interview_setting = DataStoreSetting()
-        new_interview_setting.type = DataStoreType.AIRTABLE
-        new_interview_setting.interview_id = interview_id
-        
+
         # fetch airtable schema
-        airtable_client = AirtableAPI(airtable_setting)
-        airtable_settings_with_schema = airtable_client.fetch_schema(airtable_setting)
-        # make object assignments
-        airtable_setting.update(airtable_settings_with_schema)
-        new_interview_setting.settings = airtable_setting
-        new_interview.interview_settings.append(new_interview_setting)
+        airtable_client = AirtableAPI(airtable_config)
+        airtable_config.bases = airtable_client.fetch_schema(airtable_config)
+
+        # create new DataStoreSetting model
+        new_data_store_config = DataStoreSetting(
+            type=DataStoreType.AIRTABLE,
+            interview_id=interview_id,
+            settings=airtable_config
+                )
+        new_interview.interview_settings.append(
+                DataStoreSettingCreate.from_orm(new_data_store_config))
+
         # commit to db
-        update_interview(interview_id, new_interview, session)
+        interview_service.update_interview(interview_id, new_interview)
 
         params = {
             'id': 'airtable',
             'state': state
         }
-        redirect_to = f"""{REACT_APP_CLIENT_URI}/?{urllib.parse.urlencode(params)}"""
+        redirect_to = f"""{REACT_APP_CLIENT_URI}/?{urlencode(params)}"""
     else:
         params = {
             'error': response_json['error'],
             'error_description': response_json['error_description']
         }
-        redirect_to = f"""{REACT_APP_CLIENT_URI}/?{urllib.parse.urlencode(params)}"""
-    
+        redirect_to = f"""{REACT_APP_CLIENT_URI}/?{urlencode(params)}"""
+
     return RedirectResponse(redirect_to, status_code=302)
 
 
-def is_airtable_access_token_expired(airtable_settings: AirtableSettings, buffer=AIRTABLE_AUTH_TIMEOUT_BUFFER_MS):
+def is_airtable_access_token_expired(airtable_config: AirtableConfig, buffer=AIRTABLE_AUTH_TIMEOUT_BUFFER_MS):
     """
         Checks to see if the token expiry time (minus a buffer) has passed.
     """
     # time is stored in miliseconds, but python wants seconds
-    if airtable_settings.authSettings:
-        token_expiry_time = datetime.fromtimestamp(airtable_settings.authSettings.accessTokenExpires //1000) - timedelta(milliseconds=buffer)
-        now = datetime.now()
-        if (now > token_expiry_time):
-            LOG.info(f"Token expired | Current time: {now} | Token expiry time: {token_expiry_time}")
-            return True
+    token_expiry_time = datetime.fromtimestamp(
+        airtable_config.authSettings.accessTokenExpires //1000
+    ) - timedelta(milliseconds=buffer)
+    now = datetime.now()
+    if now > token_expiry_time:
+        LOG.info("Token expired | Current time: %s | Token expiry time: %s", now, token_expiry_time)
+        return True
     return False
 
-def is_airtable_refresh_token_expired(airtable_settings: AirtableSettings, buffer):
+def is_airtable_refresh_token_expired(airtable_config: AirtableConfig, buffer):
     """
         Checks to see if the token expiry time (minus a buffer) has passed.
     """
     # time is stored in miliseconds, but python wants seconds
-    if airtable_settings.authSettings:
-        token_expiry_time = datetime.fromtimestamp(airtable_settings.authSettings.refreshTokenExpires//1000) - timedelta(milliseconds=buffer)
+    if airtable_config.authSettings:
+        token_expiry_time = datetime.fromtimestamp(
+            airtable_config.authSettings.refreshTokenExpires//1000
+        ) - timedelta(milliseconds=buffer)
         now = datetime.now()
-        if (now > token_expiry_time):
-            LOG.info(f"Refresh token expired | Current time: {now} | Refresh token expiry time: {token_expiry_time}")
+        if now > token_expiry_time:
+            LOG.info(
+                "Refresh token expired | Current time: %s | Refresh token expiry time: %s",
+                now,
+                token_expiry_time
+            )
             return True
-        LOG.info(f"Refresh token NOT expired | Current time: {now} | Refresh token expiry time: {token_expiry_time}")
+        LOG.info(
+            "Refresh token NOT expired | Current time: %s | Refresh token expiry time: %s",
+            now,
+            token_expiry_time
+        )
     return False
 
 # TODO - Run this on a schedule or on certain Airtable API calls
-def refresh_airtable_auth(airtable_settings: AirtableSettings):
-    if airtable_settings.authSettings is None:
+def refresh_airtable_auth(airtable_config: AirtableConfig):
+    if AIRTABLE_TOKEN_URL is None:
+        LOG.error("AIRTABLE_TOKEN_URL environment variable is not set")
+        return
+
+    if airtable_config.authSettings is None:
         return
 
     credentials = f"{AIRTABLE_CLIENT_ID}:{AIRTABLE_CLIENT_SECRET}".encode('utf-8')
@@ -1010,14 +943,14 @@ def refresh_airtable_auth(airtable_settings: AirtableSettings):
     params = {
         'client_id': AIRTABLE_CLIENT_ID,
         'grant_type': "refresh_token",
-        'refresh_token': airtable_settings.authSettings.refreshToken,
+        'refresh_token': airtable_config.authSettings.refreshToken,
     }
     response = httpx.post(url=AIRTABLE_TOKEN_URL,
         headers=headers,
-        data=urllib.parse.urlencode(params)
+        data=params
     )
     if (response.status_code == 400):
-        return airtable_settings
+        return airtable_config
     output = response.json()
     now = datetime.now()
 
@@ -1025,17 +958,17 @@ def refresh_airtable_auth(airtable_settings: AirtableSettings):
     access_token_expires = now + timedelta(seconds=access_token_expires_in_seconds)
     access_token_expires_timestamp = (access_token_expires.timestamp())*1000
     output['expires_in'] = access_token_expires_timestamp
-    
+
     refresh_token_expires_in_seconds = int(output['refresh_expires_in'])
     refresh_token_expires = now + timedelta(seconds=refresh_token_expires_in_seconds)
     refresh_token_expires_timestamp = (refresh_token_expires.timestamp())*1000
     output['refresh_expires_in'] = refresh_token_expires_timestamp
 
-    airtable_settings.authSettings.accessToken = output['access_token']
-    airtable_settings.authSettings.refreshToken = output['refresh_token']
-    airtable_settings.authSettings.accessTokenExpires = output['expires_in']
-    airtable_settings.authSettings.refreshTokenExpires = output['refresh_expires_in']
-    return airtable_settings
+    airtable_config.authSettings.accessToken = output['access_token']
+    airtable_config.authSettings.refreshToken = output['refresh_token']
+    airtable_config.authSettings.accessTokenExpires = output['expires_in']
+    airtable_config.authSettings.refreshTokenExpires = output['refresh_expires_in']
+    return airtable_config
 
 
 @app.get("/api/refresh-and-update-airtable-auth", tags=["airtable"])
@@ -1045,29 +978,18 @@ async def refresh_and_update_airtable_auth(
     session: Session = Depends(get_session),
 ):
     LOG.info("Refreshing Airtable auth token")
-    interview = interview_service.get_interview_by_id(interview_id)
-    new_interview = InterviewUpdate.from_orm(interview)
-    update_interview_setting_index = 0
+    airtable_config = interview_service.get_airtable_config(interview_id)
+    refreshed_airtable_config = refresh_airtable_auth(airtable_config)
 
-    # look for the airtable setting
-    airtableSetting = {}
-    for index, interview_setting in enumerate(interview.interview_settings):
-        if interview_setting.settings and interview_setting.type == DataStoreType.AIRTABLE:
-            update_interview_setting_index = index
-            update_interview_setting = interview_setting
-            airtableSetting = interview_setting.settings
-    
-    refreshed_airtable_setting = refresh_airtable_auth(airtableSetting)
-    update_interview_setting.settings.update(refreshed_airtable_setting)
-    new_interview.interview_settings[update_interview_setting_index] = update_interview_setting
-    
-    return update_interview(interview_id, new_interview, session)
+    if refreshed_airtable_config:
+        return interview_service.update_data_store_config(interview_id, refreshed_airtable_config)
 
 @app.get("/api/get-expiring-airtable-refresh-tokens", tags=["airtable"])
 async def get_expiring_airtable_refresh_tokens():
     """
     Checks every interview in the DB for an associated Airtable settings.
-    If there is one, checks to see if the authorization refresh token will expire within the next week.
+    If there is one, checks to see if the authorization refresh token will expire within the next
+    week.
     Returns an object of the following shape:
     {
         <interview.id>: {
@@ -1081,8 +1003,7 @@ async def get_expiring_airtable_refresh_tokens():
             }
         }
     }
-     
-    The consumer of this API can act on that response by, for example, 
+    The consumer of this API can act on that response by, for example,
     sending an email to the owner of the interview alerting them.
     """
     LOG.info('Getting interviews with Airtable refresh tokens expiring in < 1 week')
@@ -1095,31 +1016,27 @@ async def get_expiring_airtable_refresh_tokens():
         select(Interview)
     )
     output = {}
-    for interview in interview_result:
+    for interview in interview_result: # pylint: disable=not-an-iterable
         try:
-            airtable_settings = interview_service.get_airtable_settings(str(interview.id))
-
-            if airtable_settings.authSettings: 
-                if (is_airtable_refresh_token_expired(airtable_settings, ONE_WEEK_MS)):
-                    user_owner = session.exec(
-                        select(User)
-                        .where(User.id == interview.owner_id)
-                    )
-                    owner = user_owner.first()
-                    if owner is not None:
-                        output[interview.id] = {
-                            'interview': {
-                                'name': interview.name if interview.name else '',
-                                'refreshTokenExpires': airtable_settings.authSettings.refreshTokenExpires,
-                            },
-                            'owner': { 
-                                'id': owner.id,
-                                'email': owner.email
-                            }
+            airtable_settings = interview_service.get_airtable_config(str(interview.id))
+            if is_airtable_refresh_token_expired(airtable_settings, ONE_WEEK_MS):
+                user_owner = session.exec(
+                    select(User)
+                    .where(User.id == interview.owner_id)
+                )
+                owner = user_owner.first()
+                if owner is not None:
+                    output[interview.id] = {
+                        'interview': {
+                            'name': interview.name if interview.name else '',
+                            'refreshTokenExpires': airtable_settings.authSettings.refreshTokenExpires,
+                        },
+                        'owner': {
+                            'id': owner.id,
+                            'email': owner.email
                         }
-                    
-        except Exception as e:
+                    }
+        except Exception:
             # if there's no interview_setting an exception will be thrown by interview_service
             continue
-
     return output

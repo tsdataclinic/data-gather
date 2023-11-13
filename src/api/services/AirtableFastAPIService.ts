@@ -194,6 +194,8 @@ export class AirtableFastAPIService {
 
   /**
    * Airtable Callback
+   * This is the callback that Airtable itself calls as part of the OAuth
+   * protocol after authentication is completed.
    * @returns string Successful Response
    * @throws ApiError
    */
@@ -228,7 +230,8 @@ export class AirtableFastAPIService {
   /**
    * Get Expiring Airtable Refresh Tokens
    * Checks every interview in the DB for an associated Airtable settings.
-   * If there is one, checks to see if the authorization refresh token will expire within the next week.
+   * If there is one, checks to see if the authorization refresh token will expire within the next
+   * week.
    * Returns an object of the following shape:
    * {
      * <interview.id>: {
@@ -242,7 +245,6 @@ export class AirtableFastAPIService {
            * }
            * }
            * }
-           *
            * The consumer of this API can act on that response by, for example,
            * sending an email to the owner of the interview alerting them.
            * @returns any Successful Response

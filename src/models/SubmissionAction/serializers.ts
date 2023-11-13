@@ -20,20 +20,22 @@ export function deserialize(
   // deserialize the action config
   let deserializedConfig: SubmissionAction.T['config'];
   switch (type) {
-    case SubmissionAction.ActionType.EDIT_ROW:
+    case 'edit_row': {
       invariant(
         'entryId' in payload,
         'Expected an entry id in an Edit Row payload',
       );
       deserializedConfig = { type, payload };
       break;
-    case SubmissionAction.ActionType.INSERT_ROW:
+    }
+    case 'insert_row': {
       invariant(
         'tableTarget' in payload,
         'Expected table target in an Insert Row payload',
       );
       deserializedConfig = { type, payload };
       break;
+    }
     default:
       assertUnreachable(type);
   }
@@ -81,7 +83,7 @@ export function serializeCreate(
   const { type, payload } = config;
   let validPayload: SubmissionAction.T['config']['payload'];
   switch (type) {
-    case SubmissionAction.ActionType.EDIT_ROW: {
+    case 'edit_row': {
       invariant(payload.entryId, 'Entry is missing in Edit Row configuration');
       invariant(
         payload.primaryKeyField,
@@ -94,7 +96,7 @@ export function serializeCreate(
       };
       break;
     }
-    case SubmissionAction.ActionType.INSERT_ROW:
+    case 'insert_row':
       invariant(
         payload.tableTarget,
         'Table target is missing in Insert Row configuration',

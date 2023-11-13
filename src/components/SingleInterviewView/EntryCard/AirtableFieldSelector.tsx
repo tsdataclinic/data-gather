@@ -30,11 +30,12 @@ export default function AirtableFieldSelector({
 }: Props): JSX.Element {
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
-  const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
+  const dataStoreSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === 'airtable',
   );
-  const airtableSettings = interviewSetting?.settings;
-  const bases = airtableSettings?.bases;
+  const dataStoreConfig = dataStoreSetting?.settings;
+  const bases =
+    dataStoreConfig?.type === 'airtable' ? dataStoreConfig?.bases : undefined;
   const { selectedBase, selectedTable, selectedFields } = airtableConfig;
 
   const availableTables = React.useMemo(() => {

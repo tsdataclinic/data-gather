@@ -142,7 +142,7 @@ export default function ConditionGroupBlock({
   const groupDescriptor =
     conditions.length > 1 ? (
       <p>
-        {conditionGroupType === ConditionalAction.ConditionGroupType.AND
+        {conditionGroupType === 'and'
           ? 'All of the following are true'
           : 'Any of the following are true'}
       </p>
@@ -186,8 +186,8 @@ export default function ConditionGroupBlock({
 }
 
 const CONDITIONAL_GROUP_TYPE_OPTIONS = [
-  { value: ConditionalAction.ConditionGroupType.AND, displayValue: 'And' },
-  { value: ConditionalAction.ConditionGroupType.OR, displayValue: 'Or' },
+  { value: 'and' as const, displayValue: 'And' },
+  { value: 'or' as const, displayValue: 'Or' },
 ];
 
 function ConditionalGroupTypeDisplay({

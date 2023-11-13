@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-from typing import Union
 
 from sqlalchemy.orm import validates
 from sqlmodel import Field, Relationship, UniqueConstraint
@@ -98,7 +97,7 @@ class InterviewUpdate(InterviewRead):
 
 
 # Handle circular imports
-from server.models.data_store_setting import (
+from server.models.data_store_setting.data_store_setting import (
     DataStoreSetting,
     DataStoreSettingCreate,
     DataStoreSettingRead,

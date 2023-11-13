@@ -19,14 +19,35 @@ const PUSH_ACTION_DELIMITER = ';';
  * An array of all all conditional operators. Useful for populating a list of
  * operators, e.g. for a dropdown.
  */
-export const CONDITIONAL_OPERATORS: readonly ConditionalOperator[] =
-  Object.values(ConditionalOperator);
+export const CONDITIONAL_OPERATORS: readonly ConditionalOperator[] = [
+  'after_or_equal',
+  'after',
+  'equals_date',
+  'before',
+  'before_or_equal',
+  'eq',
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'always_execute',
+  'is_empty',
+  'is_not_empty',
+];
 
 /**
  * An array of all all action types. Useful for populating a list of
  * action types, e.g. for a dropdown.
  */
-export const ACTION_TYPES: readonly ActionType[] = Object.values(ActionType);
+export const ACTION_TYPES: readonly ActionType[] = [
+  'checkpoint',
+  'do_nothing',
+  'milestone',
+  'push',
+  'restore',
+  'skip',
+  'end_interview',
+];
 
 export type ConditionalOperatorGroupType = 'generic' | 'date' | 'number';
 
@@ -69,14 +90,14 @@ export type AndGroup = {
 
   /** An id to identify this condition group */
   readonly id: string;
-  readonly type: ConditionGroupType.AND;
+  readonly type: 'and';
 };
 export type OrGroup = {
   readonly conditions: ReadonlyArray<ConditionGroup | SingleCondition>;
 
   /** An id to identify this condition group */
   readonly id: string;
-  readonly type: ConditionGroupType.OR;
+  readonly type: 'or';
 };
 
 export type IfClause = {
@@ -101,23 +122,23 @@ export type ActionConfig = {
 } & (
   | {
       /** End the interview */
-      type: ActionType.END_INTERVIEW;
+      type: 'end_interview';
     }
   | {
       /** Do nothing */
-      type: ActionType.DO_NOTHING;
+      type: 'do_nothing';
     }
   | {
       /** Push some entries on to the stack */
       payload: readonly string[];
-      type: ActionType.PUSH;
+      type: 'push';
     }
   | {
       /**
        * Skip the next screen and add response data in place of the user
        */
       payload: Readonly<ResponseData>;
-      type: ActionType.SKIP;
+      type: 'skip';
     }
   | {
       /**
@@ -125,7 +146,7 @@ export type ActionConfig = {
        * passed
        */
       payload: string;
-      type: ActionType.CHECKPOINT | ActionType.RESTORE | ActionType.MILESTONE;
+      type: 'checkpoint' | 'restore' | 'milestone';
     }
 );
 
@@ -162,14 +183,14 @@ type ConditionalActionCreate = Omit<ConditionalAction, 'id'> & {
 export function createDefaultSingleCondition(): SingleCondition {
   return {
     id: uuidv4(),
-    conditionalOperator: ConditionalOperator.EQ,
+    conditionalOperator: 'eq',
     responseKey: undefined,
     value: undefined,
   };
 }
 
 export function createDefaultConditionGroup(
-  groupType: ConditionGroupType = ConditionGroupType.AND,
+  groupType: ConditionGroupType = 'and',
 ): ConditionGroup {
   return {
     id: uuidv4(),
@@ -187,20 +208,20 @@ export function createDefaultActionConfig(
   const id = uuidv4();
 
   switch (actionType) {
-    case ActionType.PUSH:
+    case 'push':
       return { id, payload: [], type: actionType };
-    case ActionType.SKIP:
+    case 'skip':
       return { id, payload: {}, type: actionType };
-    case ActionType.CHECKPOINT:
-    case ActionType.RESTORE:
-    case ActionType.MILESTONE:
+    case 'checkpoint':
+    case 'restore':
+    case 'milestone':
       return {
         id,
         payload: '',
         type: actionType,
       };
-    case ActionType.END_INTERVIEW:
-    case ActionType.DO_NOTHING:
+    case 'end_interview':
+    case 'do_nothing':
       return { id, type: actionType };
     default:
       return assertUnreachable(actionType);
@@ -210,9 +231,9 @@ export function createDefaultActionConfig(
 export function createDefaultIfClause(): IfClause {
   return {
     id: uuidv4(),
-    action: createDefaultActionConfig(ActionType.PUSH),
+    action: createDefaultActionConfig('push'),
     conditionGroup: createDefaultConditionGroup(),
-    elseClause: createDefaultActionConfig(ActionType.PUSH),
+    elseClause: createDefaultActionConfig('push'),
   };
 }
 
@@ -234,31 +255,31 @@ export function create(vals: {
  */
 export function operatorToDisplayString(operator: ConditionalOperator): string {
   switch (operator) {
-    case ConditionalOperator.ALWAYS_EXECUTE:
+    case 'always_execute':
       return 'Always execute';
-    case ConditionalOperator.AFTER:
+    case 'after':
       return 'After';
-    case ConditionalOperator.BEFORE:
+    case 'before':
       return 'Before';
-    case ConditionalOperator.AFTER_OR_EQUAL:
+    case 'after_or_equal':
       return 'After or equal';
-    case ConditionalOperator.BEFORE_OR_EQUAL:
+    case 'before_or_equal':
       return 'Before or equal';
-    case ConditionalOperator.EQUALS_DATE:
+    case 'equals_date':
       return 'Is on day';
-    case ConditionalOperator.EQ:
+    case 'eq':
       return 'Equals';
-    case ConditionalOperator.GT:
+    case 'gt':
       return '>';
-    case ConditionalOperator.GTE:
+    case 'gte':
       return '≥';
-    case ConditionalOperator.LT:
+    case 'lt':
       return '<';
-    case ConditionalOperator.LTE:
+    case 'lte':
       return '≤';
-    case ConditionalOperator.IS_EMPTY:
+    case 'is_empty':
       return 'Is empty';
-    case ConditionalOperator.IS_NOT_EMPTY:
+    case 'is_not_empty':
       return 'Is not empty';
     default:
       assertUnreachable(operator, { throwError: false });
@@ -387,8 +408,7 @@ export function validate(
   const [firstCondition, ...restOfConditions] = allConditions;
   if (
     restOfConditions.some(
-      condition =>
-        condition.conditionalOperator === ConditionalOperator.ALWAYS_EXECUTE,
+      condition => condition.conditionalOperator === 'always_execute',
     )
   ) {
     return [
@@ -397,7 +417,7 @@ export function validate(
     ];
   }
   if (
-    firstCondition.conditionalOperator === ConditionalOperator.ALWAYS_EXECUTE &&
+    firstCondition.conditionalOperator === 'always_execute' &&
     restOfConditions.length > 1
   ) {
     return [
@@ -413,7 +433,7 @@ export function validate(
       const { conditionalOperator, responseKey, value } = condition;
       // if we're **not** using the ALWAYS_EXECUTE operator then don't allow an
       // empty `responseKey` or an empty `value`
-      if (conditionalOperator !== ConditionalOperator.ALWAYS_EXECUTE) {
+      if (conditionalOperator !== 'always_execute') {
         const operatorName = operatorToDisplayString(conditionalOperator);
         if (responseKey === undefined || responseKey === '') {
           return [
@@ -423,8 +443,8 @@ export function validate(
         }
         if (
           value === undefined &&
-          conditionalOperator !== ConditionalOperator.IS_NOT_EMPTY &&
-          conditionalOperator !== ConditionalOperator.IS_EMPTY
+          conditionalOperator !== 'is_not_empty' &&
+          conditionalOperator !== 'is_empty'
         ) {
           return [false, `A '${operatorName}' condition must have a value`];
         }
@@ -440,10 +460,7 @@ export function validate(
     allActions,
     R.map((actionConfig: ActionConfig): [boolean, string] | undefined => {
       // do not allow Push actions to have an empty payload
-      if (
-        actionConfig.type === ActionType.PUSH &&
-        actionConfig.payload.length === 0
-      ) {
+      if (actionConfig.type === 'push' && actionConfig.payload.length === 0) {
         return [false, 'Missing next stage for action'];
       }
       return undefined;
@@ -470,24 +487,24 @@ function deserializeActionConfig(
   const actionPayload = payload ?? '';
 
   switch (type) {
-    case ActionType.END_INTERVIEW:
-    case ActionType.DO_NOTHING:
+    case 'end_interview':
+    case 'do_nothing':
       return { id, type };
-    case ActionType.PUSH:
+    case 'push':
       return {
         id,
         type,
         payload: actionPayload.split(PUSH_ACTION_DELIMITER),
       };
-    case ActionType.SKIP:
+    case 'skip':
       return {
         id,
         type,
         payload: JSON.parse(actionPayload),
       };
-    case ActionType.CHECKPOINT:
-    case ActionType.RESTORE:
-    case ActionType.MILESTONE:
+    case 'checkpoint':
+    case 'restore':
+    case 'milestone':
       invariant(
         typeof actionPayload === 'string',
         `[ConditionalAction] Deserialization error. 'payload' must be a string.`,
@@ -624,20 +641,20 @@ export function serialize(
 //   E.g. { EQ: { displayName: 'abc', groupType: 'date', requiresValue: true } }
 export function isDateOperator(operator: ConditionalOperator): boolean {
   switch (operator) {
-    case ConditionalOperator.AFTER:
-    case ConditionalOperator.AFTER_OR_EQUAL:
-    case ConditionalOperator.BEFORE:
-    case ConditionalOperator.BEFORE_OR_EQUAL:
-    case ConditionalOperator.EQUALS_DATE:
+    case 'after':
+    case 'after_or_equal':
+    case 'before':
+    case 'before_or_equal':
+    case 'equals_date':
       return true;
-    case ConditionalOperator.ALWAYS_EXECUTE:
-    case ConditionalOperator.EQ:
-    case ConditionalOperator.GT:
-    case ConditionalOperator.GTE:
-    case ConditionalOperator.LT:
-    case ConditionalOperator.LTE:
-    case ConditionalOperator.IS_EMPTY:
-    case ConditionalOperator.IS_NOT_EMPTY:
+    case 'always_execute':
+    case 'eq':
+    case 'gt':
+    case 'gte':
+    case 'lt':
+    case 'lte':
+    case 'is_empty':
+    case 'is_not_empty':
       return false;
     default:
       assertUnreachable(operator, { throwError: false });
@@ -647,20 +664,20 @@ export function isDateOperator(operator: ConditionalOperator): boolean {
 
 export function isGenericOperator(operator: ConditionalOperator): boolean {
   switch (operator) {
-    case ConditionalOperator.IS_EMPTY:
-    case ConditionalOperator.IS_NOT_EMPTY:
-    case ConditionalOperator.EQ:
+    case 'is_empty':
+    case 'is_not_empty':
+    case 'eq':
       return true;
-    case ConditionalOperator.ALWAYS_EXECUTE:
-    case ConditionalOperator.GT:
-    case ConditionalOperator.GTE:
-    case ConditionalOperator.LT:
-    case ConditionalOperator.LTE:
-    case ConditionalOperator.AFTER:
-    case ConditionalOperator.AFTER_OR_EQUAL:
-    case ConditionalOperator.BEFORE:
-    case ConditionalOperator.BEFORE_OR_EQUAL:
-    case ConditionalOperator.EQUALS_DATE:
+    case 'always_execute':
+    case 'gt':
+    case 'gte':
+    case 'lt':
+    case 'lte':
+    case 'after':
+    case 'after_or_equal':
+    case 'before':
+    case 'before_or_equal':
+    case 'equals_date':
       return false;
     default:
       assertUnreachable(operator, { throwError: false });
@@ -670,20 +687,20 @@ export function isGenericOperator(operator: ConditionalOperator): boolean {
 
 export function isNumberOperator(operator: ConditionalOperator): boolean {
   switch (operator) {
-    case ConditionalOperator.GT:
-    case ConditionalOperator.GTE:
-    case ConditionalOperator.LT:
-    case ConditionalOperator.LTE:
+    case 'gt':
+    case 'gte':
+    case 'lt':
+    case 'lte':
       return true;
-    case ConditionalOperator.EQ:
-    case ConditionalOperator.AFTER:
-    case ConditionalOperator.AFTER_OR_EQUAL:
-    case ConditionalOperator.BEFORE:
-    case ConditionalOperator.BEFORE_OR_EQUAL:
-    case ConditionalOperator.EQUALS_DATE:
-    case ConditionalOperator.ALWAYS_EXECUTE:
-    case ConditionalOperator.IS_EMPTY:
-    case ConditionalOperator.IS_NOT_EMPTY:
+    case 'eq':
+    case 'after':
+    case 'after_or_equal':
+    case 'before':
+    case 'before_or_equal':
+    case 'equals_date':
+    case 'always_execute':
+    case 'is_empty':
+    case 'is_not_empty':
       return false;
     default:
       assertUnreachable(operator, { throwError: false });
@@ -719,16 +736,16 @@ export function actionTypeToDisplayString(
   }
 
   switch (actionType) {
-    case ActionType.END_INTERVIEW:
+    case 'end_interview':
       return 'End interview';
-    case ActionType.DO_NOTHING:
+    case 'do_nothing':
       return 'Do nothing';
-    case ActionType.PUSH:
+    case 'push':
       return 'Go to stage';
-    case ActionType.SKIP:
-    case ActionType.CHECKPOINT:
-    case ActionType.RESTORE:
-    case ActionType.MILESTONE:
+    case 'skip':
+    case 'checkpoint':
+    case 'restore':
+    case 'milestone':
       // capitalize first letter
       return actionType[0].toUpperCase() + actionType.substring(1);
     default:
@@ -745,12 +762,12 @@ export function getId(
 export function doesOperatorRequireValue(
   operator: ConditionalOperator,
 ): boolean {
-  return isNumberOperator(operator) || operator === ConditionalOperator.EQ;
+  return isNumberOperator(operator) || operator === 'eq';
 }
 
 export type { ConditionalAction as T };
 export type { ConditionalActionCreate as CreateT };
 export type { SerializedConditionalActionRead as SerializedT };
-export { ConditionalOperator };
-export { ActionType };
-export { ConditionGroupType };
+export type { ConditionalOperator };
+export type { ActionType };
+export type { ConditionGroupType };

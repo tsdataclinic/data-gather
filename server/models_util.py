@@ -38,4 +38,4 @@ def update_module_forward_refs(module_name: str):
     """
     for _, obj in inspect.getmembers(sys.modules[module_name], inspect.isclass):
         if hasattr(obj, "update_forward_refs"):
-            obj.update_forward_refs()
+            obj.update_forward_refs()  # type: ignore

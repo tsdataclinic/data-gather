@@ -34,8 +34,15 @@ export type SingleSelectOptions = Readonly<
   z.infer<typeof SingleSelectOptionsSchema>
 >;
 
-export const RESPONSE_TYPES: readonly ResponseType[] =
-  Object.values(ResponseType);
+export const RESPONSE_TYPES: readonly ResponseType[] = [
+  'airtable',
+  'boolean',
+  'email',
+  'number',
+  'phone_number',
+  'text',
+  'single_select',
+];
 
 export type Id = string;
 
@@ -76,21 +83,21 @@ type InterviewScreenEntry = {
   readonly text: { [language: string]: string };
 } & (
   | {
-      readonly responseType: ResponseType.AIRTABLE;
+      readonly responseType: 'airtable';
       readonly responseTypeOptions: AirtableOptions;
     }
   | {
-      readonly responseType: ResponseType.SINGLE_SELECT;
+      readonly responseType: 'single_select';
       readonly responseTypeOptions: SingleSelectOptions;
     }
   | {
       // these response types don't have any configurable `responseTypeOptions`
       readonly responseType:
-        | ResponseType.BOOLEAN
-        | ResponseType.EMAIL
-        | ResponseType.NUMBER
-        | ResponseType.PHONE_NUMBER
-        | ResponseType.TEXT;
+        | 'boolean'
+        | 'email'
+        | 'number'
+        | 'phone_number'
+        | 'text';
       readonly responseTypeOptions: undefined;
     }
 );
@@ -132,24 +139,24 @@ export function deserialize(
   // parse the response type options correctly depending on the responseType
   const { responseType, responseTypeOptions, ...restOfObj } = rawObj;
   switch (responseType) {
-    case ResponseType.AIRTABLE:
+    case 'airtable':
       return {
         ...restOfObj,
         responseType,
         responseTypeOptions: AirtableOptionsSchema.parse(responseTypeOptions),
       };
-    case ResponseType.SINGLE_SELECT:
+    case 'single_select':
       return {
         ...restOfObj,
         responseType,
         responseTypeOptions:
           SingleSelectOptionsSchema.parse(responseTypeOptions),
       };
-    case ResponseType.BOOLEAN:
-    case ResponseType.TEXT:
-    case ResponseType.EMAIL:
-    case ResponseType.NUMBER:
-    case ResponseType.PHONE_NUMBER:
+    case 'boolean':
+    case 'text':
+    case 'email':
+    case 'number':
+    case 'phone_number':
       return {
         ...restOfObj,
         responseType,
@@ -208,19 +215,19 @@ export function getEntryById(
 
 export function getResponseTypeDisplayName(responseType: ResponseType): string {
   switch (responseType) {
-    case ResponseType.AIRTABLE:
+    case 'airtable':
       return 'Airtable lookup';
-    case ResponseType.TEXT:
+    case 'text':
       return 'Text';
-    case ResponseType.NUMBER:
+    case 'number':
       return 'Number';
-    case ResponseType.BOOLEAN:
+    case 'boolean':
       return 'Yes/No';
-    case ResponseType.EMAIL:
+    case 'email':
       return 'Email';
-    case ResponseType.PHONE_NUMBER:
+    case 'phone_number':
       return 'Phone number';
-    case ResponseType.SINGLE_SELECT:
+    case 'single_select':
       return 'Single select';
     default:
       return assertUnreachable(responseType);
@@ -240,7 +247,7 @@ export function responseTypeStringToEnum(
   );
 
   // if we couldn't find a matching enum, set a default
-  return responseTypeEnum ?? ResponseType.TEXT;
+  return responseTypeEnum ?? 'text';
 }
 
 export function isCreateType(
@@ -259,23 +266,23 @@ export function changeResponseType<
   Entry extends InterviewScreenEntry | InterviewScreenEntryCreate,
 >(entry: Entry, newResponseType: ResponseType): Entry {
   switch (newResponseType) {
-    case ResponseType.AIRTABLE:
+    case 'airtable':
       return {
         ...entry,
         responseType: newResponseType,
         responseTypeOptions: createDefaultAirtableOptions(),
       };
-    case ResponseType.SINGLE_SELECT:
+    case 'single_select':
       return {
         ...entry,
         responseType: newResponseType,
         responseTypeOptions: createDefaultSingleSelectOptions(),
       };
-    case ResponseType.TEXT:
-    case ResponseType.EMAIL:
-    case ResponseType.NUMBER:
-    case ResponseType.PHONE_NUMBER:
-    case ResponseType.BOOLEAN:
+    case 'text':
+    case 'email':
+    case 'number':
+    case 'phone_number':
+    case 'boolean':
       return {
         ...entry,
         responseType: newResponseType,
@@ -296,14 +303,14 @@ export function create(
     ...values,
     responseKey: uuidv4(),
     tempId: uuidv4(),
-    responseType: ResponseType.TEXT,
+    responseType: 'text',
     responseTypeOptions: undefined,
   };
 
   return changeResponseType(defaultEntry, values.responseType);
 }
 
-export { ResponseType };
+export type { ResponseType };
 export type { InterviewScreenEntry as T };
 export type { InterviewScreenEntryWithScreen as WithScreenT };
 export type { InterviewScreenEntryCreate as CreateT };

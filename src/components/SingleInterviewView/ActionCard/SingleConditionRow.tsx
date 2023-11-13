@@ -8,9 +8,7 @@ import * as ConditionalAction from '../../../models/ConditionalAction';
 import type { EditableEntryWithScreen } from '../types';
 import useInterview from '../../../hooks/useInterview';
 import Dropdown, { type DropdownOption } from '../../ui/Dropdown';
-import * as DataStoreSetting from '../../../models/DataStoreSetting';
 import * as InterviewScreen from '../../../models/InterviewScreen';
-import * as InterviewScreenEntry from '../../../models/InterviewScreenEntry';
 import InfoIcon from '../../ui/InfoIcon';
 import Button from '../../ui/Button';
 
@@ -65,11 +63,12 @@ export default function SingleConditionRow({
 }: Props): JSX.Element {
   const { interviewId } = useParams();
   const interview = useInterview(interviewId);
-  const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
+  const dataStoreSetting = interview?.interviewSettings.find(
+    intSetting => intSetting.type === 'airtable',
   );
-  const airtableSettings = interviewSetting?.settings;
-  const bases = airtableSettings?.bases;
+  const dataStoreConfig = dataStoreSetting?.settings;
+  const bases =
+    dataStoreConfig?.type === 'airtable' ? dataStoreConfig.bases : undefined;
   const allAirtableTables = React.useMemo(
     () => bases && bases.flatMap(base => base.tables),
     [bases],
@@ -104,8 +103,7 @@ export default function SingleConditionRow({
       allAirtableTables.find(
         table =>
           table &&
-          selectedEntry?.responseType ===
-            InterviewScreenEntry.ResponseType.AIRTABLE &&
+          selectedEntry?.responseType === 'airtable' &&
           table.id === selectedEntry?.responseTypeOptions.selectedTable,
       );
 
@@ -113,7 +111,7 @@ export default function SingleConditionRow({
     // then still return an empty array rather than undefined
     if (
       airtableTable === undefined &&
-      selectedEntry?.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
+      selectedEntry?.responseType === 'airtable'
     ) {
       return [];
     }

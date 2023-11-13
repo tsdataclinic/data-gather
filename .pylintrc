@@ -1,0 +1,20 @@
+[MASTER]
+# A full list of the issues that Pylint checks for or ignores can be found
+# at http://pylint.pycqa.org/en/latest/technical_reference/features.html
+extension-pkg-whitelist=pydantic
+
+[MESSAGES CONTROL]
+# Disables the specified messages
+disable=bad-continuation,
+  invalid-name,
+  missing-docstring,
+  missing-class-docstring,
+  too-many-arguments,
+  too-many-instance-attributes,
+  too-many-locals,
+  too-many-public-methods,
+  too-many-statements,
+  too-many-ancestors,
+  fixme,
+  unused-argument,
+  redefined-builtin

@@ -5,11 +5,11 @@ import InputText from '../ui/InputText';
 import Form from '../ui/Form';
 import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import * as Interview from '../../models/Interview';
-import * as DataStoreSetting from '../../models/DataStoreSetting';
 import assertUnreachable from '../../util/assertUnreachable';
 import useAirtableQuery from '../../hooks/useAirtableQuery';
 import LabelWrapper from '../ui/LabelWrapper';
 import { useDebouncedState } from '../../hooks/useDebounce';
+import { getSingleSelectFieldOptions } from '../../models/DataStoreSetting/AirtableConfig';
 
 type Props = {
   defaultLanguage: string;
@@ -39,23 +39,22 @@ export default function InterviewRunnerEntry({
   const { isError, isLoading, isSuccess, responseData } = useAirtableQuery(
     airtableQuery,
     interview.id,
-    entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE
-      ? entry.responseTypeOptions
-      : undefined,
+    entry.responseType === 'airtable' ? entry.responseTypeOptions : undefined,
   );
 
   const dataStoreSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
+    intSetting => intSetting.type === 'airtable',
   );
-  const airtableSettings = dataStoreSetting?.settings;
+  const dataStoreConfig = dataStoreSetting?.settings;
 
-  const allAirtableFields = React.useMemo(
-    () =>
-      airtableSettings?.bases?.flatMap(base =>
+  const allAirtableFields = React.useMemo(() => {
+    if (dataStoreConfig?.type === 'airtable') {
+      return dataStoreConfig?.bases?.flatMap(base =>
         base.tables?.flatMap(table => table.fields),
-      ),
-    [airtableSettings?.bases],
-  );
+      );
+    }
+    return undefined;
+  }, [dataStoreConfig]);
 
   const [rowData, setRowData] = React.useState();
   const [columnDefs, setColumnDefs] =
@@ -67,7 +66,7 @@ export default function InterviewRunnerEntry({
     if (!responseData || responseData.length < 1) {
       return;
     }
-    if (entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE) {
+    if (entry.responseType === 'airtable') {
       // set the subset of fields to display from the results
       const fieldsToDisplayInTable: string[] =
         entry.responseTypeOptions.selectedFields;
@@ -90,7 +89,7 @@ export default function InterviewRunnerEntry({
     entry.text[selectedLanguage] || entry.text[defaultLanguage];
 
   switch (responseType) {
-    case InterviewScreenEntry.ResponseType.TEXT:
+    case 'text':
       return (
         <Form.Input
           key={entry.id}
@@ -100,7 +99,7 @@ export default function InterviewRunnerEntry({
           required={entry.required}
         />
       );
-    case InterviewScreenEntry.ResponseType.BOOLEAN:
+    case 'boolean':
       return (
         <Form.Input
           type="radio"
@@ -114,7 +113,7 @@ export default function InterviewRunnerEntry({
           ]}
         />
       );
-    case InterviewScreenEntry.ResponseType.NUMBER:
+    case 'number':
       return (
         <Form.Input
           type="number"
@@ -125,7 +124,7 @@ export default function InterviewRunnerEntry({
           helperText={entryHelperText}
         />
       );
-    case InterviewScreenEntry.ResponseType.EMAIL:
+    case 'email':
       return (
         <Form.Input
           type="email"
@@ -136,7 +135,7 @@ export default function InterviewRunnerEntry({
           helperText={entryHelperText}
         />
       );
-    case InterviewScreenEntry.ResponseType.AIRTABLE:
+    case 'airtable':
       return (
         <div>
           <div className="pb-4">
@@ -199,7 +198,7 @@ export default function InterviewRunnerEntry({
             responseData.length < 1 && <p className="mt-2">No matches found</p>}
         </div>
       );
-    case InterviewScreenEntry.ResponseType.PHONE_NUMBER:
+    case 'phone_number':
       return (
         <Form.Input
           type="tel"
@@ -210,16 +209,18 @@ export default function InterviewRunnerEntry({
           helperText={entryHelperText}
         />
       );
-    case InterviewScreenEntry.ResponseType.SINGLE_SELECT: {
+    case 'single_select': {
       const { responseTypeOptions, required, responseKey } = entry;
       const { airtableConfig, options: manualOptions } = responseTypeOptions;
 
       // if an airtable config is given then we pull the options from there
       const options =
         airtableConfig !== undefined
-          ? allAirtableFields
-              ?.find(field => field?.name === airtableConfig.selectedFields[0])
-              ?.options?.choices?.map(opt => opt.name ?? '') ?? []
+          ? getSingleSelectFieldOptions(
+              allAirtableFields?.find(
+                field => field?.name === airtableConfig.selectedFields[0],
+              ),
+            )?.choices?.map(opt => opt.name ?? '') ?? []
           : manualOptions.map(opt => opt.value);
 
       return (

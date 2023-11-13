@@ -45,7 +45,10 @@ class SubmissionActionBase(OrderedModel):
     payload: Union[EditRowPayload, InsertRowPayload] = Field(sa_column=Column(JSON))
 
     @validator("payload")
-    def validate_payload(cls, value: Union[EditRowPayload, InsertRowPayload]) -> dict:
+    def validate_payload(
+        cls,  # pylint: disable=no-self-argument
+        value: Union[EditRowPayload, InsertRowPayload],
+    ) -> dict:
         # hacky use of validator to allow Pydantic models to be stored as JSON
         # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
         return value.dict()

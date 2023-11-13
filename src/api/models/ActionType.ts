@@ -5,12 +5,4 @@
 /**
  * The different action types a ConditionalAction can be
  */
-export enum ActionType {
-  CHECKPOINT = 'checkpoint',
-  DO_NOTHING = 'do_nothing',
-  MILESTONE = 'milestone',
-  PUSH = 'push',
-  RESTORE = 'restore',
-  SKIP = 'skip',
-  END_INTERVIEW = 'end_interview',
-}
+export type ActionType = 'checkpoint' | 'do_nothing' | 'milestone' | 'push' | 'restore' | 'skip' | 'end_interview';

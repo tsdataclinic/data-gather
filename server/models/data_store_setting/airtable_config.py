@@ -1,10 +1,18 @@
+"""This file includes the AirtableConfig models which includes
+the data store schema and authentication configuration.
+"""
 from datetime import datetime, timedelta
+from typing import Any, Literal
 
 from pydantic import BaseModel
 from sqlalchemy import Column, DateTime, String
-from sqlalchemy_utils import StringEncryptedType
-from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
+from sqlalchemy_utils.types.encrypted.encrypted_type import (
+    AesEngine,
+    StringEncryptedType,
+)
 from sqlmodel import Field
+
+from server.models.data_store_setting.data_store_type import DataStoreType
 
 
 class AirtableField(BaseModel):
@@ -13,25 +21,25 @@ class AirtableField(BaseModel):
     description: str | None
     type: str | None
 
-    # TODO: model this type according to the Airtable API Reference for
-    # field types
-    options: dict | None
+    # Field options are here:
+    # https://airtable.com/developers/web/api/field-model
+    options: dict[str, Any] | None
 
 
 class AirtableTable(BaseModel):
     id: str
     name: str | None
     description: str | None
-    fields: list[AirtableField] | None
+    fields: list[AirtableField]
 
 
 class AirtableBase(BaseModel):
     name: str | None
     id: str
-    tables: list[AirtableTable] | None
+    tables: list[AirtableTable]
 
 
-class AirtableAuthSettings(BaseModel):
+class AirtableAuthConfig(BaseModel):
     accessToken: str = Field(
         sa_column=Column(StringEncryptedType(String(255), "key", AesEngine, "pkcs5")),
         nullable=False,
@@ -54,7 +62,12 @@ class AirtableAuthSettings(BaseModel):
     scope: str | None
 
 
-class AirtableSettings(BaseModel):
-    apiKey: str | None
-    authSettings: AirtableAuthSettings | None
-    bases: list[AirtableBase] | None
+class AirtableConfig(BaseModel):
+    """Contains authentication configurations and the data store schema."""
+
+    type: Literal[DataStoreType.AIRTABLE]
+    apiKey: str | None = None
+    authSettings: AirtableAuthConfig
+
+    # An Airtable schema is represented by a list of bases
+    bases: list[AirtableBase] | None = None

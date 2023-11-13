@@ -2,8 +2,10 @@ import { v4 as uuidv4 } from 'uuid';
 import assertUnreachable from '../../util/assertUnreachable';
 import * as SubmissionAction from './types';
 
-export const ACTION_TYPES: readonly SubmissionAction.ActionType[] =
-  Object.values(SubmissionAction.ActionType);
+export const ACTION_TYPES: readonly SubmissionAction.ActionType[] = [
+  'edit_row',
+  'insert_row',
+];
 
 /**
  * Create a new empty SubmissionAction
@@ -29,9 +31,9 @@ export function actionTypeToDisplayName(
   actionType: SubmissionAction.ActionType,
 ): string {
   switch (actionType) {
-    case SubmissionAction.ActionType.EDIT_ROW:
+    case 'edit_row':
       return 'Edit Row';
-    case SubmissionAction.ActionType.INSERT_ROW:
+    case 'insert_row':
       return 'Insert Row';
     default:
       return assertUnreachable(actionType);

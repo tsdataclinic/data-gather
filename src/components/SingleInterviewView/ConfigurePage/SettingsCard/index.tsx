@@ -6,27 +6,21 @@ import forge from 'node-forge';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import * as Interview from '../../../../models/Interview';
-import * as DataStoreSettings from '../../../../models/DataStoreSetting';
+import * as DataStoreSetting from '../../../../models/DataStoreSetting';
 import Button from '../../../ui/Button';
 import LabelWrapper from '../../../ui/LabelWrapper';
 import Dropdown from '../../../ui/Dropdown';
-import { DataStoreType } from '../../../../api/models/DataStoreType';
 import { FastAPIService } from '../../../../api/FastAPIService';
 
 const api = new FastAPIService();
 
-type EditableSetting = DataStoreSettings.T | DataStoreSettings.CreateT;
-const SETTING_TYPE_OPTIONS = DataStoreSettings.SETTING_TYPES.map(
+type EditableSetting = DataStoreSetting.T | DataStoreSetting.CreateT;
+const SETTING_TYPE_OPTIONS = DataStoreSetting.SETTING_TYPES.map(
   dataStoreType => ({
-    displayValue: DataStoreSettings.dataStoreTypeToDisplayName(dataStoreType),
+    displayValue: DataStoreSetting.dataStoreTypeToDisplayName(dataStoreType),
     value: dataStoreType,
   }),
-).concat([
-  {
-    displayValue: 'Google Sheets',
-    value: 'google-sheets' as any,
-  },
-]);
+);
 
 type Props = {
   interview: Interview.UpdateT;
@@ -42,9 +36,9 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     onInterviewChange({
       ...interview,
       interviewSettings: interview.interviewSettings.concat(
-        DataStoreSettings.create({
+        DataStoreSetting.create({
           interviewId: interview.id,
-          type: DataStoreSettings.DataStoreType.AIRTABLE,
+          type: 'airtable',
         }),
       ),
     });
@@ -114,7 +108,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
   }, []);
 
   const renderAirtableBaseTable = (
-    bases: DataStoreSettings.AirtableBase[],
+    bases: DataStoreSetting.AirtableBase[],
   ): JSX.Element => {
     const rowDefs = bases.flatMap(base =>
       base.tables?.flatMap(table =>
@@ -158,14 +152,16 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
 
   const renderSettingBlock = (setting: EditableSetting): JSX.Element => {
     switch (setting.type) {
-      case DataStoreSettings.DataStoreType.AIRTABLE: {
-        const airtableSettings = setting.settings;
+      case 'airtable': {
+        const dataStoreConfig = setting.settings;
         return (
-          <div key={`_${airtableSettings}`} className="space-y-4">
-            {airtableSettings.bases &&
-              renderAirtableBaseTable(airtableSettings.bases)}
+          <div key={dataStoreConfig.type} className="space-y-4">
+            {dataStoreConfig.type === 'airtable' &&
+              dataStoreConfig.bases &&
+              renderAirtableBaseTable(dataStoreConfig.bases)}
             <div>
-              {airtableSettings.authSettings?.accessToken ? (
+              {dataStoreConfig.type === 'airtable' &&
+              dataStoreConfig.authSettings?.accessToken ? (
                 <div className="space-y-2">
                   <div className="flex space-x-2">
                     <Button
@@ -184,9 +180,9 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
                   </div>
                   <p>
                     Interview is authenticated to Airtable.
-                    {airtableSettings.authSettings?.refreshTokenExpires &&
+                    {dataStoreConfig.authSettings?.refreshTokenExpires &&
                       ` Connection will expire on ${new Date(
-                        airtableSettings.authSettings?.refreshTokenExpires,
+                        dataStoreConfig.authSettings?.refreshTokenExpires,
                       ).toDateString()} if unused.`}
                   </p>
                 </div>
@@ -239,8 +235,8 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
                   // reuse the same id so that we edit the existing setting
                   onSettingChange(
                     setting,
-                    DataStoreSettings.create({
-                      type: dataStoreType as DataStoreType,
+                    DataStoreSetting.create({
+                      type: dataStoreType,
                       interviewId: setting.interviewId,
                     }),
                   );
@@ -256,8 +252,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
           // Quick way to disallow multiple Airtable settings
           // TODO: change this when adding more DataStoreTypes
           disabled={interview.interviewSettings.some(
-            setting =>
-              setting.type === DataStoreSettings.DataStoreType.AIRTABLE,
+            setting => setting.type === 'airtable',
           )}
         >
           + Add Data Store

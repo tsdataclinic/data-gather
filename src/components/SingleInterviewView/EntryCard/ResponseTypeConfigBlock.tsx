@@ -21,7 +21,7 @@ export default function ResponseTypeConfigBlock({
 }: Props): JSX.Element | null {
   const { responseType, responseTypeOptions } = entry;
   switch (responseType) {
-    case InterviewScreenEntry.ResponseType.AIRTABLE:
+    case 'airtable':
       return (
         <AirtableFieldSelector
           fieldSelectorLabel="Fields to search by"
@@ -36,7 +36,7 @@ export default function ResponseTypeConfigBlock({
           }}
         />
       );
-    case InterviewScreenEntry.ResponseType.SINGLE_SELECT:
+    case 'single_select':
       return (
         <SingleSelectEditor
           interview={interview}
@@ -51,11 +51,11 @@ export default function ResponseTypeConfigBlock({
           }}
         />
       );
-    case InterviewScreenEntry.ResponseType.TEXT:
-    case InterviewScreenEntry.ResponseType.EMAIL:
-    case InterviewScreenEntry.ResponseType.NUMBER:
-    case InterviewScreenEntry.ResponseType.PHONE_NUMBER:
-    case InterviewScreenEntry.ResponseType.BOOLEAN:
+    case 'text':
+    case 'email':
+    case 'number':
+    case 'phone_number':
+    case 'boolean':
       return null;
     default:
       assertUnreachable(responseType, { throwError: false });

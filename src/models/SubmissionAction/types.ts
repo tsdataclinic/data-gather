@@ -16,7 +16,7 @@ export type EditRowActionConfig = {
     entryId: string;
     primaryKeyField: string;
   };
-  type: SubmissionActionType.EDIT_ROW;
+  type: 'edit_row';
 };
 
 export type InsertRowActionConfig = {
@@ -28,7 +28,7 @@ export type InsertRowActionConfig = {
     baseTarget: string;
     tableTarget: string;
   };
-  type: SubmissionActionType.INSERT_ROW;
+  type: 'insert_row';
 };
 
 export type EntryResponseLookupConfig = {
@@ -73,5 +73,5 @@ type SubmissionActionCreate = Omit<SubmissionAction, 'id' | 'config'> & {
 export type { SubmissionAction as T };
 export type { SubmissionActionCreate as CreateT };
 export type { SerializedSubmissionActionRead as SerializedT };
-export { SubmissionActionType as ActionType };
-export { SpecialValueType };
+export type { SubmissionActionType as ActionType };
+export type { SpecialValueType };

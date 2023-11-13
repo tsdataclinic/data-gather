@@ -1,7 +1,6 @@
 import invariant from 'invariant';
 import Button from '../ui/Button';
 import type { ResponseData } from '../../script/types';
-import * as InterviewScreenEntry from '../../models/InterviewScreenEntry';
 import * as Interview from '../../models/Interview';
 import assertUnreachable from '../../util/assertUnreachable';
 
@@ -33,7 +32,7 @@ export default function InterviewCompletionScreen({
           const prompt = entry.prompt[defaultLanguage];
 
           switch (entry.responseType) {
-            case InterviewScreenEntry.ResponseType.AIRTABLE:
+            case 'airtable':
               invariant(
                 typeof response === 'object',
                 'Airtable response type should be an object',
@@ -53,12 +52,12 @@ export default function InterviewCompletionScreen({
                 </div>
               );
 
-            case InterviewScreenEntry.ResponseType.TEXT:
-            case InterviewScreenEntry.ResponseType.NUMBER:
-            case InterviewScreenEntry.ResponseType.BOOLEAN:
-            case InterviewScreenEntry.ResponseType.EMAIL:
-            case InterviewScreenEntry.ResponseType.PHONE_NUMBER:
-            case InterviewScreenEntry.ResponseType.SINGLE_SELECT:
+            case 'text':
+            case 'number':
+            case 'boolean':
+            case 'email':
+            case 'phone_number':
+            case 'single_select':
               return (
                 <div key={entry.id}>
                   <strong>{prompt}</strong> {String(response)}

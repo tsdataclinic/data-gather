@@ -130,11 +130,7 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
       value: testValue,
     } = singleCondition;
 
-    if (
-      !responseKey ||
-      conditionalOperator ===
-        ConditionalAction.ConditionalOperator.ALWAYS_EXECUTE
-    ) {
+    if (!responseKey || conditionalOperator === 'always_execute') {
       return true;
     }
 
@@ -157,32 +153,32 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
     };
 
     switch (conditionalOperator) {
-      case ConditionalAction.ConditionalOperator.EQ:
+      case 'eq':
         return responseValue === testValue;
-      case ConditionalAction.ConditionalOperator.GT:
+      case 'gt':
         return withRequiredValues(
           (responseVal, testVal) => Number(responseVal) > Number(testVal),
         );
-      case ConditionalAction.ConditionalOperator.GTE:
+      case 'gte':
         return withRequiredValues(
           (responseVal, testVal) => Number(responseVal) >= Number(testVal),
         );
-      case ConditionalAction.ConditionalOperator.LT:
+      case 'lt':
         return withRequiredValues(
           (responseVal, testVal) => Number(responseVal) < Number(testVal),
         );
-      case ConditionalAction.ConditionalOperator.LTE:
+      case 'lte':
         return withRequiredValues(
           (responseVal, testVal) => Number(responseVal) <= Number(testVal),
         );
-      case ConditionalAction.ConditionalOperator.IS_EMPTY:
+      case 'is_empty':
         return (
           responseValue === undefined ||
           responseValue === null ||
           responseValue === '' ||
           responseValue === 'null'
         );
-      case ConditionalAction.ConditionalOperator.IS_NOT_EMPTY:
+      case 'is_not_empty':
         return (
           responseValue !== undefined &&
           responseValue !== null &&
@@ -191,25 +187,25 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
         );
 
       // process datetime operators
-      case ConditionalAction.ConditionalOperator.AFTER:
-      case ConditionalAction.ConditionalOperator.AFTER_OR_EQUAL:
-      case ConditionalAction.ConditionalOperator.BEFORE:
-      case ConditionalAction.ConditionalOperator.BEFORE_OR_EQUAL:
-      case ConditionalAction.ConditionalOperator.EQUALS_DATE:
+      case 'after':
+      case 'after_or_equal':
+      case 'before':
+      case 'before_or_equal':
+      case 'equals_date':
         return withRequiredValues((responseVal, testVal) => {
           const responseDate = stringToDateTime(responseVal);
           const testDate = stringToDateTime(testVal);
 
           switch (conditionalOperator) {
-            case ConditionalAction.ConditionalOperator.AFTER:
+            case 'after':
               return responseDate > testDate;
-            case ConditionalAction.ConditionalOperator.AFTER_OR_EQUAL:
+            case 'after_or_equal':
               return responseDate >= testDate;
-            case ConditionalAction.ConditionalOperator.BEFORE:
+            case 'before':
               return responseDate < testDate;
-            case ConditionalAction.ConditionalOperator.BEFORE_OR_EQUAL:
+            case 'before_or_equal':
               return responseDate <= testDate;
-            case ConditionalAction.ConditionalOperator.EQUALS_DATE:
+            case 'equals_date':
               // we will count two dates as equal if they occur on the same day
               return responseDate
                 .startOf('day')
@@ -251,14 +247,14 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
     const { conditions, type } = conditionGroup;
 
     switch (type) {
-      case ConditionalAction.ConditionGroupType.AND:
+      case 'and':
         return conditions.every(condition =>
           ConfigurableScript.evaluateSingleConditionOrGroup(
             condition,
             responseData,
           ),
         );
-      case ConditionalAction.ConditionGroupType.OR:
+      case 'or':
         return conditions.some(condition =>
           ConfigurableScript.evaluateSingleConditionOrGroup(
             condition,
@@ -300,24 +296,24 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
     router: QuestionRouter<InterviewScreen.T>,
   ): void {
     switch (actionConfig.type) {
-      case ConditionalAction.ActionType.END_INTERVIEW:
+      case 'end_interview':
         router.complete();
         break;
-      case ConditionalAction.ActionType.DO_NOTHING:
+      case 'do_nothing':
         break;
-      case ConditionalAction.ActionType.PUSH:
+      case 'push':
         this.pushInReverseOrder(actionConfig.payload, router);
         break;
-      case ConditionalAction.ActionType.SKIP:
+      case 'skip':
         router.skip(actionConfig.payload);
         break;
-      case ConditionalAction.ActionType.CHECKPOINT:
+      case 'checkpoint':
         router.checkpoint(actionConfig.payload);
         break;
-      case ConditionalAction.ActionType.RESTORE:
+      case 'restore':
         router.restore(actionConfig.payload);
         break;
-      case ConditionalAction.ActionType.MILESTONE:
+      case 'milestone':
         router.milestone(actionConfig.payload);
         break;
       default:

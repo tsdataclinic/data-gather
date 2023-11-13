@@ -5,7 +5,4 @@
 /**
  * An enumeration.
  */
-export enum SubmissionActionType {
-  EDIT_ROW = 'edit_row',
-  INSERT_ROW = 'insert_row',
-}
+export type SubmissionActionType = 'edit_row' | 'insert_row';

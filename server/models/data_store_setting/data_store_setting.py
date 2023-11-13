@@ -1,21 +1,19 @@
 import enum
 import uuid
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import validator
 from sqlalchemy import Column
 from sqlalchemy.dialects.sqlite import JSON
-from sqlalchemy_json import mutable_json_type
+from sqlalchemy_json import mutable_json_type  # pylint: disable=import-error
 from sqlmodel import Field, Relationship
 
-from server.models.airtable_settings import AirtableSettings
-from server.models.google_sheets_settings import GoogleSheetsSettings
+from server.models.data_store_setting.airtable_config import AirtableConfig
+from server.models.data_store_setting.data_store_type import DataStoreType
+from server.models.data_store_setting.google_sheets_config import GoogleSheetsConfig
 from server.models_util import APIModel, update_module_forward_refs
 
-
-class DataStoreType(str, enum.Enum):
-    AIRTABLE = "airtable"
-    GOOGLE_SHEETS = "google-sheets"
+DataStoreConfig = AirtableConfig | GoogleSheetsConfig
 
 
 class DataStoreSettingBase(APIModel):
@@ -25,14 +23,16 @@ class DataStoreSettingBase(APIModel):
 
     # mutable_json_type => for mutation tracking of JSON objects
     # https://amercader.net/blog/beware-of-json-fields-in-sqlalchemy/
-    settings: AirtableSettings | GoogleSheetsSettings = Field(
+    settings: DataStoreConfig = Field(
         sa_column=Column(mutable_json_type(dbtype=JSON, nested=True))
     )
 
     interview_id: uuid.UUID = Field(foreign_key="interview.id")
 
     @validator("settings")
-    def validate_settings(cls, value: AirtableSettings | GoogleSheetsSettings) -> dict:
+    def validate_settings(  # pylint: disable=no-self-argument
+        cls, value: DataStoreConfig
+    ) -> dict:
         # hacky use of validator to allow Pydantic models to be stored as JSON
         # dicts in the DB: https://github.com/tiangolo/sqlmodel/issues/63
         return value.dict(exclude_none=True)
@@ -71,6 +71,7 @@ class DataStoreSettingRead(DataStoreSettingBase):
 
 
 # Handle circular imports
+# pylint: disable-next=unused-import,wrong-import-position
 from server.models.interview import Interview
 
 update_module_forward_refs(__name__)

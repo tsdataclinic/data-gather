@@ -152,7 +152,7 @@ export default function ScreenPage({
           prompt: { [defaultLanguage]: '' },
           text: { [defaultLanguage]: '' },
           screenId: screen.id,
-          responseType: InterviewScreenEntry.ResponseType.TEXT,
+          responseType: 'text',
         }),
       ),
     );

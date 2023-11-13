@@ -5,4 +5,4 @@
 /**
  * An enumeration.
  */
-export type SpecialValueType = 'now_date';
+export type DataStoreType = 'airtable' | 'google_sheets';

@@ -1,7 +1,6 @@
 import * as React from 'react';
 import * as R from 'remeda';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
-import * as DataStoreSetting from '../../../../models/DataStoreSetting';
 import * as Interview from '../../../../models/Interview';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import Dropdown from '../../../ui/Dropdown';
@@ -30,34 +29,32 @@ export default function EditRowActionBlock({
   onActionChange,
 }: Props): JSX.Element {
   const interviewSetting = interview?.interviewSettings.find(
-    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
+    intSetting => intSetting.type === 'airtable',
   );
-  const airtableSettings = interviewSetting?.settings;
+  const dataStoreConfig = interviewSetting?.settings;
 
-  const allTables = React.useMemo(
-    () =>
-      airtableSettings && airtableSettings.bases
-        ? airtableSettings?.bases?.flatMap(base => base.tables)
-        : [],
-    [airtableSettings],
-  );
+  const allTables = React.useMemo(() => {
+    return dataStoreConfig &&
+      dataStoreConfig.type === 'airtable' &&
+      dataStoreConfig.bases
+      ? dataStoreConfig?.bases?.flatMap(base => base.tables)
+      : [];
+  }, [dataStoreConfig]);
 
-  const tableToBaseIdLookup = React.useMemo(
-    () =>
-      R.pipe(
-        airtableSettings?.bases ?? [],
-        R.flatMapToObj(base =>
-          (base.tables ?? []).map(table => [table.id, base.id]),
-        ),
+  const tableToBaseIdLookup = React.useMemo(() => {
+    return R.pipe(
+      dataStoreConfig?.type === 'airtable' ? dataStoreConfig.bases ?? [] : [],
+      R.flatMapToObj(base =>
+        (base.tables ?? []).map(table => [table.id, base.id]),
       ),
-    [airtableSettings],
-  );
+    );
+  }, [dataStoreConfig]);
 
-  const selectedTable = React.useMemo(
-    () =>
-      allTables.find(table => table?.id === actionConfig.payload.tableTarget),
-    [allTables, actionConfig],
-  );
+  const selectedTable = React.useMemo(() => {
+    return allTables.find(
+      table => table?.id === actionConfig.payload.tableTarget,
+    );
+  }, [allTables, actionConfig]);
 
   const tableOptions = React.useMemo(
     () =>

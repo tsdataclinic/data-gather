@@ -35,7 +35,7 @@ function getSpecialValueForSubmission(
   specialValueType: SubmissionAction.SpecialValueType,
 ): string {
   switch (specialValueType) {
-    case SubmissionAction.SpecialValueType.NOW_DATE:
+    case 'now_date':
       return new Date().toISOString();
     default:
       return assertUnreachable(specialValueType);
@@ -113,15 +113,11 @@ function BaseInterviewRunnerView({
         interview.submissionActions.forEach(submissionAction => {
           const { config: actionConfig } = submissionAction;
           switch (actionConfig.type) {
-            case SubmissionAction.ActionType.EDIT_ROW: {
+            case 'edit_row': {
               const actionPayload = actionConfig.payload;
               const entryTarget = allEntries.get(actionPayload.entryId);
 
-              if (
-                entryTarget &&
-                entryTarget.responseType ===
-                  InterviewScreenEntry.ResponseType.AIRTABLE
-              ) {
+              if (entryTarget && entryTarget.responseType === 'airtable') {
                 const baseId = entryTarget.responseTypeOptions.selectedBase;
                 const tableId = entryTarget.responseTypeOptions.selectedTable;
                 const airtableRecordId = ConfigurableScript.getResponseValue(
@@ -181,7 +177,7 @@ function BaseInterviewRunnerView({
               break;
             }
 
-            case SubmissionAction.ActionType.INSERT_ROW: {
+            case 'insert_row': {
               const { baseTarget, tableTarget } = actionConfig.payload;
 
               // collect all field values

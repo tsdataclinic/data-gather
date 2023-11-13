@@ -5,7 +5,4 @@
 /**
  * An enumeration.
  */
-export enum ConditionGroupType {
-  AND = 'and',
-  OR = 'or',
-}
+export type ConditionGroupType = 'and' | 'or';

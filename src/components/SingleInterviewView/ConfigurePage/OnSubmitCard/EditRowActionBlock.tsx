@@ -1,7 +1,6 @@
 import * as React from 'react';
 import * as InterviewScreenEntry from '../../../../models/InterviewScreenEntry';
 import * as Interview from '../../../../models/Interview';
-import * as DataStoreSetting from '../../../../models/DataStoreSetting';
 import * as SubmissionAction from '../../../../models/SubmissionAction';
 import FieldToQuestionBlock from './FieldToQuestionBlock';
 import type { EditableAction } from './types';
@@ -28,17 +27,17 @@ export default function EditRowActionBlock({
   interview,
   onActionChange,
 }: Props): JSX.Element {
-  const interviewSetting = interview.interviewSettings.find(
-    intSetting => intSetting.type === DataStoreSetting.DataStoreType.AIRTABLE,
+  const dataStoreSetting = interview.interviewSettings.find(
+    intSetting => intSetting.type === 'airtable',
   );
-  const airtableSettings = interviewSetting?.settings;
-  const allTables = React.useMemo(
-    () =>
-      airtableSettings && airtableSettings?.bases
-        ? airtableSettings?.bases?.flatMap(base => base.tables)
-        : [],
-    [airtableSettings],
-  );
+  const dataStoreConfig = dataStoreSetting?.settings;
+  const allTables = React.useMemo(() => {
+    return dataStoreConfig &&
+      dataStoreConfig.type === 'airtable' &&
+      dataStoreConfig?.bases
+      ? dataStoreConfig?.bases?.flatMap(base => base.tables)
+      : [];
+  }, [dataStoreConfig]);
 
   const [selectedIdentifierEntry, setSelectedIdentifierEntry] = React.useState<
     InterviewScreenEntry.T | undefined
@@ -50,8 +49,7 @@ export default function EditRowActionBlock({
     );
     return allTables.find(
       table =>
-        selectedEntry?.responseType ===
-          InterviewScreenEntry.ResponseType.AIRTABLE &&
+        selectedEntry?.responseType === 'airtable' &&
         table &&
         table.id === selectedEntry?.responseTypeOptions.selectedTable,
     );
@@ -61,10 +59,7 @@ export default function EditRowActionBlock({
     () =>
       entries
         // only show entries that are configured for Airtable lookups
-        .filter(
-          entry =>
-            entry.responseType === InterviewScreenEntry.ResponseType.AIRTABLE,
-        ),
+        .filter(entry => entry.responseType === 'airtable'),
     [entries],
   );
 

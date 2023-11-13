@@ -9,18 +9,18 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
-export { ActionType } from './models/ActionType';
-export { ConditionalOperator } from './models/ConditionalOperator';
-export { ConditionGroupType } from './models/ConditionGroupType';
-export { DataStoreType } from './models/DataStoreType';
+export type { ActionType } from './models/ActionType';
+export type { ConditionalOperator } from './models/ConditionalOperator';
+export type { ConditionGroupType } from './models/ConditionGroupType';
+export type { DataStoreType } from './models/DataStoreType';
 export type { HTTPValidationError } from './models/HTTPValidationError';
-export { ResponseType } from './models/ResponseType';
+export type { ResponseType } from './models/ResponseType';
 export type { SerializedActionConfig } from './models/SerializedActionConfig';
-export type { SerializedAirtableAuthSettings } from './models/SerializedAirtableAuthSettings';
+export type { SerializedAirtableAuthConfig } from './models/SerializedAirtableAuthConfig';
 export type { SerializedAirtableBase } from './models/SerializedAirtableBase';
+export type { SerializedAirtableConfig } from './models/SerializedAirtableConfig';
 export type { SerializedAirtableField } from './models/SerializedAirtableField';
 export type { SerializedAirtableOptions } from './models/SerializedAirtableOptions';
-export type { SerializedAirtableSettings } from './models/SerializedAirtableSettings';
 export type { SerializedAirtableTable } from './models/SerializedAirtableTable';
 export type { SerializedConditionalActionCreate } from './models/SerializedConditionalActionCreate';
 export type { SerializedConditionalActionRead } from './models/SerializedConditionalActionRead';
@@ -29,7 +29,7 @@ export type { SerializedDataStoreSettingCreate } from './models/SerializedDataSt
 export type { SerializedDataStoreSettingRead } from './models/SerializedDataStoreSettingRead';
 export type { SerializedEditRowPayload } from './models/SerializedEditRowPayload';
 export type { SerializedEntryResponseLookupConfig } from './models/SerializedEntryResponseLookupConfig';
-export type { SerializedGoogleSheetsSettings } from './models/SerializedGoogleSheetsSettings';
+export type { SerializedGoogleSheetsConfig } from './models/SerializedGoogleSheetsConfig';
 export type { SerializedIfClause } from './models/SerializedIfClause';
 export type { SerializedInsertRowPayload } from './models/SerializedInsertRowPayload';
 export type { SerializedInterviewCreate } from './models/SerializedInterviewCreate';
@@ -49,8 +49,8 @@ export type { SerializedSingleSelectOptions } from './models/SerializedSingleSel
 export type { SerializedSubmissionActionCreate } from './models/SerializedSubmissionActionCreate';
 export type { SerializedSubmissionActionRead } from './models/SerializedSubmissionActionRead';
 export type { SerializedUserRead } from './models/SerializedUserRead';
-export { SpecialValueType } from './models/SpecialValueType';
-export { SubmissionActionType } from './models/SubmissionActionType';
+export type { SpecialValueType } from './models/SpecialValueType';
+export type { SubmissionActionType } from './models/SubmissionActionType';
 export type { ValidationError } from './models/ValidationError';
 
 export { AirtableFastAPIService } from './services/AirtableFastAPIService';

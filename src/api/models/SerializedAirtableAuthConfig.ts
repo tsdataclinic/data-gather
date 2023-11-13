@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type SerializedAirtableAuthSettings = {
+export type SerializedAirtableAuthConfig = {
   accessToken?: string;
   accessTokenExpires?: number;
   refreshToken?: string;
