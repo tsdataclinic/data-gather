@@ -1,6 +1,7 @@
 import base64
 import logging
 import time
+import uuid
 from datetime import datetime, timedelta
 from hashlib import sha256
 from typing import Union
@@ -15,7 +16,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.routing import APIRoute
 from fastapi_azure_auth import B2CMultiTenantAuthorizationCodeBearer
 from fastapi_azure_auth.user import User as AzureUser
-from pydantic import AnyHttpUrl, BaseSettings, Field
+from pydantic import AnyHttpUrl, BaseModel, BaseSettings, Field
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import Session, select
 
@@ -37,6 +38,8 @@ from server.models.data_store_setting.airtable_config import (
     AirtableAuthConfig, AirtableConfig)
 from server.models.data_store_setting.data_store_setting import (
     DataStoreSetting, DataStoreSettingCreate, DataStoreType)
+from server.models.data_store_setting.google_sheets_config import (
+    GoogleSheetsAuthConfig, GoogleSheetsConfig)
 from server.models.interview import (Interview, InterviewCreate, InterviewRead,
                                      InterviewReadWithScreensAndActions,
                                      InterviewUpdate, ValidationError)
@@ -740,6 +743,67 @@ async def update_airtable_record(
     airtable_client = AirtableAPI(airtable_config)
     return airtable_client.update_record(base_id, table_name, record_id, update)
 
+class GoogleSheetsOAuthData(BaseModel):
+    access_token: str
+    token_type: str
+    expires_in: int
+    scope: str
+    interview_id: str
+
+@app.post('/api/google-sheets-oauth-callback', tags=["googleSheets"], response_model=InterviewRead)
+async def google_sheets_oauth_callback(
+    oauth_data: GoogleSheetsOAuthData,
+    interview_service: InterviewService = Depends(get_interview_service),
+    session: Session = Depends(get_session),
+) -> Interview:
+    '''This is the callback from when an OAuth flow is completed on the browser.
+    We receive the access token, and other auth data, and store it into a
+    DataStoreSetting model.
+    '''
+    LOG.info("Storing Google Sheets auth config to db")
+    interview_id = oauth_data.interview_id
+
+    gsheets_config = GoogleSheetsConfig(
+        type=DataStoreType.GOOGLE_SHEETS,
+        authSettings=GoogleSheetsAuthConfig(
+            accessToken=oauth_data.access_token,
+            tokenType=oauth_data.token_type,
+            accessTokenExpires=int(
+                (datetime.now() + timedelta(
+                    seconds=oauth_data.expires_in
+                )).timestamp() * 1000),
+            scope=oauth_data.scope,
+        ),
+        workbooks=[]
+    )
+
+    # create new DataStoreSetting model
+    # as opposed to in the airtable callback, we do not fetch a schema here, because
+    # the user has not yet specified which workbooks they want to connect to, so
+    # there's no schema we can load yet
+    new_data_store_setting = DataStoreSetting(
+            type=DataStoreType.GOOGLE_SHEETS,
+            interview_id=uuid.UUID(interview_id),
+            config=gsheets_config
+            )
+
+    # commit to db
+    interview = interview_service.get_interview_by_id(interview_id)
+
+    # check if a google sheets setting already exists
+    setting_already_exists = False
+    for setting in interview.data_store_settings:
+        if setting.type == DataStoreType.GOOGLE_SHEETS:
+            setting_already_exists = True
+
+    if not setting_already_exists:
+        interview.data_store_settings.append(new_data_store_setting)
+        interview_service.update_interview(interview_id, interview)
+
+    # return updated interview
+    return interview_service.get_interview_by_id(interview_id)
+
+
 @app.get("/api/airtable-auth", tags=["airtable"])
 async def airtable_auth(
     request: Request,
@@ -800,7 +864,8 @@ async def airtable_callback(
     code = request.query_params.get("code")
     state = request.query_params.get("state")
 
-    # This is a safety check pulled from the Airtable example https://github.com/Airtable/oauth-example
+    # This is a safety check pulled from the Airtable example
+    # https://github.com/Airtable/oauth-example
     cached = oauth_cache[state]['code_verifier']
     interview_id = oauth_cache[state]['interview_id']
     oauth_cache[state] = ''
@@ -857,23 +922,21 @@ async def airtable_callback(
 
         # create empty data_store_settings object
         interview = interview_service.get_interview_by_id(interview_id)
-        new_interview = InterviewUpdate.from_orm(interview)
 
         # fetch airtable schema
         airtable_client = AirtableAPI(airtable_config)
         airtable_config.bases = airtable_client.fetch_schema(airtable_config)
 
         # create new DataStoreSetting model
-        new_data_store_config = DataStoreSetting(
+        new_data_store_setting = DataStoreSetting(
             type=DataStoreType.AIRTABLE,
             interview_id=interview_id,
             config=airtable_config
         )
-        new_interview.data_store_settings.append(
-                DataStoreSettingCreate.from_orm(new_data_store_config))
+        interview.data_store_settings.append(new_data_store_setting)
 
         # commit to db
-        interview_service.update_interview(interview_id, new_interview)
+        interview_service.update_interview(interview_id, interview)
 
         params = {
             'id': 'airtable',

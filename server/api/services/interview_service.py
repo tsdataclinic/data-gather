@@ -4,23 +4,13 @@ from sqlmodel import Session, select
 
 from server.api.services.base_service import BaseService
 from server.api.services.interview_screen_service import InterviewScreenService
-from server.api.services.util import (
-    diff_model_lists,
-    reset_object_order,
-    update_model_diff,
-)
+from server.api.services.util import (diff_model_lists, reset_object_order,
+                                      update_model_diff)
 from server.models.data_store_setting.airtable_config import AirtableConfig
 from server.models.data_store_setting.data_store_setting import (
-    DataStoreConfig,
-    DataStoreSetting,
-    DataStoreType,
-)
-from server.models.interview import (
-    Interview,
-    InterviewCreate,
-    InterviewUpdate,
-    ValidationError,
-)
+    DataStoreConfig, DataStoreSetting, DataStoreType)
+from server.models.interview import (Interview, InterviewCreate,
+                                     InterviewUpdate, ValidationError)
 from server.models.interview_screen import InterviewScreen
 from server.models.submission_action import SubmissionAction
 
@@ -93,7 +83,7 @@ class InterviewService(BaseService):
     def update_data_store_config(
         self, interview_id: str, new_data_store_config: DataStoreConfig
     ) -> Interview:
-        new_interview = InterviewUpdate.from_orm(self.get_interview_by_id(interview_id))
+        new_interview = self.get_interview_by_id(interview_id)
         # find the setting for this data store type and update it
         for idx, data_store_setting in enumerate(new_interview.data_store_settings):
             if data_store_setting.type == new_data_store_config.type:
@@ -144,9 +134,7 @@ class InterviewService(BaseService):
         )
         self.commit(delete_models=models_to_delete)
 
-    def update_interview(
-        self, interview_id: str, interview: InterviewUpdate
-    ) -> Interview:
+    def update_interview(self, interview_id: str, interview: Interview) -> Interview:
         db_interview = self.get_interview_by_id(interview_id)
 
         # update the nested submission actions

@@ -70,6 +70,8 @@ def diff_model_lists(
     request_model_ids = set(req_model.id for req_model in request_models)
 
     # figure out which models are new and which ones have to be updated
+    print("request models")
+    print(request_models)
     models_to_create = []
     models_to_update = []
     for request_model in request_models:

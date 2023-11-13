@@ -7,6 +7,7 @@ import { FetchHttpRequest } from './core/FetchHttpRequest';
 
 import { AirtableFastAPIService } from './services/AirtableFastAPIService';
 import { DefaultFastAPIService } from './services/DefaultFastAPIService';
+import { GoogleSheetsFastAPIService } from './services/GoogleSheetsFastAPIService';
 import { InterviewsFastAPIService } from './services/InterviewsFastAPIService';
 import { InterviewScreensFastAPIService } from './services/InterviewScreensFastAPIService';
 import { UsersFastAPIService } from './services/UsersFastAPIService';
@@ -17,6 +18,7 @@ export class FastAPIService {
 
   public readonly airtable: AirtableFastAPIService;
   public readonly default: DefaultFastAPIService;
+  public readonly googleSheets: GoogleSheetsFastAPIService;
   public readonly interviews: InterviewsFastAPIService;
   public readonly interviewScreens: InterviewScreensFastAPIService;
   public readonly users: UsersFastAPIService;
@@ -38,6 +40,7 @@ export class FastAPIService {
 
     this.airtable = new AirtableFastAPIService(this.request);
     this.default = new DefaultFastAPIService(this.request);
+    this.googleSheets = new GoogleSheetsFastAPIService(this.request);
     this.interviews = new InterviewsFastAPIService(this.request);
     this.interviewScreens = new InterviewScreensFastAPIService(this.request);
     this.users = new UsersFastAPIService(this.request);

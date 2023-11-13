@@ -17,9 +17,11 @@ function createDefaultConfig(
         authSettings: {},
       };
     case 'google_sheets':
-      throw new Error(
-        'Creating default GoogleSheets Config is not supported yet.',
-      );
+      return {
+        type: 'google_sheets',
+        authSettings: {},
+        workbooks: [],
+      };
     default:
       return assertUnreachable(type);
   }

@@ -11,16 +11,11 @@ import Button from '../../../ui/Button';
 import LabelWrapper from '../../../ui/LabelWrapper';
 import Dropdown from '../../../ui/Dropdown';
 import { FastAPIService } from '../../../../api/FastAPIService';
+import assertUnreachable from '../../../../util/assertUnreachable';
 
 const api = new FastAPIService();
 
 type EditableSetting = DataStoreSetting.T | DataStoreSetting.CreateT;
-const SETTING_TYPE_OPTIONS = DataStoreSetting.SETTING_TYPES.map(
-  dataStoreType => ({
-    displayValue: DataStoreSetting.dataStoreTypeToDisplayName(dataStoreType),
-    value: dataStoreType,
-  }),
-);
 
 type Props = {
   interview: Interview.UpdateT;
@@ -32,16 +27,36 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const configuredSettings = React.useMemo(() => {
+    return new Set(interview.dataStoreSettings.map(setting => setting.type));
+  }, [interview.dataStoreSettings]);
+
+  const settingTypeOptions = React.useMemo(() => {
+    return DataStoreSetting.SETTING_TYPES.map(dataStoreType => ({
+      displayValue: DataStoreSetting.dataStoreTypeToDisplayName(dataStoreType),
+      value: dataStoreType,
+      disabled: configuredSettings.has(dataStoreType),
+    }));
+  }, [configuredSettings]);
+
   const onAddClick = (): void => {
-    onInterviewChange({
-      ...interview,
-      dataStoreSettings: interview.dataStoreSettings.concat(
-        DataStoreSetting.create({
-          interviewId: interview.id,
-          type: 'airtable',
-        }),
-      ),
-    });
+    // pick the first setting that isn't already configured. Use this as the
+    // default type for our new DataStoreSetting object
+    const firstAvailableSettingType = DataStoreSetting.SETTING_TYPES.find(
+      settingType => !configuredSettings.has(settingType),
+    );
+
+    if (firstAvailableSettingType) {
+      onInterviewChange({
+        ...interview,
+        dataStoreSettings: interview.dataStoreSettings.concat(
+          DataStoreSetting.create({
+            interviewId: interview.id,
+            type: firstAvailableSettingType,
+          }),
+        ),
+      });
+    }
   };
 
   const onSettingRemove = (settingToRemove: EditableSetting): void => {
@@ -82,8 +97,42 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=+$/, '');
+    // serialize the current state so we can reset the appropriate state when the
+    // page redirects back
     localStorage.setItem(state, interview.id);
     window.location.href = `${process.env.REACT_APP_SERVER_URI}/api/airtable-auth?state=${state}&interview_id=${interview.id}`;
+  };
+
+  const handleAuthenticateWithGoogle = (): void => {
+    const oauth2Endpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
+
+    // Create <form> element to submit parameters to OAuth 2.0 endpoint.
+    const form = document.createElement('form');
+    form.setAttribute('method', 'GET'); // Send as a GET request.
+    form.setAttribute('action', oauth2Endpoint);
+
+    // Parameters to pass to OAuth 2.0 endpoint.
+    const params = {
+      client_id: process.env.REACT_APP_GOOGLE_SHEETS_CLIENT_ID ?? '',
+      redirect_uri: process.env.REACT_APP_GOOGLE_SHEETS_REDIRECT_URI ?? '',
+      response_type: 'token',
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      include_granted_scopes: 'true',
+      state: interview.id,
+    };
+
+    // Add form parameters as hidden input values.
+    Object.entries(params).forEach(([paramKey, param]) => {
+      const input = document.createElement('input');
+      input.setAttribute('type', 'hidden');
+      input.setAttribute('name', paramKey);
+      input.setAttribute('value', param);
+      form.appendChild(input);
+    });
+
+    // Add form to page and submit it to open the OAuth 2.0 endpoint.
+    document.body.appendChild(form);
+    form.submit();
   };
 
   React.useEffect(() => {
@@ -151,17 +200,15 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
   };
 
   const renderSettingBlock = (setting: EditableSetting): JSX.Element => {
-    switch (setting.type) {
-      case 'airtable': {
-        const dataStoreConfig = setting.config;
+    const dataStoreConfig = setting.config;
+    switch (dataStoreConfig.type) {
+      case 'airtable':
         return (
           <div key={dataStoreConfig.type} className="space-y-4">
-            {dataStoreConfig.type === 'airtable' &&
-              dataStoreConfig.bases &&
+            {dataStoreConfig.bases &&
               renderAirtableBaseTable(dataStoreConfig.bases)}
             <div>
-              {dataStoreConfig.type === 'airtable' &&
-              dataStoreConfig.authSettings?.accessToken ? (
+              {dataStoreConfig.authSettings.accessToken ? (
                 <div className="space-y-2">
                   <div className="flex space-x-2">
                     <Button
@@ -197,9 +244,14 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
             </div>
           </div>
         );
-      }
+      case 'google_sheets':
+        return (
+          <Button intent="primary" onClick={handleAuthenticateWithGoogle}>
+            Connect to Google Sheets
+          </Button>
+        );
       default:
-        return <div />;
+        return assertUnreachable(dataStoreConfig);
     }
   };
 
@@ -230,7 +282,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
             <LabelWrapper className="mb-4" label="Data Store">
               <Dropdown
                 value={setting.type}
-                options={SETTING_TYPE_OPTIONS}
+                options={settingTypeOptions}
                 onChange={dataStoreType => {
                   // reuse the same id so that we edit the existing setting
                   onSettingChange(
@@ -249,11 +301,12 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
         <Button
           intent="primary"
           onClick={onAddClick}
-          // Quick way to disallow multiple Airtable configs
-          // TODO: change this when adding more DataStoreTypes
-          disabled={interview.dataStoreSettings.some(
-            setting => setting.type === 'airtable',
-          )}
+          // Quick way to disallow more data stores: if the number of data store
+          // settings is equal to the number of possible data stores.
+          disabled={
+            DataStoreSetting.SETTING_TYPES.length ===
+            interview.dataStoreSettings.length
+          }
         >
           + Add Data Store
         </Button>

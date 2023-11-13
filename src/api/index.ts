@@ -29,7 +29,9 @@ export type { SerializedDataStoreSettingCreate } from './models/SerializedDataSt
 export type { SerializedDataStoreSettingRead } from './models/SerializedDataStoreSettingRead';
 export type { SerializedEditRowPayload } from './models/SerializedEditRowPayload';
 export type { SerializedEntryResponseLookupConfig } from './models/SerializedEntryResponseLookupConfig';
+export type { SerializedGoogleSheetsAuthConfig } from './models/SerializedGoogleSheetsAuthConfig';
 export type { SerializedGoogleSheetsConfig } from './models/SerializedGoogleSheetsConfig';
+export type { SerializedGoogleSheetsOAuthData } from './models/SerializedGoogleSheetsOAuthData';
 export type { SerializedIfClause } from './models/SerializedIfClause';
 export type { SerializedInsertRowPayload } from './models/SerializedInsertRowPayload';
 export type { SerializedInterviewCreate } from './models/SerializedInterviewCreate';
@@ -55,6 +57,7 @@ export type { ValidationError } from './models/ValidationError';
 
 export { AirtableFastAPIService } from './services/AirtableFastAPIService';
 export { DefaultFastAPIService } from './services/DefaultFastAPIService';
+export { GoogleSheetsFastAPIService } from './services/GoogleSheetsFastAPIService';
 export { InterviewsFastAPIService } from './services/InterviewsFastAPIService';
 export { InterviewScreensFastAPIService } from './services/InterviewScreensFastAPIService';
 export { UsersFastAPIService } from './services/UsersFastAPIService';

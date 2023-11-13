@@ -4,6 +4,7 @@ import classNames from 'classnames';
 type Props = {
   children: React.ReactNode;
   className?: string;
+  disabled?: boolean;
   intent?: 'primary' | 'danger' | 'default';
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   size?: 'medium' | 'small';
@@ -21,6 +22,7 @@ function BaseButton(
   {
     children,
     className,
+    disabled,
     onClick,
     type = 'button',
     variant = 'normal',
@@ -52,6 +54,10 @@ function BaseButton(
           'bg-gray-200 hover:bg-gray-300 active:bg-gray-200 text-gray-800 hover:text-gray-900':
             intent === 'default',
         },
+    {
+      'cursor-not-allowed': disabled,
+      '!bg-gray-400': disabled,
+    },
   );
 
   return (

@@ -13,6 +13,7 @@ import TermsOfUseView from './components/TermsOfUseView';
 import PrivacyPolicyView from './components/PrivacyPolicyView';
 import AboutPageView from './components/AboutPageView';
 import LegalConfirmationModal from './components/LegalConfirmationModal';
+import GoogleSheetsAuth from './components/GoogleSheetsAuth';
 
 const QUERY_CLIENT = new QueryClient();
 const INTERVIEW_API_CLIENT = new InterviewService.API();
@@ -37,6 +38,10 @@ export default function App(): JSX.Element {
                         <AllInterviewsView />
                       </InterviewService.Provider>
                     }
+                  />
+                  <Route
+                    path="/google-sheets-auth"
+                    element={<GoogleSheetsAuth />}
                   />
                   <Route path="/terms-of-use" element={<TermsOfUseView />} />
                   <Route
