@@ -12,6 +12,7 @@
 6. `src/api/` to `src/api-gen`
 7. Rename the other `airtable_config.py`
 8. Verify the refresh token on every endpoint call and re-auth if necessary
+9. Fix airtable schema refresh - it keeps returning as unauthorized
 
 Places that need switch statement:
 
@@ -31,7 +32,3 @@ Migrations:
 1. TABLE RENAME: `interview_setting` => `data_store_setting`
 2. Added `type` to the data_store_setting configs
 3. COLUMN RENAME: `settings` => `config` in `data_store_setting` table
-
-upcoming:
-
-2. DataStoreSetting `settings` to `config`
