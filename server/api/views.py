@@ -4,7 +4,7 @@ import time
 import uuid
 from datetime import datetime, timedelta
 from hashlib import sha256
-from typing import Union
+from typing import Any, Union
 from urllib.parse import urlencode
 
 import httpx
@@ -16,6 +16,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.routing import APIRoute
 from fastapi_azure_auth import B2CMultiTenantAuthorizationCodeBearer
 from fastapi_azure_auth.user import User as AzureUser
+from google_auth_oauthlib.flow import Flow  # pylint: disable=import-error
 from pydantic import AnyHttpUrl, BaseModel, BaseSettings, Field
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import Session, select
@@ -27,12 +28,15 @@ from server.api.airtable_config import (AIRTABLE_AUTH_URL, AIRTABLE_CLIENT_ID,
                                         REACT_APP_CLIENT_URI,
                                         REACT_APP_SERVER_URI)
 from server.api.exceptions import InvalidOrder
+from server.api.services.data_store_service import (
+    DataStoreService, GoogleSheetsUpdateSchemaOptions)
 from server.api.services.interview_screen_service import InterviewScreenService
 from server.api.services.interview_service import InterviewService
 from server.api.services.util import (diff_model_lists, reset_object_order,
                                       update_model_diff)
 from server.db import SQLITE_DB_PATH
 from server.engine import create_fk_constraint_engine
+from server.env import get_env
 from server.models.conditional_action import ConditionalAction
 from server.models.data_store_setting.airtable_config import (
     AirtableAuthConfig, AirtableConfig)
@@ -164,6 +168,8 @@ def get_current_user(
 def get_interview_service(session: Session = Depends(get_session)) -> InterviewService:
     return InterviewService(db=session)
 
+def get_data_store_service(session: Session = Depends(get_session)) -> DataStoreService:
+    return DataStoreService(db=session)
 
 def get_interview_screen_service(
     session: Session = Depends(get_session),
@@ -688,26 +694,20 @@ def get_airtable_record(
     airtable_client = AirtableAPI(airtable_config)
     return airtable_client.fetch_record(base_id, table_name, record_id)
 
-
-@app.get("/api/airtable-schema/{interview_id}", tags=["airtable"])
-def get_airtable_schema(
-    interview_id: str,
-    interview_service: InterviewService = Depends(get_interview_service),
-    session: Session = Depends(get_session),
+@app.post('/api/data-store/{data_store_type}/update-schema/{interview_id}', tags=['dataStores'])
+def update_data_store_schema(
+        data_store_type: DataStoreType,
+        interview_id: str,
+        options: GoogleSheetsUpdateSchemaOptions | None = None,
+        data_store_service: DataStoreService = Depends(get_data_store_service),
+        session: Session = Depends(get_session)
 ) -> Interview:
     """
-    Given an interview object, fetch the list of bases + schema for each base
-    for its given Airtable access key.
-    Combine the schema into a single JSON object.
-    Update a given Interview object with that schema.
+    Fetch the updated data store schema for a given data store type (e.g.
+    airtable or google sheets) and store the updated schema for the given
+    interview id.
     """
-    airtable_config = interview_service.get_airtable_config(interview_id)
-    airtable_client = AirtableAPI(airtable_config)
-    airtable_config.bases = airtable_client.fetch_schema(airtable_config)
-
-    return interview_service.update_data_store_config(
-            interview_id, airtable_config)
-
+    return data_store_service.update_schema(data_store_type, interview_id, options)
 
 @app.post("/api/airtable-records/{interview_id}/{base_id}/{table_name}", tags=["airtable"])
 async def create_airtable_record(
@@ -726,7 +726,10 @@ async def create_airtable_record(
     return airtable_client.create_record(base_id, table_name, record)
 
 
-@app.put("/api/airtable-records/{interview_id}/{base_id}/{table_name}/{record_id}", tags=["airtable"])
+@app.put(
+    "/api/airtable-records/{interview_id}/{base_id}/{table_name}/{record_id}",
+    tags=["airtable"]
+)
 async def update_airtable_record(
     base_id: str,
     table_name: str,
@@ -743,38 +746,46 @@ async def update_airtable_record(
     airtable_client = AirtableAPI(airtable_config)
     return airtable_client.update_record(base_id, table_name, record_id, update)
 
-class GoogleSheetsOAuthData(BaseModel):
-    access_token: str
-    token_type: str
-    expires_in: int
-    scope: str
-    interview_id: str
-
-@app.post('/api/google-sheets-oauth-callback', tags=["googleSheets"], response_model=InterviewRead)
+@app.get('/api/google-sheets-oauth-callback', tags=["googleSheets"])
 async def google_sheets_oauth_callback(
-    oauth_data: GoogleSheetsOAuthData,
+    code: str,
+    state: str, # this is the interview_id
+    scope: str,
     interview_service: InterviewService = Depends(get_interview_service),
     session: Session = Depends(get_session),
-) -> Interview:
+) -> RedirectResponse:
     '''This is the callback from when an OAuth flow is completed on the browser.
     We receive the access token, and other auth data, and store it into a
     DataStoreSetting model.
     '''
     LOG.info("Storing Google Sheets auth config to db")
-    interview_id = oauth_data.interview_id
+    interview_id = state
+
+    flow = Flow.from_client_config({
+        "web":{
+            "client_id":"237744865998-cgj6e7js7oc2te93jb60lvfi3himq55j.apps.googleusercontent.com",
+            "project_id":"data-gather-prod",
+            "auth_uri":"https://accounts.google.com/o/oauth2/auth",
+            "token_uri":"https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+            "client_secret":"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",
+            "redirect_uris":["https://localhost:3000", "https://datagather.tsdataclinic.com"],
+            "javascript_origins":["https://localhost:3000","https://datagather.tsdataclinic.com"],
+        }
+    },
+                                   scopes=[scope],
+                                   redirect_uri=get_env('REACT_APP_GOOGLE_SHEETS_REDIRECT_URI')
+                                   )
+    flow.fetch_token(code=code)
+    credentials = flow.credentials
 
     gsheets_config = GoogleSheetsConfig(
         type=DataStoreType.GOOGLE_SHEETS,
         authSettings=GoogleSheetsAuthConfig(
-            accessToken=oauth_data.access_token,
-            tokenType=oauth_data.token_type,
-            accessTokenExpires=int(
-                (datetime.now() + timedelta(
-                    seconds=oauth_data.expires_in
-                )).timestamp() * 1000),
-            scope=oauth_data.scope,
+            accessToken=credentials.token,
+            refreshToken=credentials.refresh_token,
+            accessTokenExpires=int(credentials.expiry.timestamp() * 1000) if credentials.expiry else None
         ),
-        workbooks=[]
     )
 
     # create new DataStoreSetting model
@@ -782,10 +793,10 @@ async def google_sheets_oauth_callback(
     # the user has not yet specified which workbooks they want to connect to, so
     # there's no schema we can load yet
     new_data_store_setting = DataStoreSetting(
-            type=DataStoreType.GOOGLE_SHEETS,
-            interview_id=uuid.UUID(interview_id),
-            config=gsheets_config
-            )
+        type=DataStoreType.GOOGLE_SHEETS,
+        interview_id=uuid.UUID(interview_id),
+        config=gsheets_config
+    )
 
     # commit to db
     interview = interview_service.get_interview_by_id(interview_id)
@@ -800,8 +811,9 @@ async def google_sheets_oauth_callback(
         interview.data_store_settings.append(new_data_store_setting)
         interview_service.update_interview(interview_id, interview)
 
-    # return updated interview
-    return interview_service.get_interview_by_id(interview_id)
+    return RedirectResponse(
+            f'{REACT_APP_CLIENT_URI}/interview/{interview_id}/configure',
+            status_code=302)
 
 
 @app.get("/api/airtable-auth", tags=["airtable"])
@@ -925,7 +937,7 @@ async def airtable_callback(
 
         # fetch airtable schema
         airtable_client = AirtableAPI(airtable_config)
-        airtable_config.bases = airtable_client.fetch_schema(airtable_config)
+        airtable_config.bases = airtable_client.fetch_schema()
 
         # create new DataStoreSetting model
         new_data_store_setting = DataStoreSetting(

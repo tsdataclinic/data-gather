@@ -33,7 +33,6 @@ export default function GoogleSheetsAuth(): JSX.Element {
       { ...parsedHash, interview_id: state },
       {
         onSuccess: (interview: Interview.T | undefined) => {
-          console.log('the interview');
           if (interview) {
             navigate(Interview.getConfigurePageURL(interview.id));
           }

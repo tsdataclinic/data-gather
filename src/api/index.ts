@@ -31,7 +31,9 @@ export type { SerializedEditRowPayload } from './models/SerializedEditRowPayload
 export type { SerializedEntryResponseLookupConfig } from './models/SerializedEntryResponseLookupConfig';
 export type { SerializedGoogleSheetsAuthConfig } from './models/SerializedGoogleSheetsAuthConfig';
 export type { SerializedGoogleSheetsConfig } from './models/SerializedGoogleSheetsConfig';
-export type { SerializedGoogleSheetsOAuthData } from './models/SerializedGoogleSheetsOAuthData';
+export type { SerializedGoogleSheetsSpreadsheet } from './models/SerializedGoogleSheetsSpreadsheet';
+export type { SerializedGoogleSheetsUpdateSchemaOptions } from './models/SerializedGoogleSheetsUpdateSchemaOptions';
+export type { SerializedGoogleSheetsWorksheet } from './models/SerializedGoogleSheetsWorksheet';
 export type { SerializedIfClause } from './models/SerializedIfClause';
 export type { SerializedInsertRowPayload } from './models/SerializedInsertRowPayload';
 export type { SerializedInterviewCreate } from './models/SerializedInterviewCreate';
@@ -56,6 +58,7 @@ export type { SubmissionActionType } from './models/SubmissionActionType';
 export type { ValidationError } from './models/ValidationError';
 
 export { AirtableFastAPIService } from './services/AirtableFastAPIService';
+export { DataStoresFastAPIService } from './services/DataStoresFastAPIService';
 export { DefaultFastAPIService } from './services/DefaultFastAPIService';
 export { GoogleSheetsFastAPIService } from './services/GoogleSheetsFastAPIService';
 export { InterviewsFastAPIService } from './services/InterviewsFastAPIService';

@@ -1,9 +1,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { SerializedGoogleSheetsOAuthData } from '../models/SerializedGoogleSheetsOAuthData';
-import type { SerializedInterviewRead } from '../models/SerializedInterviewRead';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
 
@@ -16,18 +13,25 @@ export class GoogleSheetsFastAPIService {
    * This is the callback from when an OAuth flow is completed on the browser.
    * We receive the access token, and other auth data, and store it into a
    * DataStoreSetting model.
-   * @param requestBody
-   * @returns SerializedInterviewRead Successful Response
+   * @param code
+   * @param state
+   * @param scope
+   * @returns any Successful Response
    * @throws ApiError
    */
   public googleSheetsOauthCallback(
-    requestBody: SerializedGoogleSheetsOAuthData,
-  ): CancelablePromise<SerializedInterviewRead> {
+    code: string,
+    state: string,
+    scope: string,
+  ): CancelablePromise<any> {
     return this.httpRequest.request({
-      method: 'POST',
+      method: 'GET',
       url: '/api/google-sheets-oauth-callback',
-      body: requestBody,
-      mediaType: 'application/json',
+      query: {
+        'code': code,
+        'state': state,
+        'scope': scope,
+      },
       errors: {
         422: `Validation Error`,
       },

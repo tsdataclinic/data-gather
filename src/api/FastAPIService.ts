@@ -6,6 +6,7 @@ import type { OpenAPIConfig } from './core/OpenAPI';
 import { FetchHttpRequest } from './core/FetchHttpRequest';
 
 import { AirtableFastAPIService } from './services/AirtableFastAPIService';
+import { DataStoresFastAPIService } from './services/DataStoresFastAPIService';
 import { DefaultFastAPIService } from './services/DefaultFastAPIService';
 import { GoogleSheetsFastAPIService } from './services/GoogleSheetsFastAPIService';
 import { InterviewsFastAPIService } from './services/InterviewsFastAPIService';
@@ -17,6 +18,7 @@ type HttpRequestConstructor = new (config: OpenAPIConfig) => BaseHttpRequest;
 export class FastAPIService {
 
   public readonly airtable: AirtableFastAPIService;
+  public readonly dataStores: DataStoresFastAPIService;
   public readonly default: DefaultFastAPIService;
   public readonly googleSheets: GoogleSheetsFastAPIService;
   public readonly interviews: InterviewsFastAPIService;
@@ -39,6 +41,7 @@ export class FastAPIService {
     });
 
     this.airtable = new AirtableFastAPIService(this.request);
+    this.dataStores = new DataStoresFastAPIService(this.request);
     this.default = new DefaultFastAPIService(this.request);
     this.googleSheets = new GoogleSheetsFastAPIService(this.request);
     this.interviews = new InterviewsFastAPIService(this.request);

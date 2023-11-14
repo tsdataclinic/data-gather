@@ -1,20 +1,20 @@
 ## TODO:
 
-1. Add Google Sheets authentication
+1. Load the schema
 2. Finish modeling the GoogleSheetsSettings classes
 3. Update the frontend model to expect this union
-4. Load the schema
-5. Update the lookup config
-6. Update the submission actions config
-7. The frontend uses an AirtableService but instead we should
+4. Update the lookup config
+5. Update the submission actions config
+6. The frontend uses an AirtableService but instead we should
    have a DataStoreService that calls lookup, update, and
    insert, etc. and on the backend we send to the appropriate
    service.
-8. On the backend, create a ExternalDataStoreConnector interface and create the AirtableService and GoogleSheetsService
-9. We should use a /lookup, /update, and /insert endpoints that receive a config
+7. On the backend, create a ExternalDataStoreConnector interface and create the AirtableService and GoogleSheetsService
+8. We should use a /lookup, /update, and /insert endpoints that receive a config
    rather than a service specific (like /airtable-records) endpoint
-10. `src/api/` to `src/api-gen`
-11. Rename the other `airtable_config.py`
+9. `src/api/` to `src/api-gen`
+10. Rename the other `airtable_config.py`
+11. Verify the refresh token on every endpoint call and re-auth if necessary
 
 Places that need switch statement:
 

@@ -136,31 +136,6 @@ export class AirtableFastAPIService {
   }
 
   /**
-   * Get Airtable Schema
-   * Given an interview object, fetch the list of bases + schema for each base
-   * for its given Airtable access key.
-   * Combine the schema into a single JSON object.
-   * Update a given Interview object with that schema.
-   * @param interviewId
-   * @returns any Successful Response
-   * @throws ApiError
-   */
-  public getAirtableSchema(
-    interviewId: string,
-  ): CancelablePromise<any> {
-    return this.httpRequest.request({
-      method: 'GET',
-      url: '/api/airtable-schema/{interview_id}',
-      path: {
-        'interview_id': interviewId,
-      },
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
-
-  /**
    * Airtable Auth
    * Since Airtable API doesn't yet support CORS requests to create tokens from the browser,
    * this function helps the browser complete the OAuth request.

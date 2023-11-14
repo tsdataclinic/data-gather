@@ -159,11 +159,14 @@ class AirtableAPI:
     """
 
     def __init__(self, airtable_config: AirtableConfig):
-        if airtable_config.authSettings and airtable_config.authSettings.accessToken:
+        if airtable_config.authSettings.accessToken:
+            self.access_token = airtable_config.authSettings.accessToken
+
+            # use the access token to authenticate with the Airtable API
             self.api = Api(airtable_config.authSettings.accessToken)
         else:
             logger.warning(
-                "**No Airtable API key set. Airtable endpoints will not function.**"
+                "**No Airtable access token set. Airtable endpoints will not function.**"
             )
 
     @airtable_errors_wrapped
@@ -197,7 +200,7 @@ class AirtableAPI:
         Returns: A list of records matching that query
         """
         logger.debug(
-            "Fetching records in base: {base_id} table: {table_name}",
+            "Fetching records in base: %s table: %s",
             base_id,
             table_name,
         )
@@ -266,16 +269,16 @@ class AirtableAPI:
             ),
         )
 
-    def fetch_schema(self, airtable_config: AirtableConfig) -> list[AirtableBase]:
+    def fetch_schema(self) -> list[AirtableBase]:
         """Fetch the airtable schema using the `authSettings` from an existing
         config.
         An airtable schema is just a list of AirtableBase models.
         """
-        basesResponse = self.fetch_bases(airtable_config)
+        basesResponse = self._fetch_bases_list()
 
         airtable_bases = []
         for base in basesResponse["bases"]:
-            base_schema = self.fetch_base_schema(airtable_config, base["id"])
+            base_schema = self._fetch_base_schema(base["id"])
             # convert the JSON schema we get from the backend into an
             # AirtableBase model
             airtable_bases.append(
@@ -306,38 +309,33 @@ class AirtableAPI:
             )
         return airtable_bases
 
-    def fetch_bases(self, airtable_config: AirtableConfig) -> ListBasesResponse:
+    def _fetch_bases_list(self) -> ListBasesResponse:
         """
+        Fetch the list of bases.
         curl "https://api.airtable.com/v0/meta/bases" \
         -H "Authorization: Bearer YOUR_TOKEN"
         """
-        if airtable_config.authSettings:
-            access_token = airtable_config.authSettings.accessToken
-            r = requests.get(
-                "https://api.airtable.com/v0/meta/bases",
-                headers={"Authorization": f"Bearer {access_token}"},
-            )
-            if r.status_code != 200:
-                raise HTTPException(status_code=r.status_code, detail=r.reason)
-            bases_response = r.json()
-            return bases_response
-        return {"bases": [], "offset": None}
+        r = requests.get(
+            "https://api.airtable.com/v0/meta/bases",
+            headers={"Authorization": f"Bearer {self.access_token}"},
+        )
+        if r.status_code != 200:
+            raise HTTPException(status_code=r.status_code, detail=r.reason)
+        bases_response = r.json()
+        return bases_response
 
-    def fetch_base_schema(
-        self, airtable_config: AirtableConfig, base_id: str
-    ) -> GetBaseSchemaResponse:
+    def _fetch_base_schema(self, base_id: str) -> GetBaseSchemaResponse:
         """
+        Fetch the schema of a single base (i.e. the schema for all its
+        underlying tables)
         curl "https://api.airtable.com/v0/meta/bases/{base_id}/tables"
         -H "Authorization: Bearer YOUR_TOKEN
         """
-        if airtable_config.authSettings:
-            access_token = airtable_config.authSettings.accessToken
-            r = requests.get(
-                f"https://api.airtable.com/v0/meta/bases/{base_id}/tables",
-                headers={"Authorization": f"Bearer {access_token}"},
-            )
-            if r.status_code != 200:
-                raise HTTPException(status_code=r.status_code, detail=r.reason)
-            tables_response = r.json()
-            return tables_response
-        return {"tables": []}
+        r = requests.get(
+            f"https://api.airtable.com/v0/meta/bases/{base_id}/tables",
+            headers={"Authorization": f"Bearer {self.access_token}"},
+        )
+        if r.status_code != 200:
+            raise HTTPException(status_code=r.status_code, detail=r.reason)
+        tables_response = r.json()
+        return tables_response

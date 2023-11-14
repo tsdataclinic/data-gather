@@ -5,7 +5,6 @@
 export type SerializedGoogleSheetsAuthConfig = {
   accessToken?: string;
   accessTokenExpires?: number;
-  tokenType?: string;
-  scope?: string;
+  refreshToken?: string;
 };
 

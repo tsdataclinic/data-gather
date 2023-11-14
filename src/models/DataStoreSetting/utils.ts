@@ -20,7 +20,6 @@ function createDefaultConfig(
       return {
         type: 'google_sheets',
         authSettings: {},
-        workbooks: [],
       };
     default:
       return assertUnreachable(type);

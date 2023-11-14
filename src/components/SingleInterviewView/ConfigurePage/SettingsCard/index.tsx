@@ -5,6 +5,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import forge from 'node-forge';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
+import useDrivePicker from 'react-google-drive-picker';
+import { CallbackDoc } from 'react-google-drive-picker/dist/typeDefs';
 import * as Interview from '../../../../models/Interview';
 import * as DataStoreSetting from '../../../../models/DataStoreSetting';
 import Button from '../../../ui/Button';
@@ -26,6 +28,7 @@ type Props = {
 function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
   const navigate = useNavigate();
   const location = useLocation();
+  const [openGDrivePicker] = useDrivePicker();
 
   const configuredSettings = React.useMemo(() => {
     return new Set(interview.dataStoreSettings.map(setting => setting.type));
@@ -79,14 +82,23 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     });
   };
 
-  const handleUpdateAirtableSchema = async (): Promise<void> => {
-    await api.airtable.getAirtableSchema(interview.id);
+  const updateAirtableSchema = async (): Promise<void> => {
+    await api.dataStores.updateDataStoreSchema('airtable', interview.id);
     navigate(0);
   };
 
   const handleRefreshAirtableTokens = async (): Promise<void> => {
     await api.airtable.refreshAndUpdateAirtableAuth(interview.id);
     navigate(0);
+  };
+
+  const updateGoogleSheetsSchema = async (
+    docs: CallbackDoc[],
+  ): Promise<void> => {
+    await api.dataStores.updateDataStoreSchema('google_sheets', interview.id, {
+      spreadsheetIds: docs.map(doc => doc.id),
+    });
+    // navigate(0);
   };
 
   const handleAuthenticateWithAirtable = (): void => {
@@ -115,10 +127,11 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     const params = {
       client_id: process.env.REACT_APP_GOOGLE_SHEETS_CLIENT_ID ?? '',
       redirect_uri: process.env.REACT_APP_GOOGLE_SHEETS_REDIRECT_URI ?? '',
-      response_type: 'token',
-      scope: 'https://www.googleapis.com/auth/drive.file',
+      response_type: 'code',
+      scope: process.env.REACT_APP_GOOGLE_SHEETS_SCOPE ?? '',
       include_granted_scopes: 'true',
       state: interview.id,
+      access_type: 'offline',
     };
 
     // Add form parameters as hidden input values.
@@ -213,7 +226,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
                   <div className="flex space-x-2">
                     <Button
                       aria-label="Get Airtable base schema"
-                      onClick={handleUpdateAirtableSchema}
+                      onClick={updateAirtableSchema}
                       intent="primary"
                     >
                       Refresh Airtable schema
@@ -246,9 +259,43 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
         );
       case 'google_sheets':
         return (
-          <Button intent="primary" onClick={handleAuthenticateWithGoogle}>
-            Connect to Google Sheets
-          </Button>
+          <div key={dataStoreConfig.type} className="space-y-4">
+            {dataStoreConfig.authSettings.accessToken ? (
+              <Button
+                intent="primary"
+                onClick={() => {
+                  openGDrivePicker({
+                    clientId:
+                      process.env.REACT_APP_GOOGLE_SHEETS_CLIENT_ID ?? '',
+                    developerKey:
+                      process.env.REACT_APP_GOOGLE_DRIVE_PICKER_API_KEY ?? '',
+                    viewId: 'SPREADSHEETS',
+                    token: dataStoreConfig.authSettings.accessToken,
+                    showUploadView: true,
+                    showUploadFolders: true,
+                    supportDrives: true,
+                    multiselect: true,
+                    appId: process.env.REACT_APP_GOOGLE_SHEETS_APP_ID ?? '',
+                    customScopes: [
+                      process.env.REACT_APP_GOOGLE_SHEETS_SCOPE ?? '',
+                    ],
+                    callbackFunction: data => {
+                      const { docs, action } = data;
+                      if (action === 'picked') {
+                        updateGoogleSheetsSchema(docs);
+                      }
+                    },
+                  });
+                }}
+              >
+                Choose spreadsheets from your Google Drive
+              </Button>
+            ) : (
+              <Button intent="primary" onClick={handleAuthenticateWithGoogle}>
+                Connect to Google Sheets
+              </Button>
+            )}
+          </div>
         );
       default:
         return assertUnreachable(dataStoreConfig);

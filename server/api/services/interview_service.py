@@ -4,13 +4,24 @@ from sqlmodel import Session, select
 
 from server.api.services.base_service import BaseService
 from server.api.services.interview_screen_service import InterviewScreenService
-from server.api.services.util import (diff_model_lists, reset_object_order,
-                                      update_model_diff)
+from server.api.services.util import (
+    diff_model_lists,
+    reset_object_order,
+    update_model_diff,
+)
 from server.models.data_store_setting.airtable_config import AirtableConfig
 from server.models.data_store_setting.data_store_setting import (
-    DataStoreConfig, DataStoreSetting, DataStoreType)
-from server.models.interview import (Interview, InterviewCreate,
-                                     InterviewUpdate, ValidationError)
+    DataStoreConfig,
+    DataStoreSetting,
+    DataStoreType,
+)
+from server.models.data_store_setting.google_sheets_config import GoogleSheetsConfig
+from server.models.interview import (
+    Interview,
+    InterviewCreate,
+    InterviewUpdate,
+    ValidationError,
+)
 from server.models.interview_screen import InterviewScreen
 from server.models.submission_action import SubmissionAction
 
@@ -87,7 +98,11 @@ class InterviewService(BaseService):
         # find the setting for this data store type and update it
         for idx, data_store_setting in enumerate(new_interview.data_store_settings):
             if data_store_setting.type == new_data_store_config.type:
-                data_store_setting.config = new_data_store_config
+                # to update the config in the db, we need to force this to write as a
+                # dict so it can serialize to a JSON
+                data_store_setting.config = new_data_store_config.dict(  # type: ignore
+                    exclude_none=True
+                )
                 new_interview.data_store_settings[idx] = data_store_setting
                 break
 
@@ -99,14 +114,14 @@ class InterviewService(BaseService):
             interview_id, DataStoreType.AIRTABLE
         )
         airtable_settings = AirtableConfig.parse_obj(data_store_setting.config)
+        return airtable_settings
 
-        if isinstance(airtable_settings, AirtableConfig):
-            return airtable_settings
-
-        raise HTTPException(
-            status_code=500,
-            detail="Data store settings were found that were not a valid airtable settings type",
+    def get_google_sheets_config(self, interview_id: str) -> GoogleSheetsConfig:
+        data_store_setting = self._get_interview_setting_by_interview_id_and_type(
+            interview_id, DataStoreType.GOOGLE_SHEETS
         )
+        gsheets_settings = GoogleSheetsConfig.parse_obj(data_store_setting.config)
+        return gsheets_settings
 
     def get_interview_by_vanity_url(self, vanity_url: str) -> Interview:
         """Get an interview by its vanity url"""
