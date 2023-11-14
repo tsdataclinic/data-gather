@@ -98,7 +98,7 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
     await api.dataStores.updateDataStoreSchema('google_sheets', interview.id, {
       spreadsheetIds: docs.map(doc => doc.id),
     });
-    // navigate(0);
+    navigate(0);
   };
 
   const handleAuthenticateWithAirtable = (): void => {
@@ -257,10 +257,43 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
             </div>
           </div>
         );
-      case 'google_sheets':
+      case 'google_sheets': {
         return (
           <div key={dataStoreConfig.type} className="space-y-4">
-            {dataStoreConfig.authSettings.accessToken ? (
+            {dataStoreConfig.spreadsheets &&
+            dataStoreConfig.spreadsheets.length > 0 ? (
+              <div>
+                {dataStoreConfig.spreadsheets.map(spreadsheet => {
+                  return (
+                    <div key={spreadsheet.id}>
+                      <p>Spreadsheet: {spreadsheet.title}</p>
+                      <div className="ml-2">
+                        {spreadsheet.worksheets.map(worksheet => {
+                          return (
+                            <>
+                              <p key={worksheet.title}>
+                                Worksheet: {worksheet.title}
+                              </p>
+                              <p className="ml-2">
+                                Columns: {worksheet.columns.join(', ')}
+                              </p>
+                            </>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <p className="font-bold text-red-500">
+                  Google Sheets integration is not yet fully available. Coming
+                  soon!
+                </p>
+              </div>
+            ) : null}
+
+            {dataStoreConfig.spreadsheets === undefined &&
+            dataStoreConfig.authSettings.accessToken ? (
               <Button
                 intent="primary"
                 onClick={() => {
@@ -288,15 +321,17 @@ function SettingsCard({ interview, onInterviewChange }: Props): JSX.Element {
                   });
                 }}
               >
-                Choose spreadsheets from your Google Drive
+                Connect to spreadsheets from your Google Drive
               </Button>
-            ) : (
+            ) : null}
+            {!dataStoreConfig.authSettings.accessToken ? (
               <Button intent="primary" onClick={handleAuthenticateWithGoogle}>
                 Connect to Google Sheets
               </Button>
-            )}
+            ) : null}
           </div>
         );
+      }
       default:
         return assertUnreachable(dataStoreConfig);
     }
