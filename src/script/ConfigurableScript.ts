@@ -40,7 +40,7 @@ class ConfigurableScript implements Script<InterviewScreen.T> {
       return response;
     }
 
-    // Airtable will drop any colums from the response that have a null value
+    // Airtable will drop any column from the response that have a null value
     // https://community.airtable.com/t5/development-apis/api-behavior-for-empty-fields-null-values/td-p/108285
     // It should be ok to assume that the value exists but is null here because
     // we enforce users selecting only existing keys further up the stack

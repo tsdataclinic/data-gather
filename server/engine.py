@@ -9,7 +9,7 @@ SQLITE_DB_PATH = os.environ.get("DB_PATH", "./db.sqlite")
 
 
 # By default sqlite doesn't enforce foreign key constraints
-# ths code ensures that it is enforced for all connections
+# this code ensures that it is enforced for all connections
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()

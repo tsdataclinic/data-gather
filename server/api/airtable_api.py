@@ -41,7 +41,7 @@ def airtable_errors_wrapped(func):
             return func(*args, **kwargs)
         except requests.exceptions.HTTPError as e:
             logger.error(
-                f"Receieved error from Airtable when calling {func.__name__}(args={args}, kwargs={kwargs}): {e}"
+                f"Received error from Airtable when calling {func.__name__}(args={args}, kwargs={kwargs}): {e}"
             )
             if e.response.status_code == 404:
                 raise HTTPException(

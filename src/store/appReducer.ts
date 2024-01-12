@@ -31,7 +31,7 @@ export type AppGlobalState = {
 
   /**
    * The current language we are editing an interview in.
-   * If undefined, we should default to whichever langauge the interview is
+   * If undefined, we should default to whichever language the interview is
    * configured to use as the default.
    */
   selectedLanguageCode: string | undefined;
