@@ -85,6 +85,13 @@ export function getConfigurePageURL(interviewOrId: Interview | string): string {
 }
 
 /**
+ * Returns a URL for the published interview.
+ */
+export function getPublishedURL(interview: Interview): string | undefined {
+  return interview.vanityUrl ? `/published/${interview.vanityUrl}` : undefined;
+}
+
+/**
  * Create a new empty interview
  */
 export function create(values: {
