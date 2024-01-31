@@ -1,4 +1,5 @@
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import * as React from 'react';
 import useInterviewScreens from '../../../hooks/useInterviewScreens';
@@ -57,6 +58,8 @@ function ConfigureCard({
   if (!screens) {
     return <p>No stages have been created yet!</p>;
   }
+
+  const publishedURL = Interview.getPublishedURL(interview);
 
   return (
     <div className="grid h-auto grid-cols-4 border border-gray-200 bg-white p-8 shadow-lg">
@@ -150,15 +153,36 @@ function ConfigureCard({
         )}
 
         {interview.published && (
-          <LabelWrapper inline label="Vanity URL" labelTextClassName="w-40">
-            <InputText
-              required
-              onChange={val => {
-                onInterviewChange({ ...interview, vanityUrl: val });
-              }}
-              value={interview.vanityUrl}
-            />
-          </LabelWrapper>
+          <div>
+            <LabelWrapper
+              htmlFor="InputText_vanity-url"
+              inline
+              label="Vanity URL"
+              labelTextClassName="w-40 align-top"
+            >
+              <InputText
+                id="InputText_vanity-url"
+                required
+                onChange={val => {
+                  onInterviewChange({ ...interview, vanityUrl: val });
+                }}
+                value={interview.vanityUrl}
+              />
+              {publishedURL ? (
+                <div className="mt-2 whitespace-nowrap">
+                  Public URL:{' '}
+                  <Link
+                    to={publishedURL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 underline transition hover:text-blue-300"
+                  >
+                    {`${window.location.origin}${publishedURL}`}
+                  </Link>
+                </div>
+              ) : null}
+            </LabelWrapper>
+          </div>
         )}
       </div>
     </div>
