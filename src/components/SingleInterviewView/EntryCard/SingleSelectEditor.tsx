@@ -18,12 +18,12 @@ type Props = {
   selectionConfig: InterviewScreenEntry.SingleSelectOptions;
 };
 
-function doesAirtableFieldHaveOptions(
+function doesAirtableFieldHaveChoices(
   airtableField: DataStoreSetting.AirtableField,
 ): boolean {
   const { success } =
     DataStoreSetting.AirtableFieldOptionsSchemas.SingleSelect.safeParse(
-      airtableField,
+      airtableField?.options,
     );
   return success;
 }
@@ -64,7 +64,7 @@ export default function SingleSelectEditor({
   }, [airtableConfig, allAirtableFields]);
 
   const singleSelectOptions = React.useMemo(
-    () => DataStoreSetting.getSingleSelectFieldOptions(selectedAirtableField),
+    () => DataStoreSetting.getSingleSelectFieldChoices(selectedAirtableField),
     [selectedAirtableField],
   );
 
@@ -174,7 +174,7 @@ export default function SingleSelectEditor({
                 airtableConfig: newAirtableConfig,
               })
             }
-            fieldFilterFn={doesAirtableFieldHaveOptions}
+            fieldFilterFn={doesAirtableFieldHaveChoices}
           />
           {singleSelectOptions ? (
             <ul className="ml-8 list-disc">

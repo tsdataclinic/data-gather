@@ -23,7 +23,7 @@ export const AirtableFieldOptionsSchemas = {
   }),
 };
 
-export function getSingleSelectFieldOptions(
+export function getSingleSelectFieldChoices(
   airtableField?: AirtableField,
 ): z.infer<typeof AirtableFieldOptionsSchemas['SingleSelect']> | undefined {
   const parsedFieldOptions = AirtableFieldOptionsSchemas.SingleSelect.safeParse(

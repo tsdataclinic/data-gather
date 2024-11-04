@@ -9,7 +9,7 @@ import assertUnreachable from '../../util/assertUnreachable';
 import useAirtableQuery from '../../hooks/useAirtableQuery';
 import LabelWrapper from '../ui/LabelWrapper';
 import { useDebouncedState } from '../../hooks/useDebounce';
-import { getSingleSelectFieldOptions } from '../../models/DataStoreSetting/AirtableConfig';
+import { getSingleSelectFieldChoices } from '../../models/DataStoreSetting/AirtableConfig';
 
 type Props = {
   defaultLanguage: string;
@@ -216,7 +216,7 @@ export default function InterviewRunnerEntry({
       // if an airtable config is given then we pull the options from there
       const options =
         airtableConfig !== undefined
-          ? getSingleSelectFieldOptions(
+          ? getSingleSelectFieldChoices(
               allAirtableFields?.find(
                 field => field?.name === airtableConfig.selectedFields[0],
               ),
