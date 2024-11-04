@@ -14,12 +14,24 @@ function HoverableLink({
   children: React.ReactNode;
   to: string;
 }): JSX.Element {
-  return (
-    <Link to={to}>
-      <div className="py-2 px-3 hover:bg-slate-600">{children}</div>
-    </Link>
+  const linkContents = (
+    <div className="py-2 px-3 hover:bg-slate-600">{children}</div>
   );
+  const isExternal = to.startsWith('http://') || to.startsWith('https://');
+
+  if (isExternal) {
+    return (
+      <a href={to} target="_blank" rel="noopener noreferrer">
+        {linkContents}
+      </a>
+    );
+  }
+
+  return <Link to={to}>{linkContents}</Link>;
 }
+
+const FEEDBACK_LINK =
+  'https://datagather.tsdataclinic.com/published/data-gather-feedback';
 
 export default function Header(): JSX.Element {
   const { login, logout } = useDataClinicAuth();
@@ -42,6 +54,7 @@ export default function Header(): JSX.Element {
           </Link>
         </div>
         <HoverableLink to="/about">About</HoverableLink>
+        <HoverableLink to={FEEDBACK_LINK}>Feedback</HoverableLink>
         <HoverableLink to="/terms-of-use">Terms of Use</HoverableLink>
         <HoverableLink to="/privacy-policy">Privacy Policy</HoverableLink>
         <Button

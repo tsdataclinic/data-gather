@@ -48,6 +48,7 @@
     "@typescript-eslint/no-inferrable-types": "off",
     "arrow-body-style": "off",
     "camelcase": "warn",
+    "react/jsx-props-no-spreading": "off",
     "react-hooks/exhaustive-deps": "error",
     "react-hooks/rules-of-hooks": "error",
     "react/function-component-definition": [
