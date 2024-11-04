@@ -31,7 +31,7 @@ function HoverableLink({
 }
 
 const FEEDBACK_LINK =
-  'https://datagather.tsdataclinic.com/published/data-gather-feedback';
+  'https://datagather.tsdataclinic.com/published/data-clinic-product-feedback';
 
 export default function Header(): JSX.Element {
   const { login, logout } = useDataClinicAuth();
